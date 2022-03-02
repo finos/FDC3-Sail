@@ -1,0 +1,65 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin:0px;
+  padding:0px;
+  max-width:100%;
+  background-color: #ccc;
+}
+
+#toolbar {
+  margin-top:9px;
+  margin-left:9px;
+}
+
+
+#tabBar {
+  width:100%;
+ height:33px;
+ display: flex;
+ flex-flow:row;
+ margin-top:6px;
+ margin-left:6px;
+}
+
+.tab {
+  max-width: 200px;
+  height:30px;
+  font-size: 12px;
+ padding: 3px 3px 0px 9px;
+ margin-right: 3px;
+ border-radius: 9px 3px 0px 0px;
+ background-color: #aaa;
+ border-right:.3px solid #999;
+ display:flex;
+ flex-flow:row;
+ 
+}
+
+.tab .label {
+  width:160px;
+  height:30px;
+  padding-top:3px;
+  text-overflow: ellipsis;
+  white-space:nowrap;
+  overflow: hidden;
+}
+
+.tab.selected {
+
+  background-color: #eee;
+}
+
+.tab .close {
+ border: 0px;
+ margin-left: 6px;
+ background:none;
+ color:#a33;
+ margin-bottom: 9px;
+ 
+}
+
+#contentContainer {
+  width:100%;
+  height:20px;
+  background-color: #eee;
+}

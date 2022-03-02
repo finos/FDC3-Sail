@@ -1,0 +1,15 @@
+{
+  "extends": [
+    /** @see https://github.com/facebook/create-react-app/tree/main/packages/eslint-config-react-app */
+    "react-app"
+  ],
+  "env": {
+    "browser": true,
+    "node": false
+  },
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  }
+}

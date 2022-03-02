@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <style>
+            #picker {
+                
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1px;
+                grid-auto-rows: minmax(35px, auto);
+            }
+
+            .square {
+                height:35px;
+                width:35px;
+                border-radius: 3px;
+                
+            }
+            .text {
+                padding:5px 6px 3px 6px;
+                color:#fff;
+                font-size:24px;
+                text-align: center;
+            }
+
+            .square:hover {
+                cursor: pointer;
+            }
+
+        </style>
+    </head>
+    <body>
+       <div id="picker">
+           </div>
+    </body>
+
+</html>
