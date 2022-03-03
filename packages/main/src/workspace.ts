@@ -19,30 +19,27 @@ import {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, TOOLBAR_HEIGHT, TOPICS} fro
 
  
 
-const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY = join(__dirname, '../../preload/dist/index.cjs');
-const VIEW_WEBPACK_ENTRY = new URL(
-    '../view/dist/index.html',
-    'file://' + __dirname,
-  ).toString();
-const SEARCH_RESULTS_WEBPACK_ENTRY =  new URL(
+const MAIN_WINDOW_PRELOAD = join(__dirname, '../../preload/dist/index.cjs');
+
+const CHANNEL_PICKER_PRELOAD = join(__dirname, '../../channelPicker-preload/dist/index.cjs');
+
+const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../searchResults-preload/dist/index.cjs');
+
+const SEARCH_RESULTS_CONTENT =  new URL(
     '../searchResults/dist/index.html',
     'file://' + __dirname,
   ).toString();
-const CHANNEL_PICKER_WEBPACK_ENTRY = new URL(
+
+const CHANNEL_PICKER_CONTENT = new URL(
     '../channelPicker/dist/index.html',
     'file://' + __dirname,
-  ).toString();;
+  ).toString();
 
 
-const MAIN_WINDOW_WEBPACK_ENTRY  =
-import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
-  ? import.meta.env.VITE_DEV_SERVER_URL
-  : new URL(
+const MAIN_WINDOW_CONTENT  = new URL(
       '../renderer/dist/index.html',
       'file://' + __dirname,
     ).toString();
-
-
 
 
  export class Workspace {
@@ -84,8 +81,8 @@ import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
         }
         
         // and load the index.html of the app.
-        if (MAIN_WINDOW_WEBPACK_ENTRY && this.window){
-        this.window.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(() => {
+        if (this.window){
+        this.window.loadURL(MAIN_WINDOW_CONTENT).then(() => {
        // this.window.loadFile('src/windows/workspace/frame.html').then(() => {   
            if (this.window){ 
             this.window.webContents.send(TOPICS.WORKSPACE_START,{'id':this.id});
@@ -353,8 +350,8 @@ import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
                 devTools:true
             }
         });
-        if (SEARCH_RESULTS_WEBPACK_ENTRY && this.resultsWindow){
-            this.resultsWindow.loadURL(SEARCH_RESULTS_WEBPACK_ENTRY).then(() => {
+        if (SEARCH_RESULTS_CONTENT && this.resultsWindow){
+            this.resultsWindow.loadURL(SEARCH_RESULTS_CONTENT).then(() => {
             //this.resultsWindow.loadFile('src/windows/searchResults/searchResults.html').then(() => {
                 if (this.resultsWindow){
                     this.resultsWindow.webContents.send(TOPICS.WINDOW_START,{'workspaceId':this.id});
@@ -383,13 +380,12 @@ import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
                 webSecurity:true,
                 nodeIntegration:true,
                 contextIsolation:false,
-                preload: join(__dirname, '../../channelPicker-preload/dist/index.cjs'),
+                preload: CHANNEL_PICKER_PRELOAD,
                 devTools:true
             }
         });
-        if (CHANNEL_PICKER_WEBPACK_ENTRY){
-            console.log("load channel picker", CHANNEL_PICKER_WEBPACK_ENTRY);
-            this.channelWindow.loadURL(CHANNEL_PICKER_WEBPACK_ENTRY).then(() => {
+        if (CHANNEL_PICKER_CONTENT){
+            this.channelWindow.loadURL(CHANNEL_PICKER_CONTENT).then(() => {
             //this.channelWindow.loadFile('src/windows/channelPicker/channelPicker.html').then(() => {
                 const channelWindow = this.channelWindow;
                 if (this.channelWindow){
@@ -532,7 +528,6 @@ import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
             }
         });
         }
-        console.log("workspace createView", VIEW_WEBPACK_ENTRY);
         const view = new View(url, conf, this);
         /*view.content.webContents.on("did-finish-load",() => {
             this.window.webContents.send("WORK:addTab", {viewId: view.id, title:view.directoryData && view.directoryData.title ? view.directoryData.title :view.content.webContents.getTitle()});

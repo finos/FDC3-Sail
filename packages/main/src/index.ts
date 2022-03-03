@@ -1,22 +1,41 @@
-import { app } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import './security-restrictions';
-import { restoreOrCreateWindow } from '/@/mainWindow';
+//import { restoreOrCreateWindow } from '/@/mainWindow';
 import {Runtime} from './runtime';
 
 
 let runtime : Runtime | null = null;
 
-const createWindow = () => {
-  //const win = runtime.createWorkspace();
-  console.log("create initial workspace and view");
-  //win.addTab(VIEW_WEBPACK_ENTRY);
-  if (runtime){
-    const url = new URL(
-      '../view/dist/index.html',
-      'file://' + __dirname,
-    ).toString();
-    runtime.createView(url);
-  }
+export const createWindow =  () : Promise<BrowserWindow> => {
+  return new Promise( async (resolve, reject) => {
+    const runtime = getRuntime();
+    let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
+
+    if (window === undefined) {
+          
+      const url = new URL(
+        '../view/dist/index.html',
+        'file://' + __dirname,
+      ).toString();
+      const view  =  await runtime.createView(url);
+      if (view.parent && view.parent.window) {
+        window = view.parent.window;
+      }
+    }
+
+    if (window && window.isMinimized()) {
+      window.restore();
+    }
+    if (window){
+      window.focus();
+      resolve(window);
+    }
+    else {
+      reject("Window could not be created or restored");
+    }
+
+  });
+  
 };
 
 /**
@@ -37,7 +56,7 @@ if (!isSingleInstance) {
   app.quit();
   process.exit(0);
 }
-app.on('second-instance', restoreOrCreateWindow);
+app.on('second-instance', createWindow);
 
 /**
  * Disable Hardware Acceleration for more power-save
@@ -58,7 +77,7 @@ app.on('window-all-closed', () => {
  */
 app.on('activate', () => {
   runtime = new Runtime(app);
-  restoreOrCreateWindow();
+  createWindow();
 }
   );
 

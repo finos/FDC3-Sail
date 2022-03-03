@@ -13,7 +13,7 @@ import {TOPICS} from "../../main/src/constants";
 
 //flag to indicate the background script is ready for fdc3!
 let connected : boolean = false;
-let id : string | null= null;
+let id : string = "";
 
 //queue of pending events - accumulate until the background is ready
 const eventQ : Array<FDC3Message> = [];

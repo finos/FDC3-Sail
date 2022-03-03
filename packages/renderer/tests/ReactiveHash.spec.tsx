@@ -1,12 +1,11 @@
 import { vi } from 'vitest';
-import type { BinaryLike } from 'crypto';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import ReactiveHash from '../src/components/ReactiveHash';
+//import ReactiveHash from '../src/components/ReactiveHash';
 
 /**
  * Mock expected global api exposed by {@link module:preload}
  */
-type WindowType = Window &
+/*type WindowType = Window &
   typeof globalThis & { nodeCrypto: { sha256sum: (s: BinaryLike) => string } };
 (window as WindowType).nodeCrypto = {
   sha256sum: vi.fn((s: BinaryLike) => `${s}:HASHED`),
@@ -49,4 +48,4 @@ describe('ReactiveHash component', async () => {
 
     expect(hashInput).toHaveValue(`${dataToHash}:HASHED`);
   });
-});
+});*/

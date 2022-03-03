@@ -10,17 +10,16 @@ import {getRuntime} from './index';
 import {BrowserView} from 'electron';
 import utils from './utils';
 import {DirectoryApp} from './types/FDC3Data';
-import { BrowserWindow, Rectangle } from 'electron/main';
+import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
 import {Pending} from './types/Pending';
 import fetch from 'electron-fetch';
 import {TOPICS} from './constants';
-import {Context} from '@finos/fdc3';
 import { join } from 'path';
 
-const VIEW_PRELOAD_WEBPACK_ENTRY = join(__dirname, '../../view-preload/dist/index.cjs');
-const VIEW_WEBPACK_ENTRY =  join(__dirname, '../../view/dist/index.html');
+const VIEW_PRELOAD = join(__dirname, '../../view-preload/dist/index.cjs');
+const VIEW_DEFAULT =  join(__dirname, '../../view/dist/index.html');
 /*new URL(
     '../view/dist/index.html',
     'file://' + __dirname,
@@ -88,7 +87,7 @@ const TOOLBAR_HEIGHT : number = 90;
 
             this.content = new BrowserView({
               webPreferences:{
-               preload: VIEW_PRELOAD_WEBPACK_ENTRY,
+               preload: VIEW_PRELOAD,
                devTools:true,
                contextIsolation:true,
               // enableRemoteModule:false,
@@ -113,12 +112,12 @@ const TOOLBAR_HEIGHT : number = 90;
            //   initView(config);
             });
            }
-           else if (VIEW_WEBPACK_ENTRY) {
-             console.log("load file", VIEW_WEBPACK_ENTRY)
-             this.content.webContents.loadFile(VIEW_WEBPACK_ENTRY).then(() => {
+           else if (VIEW_DEFAULT) {
+             console.log("load file", VIEW_DEFAULT)
+             this.content.webContents.loadFile(VIEW_DEFAULT).then(() => {
                   console.log("content loaded");
               },(err) => {
-                console.error("Error loading file", VIEW_WEBPACK_ENTRY);
+                console.error("Error loading file", VIEW_DEFAULT);
               });
            }
           

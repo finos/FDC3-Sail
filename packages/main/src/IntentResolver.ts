@@ -1,26 +1,31 @@
     import {View} from './view';
     import {getRuntime} from './index';
-    import {ipcMain, BrowserWindow} from 'electron';
+    import {BrowserWindow} from 'electron';
     import {FDC3App, ResolverDetail} from './types/FDC3Data';
-    import {Context} from './types/fdc3/Context';
+    import {Context} from '@finos/fdc3';
     import utils from './utils';
+    import { join } from 'path';
     import {TOPICS} from './constants';
 
-    declare const RESOLVER_WEBPACK_ENTRY : any;
+    const RESOLVER_CONTENT = new URL(
+        '../intentResolver/dist/index.html',
+        'file://' + __dirname,
+      ).toString();
 
+    const RESOLVER_PRELOAD = join(__dirname, '../../intentResolver-preload/dist/index.cjs');
 
     export class IntentResolver {
 
 
         window : BrowserWindow;
 
-        view : View;
+        view : View | null = null;
 
         id : string;
 
         intent : string;
 
-        context : Context;
+        context : Context | null;
 
         constructor(view : View, detail : ResolverDetail, options ? : Array<FDC3App>){
 
@@ -36,7 +41,7 @@
                 frame:false,
                 hasShadow:true,
                 webPreferences:{
-                
+                preload:RESOLVER_PRELOAD,
                 webSecurity:true,
                 nodeIntegration:true,
                 contextIsolation:false,
@@ -56,7 +61,7 @@
             //to do: position resolver in relation to view
 
             // and load the index.html of the app.
-            this.window.loadURL(RESOLVER_WEBPACK_ENTRY).then(() => {
+            this.window.loadURL(RESOLVER_CONTENT).then(() => {
             
         //     this.window.webContents.openDevTools();
                 this.window.webContents.send(TOPICS.WINDOW_START,{

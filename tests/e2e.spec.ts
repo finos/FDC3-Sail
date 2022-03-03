@@ -1,7 +1,7 @@
-import type { ElectronApplication } from 'playwright';
+import { ElectronApplication } from 'playwright';
 import { _electron as electron } from 'playwright';
 import { afterAll, beforeAll, expect, test } from 'vitest';
-import { createHash } from 'crypto';
+//import { createHash } from 'crypto';
 
 let electronApp: ElectronApplication;
 
@@ -60,7 +60,7 @@ test('Preload versions', async () => {
   expect(exposedVersions).to.deep.equal(expectedVersions);
 });
 
-test('Preload nodeCrypto', async () => {
+/*test('Preload nodeCrypto', async () => {
   const page = await electronApp.firstWindow();
 
   const exposedNodeCrypto = await page.evaluate(() => globalThis.nodeCrypto);
@@ -78,4 +78,4 @@ test('Preload nodeCrypto', async () => {
   );
   const expectedHash = createHash('sha256').update(data).digest('hex');
   expect(hash).toEqual(expectedHash);
-});
+});*/

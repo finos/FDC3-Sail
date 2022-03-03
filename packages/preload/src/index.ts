@@ -339,14 +339,6 @@ document.addEventListener("DOMContentLoaded",() => {
     });
   }
 
-
-  const signInButton = document.getElementById("signIn");
-  if (signInButton){
-    signInButton.addEventListener("click",() => {
-        ipcRenderer.send(TOPICS.SIGN_IN,{'source':id});
-    });
-  }
-
   const frameToolsButton = document.getElementById("frameDevTools");
   if (frameToolsButton){
     frameToolsButton.addEventListener("click",() => {
