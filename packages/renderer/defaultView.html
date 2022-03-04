@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <title>FDC3 Agent</title>
+        <style>
+            body {
+                background: #222;
+                color: #eee;
+            }
+        </style>
+    </head>
+    <body>
+      <ul>
+          <li>
+            <a id="open-grid">open ticker grid</a>
+        </li>
+        <li>
+       <a id="open-chart">open chart</a>
+        </li>
+       <li>
+       <a id="connect-instance">connect instance</a>
+    </li>
+    <li>
+            <a id="message-instance">message instance</a>
+         </li>
+    </ul>
+
+    <div id="msg-container"></div>
+    </body>
+    <script>
+        let sendInstance = null;
+        let recieveInstance = null;
+        let msgContainer = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            msgContainer = document.getElementById("msg-container");
+            fdc3.addIntentListener("testInstance",(context) => {
+
+            });
+        document.getElementById("open-grid").addEventListener("click",(event)=> {
+            
+            fdc3.open("Ticker-Grid",{});
+        });
+        document.getElementById("open-chart").addEventListener("click",(event)=> {
+            
+            fdc3.open("TradingViewChart",{});
+        });
+        document.getElementById("message-instance").addEventListener("click",(event)=> {
+            
+            sendInstance.broadcast({type:"testInstance",hello:"world", time:Date.now()});
+        });
+
+        fdc3.addIntentListener("testInstance",async (context, source) => {
+            if (source){
+                recieveInstance = await fdc3.getAppInstance(source);
+                recieveInstance.addContextListener((context) => {
+                    msgContainer.innerText = JSON.stringify(context);
+                });
+            }
+        });
+        document.getElementById("connect-instance").addEventListener("click", async (event) => {
+            const intentR = await fdc3.raiseIntent("testInstance");
+            sendInstance = await fdc3.getAppInstance(intentR.source);
+            sendInstance.addContextListener("testInstance",(context) => {
+                msgContainer.innerText = JSON.stringify(context);
+            });
+            sendInstance.broadcast({type:"testInstance",hello:"world", time:Date.now()});
+            console.log("instance", sendInstance);
+        });
+    });
+    </script>
+</html>

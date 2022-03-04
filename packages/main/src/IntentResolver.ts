@@ -7,12 +7,10 @@
     import { join } from 'path';
     import {TOPICS} from './constants';
 
-    const RESOLVER_CONTENT = new URL(
-        '../intentResolver/dist/index.html',
-        'file://' + __dirname,
-      ).toString();
+ 
 
     const RESOLVER_PRELOAD = join(__dirname, '../../intentResolver-preload/dist/index.cjs');
+                                                                                
 
     export class IntentResolver {
 
@@ -60,25 +58,33 @@
 
             //to do: position resolver in relation to view
 
+            const RESOLVER_CONTENT = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_INTENTS_URL !== undefined
+            ? import.meta.env.VITE_DEV_SERVER_INTENTS_URL
+            : new URL(
+                '../renderer/dist/intentResolver.html',
+                'file://' + __dirname,
+            ).toString();
             // and load the index.html of the app.
-            this.window.loadURL(RESOLVER_CONTENT).then(() => {
-            
-        //     this.window.webContents.openDevTools();
-                this.window.webContents.send(TOPICS.WINDOW_START,{
-                    'id': this.id,
-                    'intent': this.intent,
-                    'context':this.context,
-                    'options':options});
-            
-                console.log("intent resolver create",options);
-                this.view = view;
-            });
+            if (RESOLVER_CONTENT){
+                this.window.loadURL((RESOLVER_CONTENT as string)).then(() => {
+                
+            //     this.window.webContents.openDevTools();
+                    this.window.webContents.send(TOPICS.WINDOW_START,{
+                        'id': this.id,
+                        'intent': this.intent,
+                        'context':this.context,
+                        'options':options});
+                
+                    console.log("intent resolver create",options);
+                    this.view = view;
+                });
 
-            this.window.focus();
+                this.window.focus();
 
-            this.window.on("blur",() => {
-                this.window.destroy();
-            });
+                this.window.on("blur",() => {
+                    this.window.destroy();
+                });
+            }
         }
 
         close() {

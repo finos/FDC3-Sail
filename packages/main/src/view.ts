@@ -19,16 +19,20 @@ import {TOPICS} from './constants';
 import { join } from 'path';
 
 const VIEW_PRELOAD = join(__dirname, '../../view-preload/dist/index.cjs');
-const VIEW_DEFAULT =  join(__dirname, '../../view/dist/index.html');
-/*new URL(
-    '../view/dist/index.html',
-    'file://' + __dirname,
-  ).toString();*/
+
 const TOOLBAR_HEIGHT : number = 90;
 
  export class View {
 
     constructor(url? : string | null, config? : ViewConfig, parent? : Workspace){
+
+      const VIEW_DEFAULT =  import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_DEFAULT_URL !== undefined
+      ? import.meta.env.VITE_DEV_SERVER_DEFAULT_URL
+      : new URL(
+          '../renderer/dist/defaultView.html',
+          'file://' + __dirname,
+        ).toString();
+
         const setId = () => {
             this.content.webContents.send(TOPICS.FDC3_START,{'id':this.id, 'directory':this.directoryData || null});
             this.initiated = true;
@@ -114,7 +118,7 @@ const TOOLBAR_HEIGHT : number = 90;
            }
            else if (VIEW_DEFAULT) {
              console.log("load file", VIEW_DEFAULT)
-             this.content.webContents.loadFile(VIEW_DEFAULT).then(() => {
+             this.content.webContents.loadURL(VIEW_DEFAULT).then(() => {
                   console.log("content loaded");
               },(err) => {
                 console.error("Error loading file", VIEW_DEFAULT);

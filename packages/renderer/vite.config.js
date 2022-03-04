@@ -33,6 +33,13 @@ const config = {
     assetsDir: '.',
     rollupOptions: {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
+      input:{
+        'index':'index.html',
+        'channelPicker':'channelPicker.html',
+        'defaultView':'defaultView.html',
+        'intentResolver':'intentResolver.html',
+        'searchResults':'searchResults.html'
+      },
     },
     emptyOutDir: true,
     brotliSize: false,

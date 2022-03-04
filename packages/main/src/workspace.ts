@@ -25,21 +25,17 @@ const CHANNEL_PICKER_PRELOAD = join(__dirname, '../../channelPicker-preload/dist
 
 const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../searchResults-preload/dist/index.cjs');
 
-const SEARCH_RESULTS_CONTENT =  new URL(
-    '../searchResults/dist/index.html',
+const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_SEARCH_URL !== undefined
+? import.meta.env.VITE_DEV_SERVER_SEARCH_URL
+:  new URL(
+    '../renderer/dist/searchResults.html',
     'file://' + __dirname,
   ).toString();
 
-const CHANNEL_PICKER_CONTENT = new URL(
-    '../channelPicker/dist/index.html',
-    'file://' + __dirname,
-  ).toString();
 
 
-const MAIN_WINDOW_CONTENT  = new URL(
-      '../renderer/dist/index.html',
-      'file://' + __dirname,
-    ).toString();
+
+
 
 
  export class Workspace {
@@ -79,9 +75,21 @@ const MAIN_WINDOW_CONTENT  = new URL(
                 y:(config.y)
             });
         }
+
+        console.log("main window content DEV = ", import.meta.env.DEV);
+        
+        const MAIN_WINDOW_CONTENT  = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_URL
+        : new URL(
+              '../renderer/dist/index.html',
+              'file://' + __dirname,
+            ).toString();
+
+
+ 
         
         // and load the index.html of the app.
-        if (this.window){
+        if (this.window && MAIN_WINDOW_CONTENT){
         this.window.loadURL(MAIN_WINDOW_CONTENT).then(() => {
        // this.window.loadFile('src/windows/workspace/frame.html').then(() => {   
            if (this.window){ 
@@ -384,19 +392,27 @@ const MAIN_WINDOW_CONTENT  = new URL(
                 devTools:true
             }
         });
+        const CHANNEL_PICKER_CONTENT = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_CHANNEL_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_CHANNEL_URL
+        : new URL(
+            '../renderer/dist/channelPicker.html',
+            'file://' + __dirname,
+        ).toString();
+
         if (CHANNEL_PICKER_CONTENT){
-            this.channelWindow.loadURL(CHANNEL_PICKER_CONTENT).then(() => {
+            console.log("chnnel picker", CHANNEL_PICKER_CONTENT);
+            this.channelWindow.loadURL((CHANNEL_PICKER_CONTENT as string)).then(() => {
             //this.channelWindow.loadFile('src/windows/channelPicker/channelPicker.html').then(() => {
-                const channelWindow = this.channelWindow;
+               // const channelWindow = this.channelWindow;
                 if (this.channelWindow){
                    // this.channelWindow.webContents.openDevTools();
-                    setTimeout(()=> {
-                        if (channelWindow){
-                            channelWindow.webContents.send(TOPICS.WINDOW_START,{'workspaceId':this.id});
+                //    setTimeout(()=> {
+                    //    if (channelWindow){
+                            this.channelWindow.webContents.send(TOPICS.WINDOW_START,{'workspaceId':this.id});
                             console.log("channel window created",this.id);
                             resolve();
-                        }
-                    },1000);
+                   //     }
+                  //  },1000);
                     
                 }
             },(err) => {
