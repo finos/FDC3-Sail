@@ -111,19 +111,11 @@ const TOOLBAR_HEIGHT : number = 90;
 
             });
 
-            if (url){
-            this.content.webContents.loadURL(url).then(() => {
-           //   initView(config);
+
+            this.content.webContents.loadURL(url || (VIEW_DEFAULT as string)).then(() => {
+            //   initView(config);
             });
-           }
-           else if (VIEW_DEFAULT) {
-            
-             this.content.webContents.loadURL(VIEW_DEFAULT).then(() => {
-                  console.log("content loaded");
-              },(err) => {
-                console.error("Error loading file", VIEW_DEFAULT);
-              });
-           }
+         
           
            //listen for reloads and reset id
            this.content.webContents.on("devtools-reload-page",() => {

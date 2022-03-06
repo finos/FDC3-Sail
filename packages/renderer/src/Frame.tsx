@@ -30,11 +30,11 @@ const openFrameTools = () => {
     document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
 };
 
-let maxTabIndex = 0;
-let currentTabIndex = 0;
+let value = "";
 
 function Frame() {
 
+    
 
       // Handle Tab Button Click
     const [tabId, setTabId] = React.useState(0);
@@ -42,7 +42,7 @@ function Frame() {
         if (newTabId === "tabProperties") {
         handleAddTab();
         } else {
-        currentTabIndex = newTabId;
+        value = newTabId;
         setTabId(newTabId);
         
         document.dispatchEvent(new CustomEvent(TOPICS.SELECT_TAB, {detail:{
@@ -66,7 +66,8 @@ function Frame() {
     
 
     const handleNewTab = (tabName : string, tabValue : string) => {
-        maxTabIndex++;
+        value = tabValue;
+
         setAddTab([
         ...tabs,
         <Tab label={tabName} value={tabValue} />
@@ -107,12 +108,11 @@ function Frame() {
                 </Stack>
             </div>
             <Tabs
-          
+          value={value}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons
-          textColor="secondary"
-            indicatorColor="secondary"
+
         >
           {tabs.map(child => child)}
           <Tab icon={<PostAdd />} value="tabProperties" />
