@@ -9,7 +9,7 @@
 
  
 
-    const RESOLVER_PRELOAD = join(__dirname, '../../intentResolver-preload/dist/index.cjs');
+    const RESOLVER_PRELOAD = join(__dirname, '../../preload/dist/intentResolver/index.cjs');
                                                                                 
 
     export class IntentResolver {
@@ -61,7 +61,7 @@
             const RESOLVER_CONTENT = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_INTENTS_URL !== undefined
             ? import.meta.env.VITE_DEV_SERVER_INTENTS_URL
             : new URL(
-                '../renderer/dist/intentResolver.html',
+                '../../renderer/dist/intentResolver/index.html',
                 'file://' + __dirname,
             ).toString();
             // and load the index.html of the app.
@@ -75,7 +75,7 @@
                         'context':this.context,
                         'options':options});
                 
-                    console.log("intent resolver create",options);
+                    console.log("intent resolver create",(RESOLVER_CONTENT as string), options);
                     this.view = view;
                 });
 

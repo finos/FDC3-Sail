@@ -1,5 +1,5 @@
 import {ipcRenderer} from 'electron';
-import {TOPICS, TARGETS} from '../../main/src/constants';
+import {TOPICS, TARGETS} from '../../../main/src/constants';
 
 let workspaceId : string | null = null;
 

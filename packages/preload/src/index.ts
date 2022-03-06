@@ -58,6 +58,27 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event,args) => {
     ipcRenderer.send(TOPICS.DROP_TAB,{'source':id,'tabId':event.detail.tabId});
 });
 
+/*
+    Listen for UI Events
+*/
+
+  document.addEventListener(TOPICS.NEW_TAB_CLICK,() => {
+      ipcRenderer.send(TOPICS.NEW_TAB,{'source':id});
+  });
+
+  document.addEventListener(TOPICS.OPEN_CHANNEL_PICKER_CLICK,() => {
+    ipcRenderer.send(TOPICS.PICK_CHANNEL,{'source':id});
+});
+
+document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK,() => {
+    ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS,{'source':id});
+});
+
+document.addEventListener(TOPICS.OPEN_TAB_TOOLS_CLICK,() => {
+    ipcRenderer.send(TOPICS.TAB_DEV_TOOLS,{'source':id});
+});
+
+
 
 
 
@@ -222,7 +243,7 @@ const closeTab = (tabId : string) => {
       tab.parentElement.removeChild(tab);
   }
 }
-
+/*
 (document as any).addEventListener(TOPICS.ADD_TAB,(event : CustomEvent) => {
 
   const tab = document.createElement("div");
@@ -288,7 +309,7 @@ const closeTab = (tabId : string) => {
     selectTab(tabId);
   }
 });
-
+*/
 
 (document as any).addEventListener(TOPICS.SELECT_TAB, (event : CustomEvent) => {
   selectTab(event.detail.selected);
@@ -302,50 +323,3 @@ const closeTab = (tabId : string) => {
   }
 });
 
-document.addEventListener("DOMContentLoaded",() => {
- 
-    /*
-  const tabBar = document.getElementById("tabBar");
-
-  tabBar.addEventListener("dragenter", (event) => {
-    
-
-  });
-
-  tabBar.addEventListener("dragleave", (event) => {
-
-  });*/
-
-
-  const newTab = document.getElementById("newTab");
-  if (newTab){
-    newTab.addEventListener("click",() => {
-        ipcRenderer.send(TOPICS.NEW_TAB,{'source':id});
-    });
-  }
-
-  const channelPicker = document.getElementById("channelPicker");
-  if (channelPicker){
-    channelPicker.addEventListener("click",() => {
-        ipcRenderer.send(TOPICS.PICK_CHANNEL,{'source':id});
-    });
-  }
-
-  const tabToolsButton = document.getElementById("tabDevTools");
-
-  if (tabToolsButton){
-    tabToolsButton.addEventListener("click",() => {
-        ipcRenderer.send(TOPICS.TAB_DEV_TOOLS,{'source':id});
-    });
-  }
-
-  const frameToolsButton = document.getElementById("frameDevTools");
-  if (frameToolsButton){
-    frameToolsButton.addEventListener("click",() => {
-        ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS,{'source':id});
-    });
-  }
-
-
-
-});

@@ -35,10 +35,10 @@ const config = {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       input:{
         'index':'index.html',
-        'channelPicker':'channelPicker.html',
-        'defaultView':'defaultView.html',
-        'intentResolver':'intentResolver.html',
-        'searchResults':'searchResults.html'
+        'channelPicker':'./channelPicker/index.html',
+        'defaultView':'./defaultView/index.html',
+        'intentResolver':'./intentResolver/index.html',
+        'searchResults':'./searchResults/index.html'
       },
     },
     emptyOutDir: true,

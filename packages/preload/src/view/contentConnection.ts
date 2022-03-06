@@ -2,12 +2,12 @@
  * connect from HTML content to main process
  */
 
-import utils from "../../main/src/utils";
-import {FDC3Event} from '../../main/src/types/FDC3Event';
-import {FDC3Message} from '../../main/src/types/FDC3Message';
+import utils from "../../../main/src/utils";
+import {FDC3Event} from '../../../main/src/types/FDC3Event';
+import {FDC3Message} from '../../../main/src/types/FDC3Message';
 import {Context} from '@finos/fdc3';
 import { ipcRenderer,  Menu, BrowserWindow, MenuItem } from 'electron';
-import {TOPICS} from "../../main/src/constants";
+import {TOPICS} from "../../../main/src/constants";
 
 //const {port1, port2} = new MessageChannel();
 

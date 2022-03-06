@@ -18,7 +18,7 @@ import fetch from 'electron-fetch';
 import {TOPICS} from './constants';
 import { join } from 'path';
 
-const VIEW_PRELOAD = join(__dirname, '../../view-preload/dist/index.cjs');
+const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
 
 const TOOLBAR_HEIGHT : number = 90;
 
@@ -29,7 +29,7 @@ const TOOLBAR_HEIGHT : number = 90;
       const VIEW_DEFAULT =  import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_DEFAULT_URL !== undefined
       ? import.meta.env.VITE_DEV_SERVER_DEFAULT_URL
       : new URL(
-          '../renderer/dist/defaultView.html',
+          '../renderer/dist/defaultView/index.html',
           'file://' + __dirname,
         ).toString();
 
@@ -117,7 +117,7 @@ const TOOLBAR_HEIGHT : number = 90;
             });
            }
            else if (VIEW_DEFAULT) {
-             console.log("load file", VIEW_DEFAULT)
+            
              this.content.webContents.loadURL(VIEW_DEFAULT).then(() => {
                   console.log("content loaded");
               },(err) => {

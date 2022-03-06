@@ -1,10 +1,10 @@
 import {contextBridge} from 'electron';
-import utils from '../../main/src/utils';
+import utils from '../../../main/src/utils';
 import {Listener as fdc3Listener} from '@finos/fdc3';
 import {Context, DisplayMetadata, ContextHandler} from '@finos/fdc3';
-import {FDC3Event, FDC3EventDetail, FDC3EventEnum} from '../../main/src/types/FDC3Event';
-import {TOPICS} from '../../main/src/constants';
-import { AppInstance } from '../../main/src/types/AppInstance';
+import {FDC3Event, FDC3EventDetail, FDC3EventEnum} from '../../../main/src/types/FDC3Event';
+import {TOPICS} from '../../../main/src/constants';
+import { AppInstance } from '../../../main/src/types/AppInstance';
 
 
 /**

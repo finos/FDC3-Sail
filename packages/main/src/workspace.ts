@@ -21,16 +21,9 @@ import {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, TOOLBAR_HEIGHT, TOPICS} fro
 
 const MAIN_WINDOW_PRELOAD = join(__dirname, '../../preload/dist/index.cjs');
 
-const CHANNEL_PICKER_PRELOAD = join(__dirname, '../../channelPicker-preload/dist/index.cjs');
+const CHANNEL_PICKER_PRELOAD = join(__dirname, '../../preload/dist/channelPicker/index.cjs');
 
-const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../searchResults-preload/dist/index.cjs');
-
-const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_SEARCH_URL !== undefined
-? import.meta.env.VITE_DEV_SERVER_SEARCH_URL
-:  new URL(
-    '../renderer/dist/searchResults.html',
-    'file://' + __dirname,
-  ).toString();
+const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults/index.cjs');
 
 
 
@@ -358,6 +351,15 @@ const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_
                 devTools:true
             }
         });
+
+        const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_SEARCH_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_SEARCH_URL
+        :  new URL(
+            '../renderer/dist/searchResults/index.html',
+            'file://' + __dirname,
+        ).toString();
+
+
         if (SEARCH_RESULTS_CONTENT && this.resultsWindow){
             this.resultsWindow.loadURL(SEARCH_RESULTS_CONTENT).then(() => {
             //this.resultsWindow.loadFile('src/windows/searchResults/searchResults.html').then(() => {
@@ -366,7 +368,7 @@ const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_
                     console.log("results window created",this.resultsId);
                     resolve();
                 }
-            },(err) => {
+            },(err : Error) => {
                 reject(err);
             });
         }
@@ -395,7 +397,7 @@ const SEARCH_RESULTS_CONTENT =  import.meta.env.DEV && import.meta.env.VITE_DEV_
         const CHANNEL_PICKER_CONTENT = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_CHANNEL_URL !== undefined
         ? import.meta.env.VITE_DEV_SERVER_CHANNEL_URL
         : new URL(
-            '../renderer/dist/channelPicker.html',
+            '../renderer/dist/channelPicker/index.html',
             'file://' + __dirname,
         ).toString();
 

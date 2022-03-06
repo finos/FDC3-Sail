@@ -1,4 +1,4 @@
-import {channels as systemChannels} from "../../main/src/system-channels";
+import {channels as systemChannels} from "../../../main/src/system-channels";
 import {Channel} from '@finos/fdc3';
 
 

@@ -1,7 +1,7 @@
 import {ipcRenderer} from 'electron';
-import {channels} from '../../main/src/system-channels';
-import {Channel} from '../../main/src/types/FDC3Data';
-import {TOPICS} from '../../main/src/constants';
+import {channels} from '../../../main/src/system-channels';
+import {Channel} from '../../../main/src/types/FDC3Data';
+import {TOPICS} from '../../../main/src/constants';
 import {FDC3ChannelPicker} from './channel-picker';
 
 let workspaceId : string | null = null;

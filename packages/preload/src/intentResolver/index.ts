@@ -1,5 +1,5 @@
 import {ipcRenderer} from 'electron';
-import {TOPICS} from '../../main/src/constants';
+import {TOPICS} from '../../../main/src/constants';
 
 
 
