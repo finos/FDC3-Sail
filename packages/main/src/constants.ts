@@ -1,6 +1,6 @@
 export const DEFAULT_WINDOW_HEIGHT : number = 600;
 export const DEFAULT_WINDOW_WIDTH : number = 800;
-export const TOOLBAR_HEIGHT : number = 90;
+export const TOOLBAR_HEIGHT : number = 120;
 
 export enum TARGETS {
     SEARCH_RESULTS = "searchResults",

@@ -1,9 +1,10 @@
 import './App.css';
 import React from 'react';
-import {Box, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
+import {IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {TOPICS} from '../../main/src/constants';
-import { PostAdd, SentimentVerySatisfiedOutlined } from "@mui/icons-material";
+import { PostAdd, HiveOutlined, ConstructionOutlined, CloseOutlined } from "@mui/icons-material";
+
 
 const darkTheme = createTheme({
     palette: {
@@ -53,6 +54,7 @@ function Frame() {
 
       // Handle Add Tab Button
     const [tabs, setAddTab] = React.useState([]);
+
     const handleAddTab = () => {
        /* maxTabIndex++;
         setAddTab([
@@ -63,14 +65,19 @@ function Frame() {
        // handleTabsContent();
     };
 
-    
+    const closeTab = (tabId : string) => {
+      document.dispatchEvent(new CustomEvent(TOPICS.CLOSE_TAB, {detail:{
+        tabId:tabId
+      }}));
+      setAddTab(tabs.filter((tab) => { return (tab as any).value !==  tabId;}));
+    };
 
     const handleNewTab = (tabName : string, tabValue : string) => {
         value = tabValue;
 
         setAddTab([
         ...tabs,
-        <Tab label={tabName} value={tabValue} />
+        <Tab label={tabName} value={tabValue} iconPosition="end" icon={<CloseOutlined onClick={() => {closeTab(tabValue);}}/>} />
         ]);
         
        // handleTabsContent();
@@ -101,9 +108,12 @@ function Frame() {
                 <Stack direction="row">
                     <input id="autoComplete" tabindex="1"/>
                     <ButtonGroup>
-                    <Button size="small" variant="contained" id="channelPicker" onClick={openChannelPicker}>C</Button>
-                    <Button size="small" variant="contained" id="tabDevTools" onClick={openTabTools}>Tab Tools</Button>
-                    <Button size="small" variant="contained" id="frameDevTools" onClick={openFrameTools}>Frame Tools</Button>
+                    <div id="channelButton">
+                      <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
+                    </div>
+                    
+                    <Button size="small" variant="contained" id="frameDevTools" onClick={openFrameTools} endIcon={<ConstructionOutlined/>} title="Open Dev Tools for the Workspace Frame">Frame</Button>
+                    <Button size="small"  variant="contained" id="tabDevTools" onClick={openTabTools} endIcon={<ConstructionOutlined/>}  title="Open Dev Tools for the View">View</Button>
                 </ButtonGroup>
                 </Stack>
             </div>
@@ -115,7 +125,7 @@ function Frame() {
 
         >
           {tabs.map(child => child)}
-          <Tab icon={<PostAdd />} value="tabProperties" />
+          <Tab icon={<PostAdd />} value="tabProperties"/>
         </Tabs>
         </AppBar>
         

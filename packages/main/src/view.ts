@@ -20,7 +20,7 @@ import { join } from 'path';
 
 const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
 
-const TOOLBAR_HEIGHT : number = 90;
+const TOOLBAR_HEIGHT : number = 120;
 
  export class View {
 
