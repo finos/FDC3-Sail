@@ -17,6 +17,7 @@ const config = {
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@/channelPicker/': join(PACKAGE_ROOT, 'src') + '/',
     },
   },
   plugins: [react()],

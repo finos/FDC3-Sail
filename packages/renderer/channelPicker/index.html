@@ -1,36 +1,18 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            #picker {
-                
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1px;
-                grid-auto-rows: minmax(35px, auto);
-            }
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' blob:"
+    />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+   <title>FDC3 Desktop Agent</title>
 
-            .square {
-                height:35px;
-                width:35px;
-                border-radius: 3px;
-                
-            }
-            .text {
-                padding:5px 6px 3px 6px;
-                color:#fff;
-                font-size:24px;
-                text-align: center;
-            }
-
-            .square:hover {
-                cursor: pointer;
-            }
-
-        </style>
-    </head>
-    <body>
-       <div id="picker">
-           </div>
-    </body>
+  </head>
+  <body>
+      <div id="picker"></div>
+      <script src="./src/index.tsx" type="module"></script> 
+  </body>
 
 </html>

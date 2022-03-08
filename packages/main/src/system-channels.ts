@@ -28,9 +28,7 @@ export const channels : Array<Channel> = [
     {"id":"purple","type":"system","displayMetadata":
         {"color":"#C355F5",
         "color2":"#AA26DA",
-        "name":"Purple"}},
-    {"id":"global","type":"system","displayMetadata":
-        {"name":"Global"}}
+        "name":"Purple"}}
 ];
 
 

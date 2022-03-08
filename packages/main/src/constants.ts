@@ -28,6 +28,7 @@ export enum TOPICS {
     CLOSE_TAB = "WORK:closeTab",
     DROP_TAB = "WORK:dropTab",
     JOIN_CHANNEL = "WORK:joinChannel",
+    LEAVE_CHANNEL = "WORK:leaveChannel",    
     JOIN_WORKSPACE_TO_CHANNEL = "FDC3:joinWorkspaceToChannel",
     CONFIRM_JOIN = "FDC3:confirmJoin",
     PICK_CHANNEL = "RES:pickChannel",

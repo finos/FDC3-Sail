@@ -569,7 +569,7 @@ _listeners.push({
 _listeners.push({
     name:TOPICS.JOIN_WORKSPACE_TO_CHANNEL,
     handler:(runtime, msg) => {
-    
+    console.log("join workspace to channel");
       return new Promise(async (resolve, reject) => {
           //get collection of views for the window
           const workspace = runtime.getWorkspace(msg.source);

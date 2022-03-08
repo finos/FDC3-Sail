@@ -407,7 +407,7 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
             //this.channelWindow.loadFile('src/windows/channelPicker/channelPicker.html').then(() => {
                // const channelWindow = this.channelWindow;
                 if (this.channelWindow){
-                   // this.channelWindow.webContents.openDevTools();
+                 //   this.channelWindow.webContents.openDevTools();
                 //    setTimeout(()=> {
                     //    if (channelWindow){
                             this.channelWindow.webContents.send(TOPICS.WINDOW_START,{'workspaceId':this.id});

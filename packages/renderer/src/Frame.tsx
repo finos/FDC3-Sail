@@ -1,4 +1,4 @@
-import './App.css';
+import './Frame.css';
 import React from 'react';
 import {IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';

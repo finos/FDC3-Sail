@@ -12,7 +12,7 @@ let selected : string | null= null;
 ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
     console.log("channels window start ", args);
     workspaceId = args.workspaceId;
-    start(channels);
+  //  start(channels);
 });
 
 ipcRenderer.on(TOPICS.CHANNEL_SELECTED,(event, args) => {
@@ -20,7 +20,23 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED,(event, args) => {
 });
 
 (document as any).addEventListener(TOPICS.JOIN_CHANNEL,(event : CustomEvent) => {
-    ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL,{source:workspaceId,data:{channel:event.detail.channel}});
+    console.log("join channel", event);
+    if (selected !== event.detail.channel){
+        selected = event.detail.channel;
+        ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL,{source:workspaceId,data:{channel:event.detail.channel}});
+    }
+    else {
+        console.log("leave channel");
+        selected = null;
+        ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {source:workspaceId,data:{channel:"default"}});
+    }
+});
+
+
+(document as any).addEventListener(TOPICS.LEAVE_CHANNEL,(event : CustomEvent) => {
+    console.log("leave channel");
+    selected = null;
+    ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {source:workspaceId,data:{channel:"default"}});
 });
 
 const pickChannel = (event : Event, channel : Channel) => {
@@ -60,48 +76,6 @@ const channelSelected = (channel : string) => {
     }
 };
 
-//document.addEventListener(TOPICS.WINDOW_START,(event : CustomEvent) => {
-const start = (channels : Array<Channel>) => {
-    const picker = document.getElementById("picker");
-    //const channels : Array<Channel> = event.detail.channels;
-    channels.forEach(channel => {
-        const square = document.createElement("div");
-        square.id = channel.id;
-        square.className = "square";
-        if (channel.displayMetadata){
-            square.setAttribute('style',`background-color:${channel.displayMetadata.color};`);
-        }
-      //  square.textContent = channel.displayMetadata.color;
-        square.addEventListener("mouseover",() => {
-            if (channel.displayMetadata){
-                square.setAttribute('style', `background-color:${channel.displayMetadata.color2};`);
-            }
-        });
-        square.addEventListener("mouseout",() => {
-            if (channel.displayMetadata){
-                square.setAttribute('style',`background-color:${channel.displayMetadata.color};`);
-            }
-        });
-
-        const text = document.createElement("div");
-        text.className = "text";
-
-        square.appendChild(text);
-
-        square.addEventListener("click",(event) => {
-            pickChannel(event, channel);
-            
-        });
-        if (picker){
-            picker.appendChild(square);
-        }
-        
-    });
-};
 
 
-document.addEventListener("DOMContentLoaded",() => {
- 
-    // Define the new element
-    customElements.define("fdc3-channel-picker", FDC3ChannelPicker);
-});
+

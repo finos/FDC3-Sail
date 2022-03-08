@@ -34,7 +34,7 @@ ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {
 });
 
 ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event,args) => {
-    const channel = args.channel !== "default" ? channels.find((c) => {return c.id === args.channel;}) : {id:"default","displayMetadata":{color:"#ccc", color2:"#999"}};
+    const channel = args.channel !== "default" ? channels.find((c) => {return c.id === args.channel;}) : {id:"default","displayMetadata":{color:"", color2:""}};
     document.dispatchEvent(new CustomEvent(TOPICS.CHANNEL_SELECTED, {detail:{channel:channel}}));
 });
 
@@ -316,7 +316,8 @@ const closeTab = (tabId : string) => {
 });
 
 (document as any).addEventListener(TOPICS.CHANNEL_SELECTED, (event : CustomEvent) => {
-  const channelPicker = document.getElementById("channelPicker");
+  //highlight the channelPicker button on selection (remove on deselection)
+    const channelPicker = document.getElementById("channelPicker");
   if (channelPicker){
     channelPicker.style.backgroundColor = event.detail.channel.displayMetadata.color;
     channelPicker.style.borderColor = event.detail.channel.displayMetadata.color2;
