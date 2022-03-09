@@ -44,7 +44,7 @@ test('Main window state', async () => {
 
 test('Main window web content', async () => {
   const page = await electronApp.firstWindow();
-  const element = await page.$('#app', { strict: true });
+  const element = await page.$('#frame', { strict: true });
   expect(element, "Can't find root element").toBeDefined();
   expect(
     (await element.innerHTML()).trim(),
@@ -58,6 +58,14 @@ test('Preload versions', async () => {
   const expectedVersions = await electronApp.evaluate(() => process.versions);
   expect(exposedVersions).toBeDefined();
   expect(exposedVersions).to.deep.equal(expectedVersions);
+});
+
+test('workspace isConnected', async () => {
+  const page = await electronApp.firstWindow();
+  const workspace = await page.evaluate(() => globalThis.workspace);
+  const connected = await page.evaluate(() => workspace.isConnected());
+  expect(workspace).toBeDefined();
+  expect(connected).to.equal(true);
 });
 
 /*test('Preload nodeCrypto', async () => {

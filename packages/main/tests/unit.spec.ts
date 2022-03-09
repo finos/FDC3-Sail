@@ -6,9 +6,10 @@ import { BrowserWindow } from 'electron';
 
 /**
  * Mock real electron BrowserWindow API
- */
+ 
 vi.mock('electron', () => {
   const bw = vi.fn() as MaybeMocked<typeof BrowserWindow>;
+
   // @ts-expect-error It's work in runtime, but I Haven't idea how to fix this type error
   bw.prototype.getAllWindows = vi.fn(() => bw.mock.instances);
   bw.prototype.loadURL = vi.fn();
@@ -22,15 +23,20 @@ vi.mock('electron', () => {
   return { BrowserWindow: bw };
 });
 
+console.log("before clearAll");
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
+console.log("browserwindow created", vi);
+
 
 test('Should create new window', async () => {
   const { mock } = vi.mocked(BrowserWindow);
   expect(mock.instances).toHaveLength(0);
 
   await createWindow();
+  
   expect(mock.instances).toHaveLength(1);
   expect(mock.instances[0].loadURL).toHaveBeenCalledOnce();
   expect(mock.instances[0].loadURL).toHaveBeenCalledWith(
@@ -64,3 +70,4 @@ test('Should create new window if previous was destroyed', async () => {
   await createWindow();
   expect(mock.instances).toHaveLength(2);
 });
+*/

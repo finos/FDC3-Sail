@@ -24,7 +24,13 @@ const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<
   >
 >(
   import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL
-    ? [[new URL(import.meta.env.VITE_DEV_SERVER_URL).origin, new Set()]]
+    ? [[new URL(import.meta.env.VITE_DEV_SERVER_URL).origin, 
+      new URL(import.meta.env.VITE_DEV_SERVER_FRAME_URL).origin,
+      new URL(import.meta.env.VITE_DEV_SERVER_DEFAULT_URL).origin,
+      new URL(import.meta.env.VITE_DEV_SERVER_CHANNEL_URL).origin,
+      new URL(import.meta.env.VITE_DEV_SERVER_SEARCH_URL).origin,
+      new URL(import.meta.env.VITE_DEV_SERVER_INTENTS_URL).origin,
+      new Set()]]
     : [],
 );
 
