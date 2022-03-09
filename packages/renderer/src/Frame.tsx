@@ -1,6 +1,6 @@
 import './Frame.css';
 import React from 'react';
-import {IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
+import {TextField, IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {TOPICS} from '../../main/src/constants';
 import { PostAdd, HiveOutlined, ConstructionOutlined, CloseOutlined } from "@mui/icons-material";
@@ -99,6 +99,16 @@ function Frame() {
         }
     });
 
+    const searchChange = (event : InputEvent) => {
+        const threshold = 3;
+        const input = event.target;
+        const value = input && input.value ? input.value : "";
+        //does the value meet the threshold
+        if (value && value.length >= threshold){
+          document.dispatchEvent(new CustomEvent(TOPICS.SEARCH, {detail:{"query":value}}));
+        }
+    };
+
     return (
         <ThemeProvider theme={darkTheme}>
         <Paper>
@@ -106,7 +116,7 @@ function Frame() {
         <AppBar position="static" color="inherit">
             <div id="controlsContainer">
                 <Stack direction="row">
-                    <input id="autoComplete" tabindex="1"/>
+                    <TextField id="search" label="Search" variant="outlined" size="small" onChange={searchChange} fullWidth/>
                     <ButtonGroup>
                     <div id="channelButton">
                       <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
@@ -129,12 +139,11 @@ function Frame() {
         </Tabs>
         </AppBar>
         
-            <div id="contentContainer">
-            
-            </div>
+  
         </Paper>
+
         </ThemeProvider>
-        
+                  
     );
 }
 

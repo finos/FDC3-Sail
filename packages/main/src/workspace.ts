@@ -348,6 +348,7 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
                 webSecurity:true,
                 nodeIntegration:true,
                 contextIsolation:false,
+                preload: SEARCH_RESULTS_PRELOAD,
                 devTools:true
             }
         });
@@ -361,7 +362,7 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
 
 
         if (SEARCH_RESULTS_CONTENT && this.resultsWindow){
-            this.resultsWindow.loadURL(SEARCH_RESULTS_CONTENT).then(() => {
+            this.resultsWindow.loadURL((SEARCH_RESULTS_CONTENT as string)).then(() => {
             //this.resultsWindow.loadFile('src/windows/searchResults/searchResults.html').then(() => {
                 if (this.resultsWindow){
                     this.resultsWindow.webContents.send(TOPICS.WINDOW_START,{'workspaceId':this.id});
@@ -448,7 +449,11 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
         }
     }
 
+ 
+    
+
     async loadSearchResults(results : Array<any>) {
+        
         if (! this.resultsWindow){
             await this.createResultsWindow();
         }
@@ -458,10 +463,10 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
             
             this.resultsWindow.setPosition(winPos[0] + 9, winPos[1] + 60);
             
-            //this.resultsWindow.show();
+            
             this.resultsWindow.showInactive();
             this.resultsWindow.webContents.send(TOPICS.RES_LOAD_RESULTS,{results:results});
-        // this.resultsWindow.focus();
+     //   this.resultsWindow.webContents.openDevTools();
             let hideTimer : NodeJS.Timeout | null  = null;
             hideTimer = setTimeout(() => {
                     this.hideSearchResults();
@@ -484,6 +489,7 @@ const SEARCH_RESULTS_PRELOAD = join(__dirname, '../../preload/dist/searchResults
     hideSearchResults() {
         if (this.resultsWindow){
             this.resultsWindow.hide();
+            this.resultsWindow.removeAllListeners();
         }
     }
 

@@ -5,9 +5,11 @@ let workspaceId : string | null = null;
 
 ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
     workspaceId = args.workspaceId;
+    console.log("start", workspaceId);
  });
 
 ipcRenderer.on(TOPICS.RES_LOAD_RESULTS,(event, args) => {
+  console.log("load search results", args);
    const resultsList = document.getElementById("results");
    if (resultsList){
     resultsList.innerHTML = "";

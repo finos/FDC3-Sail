@@ -58,6 +58,20 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event,args) => {
     ipcRenderer.send(TOPICS.DROP_TAB,{'source':id,'tabId':event.detail.tabId});
 });
 
+(document as any).addEventListener(TOPICS.SEARCH, (event :CustomEvent)=> {
+    const query = event.detail.query;
+    ipcRenderer.once(`${TOPICS.FETCH_FROM_DIRECTORY}-/apps/search?text=${query}`,(event, args) => {
+        //resolve(args.data);
+        //add web search results
+        const results = args.data;
+
+    
+        ipcRenderer.send(TOPICS.RES_LOAD_RESULTS,{source:id, results:results});
+    });
+    // Fetch External Data Source
+    ipcRenderer.send(TOPICS.FETCH_FROM_DIRECTORY,{'source':id, 'query':`/apps/search?text=${query}`});
+});
+
 /*
     Listen for UI Events
 */
