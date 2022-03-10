@@ -38,7 +38,7 @@ function Frame() {
     
 
       // Handle Tab Button Click
-    const [tabId, setTabId] = React.useState(0);
+    const [tabId, setTabId] = React.useState("0");
     const handleTabChange = (event : Event, newTabId : string) => {
         if (newTabId === "tabProperties") {
         handleAddTab();
@@ -101,7 +101,7 @@ function Frame() {
 
     const searchChange = (event : InputEvent) => {
         const threshold = 3;
-        const input = event.target;
+        const input : HTMLInputElement = (event.target as HTMLInputElement);
         const value = input && input.value ? input.value : "";
         //does the value meet the threshold
         if (value && value.length >= threshold){

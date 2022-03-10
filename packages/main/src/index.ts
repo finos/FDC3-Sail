@@ -1,52 +1,65 @@
 import { app, BrowserWindow } from 'electron';
 import './security-restrictions';
 //import { restoreOrCreateWindow } from '/@/mainWindow';
-import {Runtime} from './runtime';
+import { Runtime } from './runtime';
 
+let runtime: Runtime | null = null;
 
-let runtime : Runtime | null = null;
-
-export const createWindow =  () : Promise<BrowserWindow> => {
-  return new Promise( async (resolve, reject) => {
+export const createWindow = (): Promise<BrowserWindow> => {
+  return new Promise((resolve, reject) => {
     const runtime = getRuntime();
     let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
 
+    const focusOrRestore = (window: BrowserWindow) => {
+      if (window && window.isMinimized()) {
+        window.restore();
+      }
+      if (window) {
+        window.focus();
+      }
+    };
+
     if (window === undefined) {
-          
       const url = new URL(
         '../view/dist/index.html',
         'file://' + __dirname,
       ).toString();
-      const view  =  await runtime.createView(url);
-      if (view.parent && view.parent.window) {
-        window = view.parent.window;
+      runtime.createView(url).then(
+        (view) => {
+          if (view.parent && view.parent.window) {
+            window = view.parent.window;
+          }
+          if (window) {
+            focusOrRestore(window);
+            resolve(window);
+          } else {
+            reject('Window could not be created or restored');
+          }
+        },
+        (err) => {
+          reject(err);
+        },
+      );
+    } else {
+      if (window) {
+        focusOrRestore(window);
+        resolve(window);
+      } else {
+        reject('Window could not be created or restored');
       }
     }
-
-    if (window && window.isMinimized()) {
-      window.restore();
-    }
-    if (window){
-      window.focus();
-      resolve(window);
-    }
-    else {
-      reject("Window could not be created or restored");
-    }
-
   });
-  
 };
 
 /**
  * fetch the singleton runtime instance
  */
-export const getRuntime = () : Runtime  => {
-  if (!runtime){ 
+export const getRuntime = (): Runtime => {
+  if (!runtime) {
     runtime = new Runtime(app);
   }
   return runtime;
-}
+};
 
 /**
  * Prevent multiple instances
@@ -78,8 +91,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   runtime = new Runtime(app);
   createWindow();
-}
-  );
+});
 
 /**
  * Create app window when background process will be ready
@@ -88,9 +100,8 @@ app
   .whenReady()
   .then(() => {
     runtime = new Runtime(app);
-   // restoreOrCreateWindow();
-   createWindow();
-   
+    // restoreOrCreateWindow();
+    createWindow();
   })
   .catch((e) => console.error('Failed create window:', e));
 

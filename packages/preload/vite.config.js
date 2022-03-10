@@ -35,12 +35,12 @@ const config = {
       output: {
         entryFileNames: '[name].cjs',
       },
-      input:{
-        'index':'./src/index.ts',
-        'channelPicker/index':'./src/channelPicker/index.ts',
-        'view/index':'./src/view/index.ts',
-        'intentResolver/index':'./src/intentResolver/index.ts',
-        'searchResults/index':'./src/searchResults/index.ts'
+      input: {
+        index: './src/index.ts',
+        'channelPicker/index': './src/channelPicker/index.ts',
+        'view/index': './src/view/index.ts',
+        'intentResolver/index': './src/intentResolver/index.ts',
+        'searchResults/index': './src/searchResults/index.ts',
       },
     },
     emptyOutDir: true,

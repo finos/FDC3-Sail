@@ -1,4 +1,4 @@
-import { ElectronApplication } from 'playwright';
+import type { ElectronApplication } from 'playwright';
 import { _electron as electron } from 'playwright';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 //import { createHash } from 'crypto';

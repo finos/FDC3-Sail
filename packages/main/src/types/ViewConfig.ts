@@ -1,12 +1,11 @@
-import { Workspace } from "../workspace";
-import {View} from '../view';
-import {DirectoryApp} from './FDC3Data';
+import { Workspace } from '../workspace';
+import { View } from '../view';
+import { DirectoryApp } from './FDC3Data';
 
 export interface ViewConfig {
-    
-    workspace ? : Workspace
+  workspace?: Workspace;
 
-    onReady ? : (view : View) => Promise<void>;
+  onReady?: (view: View) => Promise<void>;
 
-    directoryData? : DirectoryApp;
-};
+  directoryData?: DirectoryApp;
+}

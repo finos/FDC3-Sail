@@ -1,8 +1,9 @@
-import { MaybeMocked } from 'vitest';
+/*import { MaybeMocked } from 'vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createWindow } from '../src/index';
 
 import { BrowserWindow } from 'electron';
+*/
 
 /**
  * Mock real electron BrowserWindow API

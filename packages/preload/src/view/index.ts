@@ -1,6 +1,6 @@
-import {createAPI} from './api';
-import {listen, connect} from './contentConnection';
+import { createAPI } from './api';
+import { listen, connect } from './contentConnection';
 
 connect();
 listen();
-document.addEventListener("DOMContentLoaded",createAPI);
+document.addEventListener('DOMContentLoaded', createAPI);
