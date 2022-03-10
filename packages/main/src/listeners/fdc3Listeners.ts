@@ -12,6 +12,7 @@ import { ipcMain } from 'electron';
 import fetch from 'electron-fetch';
 import { TOPICS } from '../constants';
 import { FDC3Listener } from '../types/FDC3Listener';
+import { Pending } from '../types/Pending';
 
 /**
  * represents an event listener
@@ -197,7 +198,7 @@ _listeners.push({
           //to filter on channel, check the listener channel andthe view channel (its channel membe)
           const viewListeners: Array<ViewListener> = [];
           runtime.getViews().forEach((v) => {
-            v.listeners.forEach((l) => {
+            v.listeners.forEach((l : FDC3Listener) => {
               const matchChannel = l.channel
                 ? l.channel
                 : v.channel
@@ -406,7 +407,7 @@ _listeners.push({
               are there any pending contexts for the listener just added? 
               */
           if (view.pendingContexts && view.pendingContexts.length > 0) {
-            view.pendingContexts.forEach((pending, i) => {
+            view.pendingContexts.forEach((pending : Pending, i : number) => {
               //is there a match on contextType (if specified...)
               if (
                 pending.context &&
@@ -755,8 +756,8 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
         if (sType === 'window') {
           const listeners = getRuntime().getIntentListeners(msg.intent);
           //let keys = Object.keys(listeners);
-          let appId: string | null = null;
-          const id = (sView && sView.id) || null;
+          let appId: string | undefined = undefined;
+          const id = (sView && sView.id) || undefined;
           listeners.forEach((listener) => {
             if (listener.source === id) {
               appId = listener.source;
@@ -1037,13 +1038,17 @@ _listeners.push({
             r.sort((a, b) => {
               //let aTitle = a.details.directoryData ? a.details.directoryData.title : a.details.view.content.webContents.getURL();
               // let bTitle = b.details.directoryData ? b.details.directoryData.title : b.details.view.content.webContents.getURL();
-              a.details.title = getTitle(a);
-              b.details.title = getTitle(b);
+              if (a.details){
+                a.details.title = getTitle(a);
+              }
+              if (b.details){
+                b.details.title = getTitle(b);
+              }
 
-              if (a.details.title < b.details.title) {
+              if ((a.details && a.details.title && b.details && b.details.title) && a.details.title < b.details.title) {
                 return -1;
               }
-              if (a.details.title > b.details.title) {
+              if ((a.details && a.details.title && b.details && b.details.title) && a.details.title > b.details.title) {
                 return 1;
               } else {
                 return 0;

@@ -3,7 +3,7 @@ import { FDC3Listener } from './types/FDC3Listener';
 import { Context } from '@finos/fdc3';
 import { FDC3App, ResolverDetail } from './types/FDC3Data';
 import { channels } from './system-channels';
-import { View } from './View';
+import { View } from './view';
 import { Workspace } from './workspace';
 import { ViewConfig } from './types/ViewConfig';
 import { WorkspaceConfig } from './types/WorkspaceConfig';
@@ -118,7 +118,7 @@ export class Runtime {
     const result: Map<string, Array<FDC3Listener>> = new Map(); //intentListeners.get(intent);
 
     this.getViews().forEach((view) => {
-      view.listeners.forEach((l) => {
+      view.listeners.forEach((l : FDC3Listener) => {
         //if the listener doesn't have an intent, its a context listener
         if (!l.intent) {
           //resolve the channel, prefer the channel on the listener, or default to the channel of the view (if any)
