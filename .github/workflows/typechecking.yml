@@ -12,7 +12,7 @@ on:
   pull_request:
     paths:
       - '**.ts'
-     - '**.tsx'
+      - '**.tsx'
       - '**/tsconfig.json'
       - 'package-lock.json'
       - '.github/workflows/typechecking.yml'
