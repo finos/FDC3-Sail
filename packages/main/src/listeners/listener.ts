@@ -1,6 +1,6 @@
 import { listeners as fdc33Listeners } from './fdc3Listeners';
 import { Listener } from '../types/Listener';
-import { ipcMain, Menu } from 'electron';
+import { ipcMain } from 'electron';
 import { Runtime } from '../runtime';
 import { Workspace } from '../workspace';
 import { getRuntime } from '../index';

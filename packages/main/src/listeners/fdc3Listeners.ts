@@ -69,7 +69,7 @@ const _listeners: Array<IListener> = [];
 
 _listeners.push({
   name: TOPICS.FDC3_DROP_CONTEXT_LISTENER,
-  handler: (runtime: Runtime, msg) : Promise<void> => {
+  handler: (runtime: Runtime, msg): Promise<void> => {
     //remove the listener from the view when it is unsubscribed
     return new Promise((resolve, reject) => {
       try {
@@ -78,7 +78,7 @@ _listeners.push({
           ? runtime.getView(msg.source)
           : null;
         if (view) {
-          view.listeners = view.listeners.filter((l : FDC3Listener) => {
+          view.listeners = view.listeners.filter((l: FDC3Listener) => {
             return l.listenerId !== id;
           });
         }
@@ -155,7 +155,7 @@ _listeners.push({
               }
             });
             if (viewListeners.length > 0) {
-              viewListeners.forEach((viewL : ViewListener) => {
+              viewListeners.forEach((viewL: ViewListener) => {
                 const data = {
                   listenerId: viewL.listenerId,
                   eventId: msg.data.eventId,
