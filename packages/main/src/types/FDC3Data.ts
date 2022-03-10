@@ -22,7 +22,7 @@ export class EnvironmentData {
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
  */
-export class FDC3App {
+export interface FDC3App {
   type: string;
   details: FDC3AppDetail;
 }

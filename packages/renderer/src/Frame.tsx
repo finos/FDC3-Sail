@@ -33,14 +33,19 @@ const openFrameTools = () => {
 
 let value = "";
 
+interface FrameTab {
+  value : string;
+  label: string;
+};
+
 function Frame() {
 
     
 
       // Handle Tab Button Click
     const [tabId, setTabId] = React.useState("0");
-    const handleTabChange = (event : Event, newTabId : string) => {
-        if (newTabId === "tabProperties") {
+    const handleTabChange = (event : React.SyntheticEvent, newTabId : string) => {
+        if (event && newTabId === "tabProperties") {
         handleAddTab();
         } else {
         value = newTabId;
@@ -53,7 +58,7 @@ function Frame() {
     };
 
       // Handle Add Tab Button
-    const [tabs, setAddTab] = React.useState([]);
+    const [tabs, setAddTab] = React.useState<Element[]>([]);
 
     const handleAddTab = () => {
        /* maxTabIndex++;

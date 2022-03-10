@@ -4,13 +4,14 @@ import { FDC3Message } from '../types/FDC3Message';
 import { Channel, DirectoryApp, FDC3App } from '../types/FDC3Data';
 import utils from '../utils';
 //import {createView, views} from '../managers/viewManager';
-import { View } from '../View';
+import { View } from '../view';
 import { setPendingContext } from '../managers/contextManager';
 import { getRuntime } from '../index';
 import { Runtime } from '../runtime';
 import { ipcMain } from 'electron';
 import fetch from 'electron-fetch';
 import { TOPICS } from '../constants';
+import { FDC3Listener } from '../types/FDC3Listener';
 
 /**
  * represents an event listener
@@ -68,7 +69,7 @@ const _listeners: Array<IListener> = [];
 
 _listeners.push({
   name: TOPICS.FDC3_DROP_CONTEXT_LISTENER,
-  handler: (runtime: Runtime, msg) => {
+  handler: (runtime: Runtime, msg) : Promise<void> => {
     //remove the listener from the view when it is unsubscribed
     return new Promise((resolve, reject) => {
       try {
@@ -77,7 +78,7 @@ _listeners.push({
           ? runtime.getView(msg.source)
           : null;
         if (view) {
-          view.listeners = view.listeners.filter((l) => {
+          view.listeners = view.listeners.filter((l : FDC3Listener) => {
             return l.listenerId !== id;
           });
         }
@@ -140,7 +141,7 @@ _listeners.push({
           const target = runtime.getView(targetId);
           const viewListeners: Array<ViewListener> = [];
           if (target) {
-            target.listeners.forEach((l) => {
+            target.listeners.forEach((l: FDC3Listener) => {
               if (!l.intent) {
                 if (
                   !l.contextType ||
@@ -154,7 +155,7 @@ _listeners.push({
               }
             });
             if (viewListeners.length > 0) {
-              viewListeners.forEach((viewL) => {
+              viewListeners.forEach((viewL : ViewListener) => {
                 const data = {
                   listenerId: viewL.listenerId,
                   eventId: msg.data.eventId,
@@ -448,7 +449,7 @@ _listeners.push({
       const view = runtime.getView(msg.source);
       if (view) {
         joinViewToChannel('default', view);
-        resolve();
+        resolve(null);
       } else {
         reject('View not found');
       }

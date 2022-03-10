@@ -98,7 +98,7 @@ app.on('web-contents-created', (_, contents) => {
   contents.setWindowOpenHandler(({ url }) => {
     const { origin } = new URL(url);
 
-    // @ts-expect-error Type checking is performed in runtime
+    // '@ts-expect-error' Type checking is performed in runtime
     if (ALLOWED_EXTERNAL_ORIGINS.has(origin)) {
       // Open default browser
       shell.openExternal(url).catch(console.error);

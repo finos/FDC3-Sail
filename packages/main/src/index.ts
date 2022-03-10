@@ -56,7 +56,7 @@ export const createWindow = (): Promise<BrowserWindow> => {
  */
 export const getRuntime = (): Runtime => {
   if (!runtime) {
-    runtime = new Runtime(app);
+    runtime = new Runtime();
   }
   return runtime;
 };
@@ -89,7 +89,7 @@ app.on('window-all-closed', () => {
  * @see https://www.electronjs.org/docs/v14-x-y/api/app#event-activate-macos Event: 'activate'
  */
 app.on('activate', () => {
-  runtime = new Runtime(app);
+  runtime = new Runtime();
   createWindow();
 });
 
@@ -99,7 +99,7 @@ app.on('activate', () => {
 app
   .whenReady()
   .then(() => {
-    runtime = new Runtime(app);
+    runtime = new Runtime();
     // restoreOrCreateWindow();
     createWindow();
   })

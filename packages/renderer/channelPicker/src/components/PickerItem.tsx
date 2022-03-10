@@ -4,7 +4,6 @@ import { styled } from '@mui/material/styles';
 import {TOPICS} from '../../../../main/src/constants';
 
 
-
 class PickerItem extends React.Component {
   
     constructor(props) {

@@ -45,38 +45,6 @@ export class RuntimeListener {
   constructor(runtime: Runtime) {
     this.runtime = runtime;
 
-    ipcMain.on(TOPICS.SAVE_ENTITY, (event, args) => {
-      console.log('context menu', args);
-    });
-
-    ipcMain.on(TOPICS.CONTEXT_MENU, (event, args) => {
-      const view = this.runtime.getView(args.source);
-      if (view && view.directoryData && view.directoryData.name) {
-        args.detail.appName = view.directoryData.name;
-      }
-      const template: any = [
-        {
-          label: 'Save',
-          click: () => {
-            //document.dispatchEvent(new CustomEvent(TOPICS.SAVE_ENTITY, args.detail) );
-
-            this.postFrame(args.detail);
-          },
-        },
-        { type: 'separator' },
-        { label: 'Menu Item 2', type: 'checkbox', checked: true },
-      ];
-      const menu = Menu.buildFromTemplate(template);
-      menu.popup();
-    });
-
-    ipcMain.on(TOPICS.SIGN_IN, (event, args) => {
-      const workspace = this.runtime.getWorkspace(args.source);
-      if (workspace) {
-        workspace.createView('http://localhost:3003/login');
-      }
-    });
-
     ipcMain.on(TOPICS.FDC3_GET_ACTION_URL, async (event, args) => {
       const directoryUrl = await utils.getDirectoryUrl();
       const templateR = await fetch(
@@ -152,7 +120,7 @@ export class RuntimeListener {
                   workspace.addTab(draggedView.id);
                 });
               }
-              resolve();
+              resolve(null);
             });
           },
         });
