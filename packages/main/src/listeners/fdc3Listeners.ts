@@ -195,39 +195,55 @@ _listeners.push({
           }
 
           //if there is a channel, filter on channel
-          //to filter on channel, check the listener channel andthe view channel (its channel membe)
-          const viewListeners: Array<ViewListener> = [];
-          runtime.getViews().forEach((v) => {
-            v.listeners.forEach((l : FDC3Listener) => {
-              const matchChannel = l.channel
-                ? l.channel
-                : v.channel
-                ? v.channel
-                : 'default';
+          //to filter on channel, check the listener channel andthe view channel (its channel member)
+          //loop through all views
+          runtime.getViews().forEach((v: View) => {
+            //for each view, aggregate applicable listener ids
+            //listener must match on channel and context type
+            const viewListeners: Array<string> = [];
+            v.listeners.forEach((l: FDC3Listener) => {
+              console.log('viewListener (1st pass)', l);
+              const matchChannel =
+                l.channel && l.channel !== 'default'
+                  ? l.channel
+                  : v.channel
+                  ? v.channel
+                  : 'default';
               if (matchChannel === channel) {
+                console.log(
+                  'broadcast - matched channel, contextType ',
+                  l.contextType,
+                );
                 if (l.contextType) {
-                  if (l.contextType === msg.data.context.type) {
-                    viewListeners.push({ view: v, listenerId: l.listenerId });
+                  console.log(
+                    'contextType match',
+                    l.contextType === msg.data.context.type,
+                  );
+                  if (
+                    l.contextType === msg.data.context.type &&
+                    viewListeners.indexOf(l.listenerId) === -1
+                  ) {
+                    viewListeners.push(l.listenerId);
                   }
-                } else {
-                  viewListeners.push({ view: v, listenerId: l.listenerId });
+                } else if (viewListeners.indexOf(l.listenerId) === -1) {
+                  console.log('push listener ', l.listenerId);
+                  viewListeners.push(l.listenerId);
                 }
               }
             });
-          });
-          viewListeners.forEach((viewL) => {
-            const data = {
-              listenerId: viewL.listenerId,
-              eventId: msg.data.eventId,
-              ts: msg.data.ts,
-              context: msg.data.context,
-            };
-            viewL.view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
-              topic: 'context',
-              listenerId: viewL.listenerId,
-              data: data,
-              source: msg.source,
-            });
+            //if there are listeners found, broadcast the context to the view (with all listenerIds)
+            if (viewListeners.length > 0) {
+              v.content.webContents.send(TOPICS.FDC3_CONTEXT, {
+                topic: 'context',
+                listenerIds: viewListeners,
+                data: {
+                  eventId: msg.data.eventId,
+                  ts: msg.data.ts,
+                  context: msg.data.context,
+                },
+                source: msg.source,
+              });
+            }
           });
         }
         resolve(null);
@@ -352,6 +368,7 @@ _listeners.push({
         if (instanceId && view) {
           console.log(
             'addContextLister ',
+            msg.data.id,
             instanceId,
             instanceListeners,
             pending_instance_context,
@@ -392,9 +409,15 @@ _listeners.push({
 
         //use channel from the event message first, or use the channel of the sending app, or use default
         const channel: string =
-          msg.data !== null && msg.data.channel ? msg.data.channel : 'default'; //: (c && c.channel) ? c.channel
+          msg.data && msg.data.channel
+            ? msg.data.channel
+            : view && view.channel
+            ? view.channel
+            : 'default'; //: (c && c.channel) ? c.channel
 
         if (view) {
+          console.log('adding listener', msg.data.id);
+
           view.listeners.push({
             listenerId: msg.data.id,
             viewId: view.id,
@@ -402,12 +425,13 @@ _listeners.push({
             channel: channel,
             isChannel: channel !== 'default',
           });
+          console.log('view listeners', view.listeners);
 
           /*
               are there any pending contexts for the listener just added? 
               */
           if (view.pendingContexts && view.pendingContexts.length > 0) {
-            view.pendingContexts.forEach((pending : Pending, i : number) => {
+            view.pendingContexts.forEach((pending: Pending, i: number) => {
               //is there a match on contextType (if specified...)
               if (
                 pending.context &&
@@ -511,6 +535,7 @@ export const joinViewToChannel = (
   restoreOnly?: boolean,
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
+    console.log('joinViewToChannel', channel);
     const runtime = getRuntime();
     try {
       //get the previous channel
@@ -1038,17 +1063,29 @@ _listeners.push({
             r.sort((a, b) => {
               //let aTitle = a.details.directoryData ? a.details.directoryData.title : a.details.view.content.webContents.getURL();
               // let bTitle = b.details.directoryData ? b.details.directoryData.title : b.details.view.content.webContents.getURL();
-              if (a.details){
+              if (a.details) {
                 a.details.title = getTitle(a);
               }
-              if (b.details){
+              if (b.details) {
                 b.details.title = getTitle(b);
               }
 
-              if ((a.details && a.details.title && b.details && b.details.title) && a.details.title < b.details.title) {
+              if (
+                a.details &&
+                a.details.title &&
+                b.details &&
+                b.details.title &&
+                a.details.title < b.details.title
+              ) {
                 return -1;
               }
-              if ((a.details && a.details.title && b.details && b.details.title) && a.details.title > b.details.title) {
+              if (
+                a.details &&
+                a.details.title &&
+                b.details &&
+                b.details.title &&
+                a.details.title > b.details.title
+              ) {
                 return 1;
               } else {
                 return 0;

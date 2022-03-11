@@ -102,7 +102,7 @@ export class View {
     console.log('create view', url, config);
 
     this.content.webContents.on('ipc-message', (event, channel) => {
-      console.log('ipc-message', event);
+      console.log('ipc-message', event.type);
       if (channel === TOPICS.FDC3_INITIATE && !this.initiated) {
         initView(config);
       }

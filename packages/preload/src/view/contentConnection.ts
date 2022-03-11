@@ -28,7 +28,6 @@ ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
     id = args.id;
     //handle directory metadata
     if (args.directory) {
-      directoryData = args.directory;
       //is there actions meta data defined? If so, wire up listeners if intents and context metadata are there
       const actions = args.directory.actions || null;
 
@@ -65,6 +64,7 @@ ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
             };
             sendMessage(msg);
             //ipcRenderer.send("FDC3:addContextListener",{"data": {id: guid, context:context.type}});
+            console.log('context pushed', context.type);
             _contextHandlers.push(context.type);
           });
         }
@@ -103,8 +103,6 @@ const _intentHandlers: Array<string> = [];
 const _contextHandlers: Array<string> = [];
 let contentActions: any = null;
 let contentName: string | null = null;
-//let currentChannel: string | null = null;
-let directoryData: any = null;
 
 const sendMessage = (msg: FDC3Message) => {
   const { port1, port2 } = new MessageChannel();
@@ -120,7 +118,7 @@ const sendMessage = (msg: FDC3Message) => {
       returnListeners.delete(msg.name);
     }
   };
-
+  console.log('send message to main', msg.topic, msg);
   ipcRenderer.postMessage(`FDC3:${msg.topic}`, msg, [port2]);
 };
 
@@ -231,11 +229,11 @@ export const connect = () => {
    * listen for incomming contexts
    */
   ipcRenderer.on(TOPICS.FDC3_CONTEXT, async (event, args) => {
-    console.log('ipcrenderer event', event);
+    console.log('ipcrenderer event', event.type, args);
     //check for handlers at the content script layer (automatic handlers) - if not, dispatch to the API layer...
-    let contextSent = false;
+    //   let contextSent = false;
     if (args.data && args.data.context) {
-      if (
+      /*     if (
         _contextHandlers.indexOf(args.data.context.type) > -1 &&
         directoryData.hasActions
       ) {
@@ -253,14 +251,37 @@ export const connect = () => {
         }
         //focus the actual tab
         //window.focus();
-      }
-      if (!contextSent) {
+      }*/
+      // if (!contextSent) {
+      //if there is a listenerId collection, unpack this and fire a separate event for each listener
+
+      if (args.listenerIds) {
+        const listeners: Array<string> = args.listenerIds;
+        listeners.forEach((listenerId) => {
+          const data = args.data;
+          data.listenerId = listenerId;
+          console.log(
+            'connection dispatch context',
+            JSON.stringify(data),
+            args.source,
+          );
+          document.dispatchEvent(
+            new CustomEvent(TOPICS.FDC3_CONTEXT, {
+              detail: { data: data, source: args.source },
+            }),
+          );
+        });
+      } else if (args.listenerId) {
+        const data = args.data;
+        data.listenerId = args.listenerId;
         document.dispatchEvent(
           new CustomEvent(TOPICS.FDC3_CONTEXT, {
-            detail: { data: args.data, source: args.source },
+            detail: { data: data, source: args.source },
           }),
         );
       }
+
+      // }
     }
   });
 

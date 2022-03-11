@@ -158,7 +158,7 @@ export class RuntimeListener {
 
     ipcMain.on(TOPICS.FRAME_DEV_TOOLS, (event, args) => {
       //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS && sourceWS.window) {
         sourceWS.window.webContents.openDevTools();
@@ -167,7 +167,7 @@ export class RuntimeListener {
 
     ipcMain.on(TOPICS.TAB_DEV_TOOLS, (event, args) => {
       //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS && sourceWS.selectedTab) {
         const selectedTab = this.runtime.getView(sourceWS.selectedTab);
@@ -178,7 +178,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS) {
         sourceWS.loadSearchResults(args.results);
@@ -186,7 +186,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.NAVIGATE, (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const workspace = this.runtime.getWorkspace(args.source);
       if (workspace) {
         workspace.createView(args.url);
@@ -194,7 +194,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.HIDE_WINDOW, (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const workspace = this.runtime.getWorkspace(args.source);
       if (workspace) {
         switch (args.target) {
@@ -209,7 +209,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.RES_PICK_CHANNEL, (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS) {
         sourceWS.showChannelWindow();
@@ -217,7 +217,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.JOIN_CHANNEL, (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS) {
         sourceWS.setChannel(args.channel);
@@ -225,7 +225,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.RES_RESOLVE_INTENT, async (event, args) => {
-      console.log('ipc-event', event);
+      console.log('ipc-event', event.type);
       console.log('resolveIntent', args);
 
       //TODO: autojoin the new app to the channel which the 'open' call is sourced from

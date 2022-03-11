@@ -118,7 +118,7 @@ export class Runtime {
     const result: Map<string, Array<FDC3Listener>> = new Map(); //intentListeners.get(intent);
 
     this.getViews().forEach((view) => {
-      view.listeners.forEach((l : FDC3Listener) => {
+      view.listeners.forEach((l: FDC3Listener) => {
         //if the listener doesn't have an intent, its a context listener
         if (!l.intent) {
           //resolve the channel, prefer the channel on the listener, or default to the channel of the view (if any)

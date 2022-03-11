@@ -21,7 +21,7 @@ export const createWindow = (): Promise<BrowserWindow> => {
 
     if (window === undefined) {
       const url = new URL(
-        '../view/dist/index.html',
+        '../renderer/dist/defaultView/index.html',
         'file://' + __dirname,
       ).toString();
       runtime.createView(url).then(

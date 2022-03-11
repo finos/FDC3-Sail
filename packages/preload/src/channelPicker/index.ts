@@ -11,7 +11,7 @@ ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
 });
 
 ipcRenderer.on(TOPICS.CHANNEL_SELECTED, (event, args) => {
-  console.log('ipc-event', event);
+  console.log('ipc-event', event.type);
   channelSelected(args.channel);
 });
 

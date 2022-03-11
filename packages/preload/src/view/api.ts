@@ -94,11 +94,10 @@ export function createAPI() {
     };
 
     channel.addContextListener = (contextType?: any, handler?: any) => {
-      console.log('add context listener', contextType);
-
       const thisListener: ContextHandler = handler ? handler : contextType;
       const thisContextType: string = handler ? contextType : null;
       const listenerId: string = utils.guid();
+
       _contextListeners.set(
         listenerId,
         createListenerItem(listenerId, thisListener, thisContextType),
@@ -214,12 +213,11 @@ export function createAPI() {
     },
 
     addContextListener: (contextType: any, handler?: any) => {
-      console.log('add context listener');
       const thisListener: ContextHandler = handler ? handler : contextType;
       const thisContextType: string =
         contextType && handler ? contextType : null;
       const listenerId: string = utils.guid();
-
+      console.log('add context listener', listenerId);
       _contextListeners.set(
         listenerId,
         createListenerItem(listenerId, thisListener, thisContextType),
@@ -336,6 +334,7 @@ export function createAPI() {
   (document as any).addEventListener(
     TOPICS.FDC3_CONTEXT,
     (event: FDC3Event) => {
+      console.log('Context', JSON.stringify(_contextListeners));
       const listeners = _contextListeners;
       if (
         event.detail &&
