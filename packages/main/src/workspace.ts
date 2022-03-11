@@ -443,7 +443,7 @@ export class Workspace {
     });
   }
 
-  async showChannelWindow() {
+  async showChannelWindow(xOffset?: number, yOffset?: number) {
     if (!this.channelWindow) {
       await this.createChannelWindow();
     }
@@ -452,7 +452,10 @@ export class Workspace {
         selectedChannel: this.channel,
       });
       const winPos: number[] = this.window ? this.window.getPosition() : [0, 0];
-      this.channelWindow.setPosition(winPos[0] + 349, winPos[1] + 60);
+      this.channelWindow.setPosition(
+        winPos[0] + (xOffset || 0),
+        winPos[1] + (yOffset || 0),
+      );
       this.channelWindow.show();
       this.channelWindow.focus();
       this.channelWindow.on('blur', () => {

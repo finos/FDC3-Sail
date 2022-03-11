@@ -30,6 +30,7 @@ class PickerItem extends React.Component {
         if (!this.state.selected){
             document.dispatchEvent(new CustomEvent(TOPICS.JOIN_CHANNEL, {detail:{"channel":this.props.id}}));
             this.state.selected = true;
+            document.dispatchEvent(new CustomEvent(TOPICS.HIDE_WINDOW));
         }
         else {
             document.dispatchEvent(new CustomEvent(TOPICS.LEAVE_CHANNEL, {detail:{"channel":this.props.id}}));

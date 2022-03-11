@@ -214,10 +214,12 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.RES_PICK_CHANNEL, (event, args) => {
-      console.log('ipc-event', event.type);
+      console.log('ipc-event', event.type, args);
       const sourceWS = runtime.getWorkspace(args.source);
+      const mouseX: number = args.mouseX ? args.mouseX : 0;
+      const mouseY: number = args.mouseY ? args.mouseY : 0;
       if (sourceWS) {
-        sourceWS.showChannelWindow();
+        sourceWS.showChannelWindow(mouseX, mouseY);
       }
     });
 

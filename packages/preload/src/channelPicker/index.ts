@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { TOPICS } from '../../../main/src/constants';
+import { TOPICS, TARGETS } from '../../../main/src/constants';
 
 let workspaceId: string | null = null;
 let selected: string | null = null;
@@ -35,6 +35,14 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, (event, args) => {
     }
   },
 );
+
+(document as any).addEventListener(TOPICS.HIDE_WINDOW, () => {
+  console.log('hide channel window');
+  ipcRenderer.send(TOPICS.HIDE_WINDOW, {
+    source: workspaceId,
+    target: TARGETS.CHANNEL_PICKER,
+  });
+});
 
 (document as any).addEventListener(TOPICS.LEAVE_CHANNEL, () => {
   console.log('leave channel');

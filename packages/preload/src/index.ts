@@ -107,9 +107,16 @@ document.addEventListener(TOPICS.NEW_TAB_CLICK, () => {
   ipcRenderer.send(TOPICS.NEW_TAB, { source: id });
 });
 
-document.addEventListener(TOPICS.OPEN_CHANNEL_PICKER_CLICK, () => {
-  ipcRenderer.send(TOPICS.PICK_CHANNEL, { source: id });
-});
+(document as any).addEventListener(
+  TOPICS.OPEN_CHANNEL_PICKER_CLICK,
+  (event: CustomEvent) => {
+    ipcRenderer.send(TOPICS.RES_PICK_CHANNEL, {
+      source: id,
+      mouseX: event.detail.mouseX,
+      mouseY: event.detail.mouseY,
+    });
+  },
+);
 
 document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK, () => {
   ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS, { source: id });

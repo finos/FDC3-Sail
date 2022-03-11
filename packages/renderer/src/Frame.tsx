@@ -19,8 +19,9 @@ const newTab = () => {
     document.dispatchEvent(new CustomEvent(TOPICS.NEW_TAB_CLICK));
 };
 
-const openChannelPicker = () => {
-    document.dispatchEvent(new CustomEvent(TOPICS.OPEN_CHANNEL_PICKER_CLICK));
+const openChannelPicker = (event : MouseEvent) => {
+  const pickerButtonHeight = 40;
+    document.dispatchEvent(new CustomEvent(TOPICS.OPEN_CHANNEL_PICKER_CLICK, {detail:{mouseX:event.clientX, mouseY:(event.clientY + pickerButtonHeight)}}));
 };
 
 const openTabTools = () => {
