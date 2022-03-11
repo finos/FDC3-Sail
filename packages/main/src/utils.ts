@@ -29,10 +29,11 @@ const guid = (): string => {
 
 const getDirectoryUrl = (): Promise<string> => {
   return new Promise((resolve) => {
+    const productionDirectory = 'https://appd.kolbito.com';
     const url: string =
       import.meta.env.DEV && import.meta.env.VITE_DIRECTORY_URL
         ? `${import.meta.env.VITE_DIRECTORY_URL}`
-        : 'local';
+        : productionDirectory;
 
     if (url === 'local') {
       resolve(`http://localhost:${DirectoryPort}`);
