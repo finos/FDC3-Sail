@@ -144,6 +144,11 @@ export class RuntimeListener {
       utils.getDirectoryUrl().then((directoryUrl) => {
         fetch(`${directoryUrl}${args.query}`).then((response) => {
           response.json().then((result) => {
+            console.log(
+              'fetch from directory',
+              `${directoryUrl}${args.query}`,
+              result,
+            );
             const sourceWS = runtime.getWorkspace(args.source);
             if (sourceWS && sourceWS.window) {
               sourceWS.window.webContents.send(

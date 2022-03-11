@@ -5,6 +5,7 @@
 import { channels } from './system-channels';
 import { ConnectedApp, Channel } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
+import { DirectoryPort } from '../../../directory/src/config';
 
 const guid = (): string => {
   const gen = (n?: number): string => {
@@ -28,13 +29,16 @@ const guid = (): string => {
 
 const getDirectoryUrl = (): Promise<string> => {
   return new Promise((resolve) => {
-    // chrome.storage.sync.get(["appd_url"], (items) => {
-    // const r = (items.appd_url) ? items.appd_url : "https://appd.kolbito.com";
-    // console.log(r);
-    const r = 'https://appd.kolbito.com';
-    // const r = "http://localhost:3003";
-    resolve(r);
-    // });
+    const url: string =
+      import.meta.env.DEV && import.meta.env.VITE_DIRECTORY_URL
+        ? `${import.meta.env.VITE_DIRECTORY_URL}`
+        : 'local';
+
+    if (url === 'local') {
+      resolve(`http://localhost:${DirectoryPort}`);
+    } else {
+      resolve(url);
+    }
   });
 };
 
