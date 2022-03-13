@@ -1,69 +1,18 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' blob:"
+    />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+   <title>FDC3 Desktop Agent</title>
 
-  body {
-  
-  }
+  </head>
+  <body>
+      <div id="searchResults"></div>
+      <script src="./src/index.tsx" type="module"></script> 
+  </body>
 
-  #results {
-    margin: 0.3rem;
-    padding: 0.3rem 0.5rem;
-    list-style: none;
-    text-align: left;
-    font-size: 1rem;
-    color: #212121;
-    transition: all 0.1s ease-in-out;
-    border-radius: 0.35rem;
-    background-color: rgba(255, 255, 255, 1);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: all 0.2s ease;
-  }
-  
-  .result {
-    padding:3px;
-    font-family: sans-serif;
-    font-size: 13px;
-  }
-  .result::selection {
-    color: rgba(#ffffff, 0);
-    background-color: rgba(#ffffff, 0);
-  }
-  
-  .result:hover {
-    cursor: pointer;
-    background-color: rgba(255, 122, 122, 0.15);
-  }
-  
-  .highlighted {
-    color: rgba(255, 122, 122, 1);
-    font-weight: bold;
-  }
-  
-  .highlighted::selection {
-    color: rgba(#ffffff, 0);
-    background-color: rgba(#ffffff, 0);
-  }
-  
-  .selected {
-    cursor: pointer;
-    background-color: rgba(255, 122, 122, 0.15);
-  }
-  
-        </style>
-    </head>
-    <body>
-        
-        <div id="results-container">
-            <ul id="results">
-
-            </ul>
-        </div>
-    </body>
-    <script>
-
-
-    </script>
 </html>

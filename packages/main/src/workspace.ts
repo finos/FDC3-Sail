@@ -378,6 +378,7 @@ export class Workspace {
                 workspaceId: this.id,
               });
               console.log('results window created', this.resultsId);
+              // this.resultsWindow.webContents.openDevTools();
               resolve();
             }
           },
@@ -476,19 +477,22 @@ export class Workspace {
     }
     if (this.resultsWindow) {
       const winPos: number[] = this.window ? this.window.getPosition() : [0, 0];
-      this.resultsWindow.setSize(370, 30 + results.length * 20, false);
+      this.resultsWindow.setSize(370, 80 + results.length * 20, false);
 
-      this.resultsWindow.setPosition(winPos[0] + 9, winPos[1] + 60);
+      this.resultsWindow.setPosition(winPos[0] + 9, winPos[1] + 70);
 
       this.resultsWindow.showInactive();
       this.resultsWindow.webContents.send(TOPICS.RES_LOAD_RESULTS, {
         results: results,
       });
-      //   this.resultsWindow.webContents.openDevTools();
+      // this.resultsWindow.webContents.openDevTools();
       let hideTimer: NodeJS.Timeout | null = null;
-      hideTimer = setTimeout(() => {
+      /*hideTimer = setTimeout(() => {
         this.hideSearchResults();
-      }, 3000);
+      }, 3000);*/
+
+      //clear previous handlers
+      this.resultsWindow.removeAllListeners();
 
       this.resultsWindow.on('focus', () => {
         if (hideTimer) {
@@ -501,6 +505,8 @@ export class Workspace {
           this.hideSearchResults();
         }, 1000);
       });
+
+      this.resultsWindow.focus();
     }
   }
 

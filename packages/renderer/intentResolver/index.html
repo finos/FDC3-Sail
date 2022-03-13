@@ -1,73 +1,18 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <style>
-#fdc3-intent-resolver {
-     width:400px;
-     height:400px;
-     margin-left:-200px;
-     margin-top:-200px;
-     left:50%;
-     top:50%;
-     background-color:#444;
-     position:absolute;
-     z-index:9999;
-     font-family:sans-serif;
-     filter: drop-shadow(6px 4px 1px #969696);
- }
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' blob:"
+    />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+   <title>FDC3 Desktop Agent</title>
 
- #resolve-header {
-     height:25px;
-     color:#eee;
-     font-size: 18px;
-     width: 100%;
-     text-align: center;
-     padding-top: 10px;
- }
- 
- #resolve-subheader {
-     height:20px;
-     color:#eee;
-     font-size: 16px;
-     width: 100%;
-     text-align: center;
- }
- #resolve-list {
-     height:300px;
-     overflow:scroll;
-     margin:10px;
-     font-size:14px;
-     border-radius: 3px;
-     margin: 3px;
-     border: #333;
-     background-color: #555;
- }
- 
- #resolve-list .item {
-     color:#fff;
-     flexFlow:row;
-     height:20px;
-     padding:3px;
-     overflow:hidden;
- }
+  </head>
+  <body>
+      <div id="intentResults"></div>
+      <script src="./src/index.tsx" type="module"></script> 
+  </body>
 
-
- #resolve-list .item .icon {
-    height:20px;
-    padding-right:3px;
- }
- 
- #resolve-list .item:hover {
-     background-color:#999;
-     color:#ccc;
-     cursor: pointer;
- }
- </style>
-    </head>
-    <body>
-        <div id="root"></div>
-    </body>
-    <script>
- 
-
-    </script>
 </html>

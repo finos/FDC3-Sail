@@ -238,36 +238,8 @@ export class RuntimeListener {
       //TODO: autojoin the new app to the channel which the 'open' call is sourced from
 
       if (!args.selected.instanceId) {
-        //are there actions defined?
         const data: DirectoryApp = args.selected.directoryData;
 
-        const directoryUrl = await utils.getDirectoryUrl();
-        const hasActionsR = await fetch(
-          `${directoryUrl}/apps/${data.name}/actions`,
-          { headers: { 'Content-Type': 'application/json' }, method: 'GET' },
-        );
-        const hasActionsJSON = await hasActionsR.json();
-        const hasActions: boolean =
-          (hasActionsJSON.intents && hasActionsJSON.intents.length > 0) ||
-          (hasActionsJSON.contexts && hasActionsJSON.contexts.length > 0);
-        data.hasActions = hasActions;
-        if (hasActions) {
-          const body = { intent: args.intent, context: args.context };
-          const templateR = await fetch(
-            `${directoryUrl}/apps/${data.name}/action`,
-            {
-              headers: { 'Content-Type': 'application/json' },
-              method: 'POST',
-              body: JSON.stringify(body),
-            },
-          );
-          const action_url = await templateR.text();
-          //if we get a valid action url back, set that as the start and don't post pending data
-          if (action_url) {
-            data.start_url = action_url;
-            //  data.pending = false;
-          }
-        }
         //launch window
         const runtime = getRuntime();
         if (runtime) {
@@ -276,15 +248,8 @@ export class RuntimeListener {
             directoryData: data as DirectoryApp,
           });
 
-          //set pending intent and context, if not action drive (and intent needs to be applied after the app's initial load)
-          if (!data.hasActions) {
-            runtime.setPendingIntent(
-              view.id,
-              args.id,
-              args.intent,
-              args.context,
-            );
-          }
+          //set pending intent and context
+          runtime.setPendingIntent(view.id, args.id, args.intent, args.context);
         }
       } else {
         const view = this.runtime.getView(args.selected.instanceId);

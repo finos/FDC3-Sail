@@ -32,6 +32,11 @@ const openFrameTools = () => {
     document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
 };
 
+const hideResults = () => {
+  document.dispatchEvent(new CustomEvent(TOPICS.HIDE_RESULTS_WINDOW));
+}
+
+
 let value = "";
 
 interface FrameTab {
@@ -41,7 +46,6 @@ interface FrameTab {
 
 function Frame() {
 
-    
 
       // Handle Tab Button Click
     const [tabId, setTabId] = React.useState("0");
@@ -105,15 +109,31 @@ function Frame() {
         }
     });
 
-    const searchChange = (event : InputEvent) => {
+    const debounce = (callback : any, wait : number) => {
+      console.log("debounce called");
+      let timeoutId : number | undefined = undefined;
+      return (...args : any[]) => {
+        window.clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => {
+          console.log("debounce callback called");
+          callback.apply(null, args);
+        }, wait);
+      };
+    }
+
+    const searchChange = debounce((event : InputEvent) => {
+
         const threshold = 3;
         const input : HTMLInputElement = (event.target as HTMLInputElement);
+     
         const value = input && input.value ? input.value : "";
         //does the value meet the threshold
         if (value && value.length >= threshold){
+          
           document.dispatchEvent(new CustomEvent(TOPICS.SEARCH, {detail:{"query":value}}));
         }
-    };
+      
+    }, 500);
 
     return (
         <ThemeProvider theme={darkTheme}>
@@ -122,7 +142,7 @@ function Frame() {
         <AppBar position="static" color="inherit">
             <div id="controlsContainer">
                 <Stack direction="row">
-                    <TextField id="search" label="Search" variant="outlined" size="small" onChange={searchChange} fullWidth/>
+                    <TextField id="search" label="Search" variant="outlined" size="small" onFocus={hideResults} onChange={searchChange} fullWidth/>
                     <ButtonGroup>
                     <div id="channelButton">
                       <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>

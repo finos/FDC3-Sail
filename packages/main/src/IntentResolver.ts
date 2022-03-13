@@ -66,7 +66,7 @@ export class IntentResolver {
     // and load the index.html of the app.
     if (RESOLVER_CONTENT) {
       this.window.loadURL(RESOLVER_CONTENT as string).then(() => {
-        //     this.window.webContents.openDevTools();
+        // this.window.webContents.openDevTools();
         this.window.webContents.send(TOPICS.WINDOW_START, {
           id: this.id,
           intent: this.intent,

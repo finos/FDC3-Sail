@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { contextBridge } from 'electron';
 import { channels } from '../../main/src/system-channels';
-import { TOPICS } from '../../main/src/constants';
+import { TOPICS, TARGETS } from '../../main/src/constants';
 
 //flag to indicate the background script is ready for fdc3!
 let connected = true;
@@ -99,6 +99,12 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
   });
 });
 
+document.addEventListener(TOPICS.HIDE_RESULTS_WINDOW, () => {
+  ipcRenderer.send(TOPICS.HIDE_WINDOW, {
+    source: id,
+    target: TARGETS.SEARCH_RESULTS,
+  });
+});
 /*
     Listen for UI Events
 */
