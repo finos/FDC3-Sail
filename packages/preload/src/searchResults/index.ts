@@ -28,12 +28,6 @@ ipcRenderer.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
         source: workspaceId,
         data: { name: selection },
       });
-    } else if (result.start_url) {
-      ipcRenderer.send(TOPICS.NAVIGATE, {
-        url: result.start_url,
-        target: 'tab',
-        source: workspaceId,
-      });
     }
     ipcRenderer.send(TOPICS.HIDE_WINDOW, {
       source: workspaceId,

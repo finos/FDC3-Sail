@@ -45,30 +45,6 @@ export class RuntimeListener {
   constructor(runtime: Runtime) {
     this.runtime = runtime;
 
-    ipcMain.on(TOPICS.FDC3_GET_ACTION_URL, async (event, args) => {
-      const directoryUrl = await utils.getDirectoryUrl();
-      const templateR = await fetch(
-        `${directoryUrl}/apps/${args.data.appName}/action`,
-        { method: 'POST', body: JSON.stringify(args.data) },
-      );
-      const actionR = await templateR.text();
-      const source = this.runtime.getView(args.source);
-      console.log('sending action URL', actionR);
-      if (source && source.content && source.content.webContents) {
-        source.content.webContents.send(`FDC3:${args.eventId}`, {
-          data: actionR,
-        });
-      } else {
-        setTimeout(() => {
-          if (source && source.content) {
-            source.content.webContents.send(`FDC3:${args.eventId}`, {
-              data: actionR,
-            });
-          }
-        }, 300);
-      }
-    });
-
     ipcMain.on(TOPICS.SELECT_TAB, (event, args) => {
       //bring selected browserview to front
       const workspace = this.runtime.getWorkspace(args.source);
@@ -187,14 +163,6 @@ export class RuntimeListener {
       const sourceWS = runtime.getWorkspace(args.source);
       if (sourceWS) {
         sourceWS.loadSearchResults(args.results);
-      }
-    });
-
-    ipcMain.on(TOPICS.NAVIGATE, (event, args) => {
-      console.log('ipc-event', event.type);
-      const workspace = this.runtime.getWorkspace(args.source);
-      if (workspace) {
-        workspace.createView(args.url);
       }
     });
 
