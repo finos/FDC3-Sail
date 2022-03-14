@@ -175,6 +175,18 @@ export class View {
     return this.type === 'system';
   };
 
+  getTitle(): string {
+    //is it a system view?
+    console.log('View getTitle', this.isSystemView());
+    if (this.isSystemView()) {
+      return 'Home';
+    } else {
+      return this.directoryData && this.directoryData.title
+        ? this.directoryData.title
+        : this.content.webContents.getTitle();
+    }
+  }
+
   close() {
     const runtime = getRuntime();
     if (this.parent && this.parent.window) {

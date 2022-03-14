@@ -771,51 +771,40 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
   return new Promise((resolve, reject) => {
     //find the app to route to
     try {
-      const sType = msg.selected ? msg.selected.type : undefined;
       const sView =
         msg.selected && msg.selected.details && msg.selected.details.instanceId
           ? getRuntime().getView(msg.selected.details.instanceId)
           : null;
       const source = msg.source;
       if (msg.intent) {
-        if (sType === 'window') {
-          const listeners = getRuntime().getIntentListeners(msg.intent);
-          //let keys = Object.keys(listeners);
-          let appId: string | undefined = undefined;
-          const id = (sView && sView.id) || undefined;
-          listeners.forEach((listener) => {
-            if (listener.source === id) {
-              appId = listener.source;
-            }
-          });
+        const listeners = getRuntime().getIntentListeners(msg.intent);
+        //let keys = Object.keys(listeners);
+        let appId: string | undefined = undefined;
+        const id = (sView && sView.id) || undefined;
+        listeners.forEach((listener) => {
+          if (listener.source === id) {
+            appId = listener.source;
+          }
+        });
 
-          if (appId) {
-            console.log('send intent from source', source);
-            const app = getRuntime().getView(appId);
-            if (app && app.content) {
-              app.content.webContents.send(TOPICS.FDC3_INTENT, {
-                topic: 'intent',
-                data: { intent: msg.intent, context: msg.context },
-                source: source,
-              });
-              //bringing the tab to front conditional on the type of intent
-              /*if (! utils.isDataIntent(msg.intent)){
+        if (appId) {
+          console.log('send intent from source', source);
+          const app = getRuntime().getView(appId);
+          if (app && app.content) {
+            app.content.webContents.send(TOPICS.FDC3_INTENT, {
+              topic: 'intent',
+              data: { intent: msg.intent, context: msg.context },
+              source: source,
+            });
+            //bringing the tab to front conditional on the type of intent
+            /*if (! utils.isDataIntent(msg.intent)){
                           utils.bringToFront(appId); 
                       }*/
-              const id = (sView && sView.id) || null;
-              resolve({ source: id, version: '1.0', tab: id });
-            }
+            const id = (sView && sView.id) || null;
+            resolve({ source: id, version: '1.0', tab: id });
           }
-        } else if (sType === 'directory') {
-          const directoryData =
-            msg.selected &&
-            msg.selected.details &&
-            msg.selected.details.directoryData;
-          let start_url = directoryData && directoryData.start_url;
-          const appName = directoryData && directoryData.name;
-          let pending = true;
-  
         }
+
         //keep array of pending, id by url,  store intent & context, timestamp
         //when a new window connects, throw out anything more than 2 minutes old, then match on url
       }
@@ -941,8 +930,8 @@ _listeners.push({
               r[0].type === 'directory' &&
               r[0].details.directoryData
             ) {
-              let start_url = r[0].details.directoryData.start_url;
-              let pending = true;
+              const start_url = r[0].details.directoryData.start_url;
+              const pending = true;
 
               //let win = window.open(start_url,"_blank");
               const view = getRuntime()

@@ -538,10 +538,7 @@ export class Workspace {
                 if (this.window) {
                   this.window.webContents.send(TOPICS.ADD_TAB, {
                     viewId: view.id,
-                    title:
-                      view.directoryData && view.directoryData.title
-                        ? view.directoryData.title
-                        : view.content.webContents.getTitle(),
+                    title: view.getTitle(),
                   });
                   if (this.channel && view.channel !== this.channel) {
                     await joinViewToChannel(this.channel, view);
@@ -567,10 +564,7 @@ export class Workspace {
         if (this.window) {
           this.window.webContents.send(TOPICS.ADD_TAB, {
             viewId: view.id,
-            title:
-              view.directoryData && view.directoryData.title
-                ? view.directoryData.title
-                : view.content.webContents.getTitle(),
+            title: view.getTitle(),
           });
 
           this.setSelectedTab(view.id);
