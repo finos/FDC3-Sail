@@ -4,6 +4,7 @@ import {TextField, IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, St
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {TOPICS} from '../../main/src/constants';
 import { PostAdd, HiveOutlined, ConstructionOutlined, CloseOutlined } from "@mui/icons-material";
+import { getTabId } from '@mui/base';
 
 
 const darkTheme = createTheme({
@@ -40,137 +41,139 @@ const hideResults = () => {
 let value = "";
 
 interface FrameTab {
-  value : string;
-  label: string;
+  tabId : string;
+  tabName: string;
 };
 
-function Frame() {
+export class Frame extends React.Component {
+
+      constructor(props : any) {
+        super(props);
+        this.state = {tabs: [], selectedTab : null};
+      }
 
 
-      // Handle Tab Button Click
-    const [tabId, setTabId] = React.useState("0");
-    const handleTabChange = (event : React.SyntheticEvent, newTabId : string) => {
-        if (event && newTabId === "tabProperties") {
-        handleAddTab();
+    handleTabChange(newTabId : string){
+      console.log("tab selected", newTabId);
+        if (newTabId === "tabProperties") {
+          newTab();
         } else {
         value = newTabId;
-        setTabId(newTabId);
+        this.setState({selectedTab:newTabId});
         
         document.dispatchEvent(new CustomEvent(TOPICS.SELECT_TAB, {detail:{
             selected:newTabId
           }}));
         }
-    };
+    }
 
-      // Handle Add Tab Button
-    const [tabs, setAddTab] = React.useState<Element[]>([]);
 
-    const handleAddTab = () => {
-       /* maxTabIndex++;
-        setAddTab([
-        ...tabs,
-        <Tab label={`New Tab ${maxTabIndex}`} value={maxTabIndex} />
-        ]);*/
-        newTab();
-       // handleTabsContent();
-    };
+    closeTab(tabId : string) {
 
-    const closeTab = (tabId : string) => {
       document.dispatchEvent(new CustomEvent(TOPICS.CLOSE_TAB, {detail:{
         tabId:tabId
       }}));
-      setAddTab(tabs.filter((tab) => { return (tab as any).value !==  tabId;}));
-    };
-
-    const handleNewTab = (tabName : string, tabValue : string) => {
-        value = tabValue;
-
-        setAddTab([
-        ...tabs,
-        <Tab label={tabName} value={tabValue} iconPosition="end" icon={<CloseOutlined onClick={() => {closeTab(tabValue);}}/>} />
-        ]);
-        
-       // handleTabsContent();
-    };
-
-    (document as any).addEventListener(TOPICS.ADD_TAB,(event : CustomEvent) => {
-        const tabId = event.detail.viewId;
-        const tabName = event.detail.title;
-        handleNewTab(tabName, tabId);
-
-        const content = document.createElement("div");
-        content.id = `content_${tabId}`;
-        content.className = "content";
-        const contentContainer = document.getElementById("contentContainer");
-        if (contentContainer){
-          contentContainer.appendChild(content);
-          //select the new Tab?
-          //selectTab(tabId);
-        }
-    });
-
-    const debounce = (callback : any, wait : number) => {
-      console.log("debounce called");
-      let timeoutId : number | undefined = undefined;
-      return (...args : any[]) => {
-        window.clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => {
-          console.log("debounce callback called");
-          callback.apply(null, args);
-        }, wait);
-      };
+      this.setState({tabs:this.state.tabs.filter((tab : FrameTab) => { return tab.tabId !==  tabId;})});
     }
 
-    const searchChange = debounce((event : InputEvent) => {
-
-        const threshold = 3;
-        const input : HTMLInputElement = (event.target as HTMLInputElement);
-     
-        const value = input && input.value ? input.value : "";
-        //does the value meet the threshold
-        if (value && value.length >= threshold){
-          
-          document.dispatchEvent(new CustomEvent(TOPICS.SEARCH, {detail:{"query":value}}));
-        }
-      
-    }, 500);
-
-    return (
-        <ThemeProvider theme={darkTheme}>
-        <Paper>
-           
-        <AppBar position="static" color="inherit">
-            <div id="controlsContainer">
-                <Stack direction="row">
-                    <TextField id="search" label="Search" variant="outlined" size="small" onFocus={hideResults} onChange={searchChange} fullWidth/>
-                    <ButtonGroup>
-                    <div id="channelButton">
-                      <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
-                    </div>
-                    
-                    <Button size="small" variant="contained" id="frameDevTools" onClick={openFrameTools} endIcon={<ConstructionOutlined/>} title="Open Dev Tools for the Workspace Frame">Frame</Button>
-                    <Button size="small"  variant="contained" id="tabDevTools" onClick={openTabTools} endIcon={<ConstructionOutlined/>}  title="Open Dev Tools for the View">View</Button>
-                </ButtonGroup>
-                </Stack>
-            </div>
-            <Tabs
-          value={value}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons
-
-        >
-          {tabs.map(child => child)}
-          <Tab icon={<PostAdd />} value="tabProperties"/>
-        </Tabs>
-        </AppBar>
+    handleNewTab(tabName : string, tabId : string) {
         
-  
-        </Paper>
+        this.setState({tabs:[...this.state.tabs,{tabId:tabId, tabName:tabName}], selectedTab:tabId});
+      //  ...tabs,
+      //  <Tab label={tabName} value={tabValue} iconPosition="end" icon={<CloseOutlined onClick={() => {closeTab(tabValue);}}/>} />
+       // ]);
+        
+       // handleTabsContent();
+    }
 
-        </ThemeProvider>
-                  
-    );
+    componentDidMount() {
+      (document as any).addEventListener(TOPICS.ADD_TAB,(event : CustomEvent) => {
+          const tabId = event.detail.viewId;
+          const tabName = event.detail.title;
+          this.handleNewTab(tabName, tabId);
+
+          const content = document.createElement("div");
+          content.id = `content_${tabId}`;
+          content.className = "content";
+          const contentContainer = document.getElementById("contentContainer");
+          if (contentContainer){
+            contentContainer.appendChild(content);
+            //select the new Tab?
+            //selectTab(tabId);
+          }
+      });
+
+      (document as any).addEventListener(TOPICS.SELECT_TAB, (event : CustomEvent) => {
+        if (event.detail.selected){
+          this.setState({selectedTab:event.detail.selected});
+        }
+      });
+  }
+
+  render() {
+      const debounce = (callback : any, wait : number) => {
+        console.log("debounce called");
+        let timeoutId : number | undefined = undefined;
+        return (...args : any[]) => {
+          window.clearTimeout(timeoutId);
+          timeoutId = window.setTimeout(() => {
+            console.log("debounce callback called");
+            callback.apply(null, args);
+          }, wait);
+        };
+      }
+
+      const searchChange = debounce((event : InputEvent) => {
+
+          const threshold = 3;
+          const input : HTMLInputElement = (event.target as HTMLInputElement);
+      
+          const value = input && input.value ? input.value : "";
+          //does the value meet the threshold
+          if (value && value.length >= threshold){
+            
+            document.dispatchEvent(new CustomEvent(TOPICS.SEARCH, {detail:{"query":value}}));
+          }
+        
+      }, 500);
+
+      return (
+          <ThemeProvider theme={darkTheme}>
+          <Paper>
+            
+          <AppBar position="static" color="inherit">
+              <div id="controlsContainer">
+                  <Stack direction="row">
+                      <TextField id="search" label="Search" variant="outlined" size="small" onFocus={hideResults} onChange={searchChange} fullWidth/>
+                      <ButtonGroup>
+                      <div id="channelButton">
+                        <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
+                      </div>
+                      
+                      <Button size="small" variant="contained" id="frameDevTools" onClick={openFrameTools} endIcon={<ConstructionOutlined/>} title="Open Dev Tools for the Workspace Frame">Frame</Button>
+                      <Button size="small"  variant="contained" id="tabDevTools" onClick={openTabTools} endIcon={<ConstructionOutlined/>}  title="Open Dev Tools for the View">View</Button>
+                  </ButtonGroup>
+                  </Stack>
+              </div>
+              <Tabs
+            value={this.state.selectedTab}
+            onChange={(event, newTabId) => {this.handleTabChange(newTabId);}}
+            variant="scrollable"
+            scrollButtons="auto">
+            {this.state.tabs.map((tab : FrameTab) => 
+               <Tab label={tab.tabName} value={tab.tabId} iconPosition="end" icon={<CloseOutlined onClick={() => {this.closeTab(tab.tabId);}}/>} />  
+            )}
+            <Tab icon={<PostAdd />} value="tabProperties"/>
+          </Tabs>
+          </AppBar>
+          
+    
+          </Paper>
+
+          </ThemeProvider>
+                    
+      );
+  }
 }
 
 /**

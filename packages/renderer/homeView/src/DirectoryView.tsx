@@ -1,20 +1,10 @@
 import React from 'react';
 import {Paper, Card, CardContent, CardMedia, Typography, CardActions, Button, Grid} from '@mui/material';
 import {TOPICS} from '../../../main/src/constants';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import {DirectoryApp, DirectoryIcon} from "../../../main/src/types/FDC3Data";
+import {DirectoryApp} from "../../../main/src/types/FDC3Data";
 
 
-const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-      primary: {
-        main: '#1976d2',
-      },
-    },
-  });
-
-export class DirectoryView extends React.Component{
+export class DirectoryView extends React.Component {
 
     constructor(props) {
         super(props);
