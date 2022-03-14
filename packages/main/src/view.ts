@@ -14,11 +14,12 @@ import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
 import { Pending } from './types/Pending';
-import fetch from 'electron-fetch';
 import { TOPICS } from './constants';
 import { join } from 'path';
 
 const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
+
+const HOME_PRELOAD = join(__dirname, '../../preload/dist/homeView/index.cjs');
 
 const TOOLBAR_HEIGHT = 120;
 
@@ -56,27 +57,7 @@ export class View {
         }
       };
 
-      //if there are actions in the directory metadata, resolve these first...
-      if (this.directoryData && this.directoryData.hasActions) {
-        //if the app has actions defined in the appD, look those up (this is an extension of appD implemented by appd.kolbito.com)
-        //actions automate wiring context and intent handlers for apps with gettable end-points
-        utils.getDirectoryUrl().then((directoryUrl) => {
-          if (this.directoryData) {
-            fetch(
-              `${directoryUrl}/apps/${this.directoryData.name}/actions`,
-            ).then((actionsR) => {
-              actionsR.json().then((actions) => {
-                if (this.directoryData) {
-                  this.directoryData.actions = actions;
-                }
-                doInit();
-              });
-            });
-          }
-        });
-      } else {
-        doInit();
-      }
+      doInit();
     };
 
     this.id = utils.guid();
@@ -88,7 +69,7 @@ export class View {
 
     this.content = new BrowserView({
       webPreferences: {
-        preload: VIEW_PRELOAD,
+        preload: url ? VIEW_PRELOAD : HOME_PRELOAD,
         devTools: true,
         contextIsolation: true,
         // enableRemoteModule:false,
@@ -99,8 +80,6 @@ export class View {
     //set bgcolor so view doesn't bleed through to hidden tabs
     this.content.setBackgroundColor('#fff');
 
-    console.log('create view', url, config);
-
     this.content.webContents.on('ipc-message', (event, channel) => {
       console.log('ipc-message', event.type);
       if (channel === TOPICS.FDC3_INITIATE && !this.initiated) {
@@ -108,34 +87,44 @@ export class View {
       }
     });
 
-    this.content.webContents
-      .loadURL(url || (VIEW_DEFAULT as string))
-      .then(() => {
+    //if no URL is defined - then this is the Home view and a system view
+    if (!url) {
+      url = VIEW_DEFAULT as string;
+    }
+    if (url === (VIEW_DEFAULT as string)) {
+      this.type = 'system';
+    }
+
+    console.log('create view', url, this.type, config);
+
+    if (url) {
+      this.content.webContents.loadURL(url).then(() => {
         //   initView(config);
       });
 
-    //listen for reloads and reset id
-    this.content.webContents.on('devtools-reload-page', () => {
-      this.content.webContents.once('did-finish-load', () => {
-        this.content.webContents.send(TOPICS.FDC3_START, {
-          id: this.id,
-          directory: this.directoryData || null,
+      //listen for reloads and reset id
+      this.content.webContents.on('devtools-reload-page', () => {
+        this.content.webContents.once('did-finish-load', () => {
+          this.content.webContents.send(TOPICS.FDC3_START, {
+            id: this.id,
+            directory: this.directoryData || null,
+          });
+          console.log('FDC3 restart', this.id);
         });
-        console.log('FDC3 restart', this.id);
       });
-    });
 
-    //listen for navigation
-    //to do: ensure directory entry and new location match up!
-    this.content.webContents.on('did-navigate', () => {
-      this.content.webContents.once('did-finish-load', () => {
-        this.content.webContents.send(TOPICS.FDC3_START, {
-          id: this.id,
-          directory: this.directoryData || null,
+      //listen for navigation
+      //to do: ensure directory entry and new location match up!
+      this.content.webContents.on('did-navigate', () => {
+        this.content.webContents.once('did-finish-load', () => {
+          this.content.webContents.send(TOPICS.FDC3_START, {
+            id: this.id,
+            directory: this.directoryData || null,
+          });
+          console.log('FDC3 restart', this.id);
         });
-        console.log('FDC3 restart', this.id);
       });
-    });
+    }
   }
   /**
    * size the view to the parent
@@ -178,6 +167,13 @@ export class View {
   parent?: Workspace;
 
   initiated = false;
+
+  private type: 'system' | 'app' = 'app';
+
+  isSystemView = (): boolean => {
+    console.log('isSystemView', this.type);
+    return this.type === 'system';
+  };
 
   close() {
     const runtime = getRuntime();

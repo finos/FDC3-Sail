@@ -20,11 +20,7 @@ export const createWindow = (): Promise<BrowserWindow> => {
     };
 
     if (window === undefined) {
-      const url = new URL(
-        '../renderer/dist/defaultView/index.html',
-        'file://' + __dirname,
-      ).toString();
-      runtime.createView(url).then(
+      runtime.createView().then(
         (view) => {
           if (view.parent && view.parent.window) {
             window = view.parent.window;

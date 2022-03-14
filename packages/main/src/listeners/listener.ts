@@ -1,6 +1,6 @@
 import { listeners as fdc33Listeners } from './fdc3Listeners';
 import { Listener } from '../types/Listener';
-import { ipcMain } from 'electron';
+import { ipcMain, WebContents } from 'electron';
 import { Runtime } from '../runtime';
 import { Workspace } from '../workspace';
 import { getRuntime } from '../index';
@@ -11,7 +11,6 @@ import { screen } from 'electron';
 import utils from '../utils';
 import fetch from 'electron-fetch';
 import { TOPICS, TARGETS } from '../constants';
-//import { ipcRenderer } from 'electron';
 
 /**
  * find workspace on a screen coordinate
@@ -117,6 +116,7 @@ export class RuntimeListener {
     });*/
 
     ipcMain.on(TOPICS.FETCH_FROM_DIRECTORY, (event, args) => {
+      console.log('ipcRenderer', event.type);
       utils.getDirectoryUrl().then((directoryUrl) => {
         fetch(`${directoryUrl}${args.query}`).then((response) => {
           response.json().then((result) => {
@@ -125,12 +125,33 @@ export class RuntimeListener {
               `${directoryUrl}${args.query}`,
               result,
             );
-            const sourceWS = runtime.getWorkspace(args.source);
-            if (sourceWS && sourceWS.window) {
-              sourceWS.window.webContents.send(
-                `${TOPICS.FETCH_FROM_DIRECTORY}-${args.query}`,
-                { data: result },
-              );
+
+            //request can come frome 2 types of (priviledged) sources: the workspace UI and views
+            //if the sourceType is View.  We need to check that the view is a 'system' view and can access the directory
+            //through this API.  Today, this is only the 'home' view.
+            let wContents: WebContents | undefined = undefined;
+
+            if (args.sourceType && args.sourceType === 'view') {
+              //ensure this is a view that has permissions for this api
+              const sourceView = runtime.getView(args.source);
+              if (
+                sourceView &&
+                sourceView.isSystemView() &&
+                sourceView.content
+              ) {
+                wContents = sourceView.content.webContents;
+              }
+            } else {
+              const sourceWS = runtime.getWorkspace(args.source);
+              if (sourceWS && sourceWS.window) {
+                wContents = sourceWS.window.webContents;
+              }
+            }
+
+            if (wContents) {
+              wContents.send(`${TOPICS.FETCH_FROM_DIRECTORY}-${args.query}`, {
+                data: result,
+              });
             }
           });
         });

@@ -576,7 +576,7 @@ export class Workspace {
           this.setSelectedTab(view.id);
 
           // this.window.addBrowserView(view.content);
-          console.log('createView - join view to channel', this.channel);
+          console.log('createView - join view to channel', url, this.channel);
           if (this.channel) {
             joinViewToChannel(this.channel, view).then(
               () => {

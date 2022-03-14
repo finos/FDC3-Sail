@@ -1,7 +1,7 @@
 import { contextBridge } from 'electron';
 import utils from '../../../main/src/utils';
 import { Listener as fdc3Listener } from '@finos/fdc3';
-import { Context, DisplayMetadata, ContextHandler } from '@finos/fdc3';
+import { Context, DisplayMetadata, ContextHandler, Channel } from '@finos/fdc3';
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { TOPICS } from '../../../main/src/constants';
@@ -76,40 +76,43 @@ export function createAPI() {
     id: string,
     type: string,
     displayMetadata: DisplayMetadata,
-  ): any => {
-    const channel: any = {};
-    channel.id = id;
-    channel.type = type;
-    channel.displayMetadata = displayMetadata;
-
-    channel.broadcast = (context: Context) => {
-      wireMethod('broadcast', { context: context, channel: channel.id }, true);
-    };
-
-    channel.getCurrentContext = (contextType?: string) => {
-      return wireMethod('getCurrentContext', {
-        channel: channel.id,
-        contextType: contextType,
-      });
-    };
-
-    channel.addContextListener = (contextType?: any, handler?: any) => {
-      const thisListener: ContextHandler = handler ? handler : contextType;
-      const thisContextType: string = handler ? contextType : null;
-      const listenerId: string = utils.guid();
-
-      _contextListeners.set(
-        listenerId,
-        createListenerItem(listenerId, thisListener, thisContextType),
-      );
-      document.dispatchEvent(
-        utils.fdc3Event(FDC3EventEnum.AddContextListener, {
-          id: listenerId,
+  ): Channel => {
+    const channel: Channel = {
+      id: id,
+      type: type,
+      displayMetadata: displayMetadata,
+      broadcast: (context: Context) => {
+        wireMethod(
+          'broadcast',
+          { context: context, channel: channel.id },
+          true,
+        );
+      },
+      getCurrentContext: (contextType?: string) => {
+        return wireMethod('getCurrentContext', {
           channel: channel.id,
-          contextType: thisContextType,
-        }),
-      );
-      return new Listener('context', listenerId);
+          contextType: contextType,
+        });
+      },
+
+      addContextListener: (contextType?: any, handler?: any) => {
+        const thisListener: ContextHandler = handler ? handler : contextType;
+        const thisContextType: string = handler ? contextType : null;
+        const listenerId: string = utils.guid();
+
+        _contextListeners.set(
+          listenerId,
+          createListenerItem(listenerId, thisListener, thisContextType),
+        );
+        document.dispatchEvent(
+          utils.fdc3Event(FDC3EventEnum.AddContextListener, {
+            id: listenerId,
+            channel: channel.id,
+            contextType: thisContextType,
+          }),
+        );
+        return new Listener('context', listenerId);
+      },
     };
 
     return channel;
@@ -127,9 +130,14 @@ export function createAPI() {
     instance.instanceId = id;
     instance.status = status;
 
-    instance.addContextListener = (contextType: any, handler?: any) => {
+    instance.addContextListener = (
+      contextType: string | undefined,
+      handler?: any,
+    ) => {
       const thisListener: ContextHandler = handler ? handler : contextType;
-      const thisContextType: string = handler ? contextType : null;
+      const thisContextType: string | undefined = handler
+        ? contextType
+        : undefined;
       const listenerId: string = utils.guid();
       _contextListeners.set(
         listenerId,

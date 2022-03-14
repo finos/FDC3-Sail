@@ -68,14 +68,6 @@ export interface DirectoryApp {
   icons: Array<DirectoryIcon>;
   appId: string;
   intents: Array<DirectoryIntent>;
-  /**
-   * hasActions is a non-standard flag to indicate support for actions
-   */
-  hasActions: boolean;
-  /**
-   * actions is a non-standard optional decorator to support auto-wiring FDC3 handlers
-   */
-  actions?: any;
 }
 
 export interface DirectoryIcon {

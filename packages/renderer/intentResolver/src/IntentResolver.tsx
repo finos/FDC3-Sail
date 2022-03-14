@@ -4,7 +4,7 @@ import {TOPICS} from '../../../main/src/constants';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import OpenInBrowser from '@mui/icons-material/OpenInBrowser';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { ensureFile } from 'fs-extra';
+
 
 const darkTheme = createTheme({
     palette: {

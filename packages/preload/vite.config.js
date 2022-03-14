@@ -39,6 +39,7 @@ const config = {
         index: './src/index.ts',
         'channelPicker/index': './src/channelPicker/index.ts',
         'view/index': './src/view/index.ts',
+        'homeView/index': './src/homeView/index.ts',
         'intentResolver/index': './src/intentResolver/index.ts',
         'searchResults/index': './src/searchResults/index.ts',
       },
