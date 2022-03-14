@@ -35,7 +35,7 @@ const config = {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       input:{
         'index':'index.html',
-        'defaultView/index':'./defaultView/index.html',
+        'homeView/index':'./homeView/index.html',
         'channelPicker/index':resolve(__dirname, 'channelPicker/index.html'),
         'intentResolver/index':'./intentResolver/index.html',
         'searchResults/index':'./searchResults/index.html'
