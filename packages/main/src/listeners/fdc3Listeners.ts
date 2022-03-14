@@ -814,55 +814,7 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
           let start_url = directoryData && directoryData.start_url;
           const appName = directoryData && directoryData.name;
           let pending = true;
-          //are there actions defined?
-          // console.log("hasActions",msg.selected.details.directoryData);
-
-          if (directoryData && directoryData.hasActions) {
-            utils.getDirectoryUrl().then(
-              (directoryUrl) => {
-                const body = { intent: msg.intent, context: msg.context };
-                fetch(`${directoryUrl}/apps/${appName}/action`, {
-                  headers: { 'Content-Type': 'application/json' },
-                  method: 'POST',
-                  body: JSON.stringify(body),
-                }).then(async (templateR) => {
-                  const action_url = await templateR.text();
-                  //if we get a valid action url back, set that as the start and don't post pending data
-                  if (action_url) {
-                    start_url = action_url;
-                    pending = false;
-                  }
-                  if (start_url && directoryData) {
-                    const view = getRuntime()
-                      .createWorkspace()
-                      .createView(start_url, {
-                        directoryData: directoryData,
-                      });
-                    if (pending && msg.intent) {
-                      getRuntime().setPendingIntent(
-                        view.id,
-                        source,
-                        msg.intent,
-                        msg.context || undefined,
-                      );
-                    }
-
-                    resolve({
-                      result: true,
-                      tab: view.id,
-                      source: view.id,
-                      version: '1.0',
-                    });
-                  } else {
-                    resolve({ result: false });
-                  }
-                });
-              },
-              (err) => {
-                reject(err);
-              },
-            );
-          }
+  
         }
         //keep array of pending, id by url,  store intent & context, timestamp
         //when a new window connects, throw out anything more than 2 minutes old, then match on url
@@ -991,27 +943,6 @@ _listeners.push({
             ) {
               let start_url = r[0].details.directoryData.start_url;
               let pending = true;
-              if (r[0].details.directoryData.hasActions) {
-                const directoryUrl = await utils.getDirectoryUrl();
-                const body = {
-                  intent: msg.data.intent,
-                  context: msg.data.context,
-                };
-                const templateR = await fetch(
-                  `${directoryUrl}/apps/${r[0].details.directoryData.name}/action`,
-                  {
-                    headers: { 'Content-Type': 'application/json' },
-                    method: 'POST',
-                    body: JSON.stringify(body),
-                  },
-                );
-                const action_url = await templateR.text();
-                //if we get a valid action url back, set that as the start and don't post pending data
-                if (action_url) {
-                  start_url = action_url;
-                  pending = false;
-                }
-              }
 
               //let win = window.open(start_url,"_blank");
               const view = getRuntime()
