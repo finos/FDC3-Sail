@@ -56,8 +56,10 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
     process.env.VITE_DEV_SERVER_CHANNEL_URL = `${protocol}//${host}:${port}${path}channelPicker/index.html`;
     process.env.VITE_DEV_SERVER_SEARCH_URL = `${protocol}//${host}:${port}${path}searchResults/index.html`;
     process.env.VITE_DEV_SERVER_INTENTS_URL = `${protocol}//${host}:${port}${path}intentResolver/index.html`;
+    
     //set directory address.  'local' will be resolved to the local directory in the project
-    process.env.VITE_DIRECTORY_URL = 'https://appd.kolbito.com';
+    process.env.VITE_DEV_DIRECTORY_URL = 'local';
+    process.env.VITE__DIRECTORY_URL = 'https://appd.kolbito.com';
   }
 
   const logger = createLogger(LOG_LEVEL, {
