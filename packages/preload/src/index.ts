@@ -19,14 +19,23 @@ ipcRenderer.on(TOPICS.WORKSPACE_START, async (event, args) => {
 });
 
 ipcRenderer.on(TOPICS.ADD_TAB, (event, args) => {
-  document.dispatchEvent(
-    new CustomEvent(TOPICS.ADD_TAB, {
-      detail: {
-        viewId: args.viewId,
-        title: args.title,
-      },
-    }),
-  );
+  //don't push the event until after the document is loaded
+  console.log('ipcRenderer event', event.type);
+  const tabEvent = new CustomEvent(TOPICS.ADD_TAB, {
+    detail: {
+      viewId: args.viewId,
+      title: args.title,
+    },
+  });
+
+  if (document.getElementById('controlsContainer')) {
+    document.dispatchEvent(tabEvent);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('loaded');
+      document.dispatchEvent(tabEvent);
+    });
+  }
 });
 
 ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {

@@ -800,13 +800,18 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
             /*if (! utils.isDataIntent(msg.intent)){
                           utils.bringToFront(appId); 
                       }*/
-            const id = (sView && sView.id) || null;
-            resolve({ source: id, version: '1.0', tab: id });
+            if (sView && sView.parent && sView.parent.window) {
+              sView.parent.window.webContents.send(TOPICS.SELECT_TAB, {
+                viewId: sView.id,
+              });
+              const id = (sView && sView.id) || null;
+              resolve({ source: id, version: '1.0', tab: id });
+            }
           }
-        }
 
-        //keep array of pending, id by url,  store intent & context, timestamp
-        //when a new window connects, throw out anything more than 2 minutes old, then match on url
+          //keep array of pending, id by url,  store intent & context, timestamp
+          //when a new window connects, throw out anything more than 2 minutes old, then match on url
+        }
       }
     } catch (err) {
       reject(err);
@@ -934,11 +939,11 @@ _listeners.push({
               const pending = true;
 
               //let win = window.open(start_url,"_blank");
-              const view = getRuntime()
-                .createWorkspace()
-                .createView(start_url, {
-                  directoryData: r[0].details.directoryData,
-                });
+              const workspace = getRuntime().createWorkspace();
+
+              const view = workspace.createView(start_url, {
+                directoryData: r[0].details.directoryData,
+              });
               //view.directoryData = r[0].details.directoryData;
               //set pending intent for the view..
               if (pending) {

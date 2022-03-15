@@ -38,7 +38,6 @@ const hideResults = () => {
 }
 
 
-let value = "";
 
 interface FrameTab {
   tabId : string;
@@ -49,7 +48,7 @@ export class Frame extends React.Component {
 
       constructor(props : any) {
         super(props);
-        this.state = {tabs: [], selectedTab : null};
+        this.state = {tabs: [], selectedTab : "tabProperties"};
       }
 
 
@@ -58,7 +57,7 @@ export class Frame extends React.Component {
         if (newTabId === "tabProperties") {
           newTab();
         } else {
-        value = newTabId;
+        
         this.setState({selectedTab:newTabId});
         
         document.dispatchEvent(new CustomEvent(TOPICS.SELECT_TAB, {detail:{
@@ -88,6 +87,7 @@ export class Frame extends React.Component {
 
     componentDidMount() {
       (document as any).addEventListener(TOPICS.ADD_TAB,(event : CustomEvent) => {
+          console.log("Add Tab called", event.detail);
           const tabId = event.detail.viewId;
           const tabName = event.detail.title;
           this.handleNewTab(tabName, tabId);
@@ -112,12 +112,12 @@ export class Frame extends React.Component {
 
   render() {
       const debounce = (callback : any, wait : number) => {
-        console.log("debounce called");
+
         let timeoutId : number | undefined = undefined;
         return (...args : any[]) => {
           window.clearTimeout(timeoutId);
           timeoutId = window.setTimeout(() => {
-            console.log("debounce callback called");
+   
             callback.apply(null, args);
           }, wait);
         };
@@ -135,7 +135,7 @@ export class Frame extends React.Component {
             document.dispatchEvent(new CustomEvent(TOPICS.SEARCH, {detail:{"query":value}}));
           }
         
-      }, 500);
+      }, 400);
 
       return (
           <ThemeProvider theme={darkTheme}>

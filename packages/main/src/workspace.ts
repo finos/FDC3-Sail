@@ -562,6 +562,7 @@ export class Workspace {
       console.log('view ready');
       return new Promise((resolve, reject) => {
         if (this.window) {
+          console.log('adding tab', view.id, view.getTitle());
           this.window.webContents.send(TOPICS.ADD_TAB, {
             viewId: view.id,
             title: view.getTitle(),
