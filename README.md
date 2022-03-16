@@ -73,7 +73,7 @@ Modify the local directory entries here:
 
 The local appD will run at `localhost:8080` by default.
 
-By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change these settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and `VITE_DIRECTORY_URL`.
+By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change the local settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and change the production setting by modifying the value for `productionDirectory` in `packages/main/src/utils.ts`.
 
 ## Commands
 
