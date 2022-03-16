@@ -9,16 +9,10 @@ import { ViewConfig } from './types/ViewConfig';
 import { WorkspaceConfig } from './types/WorkspaceConfig';
 import { net } from 'electron';
 import utils from './utils';
-import { Pending } from './types/Pending';
 import { IntentResolver } from './IntentResolver';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
-
-//collection of queued intents to apply to tabs when they connect
-const pending_intents: Array<Pending> = [];
-//collection of queud contexts to apply to tabs when they connect
-const pending_contexts: Array<Pending> = [];
 
 /**
  * map of all app / view instances
@@ -216,28 +210,6 @@ export class Runtime {
     });
   }
 
-  setPendingContext(viewId: string, source: string, context: Context) {
-    pending_contexts.push(new Pending(viewId, source, { context: context }));
-  }
-
-  setPendingIntent(
-    viewId: string,
-    source: string,
-    intent: string,
-    context?: Context,
-  ) {
-    pending_intents.push(
-      new Pending(viewId, source, { intent: intent, context: context }),
-    );
-  }
-
-  getPendingIntents(): Array<Pending> {
-    return pending_intents;
-  }
-
-  getPendingContexts(): Array<Pending> {
-    return pending_contexts;
-  }
   /**
    * Intent resolvers are tied to context (and positioning) of the view from where the intent is raised
    * A view can have only one intent resolver open at a time

@@ -238,7 +238,7 @@ export class RuntimeListener {
           });
 
           //set pending intent and context
-          runtime.setPendingIntent(view.id, args.id, args.intent, args.context);
+          view.setPendingIntent(args.intent, args.context, args.id);
         }
       } else {
         const view = this.runtime.getView(args.selected.instanceId);

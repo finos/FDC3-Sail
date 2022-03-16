@@ -3,9 +3,7 @@ import { Context, AppIntent, AppMetadata, IntentMetadata } from '@finos/fdc3';
 import { FDC3Message } from '../types/FDC3Message';
 import { Channel, DirectoryApp, FDC3App } from '../types/FDC3Data';
 import utils from '../utils';
-//import {createView, views} from '../managers/viewManager';
 import { View } from '../view';
-import { setPendingContext } from '../managers/contextManager';
 import { getRuntime } from '../index';
 import { Runtime } from '../runtime';
 import { ipcMain } from 'electron';
@@ -176,7 +174,7 @@ _listeners.push({
           }
 
           if (setPending && target) {
-            target.pendingContexts.unshift(msg.data.context);
+            target.setPendingContext(msg.data.context);
           }
           //if we have a target, we aren't going to go to other channnels - so resolve
           resolve(null);
@@ -281,7 +279,7 @@ _listeners.push({
 
               //set provided context
               if (newView && msg.context) {
-                setPendingContext(newView.id, msg.source, msg.context);
+                newView.setPendingContext(msg.context, msg.source);
               }
               //resolve with the window identfier
               resolve(null);
@@ -382,9 +380,9 @@ _listeners.push({
               listenerId: msg.data.id,
               contextType: msg.data.contextType,
             });
-
-            if (target.pendingContexts && target.pendingContexts.length > 0) {
-              target.pendingContexts.forEach((pending, i) => {
+            const pendingContexts = target.getPendingContexts();
+            if (pendingContexts && pendingContexts.length > 0) {
+              pendingContexts.forEach((pending, i) => {
                 //does the source of the pending context match the target?
                 if (pending && pending.source && pending.source === view.id) {
                   //is there a match on contextType (if specified...)
@@ -398,7 +396,7 @@ _listeners.push({
                       data: pending.context,
                       source: source,
                     });
-                    target.pendingContexts.splice(i, 1);
+                    target.removePendingContext(i);
                   }
                 }
               });
@@ -430,8 +428,9 @@ _listeners.push({
           /*
               are there any pending contexts for the listener just added? 
               */
-          if (view.pendingContexts && view.pendingContexts.length > 0) {
-            view.pendingContexts.forEach((pending: Pending, i: number) => {
+          const pending = view.getPendingContexts();
+          if (pending && pending.length > 0) {
+            pending.forEach((pending: Pending, i: number) => {
               //is there a match on contextType (if specified...)
               if (
                 pending.context &&
@@ -443,7 +442,7 @@ _listeners.push({
                   data: pending.context,
                   source: source,
                 });
-                view.pendingContexts.splice(i, 1);
+                view.removePendingContext(i);
               }
             });
           }
@@ -489,38 +488,36 @@ _listeners.push({
       const name = msg.data.intent;
       const listenerId = msg.data.id;
       try {
-        getRuntime().setIntentListener(name, listenerId, msg.source);
+        runtime.setIntentListener(name, listenerId, msg.source);
+        const view = runtime.getView(msg.source);
+        if (view) {
+          //check for pending intents
+          const pending_intents = view.getPendingIntents();
+          if (pending_intents.length > 0) {
+            //first cleanup anything old
+            const n = Date.now();
 
-        //check for pending intents
-        let pending_intents = runtime.getPendingIntents();
-        if (pending_intents.length > 0) {
-          //first cleanup anything old
-          const n = Date.now();
-
-          pending_intents = pending_intents.filter((i) => {
-            return n - i.ts < pendingTimeout;
-          });
-          //next, match on tab and intent
-          pending_intents.forEach((pIntent, index) => {
-            if (pIntent.viewId === msg.source && pIntent.intent === name) {
-              console.log('applying pending intent', pIntent);
-              //refactor with other instances of this logic
-              const view = runtime.getView(pIntent.viewId);
-              if (view && view.content) {
-                view.content.webContents.send(TOPICS.FDC3_INTENT, {
-                  topic: 'intent',
-                  data: { intent: pIntent.intent, context: pIntent.context },
-                  source: pIntent.source,
-                });
+            //next, match on tab and intent
+            pending_intents.forEach((pIntent, index) => {
+              if (n - pIntent.ts < pendingTimeout && pIntent.intent === name) {
+                console.log('applying pending intent', pIntent);
+                //refactor with other instances of this logic
+                if (view && view.content) {
+                  view.content.webContents.send(TOPICS.FDC3_INTENT, {
+                    topic: 'intent',
+                    data: { intent: pIntent.intent, context: pIntent.context },
+                    source: pIntent.source,
+                  });
+                }
+                //bringing the tab to front conditional on the type of intent
+                /* if (! utils.isDataIntent(pIntent.intent)){
+                                utils.bringToFront(port.sender.tab);
+                            }*/
+                //remove the applied intent
+                view.removePendingIntent(index);
               }
-              //bringing the tab to front conditional on the type of intent
-              /* if (! utils.isDataIntent(pIntent.intent)){
-                              utils.bringToFront(port.sender.tab);
-                          }*/
-              //remove the applied intent
-              pending_intents.splice(index, 1);
-            }
-          });
+            });
+          }
         }
         resolve();
       } catch (err) {
@@ -573,11 +570,8 @@ export const joinViewToChannel = (
             });
             if (!contextSent) {
               //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
-              setPendingContext(
-                view.id,
-                view.id,
-                channelContext && channelContext[0],
-              );
+
+              view.setPendingContext(channelContext && channelContext[0]);
             }
           }
         }
@@ -891,6 +885,7 @@ _listeners.push({
             msg.data.intent
           }&context=${ctx}&name=${msg.data.target ? msg.data.target : ''}`,
         );
+        console.log('raiseIntent', _r);
         if (_r) {
           let data = null;
           try {
@@ -947,11 +942,10 @@ _listeners.push({
               //view.directoryData = r[0].details.directoryData;
               //set pending intent for the view..
               if (pending) {
-                getRuntime().setPendingIntent(
-                  view.id,
-                  msg.source,
+                view.setPendingIntent(
                   msg.data.intent,
                   msg.data.context,
+                  msg.source,
                 );
               }
 

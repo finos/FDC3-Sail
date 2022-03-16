@@ -38,8 +38,8 @@ export const search = async (fastify) => {
     const name: string | null = request.query['name']
       ? (request.query['name'] as string).toUpperCase()
       : null;
-    const intentName: string | null = request.query['intentName']
-      ? (request.query['intentName'] as string).toUpperCase()
+    const intentName: string | null = request.query['intent']
+      ? (request.query['intent'] as string).toUpperCase()
       : null;
     const context: string | null = request.query['context']
       ? (request.query['context'] as string).toUpperCase()
@@ -48,25 +48,32 @@ export const search = async (fastify) => {
       ? (request.query['text'] as string).toUpperCase()
       : null;
 
+    console.log('search', name, intentName, context, query);
     const filtered = appData.filter((app) => {
       let match = false;
 
       match = name && app.name.toUpperCase().indexOf(name) > -1;
+
       if (!match && (intentName || context || query)) {
         app.intents.forEach((intent) => {
           if (!match && intentName) {
             match = intent.name.toUpperCase().indexOf(intentName) > -1;
+            //if there is a context specified, then match the context to the intent as well
+            if (match && context) {
+              match = false;
+              intent.contexts.forEach((intentContext) => {
+                if (intentContext.toUpperCase() === context) {
+                  match = true;
+                }
+              });
+            }
           }
-          if (!match && query) {
-            match = intent.name.toUpperCase().indexOf(query) > -1;
-          }
-          if (!match && intentName) {
-            match = intent.display_name.toUpperCase().indexOf(intentName) > -1;
-          }
+
           if (!match && query) {
             match = intent.display_name.toUpperCase().indexOf(query) > -1;
           }
-          if (!match && (context || query)) {
+          //match if there is no intentName, but a context or text search
+          if (!match && !intentName && (context || query)) {
             intent.contexts.forEach((contextType) => {
               if (!match && context) {
                 match = contextType.toUpperCase().indexOf(context) > -1;

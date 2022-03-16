@@ -10,6 +10,7 @@ import { getRuntime } from './index';
 import { BrowserView } from 'electron';
 import utils from './utils';
 import { DirectoryApp } from './types/FDC3Data';
+import { Context } from '@finos/fdc3';
 import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
@@ -30,7 +31,7 @@ export class View {
       import.meta.env.VITE_DEV_SERVER_DEFAULT_URL !== undefined
         ? import.meta.env.VITE_DEV_SERVER_DEFAULT_URL
         : new URL(
-            '../renderer/dist/defaultView/index.html',
+            '../renderer/dist/homeView.html',
             'file://' + __dirname,
           ).toString();
 
@@ -161,7 +162,9 @@ export class View {
 
   /* array pending contexts
    */
-  pendingContexts: Array<Pending> = [];
+  private pendingContexts: Array<Pending> = [];
+  private pendingIntents: Array<Pending> = [];
+
   directoryData?: DirectoryApp;
 
   parent?: Workspace;
@@ -169,6 +172,45 @@ export class View {
   initiated = false;
 
   private type: 'system' | 'app' = 'app';
+
+  setPendingContext(context: Context, source?: string): void {
+    this.pendingContexts.push(
+      new Pending(this.id, source || this.id, { context: context }),
+    );
+  }
+
+  getPendingContexts(): Array<Pending> {
+    return this.pendingContexts;
+  }
+
+  removePendingContext(index: number): void {
+    try {
+      this.pendingContexts.splice(index, 1);
+    } catch (err) {
+      console.log('removePendingContext - error', err);
+    }
+  }
+
+  setPendingIntent(intent: string, context?: Context, source?: string): void {
+    this.pendingIntents.push(
+      new Pending(this.id, source || this.id, {
+        intent: intent,
+        context: context,
+      }),
+    );
+  }
+
+  getPendingIntents(): Array<Pending> {
+    return this.pendingIntents;
+  }
+
+  removePendingIntent(index: number): void {
+    try {
+      this.pendingIntents.splice(index, 1);
+    } catch (err) {
+      console.log('removePendingContext - error', err);
+    }
+  }
 
   isSystemView = (): boolean => {
     console.log('isSystemView', this.type);

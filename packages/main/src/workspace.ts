@@ -37,19 +37,6 @@ export class Workspace {
   constructor(config?: WorkspaceConfig) {
     this.id = utils.guid();
 
-    /*      this.window = new BrowserWindow({
-            height: DEFAULT_WINDOW_HEIGHT,
-            width: DEFAULT_WINDOW_WIDTH,
-            
-            webPreferences:{
-              webSecurity:true,
-              nodeIntegration:true,
-              contextIsolation:false,
-              preload:MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-              devTools:true
-            }
-        });*/
-
     this.window = new BrowserWindow({
       // show: false, // Use 'ready-to-show' event to show window
       height: DEFAULT_WINDOW_HEIGHT,
@@ -365,14 +352,13 @@ export class Workspace {
         import.meta.env.VITE_DEV_SERVER_SEARCH_URL !== undefined
           ? import.meta.env.VITE_DEV_SERVER_SEARCH_URL
           : new URL(
-              '../renderer/dist/searchResults/index.html',
+              '../renderer/dist/searchResults.html',
               'file://' + __dirname,
             ).toString();
 
       if (SEARCH_RESULTS_CONTENT && this.resultsWindow) {
         this.resultsWindow.loadURL(SEARCH_RESULTS_CONTENT as string).then(
           () => {
-            //this.resultsWindow.loadFile('src/windows/searchResults/searchResults.html').then(() => {
             if (this.resultsWindow) {
               this.resultsWindow.webContents.send(TOPICS.WINDOW_START, {
                 workspaceId: this.id,
@@ -413,7 +399,7 @@ export class Workspace {
         import.meta.env.VITE_DEV_SERVER_CHANNEL_URL !== undefined
           ? import.meta.env.VITE_DEV_SERVER_CHANNEL_URL
           : new URL(
-              '../renderer/dist/channelPicker/index.html',
+              '../renderer/dist/channelPicker.html',
               'file://' + __dirname,
             ).toString();
 
@@ -421,19 +407,12 @@ export class Workspace {
         console.log('chnnel picker', CHANNEL_PICKER_CONTENT);
         this.channelWindow.loadURL(CHANNEL_PICKER_CONTENT as string).then(
           () => {
-            //this.channelWindow.loadFile('src/windows/channelPicker/channelPicker.html').then(() => {
-            // const channelWindow = this.channelWindow;
             if (this.channelWindow) {
-              //   this.channelWindow.webContents.openDevTools();
-              //    setTimeout(()=> {
-              //    if (channelWindow){
               this.channelWindow.webContents.send(TOPICS.WINDOW_START, {
                 workspaceId: this.id,
               });
               console.log('channel window created', this.id);
               resolve();
-              //     }
-              //  },1000);
             }
           },
           (err) => {
@@ -487,9 +466,6 @@ export class Workspace {
       });
       // this.resultsWindow.webContents.openDevTools();
       let hideTimer: NodeJS.Timeout | null = null;
-      /*hideTimer = setTimeout(() => {
-        this.hideSearchResults();
-      }, 3000);*/
 
       //clear previous handlers
       this.resultsWindow.removeAllListeners();
@@ -588,10 +564,6 @@ export class Workspace {
       });
     };
     const view = new View(url, conf, this);
-    /*view.content.webContents.on("did-finish-load",() => {
-            this.window.webContents.send("WORK:addTab", {viewId: view.id, title:view.directoryData && view.directoryData.title ? view.directoryData.title :view.content.webContents.getTitle()});
-            this.setSelectedTab(view.id);
-        });*/
 
     this.views.push(view);
     //add to view collection

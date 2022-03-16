@@ -1,7 +1,7 @@
 /* eslint-env node */
 
 import { chrome } from '../../.electron-vendors.cache.json';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { builtinModules } from 'module';
 import react from '@vitejs/plugin-react';
 
@@ -35,10 +35,10 @@ const config = {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       input:{
         'index':'index.html',
-        'homeView/index':'./homeView/index.html',
-        'channelPicker/index':resolve(__dirname, 'channelPicker/index.html'),
-        'intentResolver/index':'./intentResolver/index.html',
-        'searchResults/index':'./searchResults/index.html'
+        'homeView':'homeView.html',
+        'channelPicker':'channelPicker.html',
+        'intentResolver':'intentResolver.html',
+        'searchResults':'searchResults.html'
       },
      
     },

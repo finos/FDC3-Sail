@@ -32,8 +32,13 @@ ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
       //ipcRenderer.postMessage(`FDC3:${msg.topic}`, msg, [port2]);
       sendMessage(msg);
     });
-
-    document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+    if (!document.body) {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+      });
+    } else {
+      document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+    }
   }
 });
 
