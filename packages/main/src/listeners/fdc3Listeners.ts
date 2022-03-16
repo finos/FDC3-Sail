@@ -362,6 +362,8 @@ _listeners.push({
 
         //if there is an instanceId specified, this call is to listen to context from a specific app instance
         const view = runtime.getView(msg.source);
+        const listenerId = msg.data.id;
+        console.log('listenerId', listenerId);
         const instanceId = msg.data.instanceId;
         if (instanceId && view) {
           console.log(
@@ -429,19 +431,34 @@ _listeners.push({
               are there any pending contexts for the listener just added? 
               */
           const pending = view.getPendingContexts();
+          console.log('got pending contexts', pending);
           if (pending && pending.length > 0) {
             pending.forEach((pending: Pending, i: number) => {
               //is there a match on contextType (if specified...)
+              console.log(
+                'check pending',
+                pending.context,
+                pending.context.type,
+                msg.data.type,
+                msg.data.id,
+                msg.data.type === undefined ||
+                  (pending.context &&
+                    pending.context.type &&
+                    pending.context.type === msg.data.type),
+              );
               if (
-                pending.context &&
-                pending.context.type &&
-                pending.context.type === msg.data.type
+                msg.data.type === undefined ||
+                (pending.context &&
+                  pending.context.type &&
+                  pending.context.type === msg.data.type)
               ) {
-                view.content.webContents.postMessage(TOPICS.FDC3_CONTEXT, {
+                view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
                   topic: 'context',
-                  data: pending.context,
+                  listenerId: msg.data.id,
+                  data: { context: pending.context, listenerId: msg.data.id },
                   source: source,
                 });
+
                 view.removePendingContext(i);
               }
             });
@@ -570,7 +587,10 @@ export const joinViewToChannel = (
             });
             if (!contextSent) {
               //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
-
+              console.log(
+                'setPendingContext',
+                channelContext && channelContext[0],
+              );
               view.setPendingContext(channelContext && channelContext[0]);
             }
           }

@@ -43,11 +43,16 @@ export class IntentResolver {
         devTools: true,
       },
     });
-    const vBounds = view.content.getBounds();
 
+    //TO DO: refactor bounds and positioning for multi-screen
+    const vBounds = view.content.getBounds();
+    const x =
+      vBounds && vBounds.width ? vBounds.x + (vBounds.width + 200) / 2 : 0;
+    const y = vBounds && vBounds.height ? (vBounds.y + vBounds.height) / 2 : 0;
+    console.log('opening intentResolver @', x, y, vBounds);
     this.window.setBounds({
-      x: vBounds.x + (vBounds.width + 200) / 2,
-      y: vBounds.y + (vBounds.height - 200) / 2,
+      x: x,
+      y: y,
     });
 
     //add resolution listener

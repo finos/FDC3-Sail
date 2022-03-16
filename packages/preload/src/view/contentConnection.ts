@@ -146,6 +146,7 @@ export const listen = () => {
 };
 
 export const connect = () => {
+  console.log('connected');
   /**
    * listen for incomming contexts
    */
