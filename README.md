@@ -75,10 +75,32 @@ The local appD will run at `localhost:8080` by default.
 
 By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change the local settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and change the production setting by modifying the value for `productionDirectory` in `packages/main/src/utils.ts`.
 
-## Commands
+## Getting Started
+
+Install dependencies:
+
+~~~
+npm install
+~~~
+
+Build and run the app directory:
+
+~~~
+npm run build:directory
+npm run start:directory
+~~~
+
+This will run a local App Directory on port 8080.
+
+Start the FDC3 application:
+
+~~~
+npm start
+~~~
+
+Other useful commands:
 
 1. `npm start` / `npm run watch` - Start the Electron app in dev mode.
-1. `npm run start:directory` - Start the local app directory.
 1. `npm run compile` - Build the app for local debugging only.
 1. `npm run lint` - Lint the code.
 1. `npm run typecheck` - Run a TypeScript check.
