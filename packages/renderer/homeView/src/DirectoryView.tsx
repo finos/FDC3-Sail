@@ -1,5 +1,5 @@
 import React from 'react';
-import {Paper, Card, CardContent, CardMedia, Typography, CardActions, Button, Grid} from '@mui/material';
+import {Paper, Card, CardContent, CardMedia, CardHeader, Typography, CardActions, Button, Grid} from '@mui/material';
 import {TOPICS} from '../../../main/src/constants';
 import {DirectoryApp} from "../../../main/src/types/FDC3Data";
 
@@ -16,7 +16,16 @@ export class DirectoryView extends React.Component {
             //fetch apps from the directory, using system API (only available to system apps)
             if ((globalThis as any).home && (globalThis as any).home.getApps){
                 (globalThis as any).home.getApps().then(apps => {
-                    console.log("got apps", apps);
+                    //clean up / normalize some of the directory data
+                    apps.forEach((app : DirectoryApp) => {
+                        //put in place holder images and icons if they aren't there... 
+                        if (!app.images){
+                            app.images = [];
+                        }
+                        if (!app.icons) {
+                            app.icons = [];
+                        }
+                    });
                     this.setState({apps:apps});
                 });
             }
@@ -44,17 +53,28 @@ export class DirectoryView extends React.Component {
             backgroundColor:"#ccc"
         }}>
       
-            <Grid container spacing={3}>
+            <Grid container spacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
             {this.state.apps.map((app : DirectoryApp) => 
-                <Grid item xs={6}>
-                    <Card sx={{ maxWidth: 345 }}>
-                        {app.icons.map((icon) => 
-                        <CardMedia component="img" image={icon.icon} height="80">
+                <Grid item xs={4}>
+                    <Card sx={{ maxWidth: 345, minHeight: 350}}>
+                        {app.images.length > 0 ? 
+                        app.images.map((image) => 
+                        <CardMedia component="img" image={image.url} height="120">
                             
                         </CardMedia>
-                        )}
+                        )
+                        :
+                        <CardHeader sx={{
+                            backgroundColor:"#999",
+                            height:80
+                        }}>
+                        </CardHeader>
+                        }
                      <CardContent>
                             <Typography gutterBottom variant="h5" component="div">
+                                {app.icons && app.icons.length > 0 &&
+                                    <img src={app.icons[0].icon} className="appIcon"></img>
+                                }
                                 {app.title}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
