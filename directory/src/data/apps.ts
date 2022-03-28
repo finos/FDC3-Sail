@@ -2,7 +2,9 @@ export const appData = [
   {
     intents: [],
     icons: [{ icon: 'https://appd.kolbito.com/images/fdc3-logo.png' }],
-    images: [ {url:"https://appd.kolbito.com/demos/channel-manager/screen-1.png"}],
+    images: [
+      { url: 'https://appd.kolbito.com/demos/channel-manager/screen-1.png' },
+    ],
     start_url: 'https://appd.kolbito.com/demos/channel-manager/',
     appId: 'Channel-Manager',
     description: 'View and manage context on all channels.',
@@ -26,7 +28,11 @@ export const appData = [
       },
     ],
     icons: [{ icon: 'https://www.tradingview.com/static/images/favicon.ico' }],
-    images: [ {url:"https://appd.kolbito.com/demos/tradingview-blotter/screen-1.png"}],
+    images: [
+      {
+        url: 'https://appd.kolbito.com/demos/tradingview-blotter/screen-1.png',
+      },
+    ],
     start_url: 'https://appd.kolbito.com/demos/tradingview-blotter/',
     appId: 'TradingViewBlotter',
     description: 'TradingView-based Blotter App',
@@ -45,7 +51,7 @@ export const appData = [
       },
     ],
     icons: [{ icon: 'https://newsapi.org/favicon-32x32.png' }],
-    images: [ {url:"https://appd.kolbito.com/demos/news-demo/screen-1.png"}],
+    images: [{ url: 'https://appd.kolbito.com/demos/news-demo/screen-1.png' }],
     start_url: 'https://appd.kolbito.com/demos/news-demo/',
     appId: 'News-Demo',
     description: 'Demo fdc3 news feed using services from NewsAPI.org',
@@ -66,7 +72,9 @@ export const appData = [
     icons: [
       { icon: 'https://appd.kolbito.com/demos/tradingview-chart/icon.png' },
     ],
-    images: [ {url:"https://appd.kolbito.com/demos/tradingview-chart/screen-1.png"}],
+    images: [
+      { url: 'https://appd.kolbito.com/demos/tradingview-chart/screen-1.png' },
+    ],
     start_url: 'https://appd.kolbito.com/demos/tradingview-chart/',
     appId: 'TradingViewChart',
     description: 'Demo fdc3 chart using widgets from TradingView',
@@ -85,7 +93,9 @@ export const appData = [
       },
     ],
     icons: [{ icon: 'https://polygon.io/favicon.ico' }],
-    images: [ {url:"https://appd.kolbito.com/demos/ticker-demo/screen-1.png"}],
+    images: [
+      { url: 'https://appd.kolbito.com/demos/ticker-demo/screen-1.png' },
+    ],
     start_url: 'https://appd.kolbito.com/demos/ticker-demo/',
     appId: 'Ticker-Demo',
     description: 'Demo fdc3 company information using services from Polygon.io',
@@ -98,7 +108,9 @@ export const appData = [
   {
     intents: [],
     icons: [{ icon: 'https://appd.kolbito.com/images/fdc3-logo.png' }],
-    images: [ {url:"https://appd.kolbito.com/demos/ticker-grid/screen-1.png"}],
+    images: [
+      { url: 'https://appd.kolbito.com/demos/ticker-grid/screen-1.png' },
+    ],
     start_url: 'https://appd.kolbito.com/demos/ticker-grid/',
     appId: 'Ticker-Grid',
     description: 'fdc3 enabled grid of the S&P 500',
