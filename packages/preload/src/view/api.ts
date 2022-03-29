@@ -7,6 +7,7 @@ import {
   ContextHandler,
   Channel,
   ImplementationMetadata,
+  TargetApp
 } from '@finos/fdc3';
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
@@ -216,8 +217,8 @@ export function createAPI() {
       };
     },
 
-    open: (name: string, context?: Context) => {
-      return wireMethod('open', { name: name, context: context });
+    open: (app: TargetApp, context?: Context) => {
+      return wireMethod('open', { target: app, context: context });
     },
 
     broadcast: (context: Context) => {
@@ -225,13 +226,17 @@ export function createAPI() {
       wireMethod('broadcast', { context: context }, { void: true });
     },
 
-    raiseIntent: (intent: string, context: Context, target: string) => {
+    raiseIntent: (intent: string, context: Context, app?: TargetApp) => {
       return wireMethod('raiseIntent', {
         intent: intent,
         context: context,
-        target: target,
+        target: app,
       });
     },
+
+    raiseIntentForContext(context : Context, app? : TargetApp)  {
+      return wireMethod("raiseIntentForContext",{context:context, target: app});
+   },
 
     addContextListener: (contextType: any, handler?: any) => {
       const thisListener: ContextHandler = handler ? handler : contextType;
@@ -386,55 +391,6 @@ export function createAPI() {
     );
   });
 
-  (document as any).addEventListener(TOPICS.NAVIGATE, (event: CustomEvent) => {
-    if (event.detail.href) {
-      window.location.href = event.detail.href;
-    }
-  });
-
-  window.addEventListener('contextmenu', (e: MouseEvent) => {
-    e.preventDefault();
-    const detail: any = {};
-    //get target
-    /*
-        standard datapoints:
-            document href
-            document title
-            app name 
-            manifest details: img, etc
-
-        if anchor
-            link href
-            inner text
-            title (if any)
-            title of contents (if image)
-
-        if image
-            src
-            title
-
-        find topic
-        append all inner text where that topic appears, filter out non-topical words...
-
-      */
-    const target: HTMLElement = e.target as HTMLElement;
-    const tagName = target.tagName;
-    detail.tagName = tagName;
-    detail.source = document.location.href;
-    detail.title = document.title;
-    if (target.textContent) {
-      detail.text = target.textContent;
-    }
-
-    //taget text content
-    //is it an image?
-    //what else is in the context?
-    document.dispatchEvent(
-      new CustomEvent(TOPICS.CONTEXT_MENU, {
-        detail: detail,
-      }),
-    );
-  });
   //map of context listeners by id
   const _contextListeners: Map<string, ListenerItem> = new Map();
 

@@ -1,5 +1,5 @@
 import { Listener as IListener } from '../types/Listener';
-import { Context, AppIntent, AppMetadata, IntentMetadata } from '@finos/fdc3';
+import { Context, AppIntent, AppMetadata, IntentMetadata, TargetApp } from '@finos/fdc3';
 import { FDC3Message } from '../types/FDC3Message';
 import { Channel, DirectoryApp, FDC3App } from '../types/FDC3Data';
 import utils from '../utils';
@@ -257,13 +257,77 @@ interface ViewListener {
   listenerId: string;
 }
 
+
+/**
+ * 
+ * @param target 
+ * Given a TargetApp input, return the app Name or undefined
+ */
+const resolveTargetAppToName = (target : TargetApp) : string | undefined  => {
+  if (!target){
+    return undefined;
+  } else {
+    let name = undefined;
+    //is target typeof string?  if so, it is just going to be an app name
+    if (typeof(target) === 'string'){
+      name = target;
+    }
+    else {
+      const app : AppMetadata = (target as AppMetadata);
+      if (app && app.name) {
+        name = app.name;
+      }
+    }
+    return name;
+  }
+};
+
+/**
+ * 
+ * @param target 
+ * Given a TargetApp input, return a search query string to append to an appD search call
+ * e.g.  '&name=AppName' or '&text=AppTitle'
+ */
+const resolveTargetAppToQuery = (target : TargetApp) : string  => {
+    if (!target){
+      return '';
+    } else {
+      let query = '';
+      //is there a valid app name?
+      const name = resolveTargetAppToName(target);
+      if (name) {
+        query = `&name=${name}`;
+      }
+      else {
+        const app : AppMetadata = (target as AppMetadata);
+        if (app) {
+          //construct a text search, prefering id, then title, then description
+          //this is currently punting on a more complicated heuristic on potentailly ambiguous results (by version, etc)
+          if (app.appId) {
+            query = `&text=${app.appId}`;
+          }
+          else if (app.title) {
+            query = `&text=${app.title}`;
+          }
+          else if (app.description) {
+            query = `&text=${app.description}`;
+          }
+        }
+      }
+      return query;
+    }
+};
+
+
 _listeners.push({
   name: TOPICS.FDC3_OPEN,
   handler: (runtime, msg) => {
     return new Promise((resolve, reject) => {
       console.log('fdc3Message recieved', msg);
 
-      runtime.fetchFromDirectory(`/apps/${msg.data.name}`).then(
+      const name = resolveTargetAppToName(msg.data.target) || '';
+      
+      runtime.fetchFromDirectory(`/apps/${name}`).then(
         (result: DirectoryApp) => {
           // const source = utils.id(port);
           if (result) {
@@ -900,10 +964,12 @@ _listeners.push({
         ctx = msg.data.context.type;
       }
       utils.getDirectoryUrl().then(async (directoryUrl) => {
+        const query = resolveTargetAppToQuery(msg.data.target);
+       
         const _r = await fetch(
           `${directoryUrl}/apps/search?intent=${
             msg.data.intent
-          }&context=${ctx}&name=${msg.data.target ? msg.data.target : ''}`,
+          }&context=${ctx}${query}`,
         );
         console.log('raiseIntent', _r);
         if (_r) {
