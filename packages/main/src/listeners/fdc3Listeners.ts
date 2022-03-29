@@ -438,7 +438,7 @@ _listeners.push({
               console.log(
                 'check pending',
                 pending.context,
-                (pending.context ? pending.context.type : "no pending object"),
+                pending.context ? pending.context.type : 'no pending object',
                 msg.data.type,
                 msg.data.id,
                 msg.data.type === undefined ||

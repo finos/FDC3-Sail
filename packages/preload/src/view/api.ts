@@ -1,7 +1,13 @@
 import { contextBridge } from 'electron';
 import utils from '../../../main/src/utils';
 import { Listener as fdc3Listener } from '@finos/fdc3';
-import { Context, DisplayMetadata, ContextHandler, Channel } from '@finos/fdc3';
+import {
+  Context,
+  DisplayMetadata,
+  ContextHandler,
+  Channel,
+  ImplementationMetadata,
+} from '@finos/fdc3';
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { TOPICS } from '../../../main/src/constants';
@@ -203,6 +209,13 @@ export function createAPI() {
   };
 
   const DesktopAgent = {
+    getInfo(): ImplementationMetadata {
+      return {
+        fdc3Version: '1.2',
+        provider: 'electron-fdc3',
+      };
+    },
+
     open: (name: string, context?: Context) => {
       return wireMethod('open', { name: name, context: context });
     },
