@@ -11,7 +11,7 @@ import { View } from '../view';
 export class EnvironmentData {
   currentChannel: string;
   tabId: number;
-  directory?: any;
+  directory?: string;
 
   constructor(tabId: number, currentChannel?: string) {
     this.tabId = tabId;
@@ -96,7 +96,7 @@ export interface DirectoryIntent {
 /**
  * representation of channel data
  */
-export interface Channel {
+export interface ChannelData {
   id: string;
   type: string;
   displayMetadata?: ChannelMetadata;

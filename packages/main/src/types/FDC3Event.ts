@@ -29,7 +29,7 @@ export interface FDC3EventDetail {
   channelId?: string; //resolve w/channel
   instanceId?: string; //identifier for the app instance
   contextType?: string;
-  data?: any;
+  data?: object | Array<object> | null;
   name?: string;
   context?: Context;
   target?: TargetApp;

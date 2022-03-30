@@ -97,7 +97,7 @@ export class RuntimeListener {
                   workspace.addTab(draggedView.id);
                 });
               }
-              resolve(null);
+              resolve();
             });
           },
         });
@@ -261,7 +261,7 @@ export class RuntimeListener {
     const runtime = this.runtime;
 
     ipcMain.on(l.name, (event, args) => {
-      l.handler.call(this, runtime, args as FDC3Message).then((r: any) => {
+      l.handler.call(this, runtime, args as FDC3Message).then((r) => {
         console.log('handler response', r, 'args', args);
 
         if (event.ports) {

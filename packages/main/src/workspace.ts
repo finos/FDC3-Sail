@@ -450,7 +450,7 @@ export class Workspace {
     }
   }
 
-  async loadSearchResults(results: Array<any>) {
+  async loadSearchResults(results: Array<object>) {
     if (!this.resultsWindow) {
       await this.createResultsWindow();
     }

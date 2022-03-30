@@ -15,43 +15,40 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, (event, args) => {
   channelSelected(args.channel);
 });
 
-(document as any).addEventListener(
-  TOPICS.JOIN_CHANNEL,
-  (event: CustomEvent) => {
-    console.log('join channel', event);
-    if (selected !== event.detail.channel) {
-      selected = event.detail.channel;
-      ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
-        source: workspaceId,
-        data: { channel: event.detail.channel },
-      });
-    } else {
-      console.log('leave channel');
-      selected = null;
-      ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
-        source: workspaceId,
-        data: { channel: 'default' },
-      });
-    }
-  },
-);
+document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
+  console.log('join channel', event);
+  if (selected !== event.detail.channel) {
+    selected = event.detail.channel;
+    ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
+      source: workspaceId,
+      data: { channel: event.detail.channel },
+    });
+  } else {
+    console.log('leave channel');
+    selected = null;
+    ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
+      source: workspaceId,
+      data: { channel: 'default' },
+    });
+  }
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.HIDE_WINDOW, () => {
+document.addEventListener(TOPICS.HIDE_WINDOW, (() => {
   console.log('hide channel window');
   ipcRenderer.send(TOPICS.HIDE_WINDOW, {
     source: workspaceId,
     target: TARGETS.CHANNEL_PICKER,
   });
-});
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.LEAVE_CHANNEL, () => {
+document.addEventListener(TOPICS.LEAVE_CHANNEL, (() => {
   console.log('leave channel');
   selected = null;
   ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
     source: workspaceId,
     data: { channel: 'default' },
   });
-});
+}) as EventListener);
 
 //document.addEventListener(TOPICS.CHANNEL_SELECTED,(event : CustomEvent) => {
 const channelSelected = (channel: string) => {

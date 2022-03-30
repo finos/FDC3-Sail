@@ -21,24 +21,24 @@ export class Pending {
   /**
    * context object to apply
    */
-  context?: Context;
+  context?: Context | null;
 
   /**
    * name of intent to apply
    */
-  intent?: string;
+  intent?: string | null;
 
   /**
    * id of channel to join
    */
-  channel?: string;
+  channel?: string | null;
 
   /**
    *
    * @param viewId
    * @param init
    */
-  constructor(viewId: string, source: string, init: any) {
+  constructor(viewId: string, source: string, init: PendingInitObject) {
     this.ts = Date.now();
     this.viewId = viewId;
     this.source = source;
@@ -46,4 +46,10 @@ export class Pending {
     this.intent = init.intent ? init.intent : null;
     this.channel = init.channel ? init.channel : null;
   }
+}
+
+export interface PendingInitObject {
+  context?: Context;
+  intent?: string;
+  channel?: string;
 }
