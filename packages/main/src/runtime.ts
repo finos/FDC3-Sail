@@ -270,4 +270,12 @@ export class Runtime {
   dropResolver() {
     resolver = undefined;
   }
+
+  //cleanup state of the runtime
+  clean() {
+    contexts.clear();
+    views.clear();
+    workspaces.clear();
+    resolver = undefined;
+  }
 }
