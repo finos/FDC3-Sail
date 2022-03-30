@@ -59,4 +59,5 @@ export enum TOPICS {
   FDC3_GET_CURRENT_CHANNEL = 'FDC3:getCurrentChannel',
   FDC3_GET_APP_INSTANCE = 'FDC3:getAppInstance',
   FDC3_RAISE_INTENT = 'FDC3:raiseIntent',
+  FDC3_RAISE_INTENT_FOR_CONTEXT = 'FDC3:raiseIntentForContext',
 }

@@ -116,6 +116,7 @@ export const listen = () => {
   const topics = [
     'open',
     'raiseIntent',
+    'raiseIntentForContext',
     'addContextListener',
     'addIntentListener',
     'findIntent',
