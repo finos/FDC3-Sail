@@ -1,6 +1,6 @@
 import { RuntimeListener } from './listeners/listener';
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context, TargetApp } from '@finos/fdc3';
+import { Context } from '@finos/fdc3';
 import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
@@ -166,9 +166,7 @@ export class Runtime {
    *
    * Returns a map of all Views with active intent listeners for a specific context type
    */
-  getIntentListenersByContext(
-    context: string
-  ): Map<string, Array<View>> {
+  getIntentListenersByContext(context: string): Map<string, Array<View>> {
     const result: Map<string, Array<View>> = new Map();
 
     //iterate through all registered apps

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { SyntheticEvent } from 'react';
 import {Paper, Box, List, ListItem, ListItemText, ListItemIcon, ListItemButton, ListItemAvatar, Collapse, Avatar} from '@mui/material';
 import {TOPICS} from '../../../main/src/constants';
 import {FDC3App, IntentInstance} from '../../../main/src/types/FDC3Data';
@@ -18,11 +18,11 @@ const darkTheme = createTheme({
     },
   });
 
-export class IntentResolver extends React.Component <{}, { results : Array<FDC3App> | Array<IntentInstance>, intent : string | undefined, context: Context | undefined}> {
+export class IntentResolver extends React.Component <{}, { results : Array<FDC3App> | Array<IntentInstance>, intent : string | undefined, context: Context | undefined, openFolders : Array<number>}> {
 
     constructor(props) {
         super(props);
-        this.setState({results: [], intent: '', context: undefined });
+        this.setState({results: [], intent: '', context: undefined, openFolders: [] });
         
       }
 
@@ -31,12 +31,12 @@ export class IntentResolver extends React.Component <{}, { results : Array<FDC3A
             //if an intenet is assigned - cast results to FDC3Appp
             if (event.detail.intent){
                 const results : Array<FDC3App> = (event.detail.options as Array<FDC3App>);
-                this.setState({results:results || [], intent:event.detail.intent || '', context: event.detail.context });
+                this.setState({results:results || [], intent:event.detail.intent || '', context: event.detail.context, openFolders: [] });
             } else if (event.detail.context && event.detail.context.type){
                 const results : Array<IntentInstance> = (event.detail.options as Array<IntentInstance>);
-                this.setState({results:results || [], intent:event.detail.intent || '', context: event.detail.context});
+                this.setState({results:results || [], intent:event.detail.intent || '', context: event.detail.context, openFolders: []});
             } else {
-                this.setState({results:[], intent:event.detail.intent || '', context: event.detail.context});
+                this.setState({results:[], intent:event.detail.intent || '', context: event.detail.context, openFolders: []});
             }
          });
     }
@@ -81,6 +81,26 @@ export class IntentResolver extends React.Component <{}, { results : Array<FDC3A
        }
    };
 
+   const toggleFolder = (index : number) => {
+       //is it in the open folders state ? then remove it
+        if (this.state.openFolders.includes(index)){
+            const newFolderState = this.state.openFolders.filter((f) => { return f !== index;});
+            this.setState({openFolders:newFolderState});
+        } else {
+           //if not, add it
+           const newFolderState = [...this.state.openFolders, index];
+           this.setState({openFolders:newFolderState});
+        }
+   };
+
+   const getFolderState = (index : number) => {
+    if (this.state.openFolders.includes(index)){
+        return true;
+    } else {
+        return false;
+    }
+   }
+
    const getList = () => {
        //is it an intent or context resolution
        if (this.state && this.state.intent){
@@ -108,17 +128,17 @@ export class IntentResolver extends React.Component <{}, { results : Array<FDC3A
            );
         } else if (this.state && this.state.context) {
             const results : Array<IntentInstance> = (this.state.results as Array<IntentInstance>);
-            let open = true;
+            
             return (results.map((result, i) => 
                 <div  key={`item_container_${i}`}>
-                <ListItemButton  key={`item_button_${i}`}>
+                <ListItemButton  key={`item_button_${i}`} onClick={(event) => {toggleFolder(i);}}>
                     
                     <ListItemIcon  key={`item_icon_${i}`}>
                     <FolderIcon  key={`folder_icon_${i}`} />
                     </ListItemIcon>
                     <ListItemText  key={`item_text_${i}`}>{result.intent.displayName}</ListItemText>
                 </ListItemButton>
-                <Collapse  key={`item_collaps_${i}`} in={open} timeout="auto" unmountOnExit>
+                <Collapse  key={`item_collapse_${i}`} in={getFolderState(i)}  timeout="auto" unmountOnExit>
                     <List  key={`item_list_${i}`} component="div" disablePadding>
                        {result.apps.map((app : FDC3App, n) =>
                     <ListItemButton  key={`item_list_button_${i}_${n}`} sx={{ pl: 4 }}>

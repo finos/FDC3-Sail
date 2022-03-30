@@ -1199,9 +1199,7 @@ _listeners.push({
             ? msg.data.context.type
             : '';
 
-        const intentListeners = runtime.getIntentListenersByContext(
-          context
-        );
+        const intentListeners = runtime.getIntentListenersByContext(context);
 
         if (intentListeners) {
           // let keys = Object.keys(intentListeners);
