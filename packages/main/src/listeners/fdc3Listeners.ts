@@ -1,7 +1,19 @@
 import { Listener as IListener } from '../types/Listener';
-import { Context, AppIntent, AppMetadata, IntentMetadata, TargetApp } from '@finos/fdc3';
+import {
+  Context,
+  AppIntent,
+  AppMetadata,
+  IntentMetadata,
+  TargetApp,
+} from '@finos/fdc3';
 import { FDC3Message } from '../types/FDC3Message';
-import { Channel, DirectoryApp, FDC3App } from '../types/FDC3Data';
+import {
+  Channel,
+  DirectoryApp,
+  FDC3App,
+  FDC3AppDetail,
+  IntentInstance,
+} from '../types/FDC3Data';
 import utils from '../utils';
 import { View } from '../view';
 import { getRuntime } from '../index';
@@ -257,23 +269,21 @@ interface ViewListener {
   listenerId: string;
 }
 
-
 /**
- * 
- * @param target 
+ *
+ * @param target
  * Given a TargetApp input, return the app Name or undefined
  */
-const resolveTargetAppToName = (target : TargetApp) : string | undefined  => {
-  if (!target){
+const resolveTargetAppToName = (target: TargetApp): string | undefined => {
+  if (!target) {
     return undefined;
   } else {
     let name = undefined;
     //is target typeof string?  if so, it is just going to be an app name
-    if (typeof(target) === 'string'){
+    if (typeof target === 'string') {
       name = target;
-    }
-    else {
-      const app : AppMetadata = (target as AppMetadata);
+    } else {
+      const app: AppMetadata = target as AppMetadata;
       if (app && app.name) {
         name = app.name;
       }
@@ -283,41 +293,37 @@ const resolveTargetAppToName = (target : TargetApp) : string | undefined  => {
 };
 
 /**
- * 
- * @param target 
+ *
+ * @param target
  * Given a TargetApp input, return a search query string to append to an appD search call
  * e.g.  '&name=AppName' or '&text=AppTitle'
  */
-const resolveTargetAppToQuery = (target : TargetApp) : string  => {
-    if (!target){
-      return '';
+const resolveTargetAppToQuery = (target: TargetApp): string => {
+  if (!target) {
+    return '';
+  } else {
+    let query = '';
+    //is there a valid app name?
+    const name = resolveTargetAppToName(target);
+    if (name) {
+      query = `&name=${name}`;
     } else {
-      let query = '';
-      //is there a valid app name?
-      const name = resolveTargetAppToName(target);
-      if (name) {
-        query = `&name=${name}`;
-      }
-      else {
-        const app : AppMetadata = (target as AppMetadata);
-        if (app) {
-          //construct a text search, prefering id, then title, then description
-          //this is currently punting on a more complicated heuristic on potentailly ambiguous results (by version, etc)
-          if (app.appId) {
-            query = `&text=${app.appId}`;
-          }
-          else if (app.title) {
-            query = `&text=${app.title}`;
-          }
-          else if (app.description) {
-            query = `&text=${app.description}`;
-          }
+      const app: AppMetadata = target as AppMetadata;
+      if (app) {
+        //construct a text search, prefering id, then title, then description
+        //this is currently punting on a more complicated heuristic on potentailly ambiguous results (by version, etc)
+        if (app.appId) {
+          query = `&text=${app.appId}`;
+        } else if (app.title) {
+          query = `&text=${app.title}`;
+        } else if (app.description) {
+          query = `&text=${app.description}`;
         }
       }
-      return query;
     }
+    return query;
+  }
 };
-
 
 _listeners.push({
   name: TOPICS.FDC3_OPEN,
@@ -326,7 +332,7 @@ _listeners.push({
       console.log('fdc3Message recieved', msg);
 
       const name = resolveTargetAppToName(msg.data.target) || '';
-      
+
       runtime.fetchFromDirectory(`/apps/${name}`).then(
         (result: DirectoryApp) => {
           // const source = utils.id(port);
@@ -965,13 +971,11 @@ _listeners.push({
       }
       utils.getDirectoryUrl().then(async (directoryUrl) => {
         const query = resolveTargetAppToQuery(msg.data.target);
-       
+
         const _r = await fetch(
-          `${directoryUrl}/apps/search?intent=${
-            msg.data.intent
-          }&context=${ctx}${query}`,
+          `${directoryUrl}/apps/search?intent=${msg.data.intent}&context=${ctx}${query}`,
         );
-        console.log('raiseIntent', _r);
+        //console.log('raiseIntent', _r);
         if (_r) {
           let data = null;
           try {
@@ -1106,7 +1110,7 @@ _listeners.push({
             });
 
             //launch window with resolver UI
-            console.log('resolve intent - options', r);
+            // console.log('resolve intent - options', r);
             const sourceView = getRuntime().getView(msg.source);
             if (sourceView) {
               getRuntime().openResolver(
@@ -1115,23 +1119,278 @@ _listeners.push({
                 r,
               );
             }
-            /* chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                        var activeTab = tabs[0];
-                       
-                        chrome.tabs.sendMessage(activeTab.id, {
-                            "message": "intent_resolver", 
-                            "eventId": eventId,
-                            "data":r, 
-                            "intent":msg.data.intent,
-                            "context":msg.data.context});
-                        
-                    });*/
           }
         } else {
           //show message indicating no handler for the intent...
           reject('no apps found for intent');
         }
       });
+    });
+  },
+});
+
+/**
+ * create a heirarchy of App Instances grouped by intents
+ */
+const buildIntentInstanceTree = (
+  data: Array<FDC3App>,
+): Array<IntentInstance> => {
+  const r: Array<IntentInstance> = [];
+
+  if (data) {
+    const found: Map<string, Array<FDC3App>> = new Map();
+    const intents: Array<IntentMetadata> = [];
+    data.forEach((item) => {
+      if (item.details.directoryData && item.details.directoryData.intents) {
+        item.details.directoryData.intents.forEach((intent) => {
+          if (!found.has(intent.name)) {
+            intents.push({
+              name: intent.name,
+              displayName: intent.display_name,
+            });
+            found.set(intent.name, [item]);
+          } else {
+            const intents = found.get(intent.name);
+            if (intents) {
+              intents.push(item);
+            }
+          }
+        });
+      }
+    });
+
+    intents.forEach((intent) => {
+      const apps: Array<FDC3App> = found.get(intent.name) || [];
+
+      const entry: IntentInstance = { intent: intent, apps: apps };
+
+      r.push(entry);
+    });
+  }
+  return r;
+};
+
+_listeners.push({
+  name: TOPICS.FDC3_RAISE_INTENT_FOR_CONTEXT,
+  handler: (runtime, msg) => {
+    return new Promise((resolve, reject) => {
+      console.log('raiseIntentForContext', msg);
+      const raiseIntentForContext = async () => {
+        const r: Array<FDC3App> = [];
+
+        //handle the resolver UI closing
+        /* port.onMessage.addListener(async (msg : FDC3Message) => {
+            if (msg.topic === "resolver-close"){
+                resolve(null);
+            }
+        });*/
+
+        //decorate the message with source
+        //msg.source = utils.id(port);
+
+        //add dynamic listeners from connected views
+        /**
+         * rather than looking for intent listeners and mathing on intent
+         * loop through active intent listeners and match on context
+         * this returns a map of intents and apps (with matching context listeners)
+         */
+        const context =
+          msg.data.context && msg.data.context.type
+            ? msg.data.context.type
+            : '';
+
+        const intentListeners = runtime.getIntentListenersByContext(
+          context
+        );
+
+        if (intentListeners) {
+          // let keys = Object.keys(intentListeners);
+          intentListeners.forEach((listeners: Array<View>) => {
+            //look up the details of the window and directory metadata in the "connected" store
+            listeners.forEach((view: View) => {
+              // const connect : FDC3AppDetail= utils.getConnected(listener.appId);
+              //connect.intent = intent;
+              //decorate with the intent
+
+              //de-dupe
+              if (
+                !r.find((item) => {
+                  return (
+                    item.details.instanceId &&
+                    item.details.instanceId === view.id
+                  );
+                })
+              ) {
+                const title = view.getTitle();
+                const details: FDC3AppDetail = {
+                  instanceId: view.id,
+                  title: title,
+                  directoryData: view.directoryData,
+                };
+                r.push({ type: 'window', details: details });
+              }
+            });
+          });
+        }
+
+        /**
+         * To Do: Support additional AppMetadata searching (other than name)
+         */
+        const target: TargetApp = msg.data.target;
+        const name: string = target
+          ? typeof target === 'string'
+            ? target
+            : (target as AppMetadata).name
+          : '';
+        const directoryUrl = await utils.getDirectoryUrl();
+
+        const _r = await fetch(
+          `${directoryUrl}/apps/search?context=${context}&name=${name}`,
+        );
+        if (_r) {
+          let data = null;
+          try {
+            data = await _r.json();
+          } catch (err) {
+            console.log('error parsing json', err);
+          }
+
+          if (data) {
+            data.forEach((entry: DirectoryApp) => {
+              r.push({ type: 'directory', details: { directoryData: entry } });
+            });
+          }
+        }
+
+        if (r.length > 0) {
+          if (r.length === 1) {
+            //if there is only one result, use that
+            //if it is a window, post a message directly to it
+            //if it is a directory entry resolve the destination for the intent and launch it
+            //dedupe window and directory items
+            if (r[0].type === 'window' && r[0].details.instanceId) {
+              const view = runtime.getView(r[0].details.instanceId);
+              if (view) {
+                view.content.webContents.send(TOPICS.FDC3_INTENT, {
+                  topic: 'intent',
+                  data: msg.data,
+                  source: msg.source,
+                });
+
+                resolve({ result: true, source: msg.source, version: '1.2' });
+              } else {
+                reject('View could not be found');
+              }
+            } else if (
+              r[0].type === 'directory' &&
+              r[0].details.directoryData
+            ) {
+              const start_url = r[0].details.directoryData.start_url;
+              const pending = true;
+
+              //let win = window.open(start_url,"_blank");
+              const workspace = getRuntime().createWorkspace();
+
+              const view = workspace.createView(start_url, {
+                directoryData: r[0].details.directoryData,
+              });
+              //view.directoryData = r[0].details.directoryData;
+              //set pending intent for the view..
+              if (pending) {
+                view.setPendingIntent(
+                  msg.data.intent,
+                  msg.data.context,
+                  msg.source,
+                );
+              }
+
+              resolve({
+                result: true,
+                source: msg.source,
+                version: '1.2',
+                tab: view.id,
+              });
+            }
+          } else {
+            //show resolver UI
+            // Send a message to the active tab
+            //sort results alphabetically, with directory entries first (before window entries)
+            const getTitle = (app: FDC3App) => {
+              const view = app.details.instanceId
+                ? runtime.getViews().get(app.details.instanceId)
+                : null;
+              const directory = app.details.directoryData
+                ? app.details.directoryData
+                : null;
+              return directory
+                ? directory.title
+                : view &&
+                  view.content.webContents &&
+                  view.content.webContents.hostWebContents
+                ? view.content.webContents.hostWebContents.getTitle()
+                : 'Untitled';
+            };
+            r.sort((a, b) => {
+              //let aTitle = a.details.directoryData ? a.details.directoryData.title : a.details.view.content.webContents.getURL();
+              // let bTitle = b.details.directoryData ? b.details.directoryData.title : b.details.view.content.webContents.getURL();
+              if (a.details) {
+                a.details.title = getTitle(a);
+              }
+              if (b.details) {
+                b.details.title = getTitle(b);
+              }
+
+              if (
+                a.details &&
+                a.details.title &&
+                b.details &&
+                b.details.title &&
+                a.details.title < b.details.title
+              ) {
+                return -1;
+              }
+              if (
+                a.details &&
+                a.details.title &&
+                b.details &&
+                b.details.title &&
+                a.details.title > b.details.title
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            });
+
+            const eventId = `resolveIntent-${Date.now()}`;
+
+            //set a handler for resolving the intent (when end user selects a destination)
+            ipcMain.on(eventId, async (event, args) => {
+              const r = await resolveIntent(args);
+              resolve(r);
+            });
+
+            //launch window with resolver UI
+            console.log('resolve intent - options', r);
+            const sourceView = getRuntime().getView(msg.source);
+            if (sourceView) {
+              try {
+                getRuntime().openResolver(
+                  { context: msg.data.context },
+                  sourceView,
+                  buildIntentInstanceTree(r),
+                );
+              } catch (err) {
+                console.log('error opening resolver', err);
+              }
+            }
+          }
+        } else {
+          //show message indicating no handler for the intent...
+          reject('no apps found for intent');
+        }
+      };
+      raiseIntentForContext();
     });
   },
 });

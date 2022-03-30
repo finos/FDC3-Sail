@@ -1,7 +1,7 @@
 import { RuntimeListener } from './listeners/listener';
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context } from '@finos/fdc3';
-import { FDC3App, ResolverDetail } from './types/FDC3Data';
+import { Context, TargetApp } from '@finos/fdc3';
+import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -29,7 +29,8 @@ const workspaces: Map<string, Workspace> = new Map();
 /**
  * map of all intent resolver dialogs
  */
-const resolvers: Map<string, IntentResolver> = new Map();
+//const resolvers: Map<string, IntentResolver> = new Map();
+let resolver: IntentResolver | undefined = undefined;
 
 export class Runtime {
   constructor() {
@@ -158,6 +159,42 @@ export class Runtime {
     return result;
   }
 
+  /**
+   *
+   * @param context - context type
+   * @param target  - app identifier
+   *
+   * Returns a map of all Views with active intent listeners for a specific context type
+   */
+  getIntentListenersByContext(
+    context: string
+  ): Map<string, Array<View>> {
+    const result: Map<string, Array<View>> = new Map();
+
+    //iterate through all registered apps
+    //match on context for the intents for the entry
+    this.getViews().forEach((view) => {
+      const entry = view.directoryData;
+      if (entry && entry.intents) {
+        //iterate through the intents
+        entry.intents.forEach((entryIntent) => {
+          const intent = entryIntent.name;
+          if (entryIntent.contexts.indexOf(context) > -1) {
+            if (!result.has(intent)) {
+              result.set(intent, []);
+            }
+            const listeners = result.get(intent);
+            if (listeners) {
+              listeners.push(view);
+            }
+          }
+        });
+      }
+    });
+
+    return result;
+  }
+
   createView(url?: string, config?: ViewConfig): Promise<View> {
     return new Promise(() => {
       new Workspace({
@@ -219,12 +256,20 @@ export class Runtime {
   openResolver(
     detail: ResolverDetail,
     view: View,
-    options: Array<FDC3App>,
+    options: Array<FDC3App> | Array<IntentInstance>,
   ): IntentResolver {
     return new IntentResolver(view, detail, options);
   }
 
-  getResolvers(): Map<string, IntentResolver> {
-    return resolvers;
+  getResolver(): IntentResolver | undefined {
+    return resolver;
+  }
+
+  setResolver(newResolver: IntentResolver) {
+    resolver = newResolver;
+  }
+
+  dropResolver() {
+    resolver = undefined;
   }
 }

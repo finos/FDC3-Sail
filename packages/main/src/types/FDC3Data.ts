@@ -1,4 +1,4 @@
-import { Context, DisplayMetadata } from '@finos/fdc3';
+import { Context, DisplayMetadata, IntentMetadata } from '@finos/fdc3';
 import { View } from '../view';
 
 /**
@@ -27,6 +27,14 @@ export interface FDC3App {
   details: FDC3AppDetail;
 }
 
+/**
+ * A collection of apps associated with an intent
+ */
+export interface IntentInstance {
+  intent: IntentMetadata;
+  apps: Array<FDC3App>;
+}
+
 export interface FDC3AppDetail {
   instanceId?: string;
   title?: string;
@@ -34,7 +42,7 @@ export interface FDC3AppDetail {
 }
 
 export interface ResolverDetail {
-  intent: string;
+  intent?: string;
   context?: Context;
 }
 

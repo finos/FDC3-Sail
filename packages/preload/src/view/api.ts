@@ -7,7 +7,7 @@ import {
   ContextHandler,
   Channel,
   ImplementationMetadata,
-  TargetApp
+  TargetApp,
 } from '@finos/fdc3';
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
@@ -234,9 +234,12 @@ export function createAPI() {
       });
     },
 
-    raiseIntentForContext(context : Context, app? : TargetApp)  {
-      return wireMethod("raiseIntentForContext",{context:context, target: app});
-   },
+    raiseIntentForContext(context: Context, app?: TargetApp) {
+      return wireMethod('raiseIntentForContext', {
+        context: context,
+        target: app,
+      });
+    },
 
     addContextListener: (contextType: any, handler?: any) => {
       const thisListener: ContextHandler = handler ? handler : contextType;

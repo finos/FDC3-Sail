@@ -1,9 +1,10 @@
 import { ipcRenderer } from 'electron';
+import { Context } from '@finos/fdc3';
 import { TOPICS } from '../../../main/src/constants';
 
-let id: string | null = null;
-let intent: string | null = null;
-let context: any = null;
+let id: string | undefined = undefined;
+let intent: string | undefined = undefined;
+let context: Context | undefined = undefined;
 
 ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
   console.log(event.type);
@@ -16,12 +17,12 @@ ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
   );
 });
 
-const resolveIntent = (selected: any) => {
+const resolveIntent = (data: any) => {
   ipcRenderer.send(TOPICS.RES_RESOLVE_INTENT, {
     method: 'resolveIntent',
     id: id,
-    intent: intent,
-    selected: selected.details,
+    intent: data.selectedIntent || intent,
+    selected: data.selected.details,
     context: context,
   });
 };
@@ -29,6 +30,6 @@ const resolveIntent = (selected: any) => {
 (document as any).addEventListener(
   TOPICS.RES_RESOLVE_INTENT,
   (event: CustomEvent) => {
-    resolveIntent(event.detail.selected);
+    resolveIntent(event.detail);
   },
 );

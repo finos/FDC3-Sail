@@ -120,12 +120,6 @@ export class RuntimeListener {
       utils.getDirectoryUrl().then((directoryUrl) => {
         fetch(`${directoryUrl}${args.query}`).then((response) => {
           response.json().then((result) => {
-            console.log(
-              'fetch from directory',
-              `${directoryUrl}${args.query}`,
-              result,
-            );
-
             //request can come frome 2 types of (priviledged) sources: the workspace UI and views
             //if the sourceType is View.  We need to check that the view is a 'system' view and can access the directory
             //through this API.  Today, this is only the 'home' view.
@@ -254,7 +248,7 @@ export class RuntimeListener {
       }
 
       //close the resolver
-      const resolver = this.runtime.getResolvers().get(args.id);
+      const resolver = this.runtime.getResolver();
       if (resolver) {
         resolver.close();
       }
