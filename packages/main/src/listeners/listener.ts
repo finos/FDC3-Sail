@@ -43,6 +43,8 @@ export class RuntimeListener {
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
+    //start with clean IPC
+    ipcMain.removeAllListeners();
 
     ipcMain.on(TOPICS.SELECT_TAB, (event, args) => {
       //bring selected browserview to front

@@ -77,6 +77,10 @@ app.disableHardwareAcceleration();
  */
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    if (runtime) {
+      runtime.clean();
+      runtime = null;
+    }
     app.quit();
   }
 });
@@ -85,6 +89,11 @@ app.on('window-all-closed', () => {
  * @see https://www.electronjs.org/docs/v14-x-y/api/app#event-activate-macos Event: 'activate'
  */
 app.on('activate', () => {
+  console.log('activated');
+  if (runtime) {
+    runtime.clean();
+    runtime = null;
+  }
   runtime = new Runtime();
   createWindow();
 });
