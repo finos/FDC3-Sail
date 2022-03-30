@@ -74,7 +74,7 @@ export class IntentResolver {
       import.meta.env.VITE_DEV_SERVER_INTENTS_URL !== undefined
         ? import.meta.env.VITE_DEV_SERVER_INTENTS_URL
         : new URL(
-            '../../renderer/dist/intentResolver.html',
+            '../renderer/dist/intentResolver.html',
             'file://' + __dirname,
           ).toString();
     // and load the index.html of the app.
