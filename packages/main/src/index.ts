@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { session, app, BrowserWindow } from 'electron';
 import './security-restrictions';
 //import { restoreOrCreateWindow } from '/@/mainWindow';
 import { Runtime } from './runtime';
@@ -98,6 +98,8 @@ app.on('activate', () => {
   createWindow();
 });
 
+
+
 /**
  * Create app window when background process will be ready
  */
@@ -106,7 +108,26 @@ app
   .then(() => {
     runtime = new Runtime();
     // restoreOrCreateWindow();
+
+
     createWindow();
+           /**
+     * set a default CSP policy
+     */
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+              `default-src \'self\' http://localhost:3000  https://appd.kolbito.com  https://s3.tradingview.com https://s.tradingview.com https://www.tradingview.com https://polygon.io https://unpkg.com \'unsafe-inline\';
+              connect-src \'self\' wss://pushstream.tradingview.com wss://widgetdata.tradingview.com;
+              img-src 'self' http://localhost:3000  https://appd.kolbito.com  https://s3.tradingview.com https://s.tradingview.com https://www.tradingview.com https://polygon.io https://unpkg.com;
+                font-src \'self\' http://localhost:3000  https://appd.kolbito.com  https://s3.tradingview.com https://www.tradingview.com https://polygon.io https://unpkg.com;
+              script-src-elem  \'self\' http://localhost:3000  https://appd.kolbito.com  https://s3.tradingview.com https://www.tradingview.com https://polygon.io https://unpkg.com \'unsafe-inline\'  `
+          ] 
+        }
+      })
+    });
   })
   .catch((e) => console.error('Failed create window:', e));
 
