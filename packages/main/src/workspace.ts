@@ -141,15 +141,18 @@ export class Workspace {
       if (view) {
         try {
           if (this.window) {
-            //just make sure the browserview is actually attached to the window
-            console.log('setSelectedTab addBrowserView', view.content);
-
+            //ensure the browserview is actually attached to the window
             this.window.addBrowserView(view.content);
             // setTimeout(() => {
             if (this.window) {
               try {
                 console.log('setting top browser view');
                 this.window.setTopBrowserView(view.content);
+                this.window.webContents.send(TOPICS.SELECT_TAB, {
+                  viewId: tabId,
+                });
+                //focus the workspace window
+                this.window.focus();
               } catch (err) {
                 console.error('setSelectedTab', err);
               }

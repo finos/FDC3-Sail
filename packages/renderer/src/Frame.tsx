@@ -59,7 +59,7 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
         
         this.setState({selectedTab:newTabId});
         
-        document.dispatchEvent(new CustomEvent(TOPICS.SELECT_TAB, {detail:{
+        document.dispatchEvent(new CustomEvent(TOPICS.TAB_SELECTED, {detail:{
             selected:newTabId
           }}));
         }
@@ -85,7 +85,7 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
     }
 
     componentDidMount() {
-      (document as any).addEventListener(TOPICS.ADD_TAB,(event : CustomEvent) => {
+      document.addEventListener(TOPICS.ADD_TAB,((event : CustomEvent) => {
           console.log("Add Tab called", event.detail);
           const tabId = event.detail.viewId;
           const tabName = event.detail.title;
@@ -100,13 +100,13 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
             //select the new Tab?
             //selectTab(tabId);
           }
-      });
+      }) as EventListener);
 
-      (document as any).addEventListener(TOPICS.SELECT_TAB, (event : CustomEvent) => {
+      document.addEventListener(TOPICS.SELECT_TAB, ((event : CustomEvent) => {
         if (event.detail.selected){
           this.setState({selectedTab:event.detail.selected});
         }
-      });
+      }) as EventListener);
   }
 
   render() {

@@ -68,8 +68,8 @@ document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
   });
 }) as EventListener);
 
-document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.SELECT_TAB, {
+document.addEventListener(TOPICS.TAB_SELECTED, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.TAB_SELECTED, {
     source: id,
     selected: event.detail.selected,
   });
