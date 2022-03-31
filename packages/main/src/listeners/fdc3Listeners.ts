@@ -673,18 +673,23 @@ export const joinViewToChannel = (
         if (channelContext) {
           const ctx = channelContext.length > 0 ? channelContext[0] : null;
           let contextSent = false;
-          if (ctx && !restoreOnly) {
+
+          if (ctx && (restoreOnly === undefined || !restoreOnly)) {
             // send to individual listenerIds
+
             view.listeners.forEach((l) => {
               //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
               if (!l.intent) {
                 if (
-                  (!l.channel || (l.channel && l.channel === channel)) &&
+                  (!l.channel ||
+                    l.channel === 'default' ||
+                    (l.channel && l.channel === channel)) &&
                   (!l.contextType ||
                     (l.contextType && l.contextType === ctx.type))
                 ) {
                   view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
                     topic: 'context',
+                    listenerIds: [l.listenerId],
                     data: { context: ctx, listenerId: l.listenerId },
                     source: view.id,
                   });
