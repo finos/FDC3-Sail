@@ -106,6 +106,7 @@ app
   .then(() => {
     runtime = new Runtime();
     // restoreOrCreateWindow();
+
     createWindow();
   })
   .catch((e) => console.error('Failed create window:', e));

@@ -73,9 +73,8 @@ export class View {
         preload: url ? VIEW_PRELOAD : HOME_PRELOAD,
         devTools: true,
         contextIsolation: true,
-        // enableRemoteModule:false,
         webSecurity: true,
-        // worldSafeExecuteJavaScript:true
+        nodeIntegration: false,
       },
     });
     //set bgcolor so view doesn't bleed through to hidden tabs

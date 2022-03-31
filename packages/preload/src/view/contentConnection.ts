@@ -54,7 +54,7 @@ ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
  * handlers will be routinely cleaned up by finding all events that have expired (check timestamp) and rejecting those items
  */
 //collection of listeners for api calls coming back from the background script
-const returnListeners: Map<string, any> = new Map();
+const returnListeners: Map<string, FDC3ReturnListener> = new Map();
 //const returnTimeout = 1000 * 60 * 2;
 
 const sendMessage = (msg: FDC3Message) => {
@@ -63,9 +63,8 @@ const sendMessage = (msg: FDC3Message) => {
   port1.onmessage = (event: MessageEvent) => {
     const msg = event.data;
     //is there a returnlistener registered for the event?
-    const listener = returnListeners.has(msg.topic)
-      ? returnListeners.get(msg.topic).listener
-      : null;
+    const listenerEntry = returnListeners.get(msg.topic);
+    const listener = listenerEntry ? listenerEntry.listener : null;
     if (listener) {
       listener.call(window, msg);
       returnListeners.delete(msg.name);
@@ -75,7 +74,17 @@ const sendMessage = (msg: FDC3Message) => {
   ipcRenderer.postMessage(`FDC3:${msg.topic}`, msg, [port2]);
 };
 
-const wireTopic = (topic: string, config?: any): void => {
+interface FDC3ReturnListener {
+  ts: number;
+  listener: { (msg: FDC3Message): void };
+}
+
+interface TopicConfig {
+  isVoid?: boolean;
+  cb?: { (event: FDC3Event): void };
+}
+
+const wireTopic = (topic: string, config?: TopicConfig): void => {
   document.addEventListener(`FDC3:${topic}`, ((e: FDC3Event) => {
     console.log('contentConnect event', e);
     const cb = config ? config.cb : null;
