@@ -90,9 +90,9 @@ const wireTopic = (topic: string, config?: any): void => {
         returnListeners.set(eventId, {
           ts: e.ts,
           listener: function (msg: FDC3Message) {
-            if (msg && msg.data) {
+            if (msg) {
               document.dispatchEvent(
-                utils.fdc3Event(`return_${eventId}`, msg.data),
+                utils.fdc3Event(`return_${eventId}`,((msg && msg.data) ? msg.data : {})),
               );
             }
           },
