@@ -20,7 +20,8 @@ export enum TOPICS {
   OPEN_CHANNEL_PICKER_CLICK = 'UI:openChannelPicker',
   OPEN_FRAME_TOOLS_CLICK = 'UI:openFrameTools',
   OPEN_TAB_TOOLS_CLICK = 'UI:openTabTools',
-  SELECT_TAB = 'WORK:selectTab',
+  SELECT_TAB = 'WORK:selectTab', //tab state changes from event in the main process (i.e. change of focus from new view or intent resolution)
+  TAB_SELECTED = 'WORK:tabSelected', //tab is selected by user action in the UI
   CLOSE_TAB = 'WORK:closeTab',
   DROP_TAB = 'WORK:dropTab',
   JOIN_CHANNEL = 'WORK:joinChannel',

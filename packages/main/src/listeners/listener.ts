@@ -46,7 +46,7 @@ export class RuntimeListener {
     //start with clean IPC
     ipcMain.removeAllListeners();
 
-    ipcMain.on(TOPICS.SELECT_TAB, (event, args) => {
+    ipcMain.on(TOPICS.TAB_SELECTED, (event, args) => {
       //bring selected browserview to front
       const workspace = this.runtime.getWorkspace(args.source);
       if (workspace) {
