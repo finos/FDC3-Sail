@@ -10,6 +10,7 @@ import {
   TargetApp,
 } from '@finos/fdc3';
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
+import { ChannelData } from '../../../main/src/types/FDC3Data';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { TOPICS } from '../../../main/src/constants';
 
@@ -91,13 +92,23 @@ export function createAPI() {
         wireMethod(
           'broadcast',
           { context: context, channel: channel.id },
-          true,
+          { void: true },
         );
       },
       getCurrentContext: (contextType?: string) => {
-        return wireMethod('getCurrentContext', {
-          channel: channel.id,
-          contextType: contextType,
+        return new Promise((resolve, reject) => {
+          wireMethod('getCurrentContext', {
+            channel: channel.id,
+            contextType: contextType,
+          }).then(
+            (r) => {
+              const result: Context = r as Context;
+              resolve(result);
+            },
+            (err) => {
+              reject(err);
+            },
+          );
         });
       },
 
@@ -179,11 +190,27 @@ export function createAPI() {
     return instance as AppInstance;
   };
 */
+
+  interface MethodConfig {
+    void?: boolean;
+    resultHandler?: { (result: FDC3Result): FDC3Result };
+  }
+
+  type FDC3Result =
+    | FDC3EventDetail
+    | Array<ChannelData>
+    | ChannelData
+    | Array<Channel>
+    | Channel
+    | Context
+    | null
+    | void;
+
   const wireMethod = (
     method: string,
     detail: FDC3EventDetail,
-    config?: any,
-  ): Promise<any | null> => {
+    config?: MethodConfig,
+  ): Promise<FDC3Result> => {
     const ts: number = Date.now();
     const _guid: string = utils.guid();
     const eventId = `${method}_${_guid}`;
@@ -192,14 +219,14 @@ export function createAPI() {
     if (config && config.void) {
       document.dispatchEvent(utils.fdc3Event(method, detail));
       return new Promise((resolve) => {
-        resolve(null);
+        resolve();
       });
     } else {
       return new Promise((resolve) => {
         document.addEventListener(
           `FDC3:return_${eventId}`,
           ((event: FDC3Event) => {
-            let r = event.detail;
+            let r: FDC3Result = event.detail;
             if (r !== null && config && config.resultHandler) {
               r = config.resultHandler.call(document, r);
             }
@@ -303,11 +330,16 @@ export function createAPI() {
         'getSystemChannels',
         {},
         {
-          resultHandler: (r: any) => {
-            const channels = r.map((c: any) => {
-              return createChannelObject(c.id, 'system', c.displayMetadata);
+          resultHandler: (r: FDC3Result) => {
+            r = r as Array<ChannelData>;
+            const channels = r.map((c: ChannelData) => {
+              return createChannelObject(
+                c.id,
+                'system',
+                c.displayMetadata || { name: c.id },
+              );
             });
-            return channels;
+            return channels as FDC3Result;
           },
         },
       );
@@ -318,8 +350,17 @@ export function createAPI() {
         'getOrCreateChannel',
         { channelId: channelId },
         {
-          resultHandler: (r: any) => {
-            return createChannelObject(r.id, r.type, r.displayMetadata);
+          resultHandler: (r: FDC3Result) => {
+            const result: ChannelData = r as ChannelData;
+            if (result.id && result.type) {
+              return createChannelObject(
+                result.id,
+                result.type,
+                result.displayMetadata || { name: result.id },
+              );
+            } else {
+              return null;
+            }
           },
         },
       );
@@ -349,8 +390,13 @@ export function createAPI() {
         'getCurrentChannel',
         {},
         {
-          resultHandler: (r: any) => {
-            return createChannelObject(r.id, r.type, r.displayMetadata);
+          resultHandler: (r: FDC3Result) => {
+            const result: ChannelData = r as ChannelData;
+            return createChannelObject(
+              result.id,
+              result.type,
+              result.displayMetadata || { name: result.id },
+            );
           },
         },
       );
@@ -386,7 +432,7 @@ export function createAPI() {
     }
   }) as EventListener);
 
-  (document as any).addEventListener(TOPICS.FDC3_INTENT, (event: FDC3Event) => {
+  document.addEventListener(TOPICS.FDC3_INTENT, ((event: FDC3Event) => {
     const intent = event.detail.data && event.detail.data.intent;
     const context = event.detail.data && event.detail.data.context;
     if (intent) {
@@ -404,7 +450,7 @@ export function createAPI() {
         utils.fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
       );
     }
-  });
+  }) as EventListener);
 
   //map of context listeners by id
   const _contextListeners: Map<string, ListenerItem> = new Map();
