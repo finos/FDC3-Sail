@@ -82,8 +82,9 @@ export class View {
     this.content.setBackgroundColor('#fff');
 
     this.content.webContents.on('ipc-message', (event, channel) => {
-      console.log('ipc-message', event.type);
+      console.log('ipc-message', event.type, channel);
       if (channel === TOPICS.FDC3_INITIATE && !this.initiated) {
+        console.log('fdc3 initiating!');
         initView(config);
       }
     });

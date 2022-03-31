@@ -5,10 +5,11 @@ import {
   AppMetadata,
   IntentMetadata,
   TargetApp,
+  IntentResolution,
 } from '@finos/fdc3';
 import { FDC3Message } from '../types/FDC3Message';
 import {
-  Channel,
+  ChannelData,
   DirectoryApp,
   FDC3App,
   FDC3AppDetail,
@@ -37,9 +38,6 @@ interface Listener {
 //wait 2 minutes for pending intents to connect
 const pendingTimeout: number = 2 * 60 * 1000;
 
-//map of pending contexts for specific app instances
-const pending_instance_context: Map<string, Map<string, any>> = new Map();
-
 // map of all running contexts keyed by channel
 //const contexts : Map<string,Array<Context>> = new Map([["default",[]]]);
 
@@ -50,13 +48,13 @@ const pending_instance_context: Map<string, Map<string, any>> = new Map();
 const instanceListeners: Map<string, Map<string, Listener>> = new Map();
 
 //collection of app channel ids
-const app_channels: Array<Channel> = [];
+const app_channels: Array<ChannelData> = [];
 
 //generate / get full channel object from an id - returns null if channel id is not a system channel or a registered app channel
-const getChannelMeta = (id: string): Channel | null => {
-  let channel: Channel | null = null;
+const getChannelMeta = (id: string): ChannelData | null => {
+  let channel: ChannelData | null = null;
   //is it a system channel?
-  const sChannels: Array<Channel> = utils.getSystemChannels();
+  const sChannels: Array<ChannelData> = utils.getSystemChannels();
   const sc = sChannels.find((c) => {
     return c.id === id;
   });
@@ -84,7 +82,7 @@ _listeners.push({
     //remove the listener from the view when it is unsubscribed
     return new Promise((resolve, reject) => {
       try {
-        const id = msg.data.id;
+        const id: string | null = (msg.data && msg.data.id) || null;
         const view: View | null | undefined = msg.source
           ? runtime.getView(msg.source)
           : null;
@@ -104,11 +102,13 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_GET_CURRENT_CONTEXT,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<Context | null> => {
     return new Promise((resolve, reject) => {
       try {
-        const channel = msg.data.channel;
-        const type = msg.data.contextType;
+        const channel: string | undefined =
+          (msg.data && msg.data.channel) || undefined;
+        const type: string | undefined =
+          (msg.data && msg.data.contextType) || undefined;
         const contexts = getRuntime().getContexts();
         let ctx: Context | null = null;
         if (channel) {
@@ -132,7 +132,7 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_BROADCAST,
-  handler: (runtime: Runtime, msg) => {
+  handler: (runtime: Runtime, msg): Promise<void> => {
     return new Promise((resolve, reject) => {
       const contexts = runtime.getContexts();
       const source = msg.source ? runtime.getView(msg.source) : null;
@@ -141,7 +141,8 @@ _listeners.push({
         //meaning this is a point-to-point com between two instances
         //if the target listener is registered for the source instance, then dispatch the context
         //else, add to the pending queue for instances
-        const targetId: string = msg.data.instanceId;
+        const targetId: string | undefined =
+          (msg.data && msg.data.instanceId) || undefined;
         if (targetId) {
           console.log(
             `broadcast message = '${JSON.stringify(
@@ -156,7 +157,10 @@ _listeners.push({
               if (!l.intent) {
                 if (
                   !l.contextType ||
-                  (l.contextType && l.contextType === msg.data.context.type)
+                  (l.contextType &&
+                    l.contextType === msg.data &&
+                    msg.data.context &&
+                    msg.data.context.type)
                 ) {
                   viewListeners.push({
                     view: target,
@@ -169,9 +173,9 @@ _listeners.push({
               viewListeners.forEach((viewL: ViewListener) => {
                 const data = {
                   listenerId: viewL.listenerId,
-                  eventId: msg.data.eventId,
-                  ts: msg.data.ts,
-                  context: msg.data.context,
+                  eventId: msg.data && msg.data.eventId,
+                  ts: msg.data && msg.data.ts,
+                  context: msg.data && msg.data.context,
                 };
                 viewL.view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
                   topic: 'context',
@@ -184,24 +188,27 @@ _listeners.push({
               setPending = true;
             }
           }
-
-          if (setPending && target) {
-            target.setPendingContext(msg.data.context);
+          const pendingContext = msg.data && msg.data.context;
+          if (setPending && pendingContext && target) {
+            target.setPendingContext(pendingContext);
           }
           //if we have a target, we aren't going to go to other channnels - so resolve
-          resolve(null);
+          resolve();
         }
 
         //use channel on message first - if one is specified
         const channel =
-          msg.data.channel || (source && source.channel) || 'default';
+          (msg.data && msg.data.channel) ||
+          (source && source.channel) ||
+          'default';
 
         if (channel !== 'default') {
           //is the app on a channel?
           // update the channel state
           const channelContext = contexts.get(channel);
-          if (channelContext) {
-            channelContext.unshift(msg.data.context);
+          const context = msg.data && msg.data.context;
+          if (channelContext && context) {
+            channelContext.unshift(context);
           }
 
           //if there is a channel, filter on channel
@@ -224,13 +231,15 @@ _listeners.push({
                   'broadcast - matched channel, contextType ',
                   l.contextType,
                 );
-                if (l.contextType) {
+                const contextType =
+                  msg.data && msg.data.context && msg.data.context.type;
+                if (l.contextType && contextType) {
                   console.log(
                     'contextType match',
-                    l.contextType === msg.data.context.type,
+                    l.contextType === contextType,
                   );
                   if (
-                    l.contextType === msg.data.context.type &&
+                    l.contextType === contextType &&
                     viewListeners.indexOf(l.listenerId) === -1
                   ) {
                     viewListeners.push(l.listenerId);
@@ -247,16 +256,16 @@ _listeners.push({
                 topic: 'context',
                 listenerIds: viewListeners,
                 data: {
-                  eventId: msg.data.eventId,
-                  ts: msg.data.ts,
-                  context: msg.data.context,
+                  eventId: msg.data && msg.data.eventId,
+                  ts: msg.data && msg.data.ts,
+                  context: msg.data && msg.data.context,
                 },
                 source: msg.source,
               });
             }
           });
         }
-        resolve(null);
+        resolve();
       } catch (err) {
         reject(err);
       }
@@ -327,14 +336,21 @@ const resolveTargetAppToQuery = (target: TargetApp): string => {
 
 _listeners.push({
   name: TOPICS.FDC3_OPEN,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<void> => {
     return new Promise((resolve, reject) => {
       console.log('fdc3Message recieved', msg);
 
-      const name = resolveTargetAppToName(msg.data.target) || '';
-
+      const name =
+        msg.data && msg.data.name
+          ? msg.data.name
+          : msg.data && msg.data.target
+          ? resolveTargetAppToName(msg.data.target)
+          : '';
+      console.log('open name', name);
       runtime.fetchFromDirectory(`/apps/${name}`).then(
-        (result: DirectoryApp) => {
+        (result) => {
+          result = result as DirectoryApp;
+          console.log('directory result', result);
           // const source = utils.id(port);
           if (result) {
             if (result && result.start_url) {
@@ -352,7 +368,7 @@ _listeners.push({
                 newView.setPendingContext(msg.context, msg.source);
               }
               //resolve with the window identfier
-              resolve(null);
+              resolve();
               //reject?
             }
           }
@@ -367,11 +383,11 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_GET_CURRENT_CONTEXT,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<Context | null> => {
     return new Promise((resolve, reject) => {
       try {
-        const channel = msg.data.channel;
-        const type = msg.data.contextType;
+        const channel = (msg.data && msg.data.channel) || undefined;
+        const type = (msg.data && msg.data.contextType) || undefined;
         let ctx: Context | null = null;
         if (channel) {
           const contexts = runtime.getContexts();
@@ -397,14 +413,14 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_GET_OR_CREATE_CHANNEL,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<ChannelData | void> => {
     return new Promise((resolve, reject) => {
-      const id = msg.data.channelId;
+      const id = (msg.data && msg.data.channelId) || 'default';
       //reject with error is reserved 'default' term
       if (id === 'default') {
         reject(utils.ChannelError.CreationFailed);
       } else {
-        let channel: Channel | null = getChannelMeta(id);
+        let channel: ChannelData | null = getChannelMeta(id);
 
         //if not found... create as an app channel
         if (!channel) {
@@ -414,7 +430,11 @@ _listeners.push({
           runtime.getContexts().set(id, []);
           app_channels.push(channel);
         }
-        resolve(channel);
+        if (channel) {
+          resolve(channel);
+        } else {
+          resolve();
+        }
       }
     });
   },
@@ -425,23 +445,22 @@ _listeners.push({
  */
 _listeners.push({
   name: TOPICS.FDC3_ADD_CONTEXT_LISTENER,
-  handler: (runtime: Runtime, msg) => {
+  handler: (runtime: Runtime, msg): Promise<boolean> => {
     return new Promise((resolve, reject) => {
       try {
         const source = msg.source; //this is the app instance calling addContextListener
 
         //if there is an instanceId specified, this call is to listen to context from a specific app instance
         const view = runtime.getView(msg.source);
-        const listenerId = msg.data.id;
+        const listenerId = msg.data && msg.data.id;
         console.log('listenerId', listenerId);
-        const instanceId = msg.data.instanceId;
+        const instanceId = msg.data && msg.data.instanceId;
         if (instanceId && view) {
           console.log(
             'addContextLister ',
-            msg.data.id,
+            msg.data && msg.data.id,
             instanceId,
             instanceListeners,
-            pending_instance_context,
           );
           const target: View | undefined = runtime.getView(instanceId);
           if (target) {
@@ -449,8 +468,8 @@ _listeners.push({
             target.listeners.push({
               viewId: view.id,
               source: instanceId,
-              listenerId: msg.data.id,
-              contextType: msg.data.contextType,
+              listenerId: (msg.data && msg.data.id) || '',
+              contextType: (msg.data && msg.data.contextType) || '',
             });
             const pendingContexts = target.getPendingContexts();
             if (pendingContexts && pendingContexts.length > 0) {
@@ -461,7 +480,8 @@ _listeners.push({
                   if (
                     pending.context &&
                     pending.context.type &&
-                    pending.context.type === msg.data.type
+                    pending.context.type === msg.data &&
+                    msg.data.type
                   ) {
                     view.content.webContents.postMessage(TOPICS.FDC3_CONTEXT, {
                       topic: 'context',
@@ -486,12 +506,12 @@ _listeners.push({
             : 'default'; //: (c && c.channel) ? c.channel
 
         if (view) {
-          console.log('adding listener', msg.data.id);
+          console.log('adding listener', msg.data && msg.data.id);
 
           view.listeners.push({
-            listenerId: msg.data.id,
+            listenerId: (msg.data && msg.data.id) || '',
             viewId: view.id,
-            contextType: msg.data.contextType,
+            contextType: (msg.data && msg.data.contextType) || undefined,
             channel: channel,
             isChannel: channel !== 'default',
           });
@@ -509,23 +529,30 @@ _listeners.push({
                 'check pending',
                 pending.context,
                 pending.context ? pending.context.type : 'no pending object',
-                msg.data.type,
-                msg.data.id,
-                msg.data.type === undefined ||
+                msg.data && msg.data.type,
+                msg.data && msg.data.id,
+                (msg.data && msg.data.type === undefined) ||
                   (pending.context &&
                     pending.context.type &&
-                    pending.context.type === msg.data.type),
+                    pending.context.type === msg.data &&
+                    msg.data.type) ||
+                  '',
               );
               if (
-                msg.data.type === undefined ||
+                msg.data === undefined ||
+                (msg.data && msg.data.type === undefined) ||
                 (pending.context &&
                   pending.context.type &&
-                  pending.context.type === msg.data.type)
+                  pending.context.type === msg.data &&
+                  msg.data.type)
               ) {
                 view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
                   topic: 'context',
-                  listenerId: msg.data.id,
-                  data: { context: pending.context, listenerId: msg.data.id },
+                  listenerId: msg.data && msg.data.id,
+                  data: {
+                    context: pending.context,
+                    listenerId: msg.data && msg.data.id,
+                  },
                   source: source,
                 });
 
@@ -545,7 +572,7 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_GET_SYSTEM_CHANNELS,
-  handler: () => {
+  handler: (): Promise<Array<ChannelData>> => {
     return new Promise((resolve) => {
       resolve(utils.getSystemChannels());
     });
@@ -554,13 +581,13 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_LEAVE_CURRENT_CHANNEL,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<void> => {
     return new Promise((resolve, reject) => {
       //'default' means we have left all channels
       const view = runtime.getView(msg.source);
       if (view) {
         joinViewToChannel('default', view);
-        resolve(null);
+        resolve();
       } else {
         reject('View not found');
       }
@@ -572,43 +599,53 @@ _listeners.push({
   name: TOPICS.FDC3_ADD_INTENT_LISTENER,
   handler: (runtime, msg): Promise<void> => {
     return new Promise((resolve, reject) => {
-      const name = msg.data.intent;
-      const listenerId = msg.data.id;
-      try {
-        runtime.setIntentListener(name, listenerId, msg.source);
-        const view = runtime.getView(msg.source);
-        if (view) {
-          //check for pending intents
-          const pending_intents = view.getPendingIntents();
-          if (pending_intents.length > 0) {
-            //first cleanup anything old
-            const n = Date.now();
+      const name = msg.data && msg.data.intent;
+      const listenerId = msg.data && msg.data.id;
+      if (name && listenerId) {
+        try {
+          runtime.setIntentListener(name, listenerId, msg.source);
+          const view = runtime.getView(msg.source);
+          if (view) {
+            //check for pending intents
+            const pending_intents = view.getPendingIntents();
+            if (pending_intents.length > 0) {
+              //first cleanup anything old
+              const n = Date.now();
 
-            //next, match on tab and intent
-            pending_intents.forEach((pIntent, index) => {
-              if (n - pIntent.ts < pendingTimeout && pIntent.intent === name) {
-                console.log('applying pending intent', pIntent);
-                //refactor with other instances of this logic
-                if (view && view.content) {
-                  view.content.webContents.send(TOPICS.FDC3_INTENT, {
-                    topic: 'intent',
-                    data: { intent: pIntent.intent, context: pIntent.context },
-                    source: pIntent.source,
-                  });
+              //next, match on tab and intent
+              pending_intents.forEach((pIntent, index) => {
+                if (
+                  n - pIntent.ts < pendingTimeout &&
+                  pIntent.intent === name
+                ) {
+                  console.log('applying pending intent', pIntent);
+                  //refactor with other instances of this logic
+                  if (view && view.content) {
+                    view.content.webContents.send(TOPICS.FDC3_INTENT, {
+                      topic: 'intent',
+                      data: {
+                        intent: pIntent.intent,
+                        context: pIntent.context,
+                      },
+                      source: pIntent.source,
+                    });
+                  }
+                  //bringing the tab to front conditional on the type of intent
+                  /* if (! utils.isDataIntent(pIntent.intent)){
+                                  utils.bringToFront(port.sender.tab);
+                              }*/
+                  //remove the applied intent
+                  view.removePendingIntent(index);
                 }
-                //bringing the tab to front conditional on the type of intent
-                /* if (! utils.isDataIntent(pIntent.intent)){
-                                utils.bringToFront(port.sender.tab);
-                            }*/
-                //remove the applied intent
-                view.removePendingIntent(index);
-              }
-            });
+              });
+            }
           }
+          resolve();
+        } catch (err) {
+          reject(err);
         }
-        resolve();
-      } catch (err) {
-        reject(err);
+      } else {
+        reject('No intent name and/or listener id provided');
       }
     });
   },
@@ -676,22 +713,31 @@ export const joinViewToChannel = (
 
 _listeners.push({
   name: TOPICS.FDC3_JOIN_CHANNEL,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<boolean> => {
     return new Promise((resolve, reject) => {
-      try {
-        const view = runtime.getView(msg.source);
-        if (view) {
-          joinViewToChannel(msg.data.channel, view, msg.data.restoreOnly).then(
-            () => {
-              resolve(true);
-            },
-            () => {
-              resolve(false);
-            },
-          );
+      const channel = msg.data && msg.data.channel;
+      if (channel) {
+        try {
+          const view = runtime.getView(msg.source);
+          if (view) {
+            joinViewToChannel(
+              channel,
+              view,
+              (msg.data && msg.data.restoreOnly) || undefined,
+            ).then(
+              () => {
+                resolve(true);
+              },
+              () => {
+                resolve(false);
+              },
+            );
+          }
+        } catch (err) {
+          reject(err);
         }
-      } catch (err) {
-        reject(err);
+      } else {
+        reject('No channel provided');
       }
     });
   },
@@ -699,20 +745,25 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.JOIN_WORKSPACE_TO_CHANNEL,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<boolean> => {
     console.log('join workspace to channel');
     return new Promise((resolve, reject) => {
       //get collection of views for the window
-      try {
-        const workspace = runtime.getWorkspace(msg.source);
-        if (workspace) {
-          workspace.setChannel(msg.data.channel);
-          resolve(true);
-        } else {
-          resolve(false);
+      const channel = msg.data && msg.data.channel;
+      if (channel) {
+        try {
+          const workspace = runtime.getWorkspace(msg.source);
+          if (workspace) {
+            workspace.setChannel(channel);
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        } catch (err) {
+          reject(err);
         }
-      } catch (err) {
-        reject(err);
+      } else {
+        reject('No channel provided');
       }
     });
   },
@@ -720,24 +771,23 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_FIND_INTENT,
-  handler: (runtime, msg): Promise<any> => {
+  handler: (runtime, msg): Promise<AppIntent> => {
     return new Promise((resolve, reject) => {
-      const intent = msg.data.intent;
-      let context = msg.data.context;
+      const intent = msg.data && msg.data.intent;
+      const context = msg.data && msg.data.context;
       if (intent) {
         let url = `/apps/search?intent=${intent}`;
         if (context) {
-          //only use type
-          if (typeof context === 'object') {
-            context = context.type;
-          }
-          url += `&context=${context}`;
+          url += `&context=${context.type}`;
         }
 
         runtime.fetchFromDirectory(url).then(
           (_r) => {
             const j: Array<DirectoryApp> = _r as Array<DirectoryApp>;
-            const r: any = { intent: { name: '', displayName: '' }, apps: [] };
+            let r: AppIntent = {
+              intent: { name: '', displayName: '' },
+              apps: [],
+            };
 
             // r.apps = j;
             //find intent display name from app directory data
@@ -745,8 +795,13 @@ _listeners.push({
               return i.name === intent;
             });
             if (intnt.length > 0) {
-              r.intent.name = intnt[0].name;
-              r.intent.displayName = intnt[0].display_name;
+              r = {
+                intent: {
+                  name: intnt[0].name,
+                  displayName: intnt[0].display_name,
+                },
+                apps: [],
+              };
             }
             j.forEach((dirApp) => {
               r.apps.push({
@@ -762,7 +817,7 @@ _listeners.push({
           },
           () => {
             //no results found for the app-directory, there may still be intents from live apps
-            resolve({ result: true, apps: [] });
+            resolve({ intent: { name: intent, displayName: '' }, apps: [] });
           },
         );
       } else {
@@ -776,13 +831,10 @@ _listeners.push({
   name: TOPICS.FDC3_FIND_INTENTS_BY_CONTEXT,
   handler: (runtime, msg): Promise<Array<AppIntent>> => {
     return new Promise((resolve, reject) => {
-      let context = msg.data.context;
-      if (context.type) {
-        context = context.type;
-      }
-      if (context) {
-        console.log('findIntentsByContext', context);
-        const url = `/apps/search?context=${context}`;
+      const context = msg.data && msg.data.context;
+      if (context && context.type) {
+        console.log('findIntentsByContext', context.type);
+        const url = `/apps/search?context=${context.type}`;
         runtime.fetchFromDirectory(url).then(
           (_r) => {
             const d: Array<DirectoryApp> = _r as Array<DirectoryApp>;
@@ -837,7 +889,7 @@ _listeners.push({
 
 _listeners.push({
   name: TOPICS.FDC3_GET_CURRENT_CHANNEL,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<ChannelData | null> => {
     return new Promise((resolve, reject) => {
       try {
         const c = runtime.getView(msg.source);
@@ -851,7 +903,7 @@ _listeners.push({
   },
 });
 
-const resolveIntent = (msg: FDC3Message): Promise<any> => {
+const resolveIntent = (msg: FDC3Message): Promise<IntentResolution> => {
   return new Promise((resolve, reject) => {
     //find the app to route to
     try {
@@ -889,7 +941,17 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
                 viewId: sView.id,
               });
               const id = (sView && sView.id) || null;
-              resolve({ source: id, version: '1.0', tab: id });
+              const appName: string = sView.directoryData
+                ? sView.directoryData.name
+                : 'unknown';
+              resolve({
+                source: {
+                  name: appName,
+                  title: sView.getTitle(),
+                  appId: id || '',
+                },
+                version: '1.2',
+              });
             }
           }
 
@@ -903,7 +965,7 @@ const resolveIntent = (msg: FDC3Message): Promise<any> => {
   });
 };
 
-_listeners.push({
+/*_listeners.push({
   name: TOPICS.FDC3_GET_APP_INSTANCE,
   handler: (runtime, msg) => {
     return new Promise((resolve, reject) => {
@@ -915,11 +977,11 @@ _listeners.push({
       }
     });
   },
-});
+});*/
 
 _listeners.push({
   name: TOPICS.FDC3_RAISE_INTENT,
-  handler: (runtime, msg) => {
+  handler: (runtime, msg): Promise<IntentResolution> => {
     return new Promise((resolve, reject) => {
       const r: Array<FDC3App> = [];
 
@@ -934,197 +996,221 @@ _listeners.push({
       /*  msg.source = utils.id(port);*/
 
       //add dynamic listeners from connected tabs
-      const intentListeners = runtime.getIntentListeners(
-        msg.data.intent,
-        msg.data.target,
-      );
-      console.log('intentListeners', intentListeners);
-      if (intentListeners) {
-        // let keys = Object.keys(intentListeners);
-        intentListeners.forEach((listener) => {
-          ///ignore listeners from the view that raised the intent
-          if (listener.viewId !== msg.source) {
-            //look up the details of the window and directory metadata in the "connected" store
-            const view = runtime.getView(listener.viewId);
-            //de-dupe
-            if (
-              view &&
-              !r.find((item) => {
-                return item.details.instanceId === view.id;
-              })
-            ) {
-              r.push({
-                type: 'window',
-                details: {
-                  instanceId: view.id,
-                  directoryData: view.directoryData,
-                },
+      const intent = msg.data && msg.data.intent;
+      if (intent) {
+        //only support string targets for now...
+        const target: string | undefined =
+          msg.data && msg.data.target && typeof msg.data.target === 'string'
+            ? msg.data.target
+            : undefined;
+        const intentListeners = runtime.getIntentListeners(intent, target);
+
+        const sourceView = runtime.getView(msg.source);
+        const sourceName =
+          sourceView && sourceView.directoryData
+            ? sourceView.directoryData.name
+            : 'unknown';
+
+        console.log('intentListeners', intentListeners);
+        if (intentListeners) {
+          // let keys = Object.keys(intentListeners);
+          intentListeners.forEach((listener) => {
+            ///ignore listeners from the view that raised the intent
+            if (listener.viewId && listener.viewId !== msg.source) {
+              //look up the details of the window and directory metadata in the "connected" store
+              const view = runtime.getView(listener.viewId);
+              //de-dupe
+              if (
+                view &&
+                !r.find((item) => {
+                  return item.details.instanceId === view.id;
+                })
+              ) {
+                r.push({
+                  type: 'window',
+                  details: {
+                    instanceId: view.id,
+                    directoryData: view.directoryData,
+                  },
+                });
+              }
+            }
+          });
+        }
+        //pull intent handlers from the directory
+        let ctx = '';
+        if (msg.data && msg.data.context) {
+          ctx = msg.data.context.type;
+        }
+        utils.getDirectoryUrl().then(async (directoryUrl) => {
+          const query =
+            msg.data && msg.data.target
+              ? resolveTargetAppToQuery(msg.data.target)
+              : '';
+
+          const _r = await fetch(
+            `${directoryUrl}/apps/search?intent=${intent}&context=${ctx}${query}`,
+          );
+          //console.log('raiseIntent', _r);
+          if (_r) {
+            let data = null;
+            try {
+              data = await _r.json();
+            } catch (err) {
+              console.log('error parsing json', err);
+            }
+
+            if (data) {
+              data.forEach((entry: DirectoryApp) => {
+                r.push({
+                  type: 'directory',
+                  details: { directoryData: entry },
+                });
               });
             }
           }
-        });
-      }
-      //pull intent handlers from the directory
-      let ctx = '';
-      if (msg.data.context) {
-        ctx = msg.data.context.type;
-      }
-      utils.getDirectoryUrl().then(async (directoryUrl) => {
-        const query = resolveTargetAppToQuery(msg.data.target);
 
-        const _r = await fetch(
-          `${directoryUrl}/apps/search?intent=${msg.data.intent}&context=${ctx}${query}`,
-        );
-        //console.log('raiseIntent', _r);
-        if (_r) {
-          let data = null;
-          try {
-            data = await _r.json();
-          } catch (err) {
-            console.log('error parsing json', err);
-          }
+          if (r.length > 0) {
+            if (r.length === 1) {
+              //if there is only one result, use that
+              //if it is an existing view, post a message directly to it
+              //if it is a directory entry resolve the destination for the intent and launch it
+              //dedupe window and directory items
+              if (
+                r[0].type === 'window' &&
+                r[0].details &&
+                r[0].details.instanceId
+              ) {
+                const view = runtime.getView(r[0].details.instanceId);
+                if (view) {
+                  view.content.webContents.send(TOPICS.FDC3_INTENT, {
+                    topic: 'intent',
+                    data: msg.data,
+                    source: msg.source,
+                  });
+                  //bringing the tab to front conditional on the type of intent
+                  if (!utils.isDataIntent(intent)) {
+                    /* utils.bringToFront(r[0].details.port); */
+                  }
 
-          if (data) {
-            data.forEach((entry: DirectoryApp) => {
-              r.push({ type: 'directory', details: { directoryData: entry } });
-            });
-          }
-        }
+                  resolve({
+                    source: { name: sourceName, appId: msg.source },
+                    version: '1.2',
+                  });
+                }
+              } else if (
+                r[0].type === 'directory' &&
+                r[0].details.directoryData
+              ) {
+                const start_url = r[0].details.directoryData.start_url;
+                const pending = true;
 
-        if (r.length > 0) {
-          if (r.length === 1) {
-            //if there is only one result, use that
-            //if it is an existing view, post a message directly to it
-            //if it is a directory entry resolve the destination for the intent and launch it
-            //dedupe window and directory items
-            if (
-              r[0].type === 'window' &&
-              r[0].details &&
-              r[0].details.instanceId
-            ) {
-              const view = runtime.getView(r[0].details.instanceId);
-              if (view) {
-                view.content.webContents.send(TOPICS.FDC3_INTENT, {
-                  topic: 'intent',
-                  data: msg.data,
-                  source: msg.source,
+                //let win = window.open(start_url,"_blank");
+                const workspace = getRuntime().createWorkspace();
+
+                const view = workspace.createView(start_url, {
+                  directoryData: r[0].details.directoryData,
                 });
-                //bringing the tab to front conditional on the type of intent
-                if (!utils.isDataIntent(msg.data.intent)) {
-                  /* utils.bringToFront(r[0].details.port); */
+                //view.directoryData = r[0].details.directoryData;
+                //set pending intent for the view..
+                if (pending) {
+                  view.setPendingIntent(
+                    intent,
+                    (msg.data && msg.data.context) || undefined,
+                    msg.source,
+                  );
                 }
 
-                resolve({ result: true, source: view.id, version: '1.0' });
+                resolve({
+                  source: { name: sourceName, appId: msg.source },
+                  version: '1.2',
+                });
+
+                //send the context - if the default start_url was used...
+                //get the window/tab...
+                // resolve({result:true});
               }
-            } else if (
-              r[0].type === 'directory' &&
-              r[0].details.directoryData
-            ) {
-              const start_url = r[0].details.directoryData.start_url;
-              const pending = true;
+            } else {
+              //show resolver UI
+              // Send a message to the active tab
+              //sort results alphabetically, with directory entries first (before window entries)
+              const getTitle = (app: FDC3App) => {
+                const view = app.details.instanceId
+                  ? runtime.getViews().get(app.details.instanceId)
+                  : null;
+                const directory = app.details.directoryData
+                  ? app.details.directoryData
+                  : null;
+                return directory
+                  ? directory.title
+                  : view &&
+                    view.content.webContents &&
+                    view.content.webContents.hostWebContents
+                  ? view.content.webContents.hostWebContents.getTitle()
+                  : 'Untitled';
+              };
+              r.sort((a, b) => {
+                //let aTitle = a.details.directoryData ? a.details.directoryData.title : a.details.view.content.webContents.getURL();
+                // let bTitle = b.details.directoryData ? b.details.directoryData.title : b.details.view.content.webContents.getURL();
+                if (a.details) {
+                  a.details.title = getTitle(a);
+                }
+                if (b.details) {
+                  b.details.title = getTitle(b);
+                }
 
-              //let win = window.open(start_url,"_blank");
-              const workspace = getRuntime().createWorkspace();
-
-              const view = workspace.createView(start_url, {
-                directoryData: r[0].details.directoryData,
+                if (
+                  a.details &&
+                  a.details.title &&
+                  b.details &&
+                  b.details.title &&
+                  a.details.title < b.details.title
+                ) {
+                  return -1;
+                }
+                if (
+                  a.details &&
+                  a.details.title &&
+                  b.details &&
+                  b.details.title &&
+                  a.details.title > b.details.title
+                ) {
+                  return 1;
+                } else {
+                  return 0;
+                }
               });
-              //view.directoryData = r[0].details.directoryData;
-              //set pending intent for the view..
-              if (pending) {
-                view.setPendingIntent(
-                  msg.data.intent,
-                  msg.data.context,
-                  msg.source,
+
+              const eventId = `resolveIntent-${Date.now()}`;
+
+              //set a handler for resolving the intent (when end user selects a destination)
+              ipcMain.on(eventId, async (event, args) => {
+                const r: IntentResolution = await resolveIntent(args);
+                resolve(r);
+              });
+
+              //launch window with resolver UI
+              // console.log('resolve intent - options', r);
+              const sourceView = getRuntime().getView(msg.source);
+              if (sourceView) {
+                getRuntime().openResolver(
+                  {
+                    intent: intent,
+                    context: (msg.data && msg.data.context) || undefined,
+                  },
+                  sourceView,
+                  r,
                 );
               }
-
-              resolve({
-                result: true,
-                source: msg.source,
-                version: '1.2',
-                tab: view.id,
-              });
-
-              //send the context - if the default start_url was used...
-              //get the window/tab...
-              // resolve({result:true});
             }
           } else {
-            //show resolver UI
-            // Send a message to the active tab
-            //sort results alphabetically, with directory entries first (before window entries)
-            const getTitle = (app: FDC3App) => {
-              const view = app.details.instanceId
-                ? runtime.getViews().get(app.details.instanceId)
-                : null;
-              const directory = app.details.directoryData
-                ? app.details.directoryData
-                : null;
-              return directory
-                ? directory.title
-                : view &&
-                  view.content.webContents &&
-                  view.content.webContents.hostWebContents
-                ? view.content.webContents.hostWebContents.getTitle()
-                : 'Untitled';
-            };
-            r.sort((a, b) => {
-              //let aTitle = a.details.directoryData ? a.details.directoryData.title : a.details.view.content.webContents.getURL();
-              // let bTitle = b.details.directoryData ? b.details.directoryData.title : b.details.view.content.webContents.getURL();
-              if (a.details) {
-                a.details.title = getTitle(a);
-              }
-              if (b.details) {
-                b.details.title = getTitle(b);
-              }
-
-              if (
-                a.details &&
-                a.details.title &&
-                b.details &&
-                b.details.title &&
-                a.details.title < b.details.title
-              ) {
-                return -1;
-              }
-              if (
-                a.details &&
-                a.details.title &&
-                b.details &&
-                b.details.title &&
-                a.details.title > b.details.title
-              ) {
-                return 1;
-              } else {
-                return 0;
-              }
-            });
-
-            const eventId = `resolveIntent-${Date.now()}`;
-
-            //set a handler for resolving the intent (when end user selects a destination)
-            ipcMain.on(eventId, async (event, args) => {
-              const r = await resolveIntent(args);
-              resolve(r);
-            });
-
-            //launch window with resolver UI
-            // console.log('resolve intent - options', r);
-            const sourceView = getRuntime().getView(msg.source);
-            if (sourceView) {
-              getRuntime().openResolver(
-                { intent: msg.data.intent, context: msg.data.context },
-                sourceView,
-                r,
-              );
-            }
+            //show message indicating no handler for the intent...
+            reject('no apps found for intent');
           }
-        } else {
-          //show message indicating no handler for the intent...
-          reject('no apps found for intent');
-        }
-      });
+        });
+      } else {
+        reject('No intent provided');
+      }
     });
   },
 });
@@ -1175,6 +1261,13 @@ _listeners.push({
   handler: (runtime, msg) => {
     return new Promise((resolve, reject) => {
       console.log('raiseIntentForContext', msg);
+
+      const sourceView = runtime.getView(msg.source);
+      const sourceName =
+        sourceView && sourceView.directoryData
+          ? sourceView.directoryData.name
+          : 'unknown';
+
       const raiseIntentForContext = async () => {
         const r: Array<FDC3App> = [];
 
@@ -1195,7 +1288,7 @@ _listeners.push({
          * this returns a map of intents and apps (with matching context listeners)
          */
         const context =
-          msg.data.context && msg.data.context.type
+          msg.data && msg.data.context && msg.data.context.type
             ? msg.data.context.type
             : '';
 
@@ -1234,7 +1327,8 @@ _listeners.push({
         /**
          * To Do: Support additional AppMetadata searching (other than name)
          */
-        const target: TargetApp = msg.data.target;
+        const target: TargetApp | undefined =
+          (msg.data && msg.data.target) || undefined;
         const name: string = target
           ? typeof target === 'string'
             ? target
@@ -1275,7 +1369,7 @@ _listeners.push({
                   source: msg.source,
                 });
 
-                resolve({ result: true, source: msg.source, version: '1.2' });
+                resolve({ source: msg.source, version: '1.2' });
               } else {
                 reject('View could not be found');
               }
@@ -1294,19 +1388,18 @@ _listeners.push({
               });
               //view.directoryData = r[0].details.directoryData;
               //set pending intent for the view..
-              if (pending) {
+              const intent = msg.data && msg.data.intent;
+              if (pending && intent) {
                 view.setPendingIntent(
-                  msg.data.intent,
-                  msg.data.context,
+                  intent,
+                  (msg.data && msg.data.context) || undefined,
                   msg.source,
                 );
               }
 
               resolve({
-                result: true,
-                source: msg.source,
+                source: { name: sourceName, appId: msg.source },
                 version: '1.2',
-                tab: view.id,
               });
             }
           } else {
@@ -1374,7 +1467,7 @@ _listeners.push({
             if (sourceView) {
               try {
                 getRuntime().openResolver(
-                  { context: msg.data.context },
+                  { context: (msg.data && msg.data.context) || undefined },
                   sourceView,
                   buildIntentInstanceTree(r),
                 );

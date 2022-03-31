@@ -5,7 +5,7 @@ import { DirectoryApp } from './FDC3Data';
 export interface ViewConfig {
   workspace?: Workspace;
 
-  onReady?: (view: View) => Promise<void>;
+  onReady?: (view: View) => Promise<View | void>;
 
   directoryData?: DirectoryApp;
 }

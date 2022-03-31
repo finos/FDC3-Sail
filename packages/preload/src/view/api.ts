@@ -12,7 +12,6 @@ import {
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { TOPICS } from '../../../main/src/constants';
-import { AppInstance } from '../../../main/src/types/AppInstance';
 
 /**
  * This file is injected into each Chrome tab by the Content script to make the FDC3 API available as a global
@@ -102,9 +101,14 @@ export function createAPI() {
         });
       },
 
-      addContextListener: (contextType?: any, handler?: any) => {
-        const thisListener: ContextHandler = handler ? handler : contextType;
-        const thisContextType: string = handler ? contextType : null;
+      addContextListener: (
+        contextType: ContextHandler | string | null,
+        handler?: ContextHandler,
+      ) => {
+        const thisListener: ContextHandler = handler
+          ? handler
+          : (contextType as ContextHandler);
+        const thisContextType = handler ? (contextType as string) : undefined;
         const listenerId: string = utils.guid();
 
         _contextListeners.set(
@@ -125,11 +129,11 @@ export function createAPI() {
     return channel;
   };
 
-  type instanceStatus = 'ready' | 'loading' | 'unregistered';
+  //type instanceStatus = 'ready' | 'loading' | 'unregistered';
   /**
    * the AppInstance class
    */
-  const createAppInstance = (
+  /*const createAppInstance = (
     id: string,
     status: instanceStatus,
   ): AppInstance => {
@@ -138,13 +142,12 @@ export function createAPI() {
     instance.status = status;
 
     instance.addContextListener = (
-      contextType: string | undefined,
-      handler?: any,
+      contextType: string | ContextHandler,
+      handler?: ContextHandler,
     ) => {
-      const thisListener: ContextHandler = handler ? handler : contextType;
-      const thisContextType: string | undefined = handler
-        ? contextType
-        : undefined;
+      const thisListener: ContextHandler = handler ? handler : (contextType as ContextHandler);
+      const thisContextType = handler ? (contextType as string) : undefined;
+
       const listenerId: string = utils.guid();
       _contextListeners.set(
         listenerId,
@@ -172,9 +175,10 @@ export function createAPI() {
       handler: (newVal: string, oldVal: string) => {},
     ) => {};*/
 
+  /*
     return instance as AppInstance;
   };
-
+*/
   const wireMethod = (
     method: string,
     detail: FDC3EventDetail,
@@ -192,15 +196,15 @@ export function createAPI() {
       });
     } else {
       return new Promise((resolve) => {
-        (document as any).addEventListener(
+        document.addEventListener(
           `FDC3:return_${eventId}`,
-          (event: FDC3Event) => {
+          ((event: FDC3Event) => {
             let r = event.detail;
             if (r !== null && config && config.resultHandler) {
               r = config.resultHandler.call(document, r);
             }
             resolve(r);
-          },
+          }) as EventListener,
           { once: true },
         );
 
@@ -241,10 +245,15 @@ export function createAPI() {
       });
     },
 
-    addContextListener: (contextType: any, handler?: any) => {
-      const thisListener: ContextHandler = handler ? handler : contextType;
-      const thisContextType: string =
-        contextType && handler ? contextType : null;
+    addContextListener: (
+      contextType: ContextHandler | string | null,
+      handler?: ContextHandler,
+    ) => {
+      const thisListener: ContextHandler = handler
+        ? handler
+        : (contextType as ContextHandler);
+      const thisContextType: string | undefined =
+        contextType && handler ? (contextType as string) : undefined;
       const listenerId: string = utils.guid();
       console.log('add context listener', listenerId);
       _contextListeners.set(
@@ -318,11 +327,11 @@ export function createAPI() {
 
     joinChannel: (channel: string) => {
       return new Promise<void>((resolve) => {
-        (document as any).addEventListener(
+        document.addEventListener(
           TOPICS.CONFIRM_JOIN,
-          () => {
+          (() => {
             resolve();
-          },
+          }) as EventListener,
           { once: true },
         );
         document.dispatchEvent(
@@ -347,7 +356,7 @@ export function createAPI() {
       );
     },
 
-    getAppInstance: (instanceId: string): Promise<AppInstance> => {
+    /*  getAppInstance: (instanceId: string): Promise<AppInstance> => {
       return wireMethod(
         'getAppInstance',
         { instanceId: instanceId },
@@ -357,41 +366,44 @@ export function createAPI() {
           },
         },
       );
-    },
+    },*/
   };
 
-  (document as any).addEventListener(
-    TOPICS.FDC3_CONTEXT,
-    (event: FDC3Event) => {
-      console.log('Context', JSON.stringify(_contextListeners));
-      const listeners = _contextListeners;
-      if (
-        event.detail &&
-        event.detail.data.listenerId &&
-        listeners.has(event.detail.data.listenerId)
-      ) {
-        const listener = listeners.get(event.detail.data.listenerId);
-        if (listener && listener.handler) {
-          listener.handler.call(document, event.detail.data.context);
-        }
+  document.addEventListener(TOPICS.FDC3_CONTEXT, ((event: FDC3Event) => {
+    console.log('Context', JSON.stringify(_contextListeners));
+    const listeners = _contextListeners;
+    if (
+      event.detail &&
+      event.detail.data &&
+      event.detail.data.listenerId &&
+      listeners.has(event.detail.data.listenerId)
+    ) {
+      const listener = listeners.get(event.detail.data.listenerId);
+      const context = event.detail.data && event.detail.data.context;
+      if (listener && listener.handler && context) {
+        listener.handler.call(document, context);
       }
-    },
-  );
+    }
+  }) as EventListener);
 
   (document as any).addEventListener(TOPICS.FDC3_INTENT, (event: FDC3Event) => {
-    const listeners = _intentListeners.get(event.detail.data.intent);
-    const result = null;
-    if (listeners) {
-      listeners.forEach((l) => {
-        if (l.handler) {
-          l.handler.call(document, event.detail.data.context);
-        }
-      });
+    const intent = event.detail.data && event.detail.data.intent;
+    const context = event.detail.data && event.detail.data.context;
+    if (intent) {
+      const listeners = _intentListeners.get(intent);
+      const result = null;
+      if (listeners) {
+        listeners.forEach((l) => {
+          if (l.handler && context) {
+            l.handler.call(document, context);
+          }
+        });
+      }
+      //emit return event
+      document.dispatchEvent(
+        utils.fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
+      );
     }
-    //emit return event
-    document.dispatchEvent(
-      utils.fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
-    );
   });
 
   //map of context listeners by id

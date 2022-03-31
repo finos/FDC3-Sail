@@ -71,7 +71,7 @@ export class Workspace {
         // this.window.loadFile('src/windows/workspace/frame.html').then(() => {
         if (this.window) {
           this.window.webContents.send(TOPICS.WORKSPACE_START, { id: this.id });
-          // this.window.webContents.openDevTools();
+          //   this.window.webContents.openDevTools();
           console.log('workspace created', this.id);
           const runtime = getRuntime();
           if (runtime) {
@@ -450,7 +450,7 @@ export class Workspace {
     }
   }
 
-  async loadSearchResults(results: Array<any>) {
+  async loadSearchResults(results: Array<object>) {
     if (!this.resultsWindow) {
       await this.createResultsWindow();
     }

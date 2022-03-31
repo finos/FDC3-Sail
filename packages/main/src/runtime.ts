@@ -1,7 +1,12 @@
 import { RuntimeListener } from './listeners/listener';
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context } from '@finos/fdc3';
-import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
+import { Context, IntentMetadata } from '@finos/fdc3';
+import {
+  DirectoryApp,
+  FDC3App,
+  IntentInstance,
+  ResolverDetail,
+} from './types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -218,7 +223,17 @@ export class Runtime {
     return workspace;
   }
 
-  fetchFromDirectory(query: string): Promise<any> {
+  fetchFromDirectory(
+    query: string,
+  ): Promise<
+    | DirectoryApp
+    | Array<DirectoryApp>
+    | IntentMetadata
+    | Array<IntentMetadata>
+    | Context
+    | Array<Context>
+    | void
+  > {
     return new Promise((resolve, reject) => {
       utils.getDirectoryUrl().then((directoryUrl) => {
         const url = `${directoryUrl}${query}`;

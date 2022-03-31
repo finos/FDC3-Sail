@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import {TOPICS} from '../../../../main/src/constants';
 
 
-class PickerItem extends React.Component {
+class PickerItem extends React.Component <{id: string, color: string, altColor: string}, { selected : boolean } >{
   
     constructor(props) {
         super(props);
@@ -15,8 +15,7 @@ class PickerItem extends React.Component {
         (document as any).addEventListener(TOPICS.CHANNEL_SELECTED, (event : CustomEvent) => {
             //highlight the channelPicker button on selection (remove on deselection)
             if (event.detail.channel && event.detail.channel.id){
-                this.state.selected = (event.detail.channel.id === this.props.id);
-                console.log("channel selected", this.props.id, selected);
+                this.setState({selected :(event.detail.channel.id === this.props.id)});
             }
              
           });
@@ -29,12 +28,12 @@ class PickerItem extends React.Component {
         console.log("pickChannel", this.props.id, this.state.selected);
         if (!this.state.selected){
             document.dispatchEvent(new CustomEvent(TOPICS.JOIN_CHANNEL, {detail:{"channel":this.props.id}}));
-            this.state.selected = true;
+            this.setState({selected :true});
             document.dispatchEvent(new CustomEvent(TOPICS.HIDE_WINDOW));
         }
         else {
             document.dispatchEvent(new CustomEvent(TOPICS.LEAVE_CHANNEL, {detail:{"channel":this.props.id}}));
-            this.state.selected = false;
+            this.setState({selected :false});
         }
     };
 

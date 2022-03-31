@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { Context } from '@finos/fdc3';
+import { FDC3MessageData } from '../../../main/src/types/FDC3Message';
 import { TOPICS } from '../../../main/src/constants';
 
 let id: string | undefined = undefined;
@@ -17,19 +18,16 @@ ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
   );
 });
 
-const resolveIntent = (data: any) => {
+const resolveIntent = (data: FDC3MessageData) => {
   ipcRenderer.send(TOPICS.RES_RESOLVE_INTENT, {
     method: 'resolveIntent',
     id: id,
     intent: data.selectedIntent || intent,
-    selected: data.selected.details,
+    selected: data.selected && data.selected.details,
     context: context,
   });
 };
 
-(document as any).addEventListener(
-  TOPICS.RES_RESOLVE_INTENT,
-  (event: CustomEvent) => {
-    resolveIntent(event.detail);
-  },
-);
+document.addEventListener(TOPICS.RES_RESOLVE_INTENT, ((event: CustomEvent) => {
+  resolveIntent(event.detail);
+}) as EventListener);

@@ -76,7 +76,7 @@ const sendMessage = (msg: FDC3Message) => {
 };
 
 const wireTopic = (topic: string, config?: any): void => {
-  (document as any).addEventListener(`FDC3:${topic}`, (e: FDC3Event) => {
+  document.addEventListener(`FDC3:${topic}`, ((e: FDC3Event) => {
     console.log('contentConnect event', e);
     const cb = config ? config.cb : null;
     const isVoid = config ? config.isVoid : null;
@@ -90,9 +90,11 @@ const wireTopic = (topic: string, config?: any): void => {
         returnListeners.set(eventId, {
           ts: e.ts,
           listener: function (msg: FDC3Message) {
-            document.dispatchEvent(
-              utils.fdc3Event(`return_${eventId}`, msg.data),
-            );
+            if (msg) {
+              document.dispatchEvent(
+                utils.fdc3Event(`return_${eventId}`,((msg && msg.data) ? msg.data : {})),
+              );
+            }
           },
         });
       }
@@ -108,7 +110,7 @@ const wireTopic = (topic: string, config?: any): void => {
     } else {
       sendMessage(msg);
     }
-  });
+  }) as EventListener);
 };
 
 //listen for FDC3 events
@@ -211,4 +213,4 @@ export const connect = () => {
 };
 
 //prevent timing issues from very first load of the preload
-ipcRenderer.send('FDC3:initiate', {});
+ipcRenderer.send(TOPICS.FDC3_INITIATE, {});

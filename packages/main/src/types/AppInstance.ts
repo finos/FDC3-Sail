@@ -1,4 +1,5 @@
 import { WebContents } from 'electron';
+import { DirectoryApp } from './FDC3Data';
 
 /**
  * represents an app instance when resolving intents
@@ -13,7 +14,7 @@ export interface AppInstance {
  * the connection and metadata details of a app
  */
 export interface AppDetails {
-  directoryData: any;
+  directoryData: DirectoryApp;
   content: WebContents;
 }
 

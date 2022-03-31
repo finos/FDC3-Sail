@@ -1,9 +1,9 @@
 import './Picker.css';
 import React from 'react';
-import {Box, Grid} from '@mui/material';
+import { Grid } from '@mui/material';
 
 import PickerItem from './components/PickerItem';
-import {channels} from "../../../main/src/system-channels";
+import { channels } from "../../../main/src/system-channels";
 
 
 export const Picker = () => {

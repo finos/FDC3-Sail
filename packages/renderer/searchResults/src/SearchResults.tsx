@@ -4,7 +4,7 @@ import {TOPICS} from '../../../main/src/constants';
 
 
 
-export class SearchResults extends React.Component{
+export class SearchResults extends React.Component <{}, { results:Array<any> } >{
 
     constructor(props) {
         super(props);
@@ -12,10 +12,10 @@ export class SearchResults extends React.Component{
       }
 
     componentDidMount() {
-        (document as any).addEventListener(TOPICS.RES_LOAD_RESULTS, (event : CustomEvent) => {
-    
+        document.addEventListener(TOPICS.RES_LOAD_RESULTS, ((event : CustomEvent) => {
+            
             this.setState({results:event.detail.results || []});
-         });
+         }) as EventListener);
     }
  
 
@@ -50,7 +50,7 @@ export class SearchResults extends React.Component{
         </Box>
 
 
-    );
-                }
+        );
+    }
 };
 

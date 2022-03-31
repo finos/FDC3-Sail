@@ -29,13 +29,19 @@ export interface FDC3EventDetail {
   channelId?: string; //resolve w/channel
   instanceId?: string; //identifier for the app instance
   contextType?: string;
-  data?: any;
+  data?: FDC3ResponseData | null;
   name?: string;
   context?: Context;
   target?: TargetApp;
   source?: string;
   /* identifier of the browserView the event originated from */
   viewId?: string;
+}
+
+export interface FDC3ResponseData {
+  context?: Context;
+  intent?: string;
+  listenerId?: string;
 }
 
 /**
