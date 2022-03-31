@@ -1,4 +1,4 @@
-import React, { SyntheticEvent } from 'react';
+import React from 'react';
 import {Paper, Box, List, ListItem, ListItemText, ListItemIcon, ListItemButton, ListItemAvatar, Collapse, Avatar} from '@mui/material';
 import {TOPICS} from '../../../main/src/constants';
 import {FDC3App, IntentInstance} from '../../../main/src/types/FDC3Data';
@@ -22,7 +22,7 @@ export class IntentResolver extends React.Component <{}, { results : Array<FDC3A
 
     constructor(props) {
         super(props);
-        this.setState({results: [], intent: '', context: undefined, openFolders: [] });
+        this.state = {results: [], intent: '', context: undefined, openFolders: [] };
         
       }
 
@@ -46,7 +46,7 @@ export class IntentResolver extends React.Component <{}, { results : Array<FDC3A
 
     render() {
 
-       const resultSelected = (result : any, intent? : string) => {
+       const resultSelected = (result : FDC3App, intent? : string) => {
             document.dispatchEvent(new CustomEvent(TOPICS.RES_RESOLVE_INTENT, {detail:{selected:result, selectedIntent:intent}}));
         };
 

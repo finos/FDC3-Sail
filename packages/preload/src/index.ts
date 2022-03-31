@@ -61,32 +61,29 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
   );
 });
 
-(document as any).addEventListener(
-  TOPICS.JOIN_CHANNEL,
-  (event: CustomEvent) => {
-    ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
-      source: id,
-      data: event.detail,
-    });
-  },
-);
+document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
+    source: id,
+    data: event.detail,
+  });
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.SELECT_TAB, (event: CustomEvent) => {
+document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.SELECT_TAB, {
     source: id,
     selected: event.detail.selected,
   });
-});
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.CLOSE_TAB, (event: CustomEvent) => {
+document.addEventListener(TOPICS.CLOSE_TAB, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.CLOSE_TAB, { source: id, tabId: event.detail.tabId });
-});
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.DROP_TAB, (event: CustomEvent) => {
+document.addEventListener(TOPICS.DROP_TAB, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.DROP_TAB, { source: id, tabId: event.detail.tabId });
-});
+}) as EventListener);
 
-(document as any).addEventListener(TOPICS.SEARCH, (event: CustomEvent) => {
+document.addEventListener(TOPICS.SEARCH, ((event: CustomEvent) => {
   const query = event.detail.query;
   ipcRenderer.once(
     `${TOPICS.FETCH_FROM_DIRECTORY}-/apps/search?text=${query}`,
@@ -106,7 +103,7 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
     source: id,
     query: `/apps/search?text=${query}`,
   });
-});
+}) as EventListener);
 
 document.addEventListener(TOPICS.HIDE_RESULTS_WINDOW, () => {
   ipcRenderer.send(TOPICS.HIDE_WINDOW, {
@@ -122,16 +119,15 @@ document.addEventListener(TOPICS.NEW_TAB_CLICK, () => {
   ipcRenderer.send(TOPICS.NEW_TAB, { source: id });
 });
 
-(document as any).addEventListener(
-  TOPICS.OPEN_CHANNEL_PICKER_CLICK,
-  (event: CustomEvent) => {
-    ipcRenderer.send(TOPICS.RES_PICK_CHANNEL, {
-      source: id,
-      mouseX: event.detail.mouseX,
-      mouseY: event.detail.mouseY,
-    });
-  },
-);
+document.addEventListener(TOPICS.OPEN_CHANNEL_PICKER_CLICK, ((
+  event: CustomEvent,
+) => {
+  ipcRenderer.send(TOPICS.RES_PICK_CHANNEL, {
+    source: id,
+    mouseX: event.detail.mouseX,
+    mouseY: event.detail.mouseY,
+  });
+}) as EventListener);
 
 document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK, () => {
   ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS, { source: id });
@@ -159,23 +155,20 @@ const selectTab = (selectedId: string) => {
   }
 };
 
-(document as any).addEventListener(TOPICS.SELECT_TAB, (event: CustomEvent) => {
+document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
   selectTab(event.detail.selected);
-});
+}) as EventListener);
 
-(document as any).addEventListener(
-  TOPICS.CHANNEL_SELECTED,
-  (event: CustomEvent) => {
-    //highlight the channelPicker button on selection (remove on deselection)
-    const channelPicker = document.getElementById('channelPicker');
-    if (channelPicker) {
-      channelPicker.style.backgroundColor =
-        event.detail.channel.displayMetadata.color;
-      channelPicker.style.borderColor =
-        event.detail.channel.displayMetadata.color2;
-    }
-  },
-);
+document.addEventListener(TOPICS.CHANNEL_SELECTED, ((event: CustomEvent) => {
+  //highlight the channelPicker button on selection (remove on deselection)
+  const channelPicker = document.getElementById('channelPicker');
+  if (channelPicker) {
+    channelPicker.style.backgroundColor =
+      event.detail.channel.displayMetadata.color;
+    channelPicker.style.borderColor =
+      event.detail.channel.displayMetadata.color2;
+  }
+}) as EventListener);
 
 const api = {
   isConnected: (): boolean => {

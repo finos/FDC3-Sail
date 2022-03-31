@@ -82,7 +82,7 @@ _listeners.push({
     //remove the listener from the view when it is unsubscribed
     return new Promise((resolve, reject) => {
       try {
-        const id : string | null = msg.data && msg.data.id || null;
+        const id: string | null = (msg.data && msg.data.id) || null;
         const view: View | null | undefined = msg.source
           ? runtime.getView(msg.source)
           : null;
@@ -105,8 +105,10 @@ _listeners.push({
   handler: (runtime, msg): Promise<Context | null> => {
     return new Promise((resolve, reject) => {
       try {
-        const channel : string | undefined = msg.data && msg.data.channel || undefined;
-        const type : string | undefined = msg.data && msg.data.contextType || undefined;
+        const channel: string | undefined =
+          (msg.data && msg.data.channel) || undefined;
+        const type: string | undefined =
+          (msg.data && msg.data.contextType) || undefined;
         const contexts = getRuntime().getContexts();
         let ctx: Context | null = null;
         if (channel) {
@@ -139,7 +141,8 @@ _listeners.push({
         //meaning this is a point-to-point com between two instances
         //if the target listener is registered for the source instance, then dispatch the context
         //else, add to the pending queue for instances
-        const targetId : string | undefined = msg.data && msg.data.instanceId || undefined;
+        const targetId: string | undefined =
+          (msg.data && msg.data.instanceId) || undefined;
         if (targetId) {
           console.log(
             `broadcast message = '${JSON.stringify(
@@ -154,7 +157,10 @@ _listeners.push({
               if (!l.intent) {
                 if (
                   !l.contextType ||
-                  (l.contextType && l.contextType === msg.data && msg.data.context && msg.data.context.type)
+                  (l.contextType &&
+                    l.contextType === msg.data &&
+                    msg.data.context &&
+                    msg.data.context.type)
                 ) {
                   viewListeners.push({
                     view: target,
@@ -192,7 +198,9 @@ _listeners.push({
 
         //use channel on message first - if one is specified
         const channel =
-          msg.data && msg.data.channel || (source && source.channel) || 'default';
+          (msg.data && msg.data.channel) ||
+          (source && source.channel) ||
+          'default';
 
         if (channel !== 'default') {
           //is the app on a channel?
@@ -223,9 +231,9 @@ _listeners.push({
                   'broadcast - matched channel, contextType ',
                   l.contextType,
                 );
-                const contextType = msg.data && msg.data.context && msg.data.context.type;
+                const contextType =
+                  msg.data && msg.data.context && msg.data.context.type;
                 if (l.contextType && contextType) {
-                  
                   console.log(
                     'contextType match',
                     l.contextType === contextType,
@@ -250,7 +258,7 @@ _listeners.push({
                 data: {
                   eventId: msg.data && msg.data.eventId,
                   ts: msg.data && msg.data.ts,
-                  context: msg.data &&  msg.data.context,
+                  context: msg.data && msg.data.context,
                 },
                 source: msg.source,
               });
@@ -332,12 +340,17 @@ _listeners.push({
     return new Promise((resolve, reject) => {
       console.log('fdc3Message recieved', msg);
 
-      const name = msg.data && msg.data.name ? msg.data.name : msg.data && msg.data.target ? resolveTargetAppToName(msg.data.target) : '';
-      console.log("open name", name);
+      const name =
+        msg.data && msg.data.name
+          ? msg.data.name
+          : msg.data && msg.data.target
+          ? resolveTargetAppToName(msg.data.target)
+          : '';
+      console.log('open name', name);
       runtime.fetchFromDirectory(`/apps/${name}`).then(
         (result) => {
           result = result as DirectoryApp;
-          console.log("directory result", result);
+          console.log('directory result', result);
           // const source = utils.id(port);
           if (result) {
             if (result && result.start_url) {
@@ -373,8 +386,8 @@ _listeners.push({
   handler: (runtime, msg): Promise<Context | null> => {
     return new Promise((resolve, reject) => {
       try {
-        const channel = msg.data && msg.data.channel || undefined;
-        const type = msg.data && msg.data.contextType || undefined;
+        const channel = (msg.data && msg.data.channel) || undefined;
+        const type = (msg.data && msg.data.contextType) || undefined;
         let ctx: Context | null = null;
         if (channel) {
           const contexts = runtime.getContexts();
@@ -402,7 +415,7 @@ _listeners.push({
   name: TOPICS.FDC3_GET_OR_CREATE_CHANNEL,
   handler: (runtime, msg): Promise<ChannelData | void> => {
     return new Promise((resolve, reject) => {
-      const id = msg.data && msg.data.channelId || 'default';
+      const id = (msg.data && msg.data.channelId) || 'default';
       //reject with error is reserved 'default' term
       if (id === 'default') {
         reject(utils.ChannelError.CreationFailed);
@@ -417,10 +430,9 @@ _listeners.push({
           runtime.getContexts().set(id, []);
           app_channels.push(channel);
         }
-        if (channel){
+        if (channel) {
           resolve(channel);
-        }
-        else {
+        } else {
           resolve();
         }
       }
@@ -456,8 +468,8 @@ _listeners.push({
             target.listeners.push({
               viewId: view.id,
               source: instanceId,
-              listenerId: msg.data && msg.data.id || '',
-              contextType: msg.data && msg.data.contextType || '',
+              listenerId: (msg.data && msg.data.id) || '',
+              contextType: (msg.data && msg.data.contextType) || '',
             });
             const pendingContexts = target.getPendingContexts();
             if (pendingContexts && pendingContexts.length > 0) {
@@ -468,7 +480,8 @@ _listeners.push({
                   if (
                     pending.context &&
                     pending.context.type &&
-                    pending.context.type === msg.data && msg.data.type
+                    pending.context.type === msg.data &&
+                    msg.data.type
                   ) {
                     view.content.webContents.postMessage(TOPICS.FDC3_CONTEXT, {
                       topic: 'context',
@@ -496,9 +509,9 @@ _listeners.push({
           console.log('adding listener', msg.data && msg.data.id);
 
           view.listeners.push({
-            listenerId: msg.data && msg.data.id || '',
+            listenerId: (msg.data && msg.data.id) || '',
             viewId: view.id,
-            contextType: msg.data && msg.data.contextType || undefined,
+            contextType: (msg.data && msg.data.contextType) || undefined,
             channel: channel,
             isChannel: channel !== 'default',
           });
@@ -518,21 +531,28 @@ _listeners.push({
                 pending.context ? pending.context.type : 'no pending object',
                 msg.data && msg.data.type,
                 msg.data && msg.data.id,
-                msg.data && msg.data.type === undefined ||
+                (msg.data && msg.data.type === undefined) ||
                   (pending.context &&
                     pending.context.type &&
-                    pending.context.type === msg.data && msg.data.type || ''),
+                    pending.context.type === msg.data &&
+                    msg.data.type) ||
+                  '',
               );
               if (
-                msg.data === undefined || msg.data && msg.data.type === undefined ||
+                msg.data === undefined ||
+                (msg.data && msg.data.type === undefined) ||
                 (pending.context &&
                   pending.context.type &&
-                  pending.context.type === msg.data && msg.data.type)
+                  pending.context.type === msg.data &&
+                  msg.data.type)
               ) {
                 view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
                   topic: 'context',
                   listenerId: msg.data && msg.data.id,
-                  data: { context: pending.context, listenerId: msg.data && msg.data.id },
+                  data: {
+                    context: pending.context,
+                    listenerId: msg.data && msg.data.id,
+                  },
                   source: source,
                 });
 
@@ -581,7 +601,7 @@ _listeners.push({
     return new Promise((resolve, reject) => {
       const name = msg.data && msg.data.intent;
       const listenerId = msg.data && msg.data.id;
-      if (name && listenerId){
+      if (name && listenerId) {
         try {
           runtime.setIntentListener(name, listenerId, msg.source);
           const view = runtime.getView(msg.source);
@@ -594,13 +614,19 @@ _listeners.push({
 
               //next, match on tab and intent
               pending_intents.forEach((pIntent, index) => {
-                if (n - pIntent.ts < pendingTimeout && pIntent.intent === name) {
+                if (
+                  n - pIntent.ts < pendingTimeout &&
+                  pIntent.intent === name
+                ) {
                   console.log('applying pending intent', pIntent);
                   //refactor with other instances of this logic
                   if (view && view.content) {
                     view.content.webContents.send(TOPICS.FDC3_INTENT, {
                       topic: 'intent',
-                      data: { intent: pIntent.intent, context: pIntent.context },
+                      data: {
+                        intent: pIntent.intent,
+                        context: pIntent.context,
+                      },
                       source: pIntent.source,
                     });
                   }
@@ -618,9 +644,8 @@ _listeners.push({
         } catch (err) {
           reject(err);
         }
-      }
-      else {
-        reject("No intent name and/or listener id provided");
+      } else {
+        reject('No intent name and/or listener id provided');
       }
     });
   },
@@ -691,11 +716,15 @@ _listeners.push({
   handler: (runtime, msg): Promise<boolean> => {
     return new Promise((resolve, reject) => {
       const channel = msg.data && msg.data.channel;
-      if (channel){
+      if (channel) {
         try {
           const view = runtime.getView(msg.source);
           if (view) {
-            joinViewToChannel(channel, view, (msg.data && msg.data.restoreOnly || undefined)).then(
+            joinViewToChannel(
+              channel,
+              view,
+              (msg.data && msg.data.restoreOnly) || undefined,
+            ).then(
               () => {
                 resolve(true);
               },
@@ -708,9 +737,8 @@ _listeners.push({
           reject(err);
         }
       } else {
-        reject("No channel provided");
+        reject('No channel provided');
       }
-
     });
   },
 });
@@ -734,9 +762,8 @@ _listeners.push({
         } catch (err) {
           reject(err);
         }
-      }
-      else {
-        reject("No channel provided");
+      } else {
+        reject('No channel provided');
       }
     });
   },
@@ -747,7 +774,7 @@ _listeners.push({
   handler: (runtime, msg): Promise<AppIntent> => {
     return new Promise((resolve, reject) => {
       const intent = msg.data && msg.data.intent;
-      let context = msg.data && msg.data.context;
+      const context = msg.data && msg.data.context;
       if (intent) {
         let url = `/apps/search?intent=${intent}`;
         if (context) {
@@ -804,9 +831,8 @@ _listeners.push({
   name: TOPICS.FDC3_FIND_INTENTS_BY_CONTEXT,
   handler: (runtime, msg): Promise<Array<AppIntent>> => {
     return new Promise((resolve, reject) => {
-      let context = msg.data && msg.data.context;
+      const context = msg.data && msg.data.context;
       if (context && context.type) {
- 
         console.log('findIntentsByContext', context.type);
         const url = `/apps/search?context=${context.type}`;
         runtime.fetchFromDirectory(url).then(
@@ -971,13 +997,13 @@ _listeners.push({
 
       //add dynamic listeners from connected tabs
       const intent = msg.data && msg.data.intent;
-      if (intent){
+      if (intent) {
         //only support string targets for now...
-        const target : string | undefined = msg.data && msg.data.target && typeof(msg.data.target) === "string" ? msg.data.target : undefined;
-        const intentListeners = runtime.getIntentListeners(
-          intent,
-          target,
-        );
+        const target: string | undefined =
+          msg.data && msg.data.target && typeof msg.data.target === 'string'
+            ? msg.data.target
+            : undefined;
+        const intentListeners = runtime.getIntentListeners(intent, target);
 
         const sourceView = runtime.getView(msg.source);
         const sourceName =
@@ -1017,7 +1043,10 @@ _listeners.push({
           ctx = msg.data.context.type;
         }
         utils.getDirectoryUrl().then(async (directoryUrl) => {
-          const query = msg.data && msg.data.target ? resolveTargetAppToQuery(msg.data.target) : '';
+          const query =
+            msg.data && msg.data.target
+              ? resolveTargetAppToQuery(msg.data.target)
+              : '';
 
           const _r = await fetch(
             `${directoryUrl}/apps/search?intent=${intent}&context=${ctx}${query}`,
@@ -1033,7 +1062,10 @@ _listeners.push({
 
             if (data) {
               data.forEach((entry: DirectoryApp) => {
-                r.push({ type: 'directory', details: { directoryData: entry } });
+                r.push({
+                  type: 'directory',
+                  details: { directoryData: entry },
+                });
               });
             }
           }
@@ -1084,7 +1116,7 @@ _listeners.push({
                 if (pending) {
                   view.setPendingIntent(
                     intent,
-                    msg.data && msg.data.context || undefined,
+                    (msg.data && msg.data.context) || undefined,
                     msg.source,
                   );
                 }
@@ -1162,7 +1194,10 @@ _listeners.push({
               const sourceView = getRuntime().getView(msg.source);
               if (sourceView) {
                 getRuntime().openResolver(
-                  { intent: intent, context: msg.data && msg.data.context || undefined},
+                  {
+                    intent: intent,
+                    context: (msg.data && msg.data.context) || undefined,
+                  },
                   sourceView,
                   r,
                 );
@@ -1173,9 +1208,8 @@ _listeners.push({
             reject('no apps found for intent');
           }
         });
-      }
-      else {
-        reject("No intent provided");
+      } else {
+        reject('No intent provided');
       }
     });
   },
@@ -1293,7 +1327,8 @@ _listeners.push({
         /**
          * To Do: Support additional AppMetadata searching (other than name)
          */
-        const target: TargetApp | undefined = msg.data && msg.data.target || undefined;
+        const target: TargetApp | undefined =
+          (msg.data && msg.data.target) || undefined;
         const name: string = target
           ? typeof target === 'string'
             ? target
@@ -1357,7 +1392,7 @@ _listeners.push({
               if (pending && intent) {
                 view.setPendingIntent(
                   intent,
-                  msg.data && msg.data.context || undefined,
+                  (msg.data && msg.data.context) || undefined,
                   msg.source,
                 );
               }
@@ -1432,7 +1467,7 @@ _listeners.push({
             if (sourceView) {
               try {
                 getRuntime().openResolver(
-                  { context: msg.data && msg.data.context || undefined},
+                  { context: (msg.data && msg.data.context) || undefined },
                   sourceView,
                   buildIntentInstanceTree(r),
                 );

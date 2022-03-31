@@ -17,21 +17,18 @@ ipcRenderer.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
   );
 });
 
-(document as any).addEventListener(
-  TOPICS.RESULT_SELECTED,
-  (event: CustomEvent) => {
-    const result = event.detail.result;
-    const selection = result.name;
-    if (selection) {
-      ipcRenderer.send(TOPICS.FDC3_OPEN, {
-        topic: 'open',
-        source: workspaceId,
-        data: { name: selection },
-      });
-    }
-    ipcRenderer.send(TOPICS.HIDE_WINDOW, {
+document.addEventListener(TOPICS.RESULT_SELECTED, ((event: CustomEvent) => {
+  const result = event.detail.result;
+  const selection = result.name;
+  if (selection) {
+    ipcRenderer.send(TOPICS.FDC3_OPEN, {
+      topic: 'open',
       source: workspaceId,
-      target: TARGETS.SEARCH_RESULTS,
+      data: { name: selection },
     });
-  },
-);
+  }
+  ipcRenderer.send(TOPICS.HIDE_WINDOW, {
+    source: workspaceId,
+    target: TARGETS.SEARCH_RESULTS,
+  });
+}) as EventListener);

@@ -3,7 +3,7 @@
  */
 
 import { channels } from './system-channels';
-import { ConnectedApp, Channel } from './types/FDC3Data';
+import { ConnectedApp, ChannelData } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
 import { DirectoryPort } from '../../../directory/src/config';
 
@@ -69,7 +69,7 @@ const ChannelError = {
 //connected end points / apps
 const connected: Map<string, ConnectedApp> = new Map();
 
-const getSystemChannels = (): Array<Channel> => {
+const getSystemChannels = (): Array<ChannelData> => {
   return channels;
 };
 

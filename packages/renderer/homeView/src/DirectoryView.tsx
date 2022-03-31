@@ -4,15 +4,16 @@ import {TOPICS} from '../../../main/src/constants';
 import {DirectoryApp} from "../../../main/src/types/FDC3Data";
 
 
-export class DirectoryView extends React.Component {
+export class DirectoryView extends React.Component < {}, { apps:Array<DirectoryApp> }>{
 
     constructor(props) {
         super(props);
-        this.state = {apps: []}
+        this.state = {apps: []};
       }
 
     componentDidMount() {
-       (document as any).addEventListener("fdc3Ready",() => {
+       document.addEventListener("fdc3Ready",(() => {
+           
             //fetch apps from the directory, using system API (only available to system apps)
             if ((globalThis as any).home && (globalThis as any).home.getApps){
                 (globalThis as any).home.getApps().then(apps => {
@@ -29,7 +30,7 @@ export class DirectoryView extends React.Component {
                     this.setState({apps:apps});
                 });
             }
-        });
+        }) as EventListener);
     }
  
 
@@ -73,7 +74,7 @@ export class DirectoryView extends React.Component {
                      <CardContent>
                             <Typography gutterBottom variant="h5" component="div">
                                 {app.icons && app.icons.length > 0 &&
-                                    <img src={app.icons[0].icon} className="appIcon"></img>
+                                    <img src={app.icons[0].icon} className="appIcon" alt={`${app.name} - icon`}></img>
                                 }
                                 {app.title}
                             </Typography>

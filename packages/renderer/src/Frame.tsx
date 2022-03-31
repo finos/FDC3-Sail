@@ -4,7 +4,6 @@ import {TextField, IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, St
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {TOPICS} from '../../main/src/constants';
 import { PostAdd, HiveOutlined, ConstructionOutlined, CloseOutlined } from "@mui/icons-material";
-import { getTabId } from '@mui/base';
 
 
 const darkTheme = createTheme({
@@ -44,17 +43,17 @@ interface FrameTab {
   tabName: string;
 };
 
-export class Frame extends React.Component {
+export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedTab:string}> {
 
       constructor(props : any) {
         super(props);
-        this.state = {tabs: [], selectedTab : "tabProperties"};
+        this.state = {tabs: [], selectedTab : "newTab"};
       }
 
 
     handleTabChange(newTabId : string){
       console.log("tab selected", newTabId);
-        if (newTabId === "tabProperties") {
+        if (newTabId === "newTab") {
           newTab();
         } else {
         
@@ -163,7 +162,7 @@ export class Frame extends React.Component {
             {this.state.tabs.map((tab : FrameTab) => 
                <Tab label={tab.tabName} value={tab.tabId} iconPosition="end" icon={<CloseOutlined onClick={() => {this.closeTab(tab.tabId);}}/>} />  
             )}
-            <Tab icon={<PostAdd />} value="tabProperties"/>
+            <Tab icon={<PostAdd />} value="newTab"/>
           </Tabs>
           </AppBar>
           

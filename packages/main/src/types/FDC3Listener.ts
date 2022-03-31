@@ -4,11 +4,11 @@
  */
 export interface FDC3Listener {
   //the id of the owner of the listener
-  viewId: string| undefined;
+  viewId: string | undefined;
   //the id of the app that has set the listener (in the case of direct messaging)
-  source?: string| undefined;
-  contextType?: string| undefined;
-  intent?: string| undefined;
+  source?: string | undefined;
+  contextType?: string | undefined;
+  intent?: string | undefined;
   channel?: string | undefined;
   isChannel?: boolean;
   listenerId: string;

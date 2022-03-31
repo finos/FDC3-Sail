@@ -2,9 +2,9 @@
  * metadata for the system channels
  */
 
-import type { Channel } from './types/FDC3Data';
+import type { ChannelData } from './types/FDC3Data';
 
-export const channels: Array<Channel> = [
+export const channels: Array<ChannelData> = [
   {
     id: 'red',
     type: 'system',
