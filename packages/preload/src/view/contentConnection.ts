@@ -92,7 +92,10 @@ const wireTopic = (topic: string, config?: any): void => {
           listener: function (msg: FDC3Message) {
             if (msg) {
               document.dispatchEvent(
-                utils.fdc3Event(`return_${eventId}`,((msg && msg.data) ? msg.data : {})),
+                utils.fdc3Event(
+                  `return_${eventId}`,
+                  msg && msg.data ? msg.data : {},
+                ),
               );
             }
           },
