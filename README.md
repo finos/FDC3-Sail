@@ -7,6 +7,10 @@ This project provides a fully open source implementation of the [FDC3](https://f
     - directory search
 - A local file-based app directory implementation
 
+## FDC3 Primer
+
+If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
+
 ## Electron Implementation
 
 The Electron implementation is built from the [Vite Electron Builder Boilerplate] (also see [TEMPLATE.md](./TEMPLATE.md)). 
