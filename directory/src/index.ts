@@ -1,4 +1,5 @@
 import Fastify, { FastifyInstance } from 'fastify';
+import { root } from './routes/root';
 import { apps, app, search } from './routes/apps';
 import { intents } from './routes/intents';
 import { contexts } from './routes/contexts';
@@ -7,6 +8,8 @@ import { DirectoryPort } from './config';
 const server: FastifyInstance = Fastify({
   logger: true,
 });
+
+server.register(root);
 
 server.register(apps);
 
