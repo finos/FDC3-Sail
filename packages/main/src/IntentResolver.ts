@@ -6,6 +6,7 @@ import { Context } from '@finos/fdc3';
 import utils from './utils';
 import { join } from 'path';
 import { TOPICS } from './constants';
+import { Workspace } from './workspace';
 
 const RESOLVER_PRELOAD = join(
   __dirname,
@@ -40,6 +41,7 @@ export class IntentResolver {
       height: 400,
       width: 400,
       frame: false,
+      show:false,
       hasShadow: true,
       resizable: false,
       webPreferences: {
@@ -52,75 +54,79 @@ export class IntentResolver {
     });
 
     //TO DO: refactor bounds and positioning for multi-screen
-    const vBounds = view.content.getBounds();
-    console.log('Resolver vBounds', JSON.stringify(vBounds));
-    const x =
-      vBounds && vBounds.width ? vBounds.x + (vBounds.width + 200) / 2 : 0;
-    const y = vBounds && vBounds.height ? (vBounds.y + vBounds.height) / 2 : 0;
-    console.log('opening intentResolver @', x, y, vBounds);
-    this.window.setBounds({
-      x: Math.round(x),
-      y: Math.round(y),
-      height: 400,
-      width: 400,
-    });
+    //get the parent workspace (for positioning)
+    const resolverHeight : number = 400;
+    const resolverWidth : number = 400;
 
-    //add resolution listener
-    getRuntime().setResolver(this);
 
-    //to do: position resolver in relation to view
-    const RESOLVER_CONTENT =
-      import.meta.env.DEV &&
-      import.meta.env.VITE_DEV_SERVER_INTENTS_URL !== undefined
-        ? import.meta.env.VITE_DEV_SERVER_INTENTS_URL
-        : new URL(
-            '../renderer/dist/intentResolver.html',
-            'file://' + __dirname,
-          ).toString();
-    // and load the index.html of the app.
-    console.log('resolver content', RESOLVER_CONTENT);
+      //add resolution listener
+      getRuntime().setResolver(this);
 
-    if (RESOLVER_CONTENT) {
-      this.window.loadURL(RESOLVER_CONTENT as string).then(() => {
-        if (devTools) {
-          this.window.webContents.openDevTools();
-        }
-        console.log('resolver Window loaded');
+      //to do: position resolver in relation to view
+      const RESOLVER_CONTENT =
+        import.meta.env.DEV &&
+        import.meta.env.VITE_DEV_SERVER_INTENTS_URL !== undefined
+          ? import.meta.env.VITE_DEV_SERVER_INTENTS_URL
+          : new URL(
+              '../renderer/dist/intentResolver.html',
+              'file://' + __dirname,
+            ).toString();
+        
 
-        const startObject = {
-          id: this.id,
-          intent: this.intent || '',
-          context: this.context,
-          options: options,
-        };
+      if (RESOLVER_CONTENT) {
+        this.window.loadURL(RESOLVER_CONTENT as string).then(() => {
 
-        console.log(
-          'startObject',
-          this.id,
-          this.intent,
-          JSON.stringify(this.context),
-        );
+          const workspace : Workspace | undefined  = view.parent;
 
-        console.log('startObject options', JSON.stringify(options));
+          if (workspace && workspace.window) {
+            const wsPosition = workspace.window?.getPosition();
+            const wsSize = workspace.window?.getSize();
+            this.window.setSize(resolverWidth,resolverHeight);
+            this.window.setPosition((wsPosition[0] + (wsSize[0]/2) - (resolverWidth/2)),(wsPosition[1] + (wsSize[1]/2) - (resolverHeight/2)));
+          }
 
-        this.window.webContents.send(TOPICS.WINDOW_START, startObject);
+          this.window.show();
 
-        console.log(
-          'intent resolver create',
-          RESOLVER_CONTENT as string,
-          options,
-        );
-        this.view = view;
-      });
+          if (devTools) {
+            this.window.webContents.openDevTools();
+          }
+          console.log('resolver Window loaded');
 
-      this.window.focus();
+          const startObject = {
+            id: this.id,
+            intent: this.intent || '',
+            context: this.context,
+            options: options,
+          };
 
-      //dev tools will automatically blur and close the resolver
-      if (!devTools) {
-        this.window.on('blur', () => {
-          this.window.destroy();
+          console.log(
+            'startObject',
+            this.id,
+            this.intent,
+            JSON.stringify(this.context),
+          );
+
+          console.log('startObject options', JSON.stringify(options));
+
+          this.window.webContents.send(TOPICS.WINDOW_START, startObject);
+
+          console.log(
+            'intent resolver create',
+            RESOLVER_CONTENT as string,
+            options,
+          );
+          this.view = view;
         });
-      }
+
+        this.window.focus();
+
+        //dev tools will automatically blur and close the resolver
+        if (!devTools) {
+          this.window.on('blur', () => {
+            this.window.destroy();
+          });
+        }
+      
     }
   }
 
