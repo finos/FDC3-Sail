@@ -9,6 +9,7 @@ export enum TARGETS {
 }
 
 export enum TOPICS {
+  FRAME_READY = 'FRAME:ready',
   SEARCH = 'WORK:search',
   WORKSPACE_INIT = 'WORK:Init',
   WORKSPACE_START = 'WORK:Start',
