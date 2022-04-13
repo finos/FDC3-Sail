@@ -1,10 +1,11 @@
 import './Frame.css';
 import React from 'react';
-import {TextField, IconButton, Button, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
+import {TextField, IconButton, Menu, MenuItem, ButtonGroup, Tabs, Tab, AppBar, Paper, Stack} from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {TOPICS} from '../../main/src/constants';
-import { PostAdd, HiveOutlined, ConstructionOutlined, CloseOutlined } from "@mui/icons-material";
+import { PostAdd, HiveOutlined,  CloseOutlined, MoreVert} from "@mui/icons-material";
 
+(window as any).frameReady = false;
 
 const darkTheme = createTheme({
     palette: {
@@ -24,13 +25,7 @@ const openChannelPicker = (event : MouseEvent) => {
     document.dispatchEvent(new CustomEvent(TOPICS.OPEN_CHANNEL_PICKER_CLICK, {detail:{mouseX:event.clientX, mouseY:(event.clientY + pickerButtonHeight)}}));
 };
 
-const openTabTools = () => {
-    document.dispatchEvent(new CustomEvent(TOPICS.OPEN_TAB_TOOLS_CLICK));
-};
 
-const openFrameTools = () => {
-    document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
-};
 
 const hideResults = () => {
   document.dispatchEvent(new CustomEvent(TOPICS.HIDE_RESULTS_WINDOW));
@@ -43,11 +38,11 @@ interface FrameTab {
   tabName: string;
 };
 
-export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedTab:string}> {
+export class Frame extends React.Component <{}, {anchorEl : HTMLElement | null, tabs:Array<FrameTab>, selectedTab:string}> {
 
       constructor(props : any) {
         super(props);
-        this.state = {tabs: [], selectedTab : "newTab"};
+        this.state = {tabs: [], selectedTab : "newTab", anchorEl : null};
       }
 
 
@@ -77,11 +72,7 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
     handleNewTab(tabName : string, tabId : string) {
         
         this.setState({tabs:[...this.state.tabs,{tabId:tabId, tabName:tabName}], selectedTab:tabId});
-      //  ...tabs,
-      //  <Tab label={tabName} value={tabValue} iconPosition="end" icon={<CloseOutlined onClick={() => {closeTab(tabValue);}}/>} />
-       // ]);
-        
-       // handleTabsContent();
+
     }
 
     componentDidMount() {
@@ -107,9 +98,34 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
           this.setState({selectedTab:event.detail.selected});
         }
       }) as EventListener);
+      console.log("setting frameReady");
+      (window as any).frameReady = true;
+      const readyEvent = new CustomEvent(TOPICS.FRAME_READY, {
+        detail: {},
+      });
+      document.dispatchEvent(readyEvent);
   }
 
   render() {
+
+    const open = Boolean(this.state.anchorEl);
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+      this.setState({anchorEl:event.currentTarget});
+    };
+    const handleClose = () => {
+      this.setState({anchorEl : null});
+    };
+
+    const openViewTools = () => {
+      document.dispatchEvent(new CustomEvent(TOPICS.OPEN_TAB_TOOLS_CLICK));
+      this.setState({anchorEl : null});
+    };
+  
+    const openFrameTools = () => {
+        document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
+        this.setState({anchorEl : null});
+    };
+
       const debounce = (callback : any, wait : number) => {
 
         let timeoutId : number | undefined = undefined;
@@ -136,21 +152,45 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
         
       }, 400);
 
+
       return (
           <ThemeProvider theme={darkTheme}>
           <Paper>
             
           <AppBar position="static" color="inherit">
-              <div id="controlsContainer">
+              <div id="buttonsContainer">
                   <Stack direction="row">
                       <TextField id="search" label="Search" variant="outlined" size="small" onFocus={hideResults} onChange={searchChange} fullWidth/>
                       <ButtonGroup>
-                      <div id="channelButton">
-                        <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
-                      </div>
                       
-                      <Button size="small" variant="contained" id="frameDevTools" onClick={openFrameTools} endIcon={<ConstructionOutlined/>} title="Open Dev Tools for the Workspace Frame">Frame</Button>
-                      <Button size="small"  variant="contained" id="tabDevTools" onClick={openTabTools} endIcon={<ConstructionOutlined/>}  title="Open Dev Tools for the View">View</Button>
+                      <IconButton size="small"  variant="contained" id="channelPicker" onClick={openChannelPicker} title="select channel"><HiveOutlined/></IconButton>
+                      
+                      <IconButton
+                        id="menuButton"
+                        aria-controls={open ? 'more' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
+                        onClick={handleClick}>
+                          <MoreVert/>  
+                        </IconButton>
+                        <Menu
+                            id="moreMenu"
+                            aria-labelledby="menuButton"
+                            anchorEl={this.state.anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                            anchorOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'left',
+                            }}
+                          >
+                            <MenuItem key="frameTools" onClick={openFrameTools}>DevTools - Frame</MenuItem>
+                            <MenuItem key="viewTools" onClick={openViewTools}>DevTools - View</MenuItem>
+                          </Menu>
                   </ButtonGroup>
                   </Stack>
               </div>
@@ -173,6 +213,8 @@ export class Frame extends React.Component <{}, {tabs:Array<FrameTab>, selectedT
                     
       );
   }
+
+
 }
 
 /**

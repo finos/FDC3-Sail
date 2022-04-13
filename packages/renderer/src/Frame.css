@@ -1,10 +1,6 @@
-#controlsContainer {
-  padding-left:.6rem;
-  padding-right:.6rem;
+#buttonsContainer {
+  margin-left:.6rem;
+  margin-right:.6rem;
   padding-top:.6rem;
 }
 
-#channelButton {
-  margin-right:.3rem;
-  margin-left:.3rem;
-}

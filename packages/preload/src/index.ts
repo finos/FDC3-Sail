@@ -6,6 +6,7 @@ import { TOPICS, TARGETS } from '../../main/src/constants';
 //flag to indicate the background script is ready for fdc3!
 let connected = true;
 let id: string | null = null;
+let frameReady = false;
 
 /**
  * listen for start event - assigning id for the instance
@@ -19,23 +20,22 @@ ipcRenderer.on(TOPICS.WORKSPACE_START, async (event, args) => {
 });
 
 ipcRenderer.on(TOPICS.ADD_TAB, (event, args) => {
-  //don't push the event until after the document is loaded
-  console.log('ipcRenderer event', event.type);
   const tabEvent = new CustomEvent(TOPICS.ADD_TAB, {
     detail: {
       viewId: args.viewId,
       title: args.title,
     },
   });
-
-  if (document.getElementById('controlsContainer')) {
+  
+  if (frameReady){
     document.dispatchEvent(tabEvent);
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('loaded');
+  }
+  else {
+    document.addEventListener(TOPICS.FRAME_READY, () => {
       document.dispatchEvent(tabEvent);
     });
   }
+  
 });
 
 ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {
@@ -135,6 +135,10 @@ document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK, () => {
 
 document.addEventListener(TOPICS.OPEN_TAB_TOOLS_CLICK, () => {
   ipcRenderer.send(TOPICS.TAB_DEV_TOOLS, { source: id });
+});
+
+document.addEventListener(TOPICS.FRAME_READY, () => {
+  frameReady = true;
 });
 
 //viewId of currently selected tab
