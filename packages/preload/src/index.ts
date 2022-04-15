@@ -26,16 +26,14 @@ ipcRenderer.on(TOPICS.ADD_TAB, (event, args) => {
       title: args.title,
     },
   });
-  
-  if (frameReady){
+
+  if (frameReady) {
     document.dispatchEvent(tabEvent);
-  }
-  else {
+  } else {
     document.addEventListener(TOPICS.FRAME_READY, () => {
       document.dispatchEvent(tabEvent);
     });
   }
-  
 });
 
 ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {
