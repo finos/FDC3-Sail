@@ -33,6 +33,9 @@ const SEARCH_RESULTS_PRELOAD = join(
   '../../preload/dist/searchResults/index.cjs',
 );
 
+const CHANNEL_WINDOW_WIDTH = 130;
+const CHANNEL_WINDOW_HEIGHT = 90;
+
 export class Workspace {
   constructor(config?: WorkspaceConfig) {
     this.id = utils.guid();
@@ -383,8 +386,8 @@ export class Workspace {
     console.log('creatChannelWIndow');
     return new Promise((resolve, reject) => {
       this.channelWindow = new BrowserWindow({
-        height: 100,
-        width: 140,
+        height: CHANNEL_WINDOW_HEIGHT,
+        width: CHANNEL_WINDOW_WIDTH,
         hasShadow: true,
         show: false,
         frame: false,
@@ -436,7 +439,7 @@ export class Workspace {
       });
       const winPos: number[] = this.window ? this.window.getPosition() : [0, 0];
       this.channelWindow.setPosition(
-        winPos[0] + (xOffset || 0),
+        winPos[0] + ((xOffset || 0) - CHANNEL_WINDOW_WIDTH),
         winPos[1] + (yOffset || 0),
       );
       this.channelWindow.show();
