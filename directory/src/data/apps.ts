@@ -120,4 +120,24 @@ export const appData = [
     manifest: 'undefined/manifests/Ticker-Grid',
     icon: 'https://appd.kolbito.com/images/fdc3-logo.png',
   },
+  {
+    start_url: 'https://fdc3.finos.org/toolbox/fdc3-workbench/',
+    appId: 'fdc3-workbench',
+    name: 'fdc3-workbench',
+    version: '1.0.0',
+    title: 'FDC3 Workbench',
+    description: 'Development and test tool for FDC3 desktop agents and apps',
+    manifest_type: 'web',
+    manifest: 'undefined/manifests/fdc3-workbench',
+    icon: 'https://fdc3.finos.org/docs/assets/fdc3-logo.png',
+    contactEmail: 'fdc3@finos.org',
+    supportEmail: 'fdc3-maintainers@finos.org',
+    intents: [],
+    icons: [
+      {
+        icon: 'http://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-icon-256.png',
+      },
+    ],
+    images: [{ url: 'https://fdc3.finos.org/docs/assets/fdc3-logo.png' }],
+  },
 ];
