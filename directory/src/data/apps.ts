@@ -121,21 +121,6 @@ export const appData = [
     icon: 'https://appd.kolbito.com/images/fdc3-logo.png',
   },
   {
-    intents: [],
-    icons: [{ icon: 'https://appd.kolbito.com/images/fdc3-logo.png' }],
-    images: [
-      { url: 'https://appd.kolbito.com/demos/ticker-grid/screen-1.png' },
-    ],
-    start_url: 'https://appd.kolbito.com/demos/ticker-grid/',
-    appId: 'Ticker-Grid',
-    description: 'fdc3 enabled grid of the S&P 500',
-    name: 'Ticker-Grid',
-    manifest_type: 'web',
-    title: 'Ticker Grid',
-    manifest: 'undefined/manifests/Ticker-Grid',
-    icon: 'https://appd.kolbito.com/images/fdc3-logo.png',
-  },
-  {
     start_url: 'https://fdc3.finos.org/toolbox/fdc3-workbench/',
     appId: 'fdc3-workbench',
     name: 'fdc3-workbench',
