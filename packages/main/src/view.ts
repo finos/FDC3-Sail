@@ -8,7 +8,6 @@
 import { ViewConfig } from './types/ViewConfig';
 import { getRuntime } from './index';
 import { BrowserView } from 'electron';
-import utils from './utils';
 import { DirectoryApp } from './types/FDC3Data';
 import { Context } from '@finos/fdc3';
 import { Rectangle } from 'electron/main';
@@ -17,6 +16,7 @@ import { FDC3Listener } from './types/FDC3Listener';
 import { Pending } from './types/Pending';
 import { TOPICS } from './constants';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 
 const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
 
@@ -61,7 +61,7 @@ export class View {
       doInit();
     };
 
-    this.id = utils.guid();
+    this.id = randomUUID();
     this.parent = parent;
 
     if (config) {
