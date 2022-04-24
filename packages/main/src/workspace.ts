@@ -14,7 +14,6 @@ import { getRuntime } from './index';
 import { Rectangle } from 'electron';
 import { BrowserWindow } from 'electron';
 import { joinViewToChannel } from './listeners/fdc3Listeners';
-import utils from './utils';
 import { join } from 'path';
 import {
   DEFAULT_WINDOW_HEIGHT,
@@ -22,6 +21,7 @@ import {
   TOOLBAR_HEIGHT,
   TOPICS,
 } from './constants';
+import { randomUUID } from 'crypto';
 
 const CHANNEL_PICKER_PRELOAD = join(
   __dirname,
@@ -38,7 +38,7 @@ const CHANNEL_WINDOW_HEIGHT = 90;
 
 export class Workspace {
   constructor(config?: WorkspaceConfig) {
-    this.id = utils.guid();
+    this.id = randomUUID();
 
     this.window = new BrowserWindow({
       // show: false, // Use 'ready-to-show' event to show window

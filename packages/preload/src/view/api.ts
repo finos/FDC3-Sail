@@ -14,6 +14,27 @@ import { ChannelData } from '../../../main/src/types/FDC3Data';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { TOPICS } from '../../../main/src/constants';
 
+/** generate pseudo-random ids for handlers created on the client */
+const guid = (): string => {
+  const gen = (n?: number): string => {
+    const rando = (): string => {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    };
+    let r = '';
+    let i = 0;
+    n = n ? n : 1;
+    while (i < n) {
+      r += rando();
+      i++;
+    }
+    return r;
+  };
+
+  return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`;
+};
+
 /**
  * This file is injected into each Chrome tab by the Content script to make the FDC3 API available as a global
  */
@@ -120,7 +141,7 @@ export function createAPI() {
           ? handler
           : (contextType as ContextHandler);
         const thisContextType = handler ? (contextType as string) : undefined;
-        const listenerId: string = utils.guid();
+        const listenerId: string = guid();
 
         _contextListeners.set(
           listenerId,
@@ -159,7 +180,7 @@ export function createAPI() {
       const thisListener: ContextHandler = handler ? handler : (contextType as ContextHandler);
       const thisContextType = handler ? (contextType as string) : undefined;
 
-      const listenerId: string = utils.guid();
+      const listenerId: string = guid();
       _contextListeners.set(
         listenerId,
         createListenerItem(listenerId, thisListener, thisContextType),
@@ -212,7 +233,7 @@ export function createAPI() {
     config?: MethodConfig,
   ): Promise<FDC3Result> => {
     const ts: number = Date.now();
-    const _guid: string = utils.guid();
+    const _guid: string = guid();
     const eventId = `${method}_${_guid}`;
     detail.eventId = eventId;
     detail.ts = ts;
@@ -281,7 +302,7 @@ export function createAPI() {
         : (contextType as ContextHandler);
       const thisContextType: string | undefined =
         contextType && handler ? (contextType as string) : undefined;
-      const listenerId: string = utils.guid();
+      const listenerId: string = guid();
       console.log('add context listener', listenerId);
       _contextListeners.set(
         listenerId,
@@ -297,7 +318,7 @@ export function createAPI() {
     },
 
     addIntentListener: (intent: string, listener: ContextHandler) => {
-      const listenerId: string = utils.guid();
+      const listenerId: string = guid();
       if (!_intentListeners.has(intent)) {
         _intentListeners.set(intent, new Map());
       }

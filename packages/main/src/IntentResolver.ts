@@ -3,10 +3,10 @@ import { getRuntime } from './index';
 import { BrowserWindow } from 'electron';
 import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
 import { Context } from '@finos/fdc3';
-import utils from './utils';
 import { join } from 'path';
 import { TOPICS } from './constants';
 import { Workspace } from './workspace';
+import { randomUUID } from 'crypto';
 
 const RESOLVER_PRELOAD = join(
   __dirname,
@@ -31,7 +31,7 @@ export class IntentResolver {
     detail: ResolverDetail,
     options?: Array<FDC3App> | Array<IntentInstance>,
   ) {
-    this.id = utils.guid();
+    this.id = randomUUID();
 
     this.intent = detail.intent;
 
