@@ -80,8 +80,8 @@ export class IntentResolver {
           const wsSize = workspace.window?.getSize();
           this.window.setSize(resolverWidth, resolverHeight);
           this.window.setPosition(
-            wsPosition[0] + wsSize[0] / 2 - resolverWidth / 2,
-            wsPosition[1] + wsSize[1] / 2 - resolverHeight / 2,
+            Math.round(wsPosition[0] + wsSize[0] / 2 - resolverWidth / 2),
+            Math.round(wsPosition[1] + wsSize[1] / 2 - resolverHeight / 2),
           );
         }
 
