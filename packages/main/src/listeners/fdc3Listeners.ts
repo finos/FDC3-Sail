@@ -670,45 +670,56 @@ export const joinViewToChannel = (
         //if there is a context...
         const contexts = runtime.getContexts();
         const channelContext = contexts.get(channel);
-        if (channelContext) {
-          const ctx = channelContext.length > 0 ? channelContext[0] : null;
-          let contextSent = false;
 
-          if (ctx && (restoreOnly === undefined || !restoreOnly)) {
-            // send to individual listenerIds
+        //ensure the channel state for the view's workspace is updated
+        if (view.parent) {
+          const sourceWS = runtime.getWorkspace(view.parent.id);
+          //setChannel will result in calling joinViewToChannel again,
+          //so we are going to no op if that is the case
+          //which would mean that 'joinChannel' has been called programtically from the fdc3 api
+          if (sourceWS && sourceWS.channel !== channel) {
+            sourceWS.setChannel(channel);
+          } else {
+            if (channelContext) {
+              const ctx = channelContext.length > 0 ? channelContext[0] : null;
+              let contextSent = false;
 
-            view.listeners.forEach((l) => {
-              //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
-              if (!l.intent) {
-                if (
-                  (!l.channel ||
-                    l.channel === 'default' ||
-                    (l.channel && l.channel === channel)) &&
-                  (!l.contextType ||
-                    (l.contextType && l.contextType === ctx.type))
-                ) {
-                  view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
-                    topic: 'context',
-                    listenerIds: [l.listenerId],
-                    data: { context: ctx, listenerId: l.listenerId },
-                    source: view.id,
-                  });
-                  contextSent = true;
+              if (ctx && (restoreOnly === undefined || !restoreOnly)) {
+                // send to individual listenerIds
+
+                view.listeners.forEach((l) => {
+                  //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
+                  if (!l.intent) {
+                    if (
+                      (!l.channel ||
+                        l.channel === 'default' ||
+                        (l.channel && l.channel === channel)) &&
+                      (!l.contextType ||
+                        (l.contextType && l.contextType === ctx.type))
+                    ) {
+                      view.content.webContents.send(TOPICS.FDC3_CONTEXT, {
+                        topic: 'context',
+                        listenerIds: [l.listenerId],
+                        data: { context: ctx, listenerId: l.listenerId },
+                        source: view.id,
+                      });
+                      contextSent = true;
+                    }
+                  }
+                });
+                if (!contextSent) {
+                  //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
+                  console.log(
+                    'setPendingContext',
+                    channelContext && channelContext[0],
+                  );
+                  view.setPendingContext(channelContext && channelContext[0]);
                 }
               }
-            });
-            if (!contextSent) {
-              //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
-              console.log(
-                'setPendingContext',
-                channelContext && channelContext[0],
-              );
-              view.setPendingContext(channelContext && channelContext[0]);
             }
           }
         }
       }
-
       resolve();
     } catch (err) {
       reject(err);
