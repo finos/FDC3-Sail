@@ -1,6 +1,9 @@
+.frameContainer {
+  padding-top:.3rem;
+}
+
 #buttonsContainer {
   margin-left:.6rem;
   margin-right:.6rem;
-  padding-top:.6rem;
-}
 
+}

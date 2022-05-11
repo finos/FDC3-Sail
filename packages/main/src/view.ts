@@ -14,15 +14,13 @@ import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
 import { Pending } from './types/Pending';
-import { TOPICS } from './constants';
+import { TOPICS, TOOLBAR_HEIGHT } from './constants';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
 const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
 
 const HOME_PRELOAD = join(__dirname, '../../preload/dist/homeView/index.cjs');
-
-const TOOLBAR_HEIGHT = 120;
 
 export class View {
   constructor(url?: string | null, config?: ViewConfig, parent?: Workspace) {
