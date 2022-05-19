@@ -1,0 +1,15 @@
+{
+2  "scanSettings": {
+3    "configMode": "AUTO",
+4	"configExternalURL": "",
+5	"projectToken": "",
+6	"baseBranches": []
+7  },
+8  "checkRunSettings": {
+9    "displayMode": "diff",
+10    "vulnerableCheckRunConclusionLevel": "failure"
+11  },
+12  "issueSettings": {
+13    "minSeverityLevel": "LOW"
+14  }
+15}
