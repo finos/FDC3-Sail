@@ -113,6 +113,11 @@ Other useful commands:
 1. `npm run typecheck` - Run a TypeScript check.
 1. `npm run test` - Run tests for all parts of the application, including end-to-end tests.
 
+## Mailing List
+
+To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [electron-fdc3+subscribe@lists.finos.org](mailto:electron-fdc3+subscribe@lists.finos.org).
+
+
 ## Contributing
 
 1. Fork it (<https://github.com/finos/electron-fdc3/fork>)
