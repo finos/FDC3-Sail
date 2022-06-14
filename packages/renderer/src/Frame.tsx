@@ -4,8 +4,6 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-  Menu,
-  MenuItem,
   ButtonGroup,
   Tabs,
   Tab,
@@ -140,22 +138,6 @@ export class Frame extends React.Component<
 
   render() {
     const open = Boolean(this.state.anchorEl);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-      this.setState({ anchorEl: event.currentTarget });
-    };
-    const handleClose = () => {
-      this.setState({ anchorEl: null });
-    };
-
-    const openViewTools = () => {
-      document.dispatchEvent(new CustomEvent(TOPICS.OPEN_TAB_TOOLS_CLICK));
-      this.setState({ anchorEl: null });
-    };
-
-    const openFrameTools = () => {
-      document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
-      this.setState({ anchorEl: null });
-    };
 
     const debounce = (callback: any, wait: number) => {
       let timeoutId: number | undefined = undefined;
@@ -179,6 +161,14 @@ export class Frame extends React.Component<
         );
       }
     }, 400);
+
+    const devToolsClick = (event: MouseEvent) => {
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.OPEN_TOOLS_MENU, {
+          detail: { clientX: event.clientX, clientY: event.clientY },
+        }),
+      );
+    };
 
     return (
       <ThemeProvider theme={darkTheme}>
@@ -220,32 +210,10 @@ export class Frame extends React.Component<
                       aria-controls={open ? 'more' : undefined}
                       aria-haspopup="true"
                       aria-expanded={open ? 'true' : undefined}
-                      onClick={handleClick}
+                      onClick={devToolsClick}
                     >
                       <MoreVert />
                     </IconButton>
-                    <Menu
-                      id="moreMenu"
-                      aria-labelledby="menuButton"
-                      anchorEl={this.state.anchorEl}
-                      open={open}
-                      onClose={handleClose}
-                      anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                      }}
-                      transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                      }}
-                    >
-                      <MenuItem key="frameTools" onClick={openFrameTools}>
-                        DevTools - Frame
-                      </MenuItem>
-                      <MenuItem key="viewTools" onClick={openViewTools}>
-                        DevTools - View
-                      </MenuItem>
-                    </Menu>
                   </ButtonGroup>
                 </Stack>
               </div>

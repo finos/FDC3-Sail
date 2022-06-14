@@ -6,8 +6,7 @@ import { Workspace } from '../workspace';
 import { getRuntime } from '../index';
 import { FDC3Message } from '../types/FDC3Message';
 import { DirectoryApp } from '../types/FDC3Data';
-import { Point } from 'electron';
-import { screen } from 'electron';
+import { Point, Menu, screen } from 'electron';
 import utils from '../utils';
 import fetch from 'electron-fetch';
 import { TOPICS, TARGETS } from '../constants';
@@ -111,11 +110,37 @@ export class RuntimeListener {
         workspace.closeTab(args.tabId);
       }
     });
-    //{'source':id,'selected':event.detail.selected});
 
-    /*ipcMain.on(TOPICS.JOIN_CHANNEL, (event, args) => {
-      console.log('join channel', args.channel);
-    });*/
+    ipcMain.on(TOPICS.OPEN_TOOLS_MENU, (event, args) => {
+      //bring selected browserview to front
+      const workspace = this.runtime.getWorkspace(args.source);
+      if (workspace) {
+        const template = [
+          {
+            label: 'Frame Dev Tools',
+            click: () => {
+              if (workspace && workspace.window) {
+                workspace.window.webContents.openDevTools();
+              }
+            },
+          },
+          {
+            label: 'Tab Dev Tools',
+            click: () => {
+              if (workspace && workspace.selectedTab) {
+                const selectedTab = this.runtime.getView(workspace.selectedTab);
+                if (selectedTab && selectedTab.content) {
+                  selectedTab.content.webContents.openDevTools();
+                }
+              }
+            },
+          },
+        ];
+
+        const menu = Menu.buildFromTemplate(template);
+        menu.popup();
+      }
+    });
 
     ipcMain.on(TOPICS.FETCH_FROM_DIRECTORY, (event, args) => {
       console.log('ipcRenderer', event.type);
@@ -152,27 +177,6 @@ export class RuntimeListener {
           });
         });
       });
-    });
-
-    ipcMain.on(TOPICS.FRAME_DEV_TOOLS, (event, args) => {
-      //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event.type);
-      const sourceWS = runtime.getWorkspace(args.source);
-      if (sourceWS && sourceWS.window) {
-        sourceWS.window.webContents.openDevTools();
-      }
-    });
-
-    ipcMain.on(TOPICS.TAB_DEV_TOOLS, (event, args) => {
-      //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event.type);
-      const sourceWS = runtime.getWorkspace(args.source);
-      if (sourceWS && sourceWS.selectedTab) {
-        const selectedTab = this.runtime.getView(sourceWS.selectedTab);
-        if (selectedTab && selectedTab.content) {
-          selectedTab.content.webContents.openDevTools();
-        }
-      }
     });
 
     ipcMain.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
