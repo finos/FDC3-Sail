@@ -59,6 +59,13 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
   );
 });
 
+document.addEventListener(TOPICS.OPEN_TOOLS_MENU, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.OPEN_TOOLS_MENU, {
+    source: id,
+    data: event.detail,
+  });
+}) as EventListener);
+
 document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
     source: id,
@@ -126,14 +133,6 @@ document.addEventListener(TOPICS.OPEN_CHANNEL_PICKER_CLICK, ((
     mouseY: event.detail.mouseY,
   });
 }) as EventListener);
-
-document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK, () => {
-  ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS, { source: id });
-});
-
-document.addEventListener(TOPICS.OPEN_TAB_TOOLS_CLICK, () => {
-  ipcRenderer.send(TOPICS.TAB_DEV_TOOLS, { source: id });
-});
 
 document.addEventListener(TOPICS.FRAME_READY, () => {
   frameReady = true;
