@@ -36,6 +36,7 @@ export interface FDC3EventDetail {
   source?: string;
   /* identifier of the browserView the event originated from */
   viewId?: string;
+  error?: string;
 }
 
 export interface FDC3ResponseData {

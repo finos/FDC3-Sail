@@ -6,6 +6,8 @@ import {
   IntentMetadata,
   TargetApp,
   IntentResolution,
+  ResolveError,
+  OpenError,
 } from '@finos/fdc3';
 import { FDC3Message } from '../types/FDC3Message';
 import {
@@ -367,14 +369,17 @@ _listeners.push({
               if (newView && msg.context) {
                 newView.setPendingContext(msg.context, msg.source);
               }
-              //resolve with the window identfier
+
               resolve();
-              //reject?
+            } else {
+              reject(OpenError.AppNotFound);
             }
+          } else {
+            reject(OpenError.AppNotFound);
           }
         },
-        (err) => {
-          reject(err);
+        () => {
+          reject(OpenError.AppNotFound);
         },
       );
     });
@@ -805,6 +810,9 @@ _listeners.push({
               apps: [],
             };
 
+            if (j.length === 0) {
+              reject(ResolveError.NoAppsFound);
+            }
             // r.apps = j;
             //find intent display name from app directory data
             const intnt = j[0].intents.filter((i) => {
@@ -819,6 +827,7 @@ _listeners.push({
                 apps: [],
               };
             }
+
             j.forEach((dirApp) => {
               r.apps.push({
                 name: dirApp.name,
@@ -832,8 +841,7 @@ _listeners.push({
             resolve(r as AppIntent);
           },
           () => {
-            //no results found for the app-directory, there may still be intents from live apps
-            resolve({ intent: { name: intent, displayName: '' }, apps: [] });
+            reject(ResolveError.NoAppsFound);
           },
         );
       } else {
@@ -890,14 +898,18 @@ _listeners.push({
                 r.push(entry);
               });
             }
-            resolve(r);
+            if (r.length > 0) {
+              resolve(r);
+            } else {
+              reject(ResolveError.NoAppsFound);
+            }
           },
-          (err) => {
-            reject(err);
+          () => {
+            reject(ResolveError.NoAppsFound);
           },
         );
       } else {
-        reject('no context provided');
+        reject(ResolveError.NoAppsFound);
       }
     });
   },
@@ -1073,7 +1085,7 @@ _listeners.push({
             try {
               data = await _r.json();
             } catch (err) {
-              console.log('error parsing json', err);
+              reject(ResolveError.NoAppsFound);
             }
 
             if (data) {
@@ -1221,11 +1233,11 @@ _listeners.push({
             }
           } else {
             //show message indicating no handler for the intent...
-            reject('no apps found for intent');
+            reject(ResolveError.NoAppsFound);
           }
         });
       } else {
-        reject('No intent provided');
+        reject(ResolveError.NoAppsFound);
       }
     });
   },
@@ -1494,7 +1506,7 @@ _listeners.push({
           }
         } else {
           //show message indicating no handler for the intent...
-          reject('no apps found for intent');
+          reject(ResolveError.NoAppsFound);
         }
       };
       raiseIntentForContext();
