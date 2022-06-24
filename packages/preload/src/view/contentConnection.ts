@@ -100,12 +100,21 @@ const wireTopic = (topic: string, config?: TopicConfig): void => {
           ts: e.ts,
           listener: function (msg: FDC3Message) {
             if (msg) {
-              document.dispatchEvent(
-                utils.fdc3Event(
-                  `return_${eventId}`,
-                  msg && msg.data ? msg.data : {},
-                ),
-              );
+              //handle errors
+              if (msg.error) {
+                document.dispatchEvent(
+                  utils.fdc3Event(`return_${eventId}`, {
+                    error: msg.error,
+                  }),
+                );
+              } else {
+                document.dispatchEvent(
+                  utils.fdc3Event(
+                    `return_${eventId}`,
+                    msg && msg.data ? msg.data : {},
+                  ),
+                );
+              }
             }
           },
         });

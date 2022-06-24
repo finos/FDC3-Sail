@@ -265,16 +265,28 @@ export class RuntimeListener {
     const runtime = this.runtime;
 
     ipcMain.on(l.name, (event, args) => {
-      l.handler.call(this, runtime, args as FDC3Message).then((r) => {
-        console.log('handler response', r, 'args', args);
+      l.handler.call(this, runtime, args as FDC3Message).then(
+        (r) => {
+          console.log('handler response', r, 'args', args);
 
-        if (event.ports) {
-          event.ports[0].postMessage({
-            topic: args.data.eventId,
-            data: r,
-          });
-        }
-      });
+          if (event.ports) {
+            event.ports[0].postMessage({
+              topic: args.data.eventId,
+              data: r,
+            });
+          }
+        },
+        (err) => {
+          console.log('handler error', err, 'args', args);
+
+          if (event.ports) {
+            event.ports[0].postMessage({
+              topic: args.data.eventId,
+              error: err,
+            });
+          }
+        },
+      );
     });
   }
 

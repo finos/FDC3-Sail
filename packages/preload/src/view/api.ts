@@ -1,6 +1,6 @@
 import { contextBridge } from 'electron';
 import utils from '../../../main/src/utils';
-import { Listener as fdc3Listener } from '@finos/fdc3';
+import { Listener } from '@finos/fdc3';
 import {
   Context,
   DisplayMetadata,
@@ -43,7 +43,7 @@ export function createAPI() {
   /**
    *  the Listener class
    */
-  class Listener implements fdc3Listener {
+  class FDC3Listener implements Listener {
     private id: string;
 
     type: string;
@@ -56,29 +56,31 @@ export function createAPI() {
       if (type === 'intent' && intent) {
         this.intent = intent;
       }
+
+      this.unsubscribe = () => {
+        if (this.type === 'context') {
+          _contextListeners.delete(this.id);
+          //notify the background script
+          document.dispatchEvent(
+            utils.fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
+          );
+        } else if (this.type === 'intent' && this.intent) {
+          const listeners = _intentListeners.get(this.intent);
+          if (listeners) {
+            listeners.delete(this.id);
+          }
+          //notify the background script
+          document.dispatchEvent(
+            utils.fdc3Event(FDC3EventEnum.DropIntentListener, {
+              id: this.id,
+              intent: this.intent,
+            }),
+          );
+        }
+      };
     }
 
-    unsubscribe() {
-      if (this.type === 'context') {
-        _contextListeners.delete(this.id);
-        //notify the background script
-        document.dispatchEvent(
-          utils.fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
-        );
-      } else if (this.type === 'intent' && this.intent) {
-        const listeners = _intentListeners.get(this.intent);
-        if (listeners) {
-          listeners.delete(this.id);
-        }
-        //notify the background script
-        document.dispatchEvent(
-          utils.fdc3Event(FDC3EventEnum.DropIntentListener, {
-            id: this.id,
-            intent: this.intent,
-          }),
-        );
-      }
-    }
+    unsubscribe: () => void;
   }
 
   interface ListenerItem {
@@ -154,63 +156,12 @@ export function createAPI() {
             contextType: thisContextType,
           }),
         );
-        return new Listener('context', listenerId);
+        return new FDC3Listener('context', listenerId);
       },
     };
 
     return channel;
   };
-
-  //type instanceStatus = 'ready' | 'loading' | 'unregistered';
-  /**
-   * the AppInstance class
-   */
-  /*const createAppInstance = (
-    id: string,
-    status: instanceStatus,
-  ): AppInstance => {
-    const instance: any = {};
-    instance.instanceId = id;
-    instance.status = status;
-
-    instance.addContextListener = (
-      contextType: string | ContextHandler,
-      handler?: ContextHandler,
-    ) => {
-      const thisListener: ContextHandler = handler ? handler : (contextType as ContextHandler);
-      const thisContextType = handler ? (contextType as string) : undefined;
-
-      const listenerId: string = guid();
-      _contextListeners.set(
-        listenerId,
-        createListenerItem(listenerId, thisListener, thisContextType),
-      );
-      document.dispatchEvent(
-        utils.fdc3Event(FDC3EventEnum.AddContextListener, {
-          id: listenerId,
-          instanceId: instance.instanceId,
-          contextType: thisContextType,
-        }),
-      );
-      return new Listener('context', listenerId);
-    };
-
-    instance.broadcast = (context: Context) => {
-      wireMethod(
-        'broadcast',
-        { context: context, instanceId: instance.instanceId },
-        true,
-      );
-    };
-
-    /* instance.onStatusChanged = (
-      handler: (newVal: string, oldVal: string) => {},
-    ) => {};*/
-
-  /*
-    return instance as AppInstance;
-  };
-*/
 
   interface MethodConfig {
     void?: boolean;
@@ -243,11 +194,14 @@ export function createAPI() {
         resolve();
       });
     } else {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         document.addEventListener(
           `FDC3:return_${eventId}`,
           ((event: FDC3Event) => {
             let r: FDC3Result = event.detail;
+            if (r.error) {
+              reject(r.error);
+            }
             if (r !== null && config && config.resultHandler) {
               r = config.resultHandler.call(document, r);
             }
@@ -314,7 +268,7 @@ export function createAPI() {
           contextType: thisContextType,
         }),
       );
-      return new Listener('context', listenerId);
+      return new FDC3Listener('context', listenerId);
     },
 
     addIntentListener: (intent: string, listener: ContextHandler) => {
@@ -331,7 +285,7 @@ export function createAPI() {
             intent: intent,
           }),
         );
-        return new Listener('intent', listenerId, intent);
+        return new FDC3Listener('intent', listenerId, intent);
       } else {
         console.error('listener could not be created');
         return null;
@@ -388,18 +342,7 @@ export function createAPI() {
     },
 
     joinChannel: (channel: string) => {
-      return new Promise<void>((resolve) => {
-        document.addEventListener(
-          TOPICS.CONFIRM_JOIN,
-          (() => {
-            resolve();
-          }) as EventListener,
-          { once: true },
-        );
-        document.dispatchEvent(
-          utils.fdc3Event(FDC3EventEnum.JoinChannel, { channel: channel }),
-        );
-      });
+      return wireMethod('joinChannel', { channel: channel });
     },
 
     leaveCurrentChannel: () => {
