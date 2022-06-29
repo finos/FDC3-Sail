@@ -1,5 +1,5 @@
 import './Frame.css';
-import React from 'react';
+import React, { SyntheticDragEvent } from 'react';
 import {
   TextField,
   InputAdornment,
@@ -22,6 +22,8 @@ import {
 } from '@mui/icons-material';
 
 (window as any).frameReady = false;
+
+let draggedTab: string | null = null;
 
 const darkTheme = createTheme({
   palette: {
@@ -170,6 +172,59 @@ export class Frame extends React.Component<
       );
     };
 
+    const allowDrop = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+    };
+
+    const drag = (tabId: string) => {
+      draggedTab = tabId;
+    };
+
+    const drop = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+
+      const target: HTMLElement = ev.target as HTMLElement;
+      console.log('tabDrop', ev, target, target.id);
+      if (draggedTab && target) {
+        const tabId = draggedTab;
+        //rewrite the tablist
+        //find the selected tab, and pop it out of the list
+
+        let dropTab: FrameTab | undefined = undefined;
+        let targetIndex = 0;
+        const newTabList: Array<FrameTab> = [];
+
+        this.state.tabs.forEach((tab, i) => {
+          if (tab.tabId !== tabId) {
+            newTabList.push(tab);
+          } else {
+            dropTab = tab;
+          }
+          if (tab.tabId === target.id) {
+            targetIndex = i;
+          }
+        });
+
+        if (dropTab) {
+          newTabList.splice(targetIndex, 0, dropTab);
+        }
+        this.setState({ tabs: newTabList });
+        //select the dragged tab
+        //do this with a delay to prevent race conditions with re-rendering the tab order
+        setTimeout(() => {
+          document.dispatchEvent(
+            new CustomEvent(TOPICS.TAB_SELECTED, {
+              detail: {
+                selected: tabId,
+              },
+            }),
+          );
+        }, 100);
+
+        draggedTab = null;
+      }
+    };
+
     return (
       <ThemeProvider theme={darkTheme}>
         <Paper>
@@ -229,7 +284,14 @@ export class Frame extends React.Component<
                   <Tab
                     label={tab.tabName}
                     value={tab.tabId}
+                    id={tab.tabId}
                     iconPosition="end"
+                    onDrop={drop}
+                    onDragOver={allowDrop}
+                    draggable="true"
+                    onDragStart={() => {
+                      drag(tab.tabId);
+                    }}
                     icon={
                       <CloseOutlined
                         onClick={() => {
