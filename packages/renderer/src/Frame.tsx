@@ -125,6 +125,16 @@ export class Frame extends React.Component<
       }
     }) as EventListener);
 
+    document.addEventListener(TOPICS.REMOVE_TAB, ((event: CustomEvent) => {
+      console.log('Remove Tab called', event.detail);
+      const tabId = event.detail.tabId;
+      this.setState({
+        tabs: this.state.tabs.filter((tab) => {
+          return tab.tabId !== tabId;
+        }),
+      });
+    }) as EventListener);
+
     document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
       if (event.detail.selected) {
         this.setState({ selectedTab: event.detail.selected });
@@ -176,12 +186,25 @@ export class Frame extends React.Component<
       ev.preventDefault();
     };
 
+    const allowFrameDrop = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+    };
+
     const drag = (tabId: string) => {
       draggedTab = tabId;
+      //inform of the tab dragstart
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.TAB_DRAG_START, {
+          detail: {
+            selected: tabId,
+          },
+        }),
+      );
     };
 
     const drop = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
+      ev.stopPropagation();
 
       const target: HTMLElement = ev.target as HTMLElement;
       console.log('tabDrop', ev, target, target.id);
@@ -225,16 +248,48 @@ export class Frame extends React.Component<
       }
     };
 
+    const frameDrop = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+
+      console.log('tabDropped on frame target');
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.DROP_TAB, {
+          detail: {
+            frameTarget: true,
+          },
+        }),
+      );
+    };
+
+    const dragEnd = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+      console.log('dragEnd', draggedTab);
+      if (draggedTab) {
+        console.log('tabDropped outside target', draggedTab);
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.DROP_TAB, {
+            detail: {
+              tabId: draggedTab,
+            },
+          }),
+        );
+      }
+    };
+
     return (
       <ThemeProvider theme={darkTheme}>
         <Paper>
-          <div class="frameContainer">
+          <div
+            className="frameContainer"
+            onDrop={frameDrop}
+            onDragOver={allowFrameDrop}
+          >
             <AppBar position="static" color="inherit">
               <div id="buttonsContainer">
                 <Stack direction="row">
                   <TextField
                     id="search"
-                    class="frameSearch"
+                    className="frameSearch"
                     variant="outlined"
                     margin="dense"
                     size="small"
@@ -249,7 +304,7 @@ export class Frame extends React.Component<
                       ),
                     }}
                   />
-                  <ButtonGroup class="frameButtons">
+                  <ButtonGroup className="frameButtons">
                     <IconButton
                       size="small"
                       variant="contained"
@@ -288,6 +343,7 @@ export class Frame extends React.Component<
                     iconPosition="end"
                     onDrop={drop}
                     onDragOver={allowDrop}
+                    onDragEnd={dragEnd}
                     draggable="true"
                     onDragStart={() => {
                       drag(tab.tabId);

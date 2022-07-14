@@ -124,6 +124,9 @@ export class Workspace {
 
   channel: string | null = null;
 
+  /**
+   * the currently selected / in view tab
+   */
   selectedTab: string | null = null;
 
   getSelectedIndex(): number {
@@ -174,6 +177,7 @@ export class Workspace {
    * close the workspace
    */
   close() {
+    console.log('closing workspace');
     const runtime = getRuntime();
     this.getViews().forEach((view) => {
       view.close();
@@ -189,14 +193,16 @@ export class Workspace {
       this.channelWindow.destroy();
     }
 
+    //close the window
+    if (this.window) {
+      //this.window.close();
+      console.log('closing the browser window');
+      this.window.destroy();
+    }
+
     //unregister workspace
     if (runtime) {
       runtime.getWorkspaces().delete(this.id);
-    }
-
-    //close the window
-    if (this.window) {
-      this.window.destroy();
     }
   }
 
@@ -272,8 +278,10 @@ export class Workspace {
           //if we're removing the currently selected tab, then we'll have to make a new selection
           const newSelection: boolean = tabId === this.selectedTab;
           //remove the view from the workspace
+          console.log('removing tab.  current # of views', this.views.length);
+
           this.views = this.views.filter((v, i) => {
-            if (v.id === this.selectedTab) {
+            if (v.id === tabId) {
               selectedIndex = i;
               //remove view parent
               delete v.parent;
@@ -284,6 +292,7 @@ export class Workspace {
             return v.id !== tabId;
           });
 
+          console.log('removing tab.  current # of views', this.views.length);
           //are there more tabs?
           //if not, close the workspace
           if (this.views.length === 0) {

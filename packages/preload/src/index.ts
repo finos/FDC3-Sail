@@ -47,6 +47,16 @@ ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {
   );
 });
 
+ipcRenderer.on(TOPICS.REMOVE_TAB, (event, args) => {
+  document.dispatchEvent(
+    new CustomEvent(TOPICS.REMOVE_TAB, {
+      detail: {
+        tabId: args.tabId,
+      },
+    }),
+  );
+});
+
 ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
   const channel =
     args.channel !== 'default'
@@ -84,8 +94,19 @@ document.addEventListener(TOPICS.CLOSE_TAB, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.CLOSE_TAB, { source: id, tabId: event.detail.tabId });
 }) as EventListener);
 
+document.addEventListener(TOPICS.TAB_DRAG_START, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.TAB_DRAG_START, {
+    source: id,
+    selected: event.detail.selected,
+  });
+}) as EventListener);
+
 document.addEventListener(TOPICS.DROP_TAB, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.DROP_TAB, { source: id, tabId: event.detail.tabId });
+  ipcRenderer.send(TOPICS.DROP_TAB, {
+    source: id,
+    tabId: event.detail.tabId,
+    frameTarget: event.detail.frameTarget,
+  });
 }) as EventListener);
 
 document.addEventListener(TOPICS.SEARCH, ((event: CustomEvent) => {
