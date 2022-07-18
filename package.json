@@ -1,5 +1,5 @@
 {
-  "name": "electron-fdc3",
+  "name": "@finos/electron-fdc3",
   "private": true,
   "engines": {
     "node": ">=v16.13",
