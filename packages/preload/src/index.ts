@@ -109,6 +109,13 @@ document.addEventListener(TOPICS.DROP_TAB, ((event: CustomEvent) => {
   });
 }) as EventListener);
 
+document.addEventListener(TOPICS.TEAR_OUT_TAB, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.TEAR_OUT_TAB, {
+    source: id,
+    tabId: event.detail.tabId,
+  });
+}) as EventListener);
+
 document.addEventListener(TOPICS.SEARCH, ((event: CustomEvent) => {
   const query = event.detail.query;
   ipcRenderer.once(

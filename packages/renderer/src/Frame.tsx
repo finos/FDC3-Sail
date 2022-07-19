@@ -250,7 +250,7 @@ export class Frame extends React.Component<
 
     const frameDrop = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
-
+      ev.stopPropagation();
       console.log('tabDropped on frame target');
       document.dispatchEvent(
         new CustomEvent(TOPICS.DROP_TAB, {
@@ -263,11 +263,29 @@ export class Frame extends React.Component<
 
     const dragEnd = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
+
       console.log('dragEnd', draggedTab);
       if (draggedTab) {
+        ev.stopPropagation();
         console.log('tabDropped outside target', draggedTab);
         document.dispatchEvent(
           new CustomEvent(TOPICS.DROP_TAB, {
+            detail: {
+              tabId: draggedTab,
+            },
+          }),
+        );
+      }
+    };
+
+    const tearOut = (ev: SyntheticDragEvent) => {
+      ev.preventDefault();
+      //only tear out if there is more than one tab in the set
+      console.log('tearOut?', draggedTab, this.state.tabs.length);
+      if (draggedTab && this.state.tabs.length > 1) {
+        ev.stopPropagation();
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.TEAR_OUT_TAB, {
             detail: {
               tabId: draggedTab,
             },
@@ -282,6 +300,7 @@ export class Frame extends React.Component<
           <div
             className="frameContainer"
             onDrop={frameDrop}
+            onDragLeave={tearOut}
             onDragOver={allowFrameDrop}
           >
             <AppBar position="static" color="inherit">

@@ -100,18 +100,57 @@ export class RuntimeListener {
         //workspace
         if (oldWorkspace && draggedView) {
           //send event to UI to visually remove the tab
-          /* if (oldWorkspace.window){
-            console.log("removing tab - sending message to client");
-            oldWorkspace.window.webContents.send(TOPICS.REMOVE_TAB, {
-              tabId: this.draggedTab.tabId
-            });
-          }*/
           console.log('calling remove tab');
-
-          await targetWS.addTab(draggedView.id);
           await oldWorkspace.removeTab(draggedView.id);
+          await targetWS.addTab(draggedView.id);
         }
       } else if (tabId) {
+        //make a new workspace and window
+        const workspace = this.runtime.createWorkspace({
+          x: p.x,
+          y: p.y,
+          onInit: () => {
+            console.log('workspace created', workspace.id);
+            return new Promise((resolve) => {
+              if (tabId) {
+                const oldWorkspace = this.runtime.getWorkspace(args.source);
+                const draggedView = this.runtime.getView(tabId);
+                //workspace
+                if (oldWorkspace && draggedView) {
+                  //send event to UI to visually remove the tab
+                  if (oldWorkspace.window) {
+                    console.log('removing tab - sending message to client');
+                    oldWorkspace.window.webContents.send(TOPICS.REMOVE_TAB, {
+                      tabId: tabId,
+                    });
+                  }
+                  oldWorkspace.removeTab(tabId).then(() => {
+                    if (tabId) {
+                      workspace.addTab(tabId);
+                    }
+                  });
+                }
+              }
+              resolve();
+            });
+          },
+        });
+        this.draggedTab = null;
+      }
+    });
+
+    ipcMain.on(TOPICS.TEAR_OUT_TAB, async (event, args) => {
+      console.log('tab tear out', event, args.tabId, args.frameTarget);
+      let tabId: string | undefined;
+
+      if (this.draggedTab) {
+        tabId = this.draggedTab.tabId;
+        this.draggedTab = null;
+      }
+      //to do: handle droppng on an existing workspace
+      //get cursor position
+      const p: Point = screen.getCursorScreenPoint();
+      if (tabId) {
         //make a new workspace and window
         const workspace = this.runtime.createWorkspace({
           x: p.x,

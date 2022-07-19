@@ -25,6 +25,7 @@ export enum TOPICS {
   CLOSE_TAB = 'WORK:closeTab',
   TAB_DRAG_START = 'WORK:tabDragStart',
   TAB_DRAG_END = 'WORK:tabDragEnd',
+  TEAR_OUT_TAB = 'WORK:tearOutTab',
   DROP_TAB = 'WORK:dropTab',
   REMOVE_TAB = 'WORK:removeTab', //prune tab without closing the view (when moving tab from one window to another)
   JOIN_CHANNEL = 'WORK:joinChannel',

@@ -531,6 +531,7 @@ export class Workspace {
                     viewId: view.id,
                     title: view.getTitle(),
                   });
+
                   if (this.channel && view.channel !== this.channel) {
                     await joinViewToChannel(this.channel, view);
                   }
