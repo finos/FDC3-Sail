@@ -77,7 +77,14 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.DROP_TAB, async (event, args) => {
-      console.log('tab dropped', args.tabId, args.frameTarget);
+      console.log('tab dropped', args.tabId, args.frameTarget, args.source);
+      if (this.draggedTab) {
+        console.log(
+          'dragged tab',
+          this.draggedTab.tabId,
+          this.draggedTab.source,
+        );
+      }
       let tabId: string | undefined;
       let source: string | undefined;
       if (this.draggedTab) {
@@ -140,7 +147,7 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.TEAR_OUT_TAB, async (event, args) => {
-      console.log('tab tear out', event, args.tabId, args.frameTarget);
+      console.log('tab tear out', args.tabId, args.frameTarget);
       let tabId: string | undefined;
 
       if (this.draggedTab) {

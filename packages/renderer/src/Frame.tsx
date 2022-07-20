@@ -25,6 +25,11 @@ import {
 
 let draggedTab: string | null = null;
 
+let tabDragTimeout: number = 0;
+
+//flag to indicate we are dragging and dropping tabs within the tabset - not tearing ouut
+let internalDnD: boolean = false;
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -184,6 +189,11 @@ export class Frame extends React.Component<
 
     const allowDrop = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
+      if (tabDragTimeout > 0) {
+        window.clearTimeout(tabDragTimeout);
+        tabDragTimeout = 0;
+      }
+      //internalDnD = false;
     };
 
     const allowFrameDrop = (ev: SyntheticDragEvent) => {
@@ -191,6 +201,8 @@ export class Frame extends React.Component<
     };
 
     const drag = (tabId: string) => {
+      //start with internal drag and drop operation assumed
+      internalDnD = true;
       draggedTab = tabId;
       //inform of the tab dragstart
       document.dispatchEvent(
@@ -208,7 +220,7 @@ export class Frame extends React.Component<
 
       const target: HTMLElement = ev.target as HTMLElement;
       console.log('tabDrop', ev, target, target.id);
-      if (draggedTab && target) {
+      if (internalDnD && draggedTab && target) {
         const tabId = draggedTab;
         //rewrite the tablist
         //find the selected tab, and pop it out of the list
@@ -245,6 +257,16 @@ export class Frame extends React.Component<
         }, 100);
 
         draggedTab = null;
+        internalDnD = false;
+      } else {
+        //raise drop event for tear out
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.DROP_TAB, {
+            detail: {
+              frameTarget: true,
+            },
+          }),
+        );
       }
     };
 
@@ -261,11 +283,17 @@ export class Frame extends React.Component<
       );
     };
 
+    const leaveTab = () => {
+      tabDragTimeout = window.setTimeout(() => {
+        internalDnD = false;
+      }, 1000);
+    };
+
     const dragEnd = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
 
-      console.log('dragEnd', draggedTab);
-      if (draggedTab) {
+      //if this is not an internal tab drag operation and this isn't the last tab in the window, allow tear out on drag end
+      if (draggedTab && !internalDnD && this.state.tabs.length > 1) {
         ev.stopPropagation();
         console.log('tabDropped outside target', draggedTab);
         document.dispatchEvent(
@@ -281,8 +309,9 @@ export class Frame extends React.Component<
     const tearOut = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
       //only tear out if there is more than one tab in the set
+      //only tear out if the 'internalDnD' flag is not set
       console.log('tearOut?', draggedTab, this.state.tabs.length);
-      if (draggedTab && this.state.tabs.length > 1) {
+      if (!internalDnD && draggedTab && this.state.tabs.length > 1) {
         ev.stopPropagation();
         document.dispatchEvent(
           new CustomEvent(TOPICS.TEAR_OUT_TAB, {
@@ -361,6 +390,7 @@ export class Frame extends React.Component<
                     id={tab.tabId}
                     iconPosition="end"
                     onDrop={drop}
+                    onDragLeave={leaveTab}
                     onDragOver={allowDrop}
                     onDragEnd={dragEnd}
                     draggable="true"
