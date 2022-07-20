@@ -286,14 +286,14 @@ export class Frame extends React.Component<
     const leaveTab = () => {
       tabDragTimeout = window.setTimeout(() => {
         internalDnD = false;
-      }, 1000);
+      }, 300);
     };
 
     const dragEnd = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
 
       //if this is not an internal tab drag operation and this isn't the last tab in the window, allow tear out on drag end
-      if (draggedTab && !internalDnD && this.state.tabs.length > 1) {
+      /*if (draggedTab && !internalDnD && this.state.tabs.length > 1) {
         ev.stopPropagation();
         console.log('tabDropped outside target', draggedTab);
         document.dispatchEvent(
@@ -303,14 +303,14 @@ export class Frame extends React.Component<
             },
           }),
         );
-      }
+      }*/
     };
 
     const tearOut = (ev: SyntheticDragEvent) => {
       ev.preventDefault();
       //only tear out if there is more than one tab in the set
       //only tear out if the 'internalDnD' flag is not set
-      console.log('tearOut?', draggedTab, this.state.tabs.length);
+      console.log('tearOut?', draggedTab, internalDnD, this.state.tabs.length);
       if (!internalDnD && draggedTab && this.state.tabs.length > 1) {
         ev.stopPropagation();
         document.dispatchEvent(
