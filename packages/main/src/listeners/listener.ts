@@ -147,13 +147,8 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.TEAR_OUT_TAB, async (event, args) => {
-      console.log('tab tear out', args.tabId, args.frameTarget);
-      let tabId: string | undefined;
+      const tabId: string | undefined = args.tabId;
 
-      if (this.draggedTab) {
-        tabId = this.draggedTab.tabId;
-        this.draggedTab = null;
-      }
       //to do: handle droppng on an existing workspace
       //get cursor position
       const p: Point = screen.getCursorScreenPoint();
@@ -163,7 +158,6 @@ export class RuntimeListener {
           x: p.x,
           y: p.y,
           onInit: () => {
-            console.log('workspace created', workspace.id);
             return new Promise((resolve) => {
               if (tabId) {
                 const oldWorkspace = this.runtime.getWorkspace(args.source);
@@ -177,7 +171,7 @@ export class RuntimeListener {
                       tabId: tabId,
                     });
                   }
-                  oldWorkspace.removeTab(tabId).then(() => {
+                  oldWorkspace.removeTab(tabId, true).then(() => {
                     if (tabId) {
                       workspace.addTab(tabId);
                     }
@@ -188,7 +182,6 @@ export class RuntimeListener {
             });
           },
         });
-        this.draggedTab = null;
       }
     });
 

@@ -135,7 +135,7 @@ export class Workspace {
     });
   }
 
-  setSelectedTab(tabId: string) {
+  setSelectedTab(tabId: string, suppressFocus?: boolean) {
     console.log('setSelectedTab');
     const runtime = getRuntime();
     if (runtime) {
@@ -157,8 +157,10 @@ export class Workspace {
                 this.window.webContents.send(TOPICS.SELECT_TAB, {
                   viewId: tabId,
                 });
-                //focus the workspace window
-                this.window.focus();
+                //focus the workspace window?
+                if (!suppressFocus) {
+                  this.window.focus();
+                }
               } catch (err) {
                 console.error('setSelectedTab', err);
               }
@@ -251,11 +253,6 @@ export class Workspace {
           const selectedView = this.views[selectedIndex];
           if (selectedView) {
             this.setSelectedTab(selectedView.id);
-            if (this.window) {
-              this.window.webContents.send(TOPICS.SELECT_TAB, {
-                viewId: selectedView.id,
-              });
-            }
           }
         }
 
@@ -267,7 +264,7 @@ export class Workspace {
     }
   }
 
-  removeTab(tabId: string): Promise<void> {
+  removeTab(tabId: string, suppressFocus?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       console.log('removeTab');
       try {
@@ -315,7 +312,7 @@ export class Workspace {
               const selectedView = this.views[selectedIndex];
               if (selectedView) {
                 console.log('remove tab - selectedView = ', selectedView.id);
-                this.setSelectedTab(selectedView.id);
+                this.setSelectedTab(selectedView.id, suppressFocus);
                 if (this.window) {
                   this.window.webContents.send('WORK:selectTab', {
                     viewId: selectedView.id,
