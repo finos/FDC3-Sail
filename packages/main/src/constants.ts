@@ -1,6 +1,6 @@
 export const DEFAULT_WINDOW_HEIGHT = 600;
 export const DEFAULT_WINDOW_WIDTH = 800;
-export const TOOLBAR_HEIGHT = 90;
+export const TOOLBAR_HEIGHT = 100;
 
 export enum TARGETS {
   SEARCH_RESULTS = 'searchResults',
@@ -9,6 +9,7 @@ export enum TARGETS {
 }
 
 export enum TOPICS {
+  OPEN_TOOLS_MENU = 'FRAME:openToolsMenu',
   FRAME_READY = 'FRAME:ready',
   SEARCH = 'WORK:search',
   WORKSPACE_INIT = 'WORK:Init',
@@ -19,12 +20,14 @@ export enum TOPICS {
   NEW_TAB = 'WORK:newTab',
   NEW_TAB_CLICK = 'UI:newTab',
   OPEN_CHANNEL_PICKER_CLICK = 'UI:openChannelPicker',
-  OPEN_FRAME_TOOLS_CLICK = 'UI:openFrameTools',
-  OPEN_TAB_TOOLS_CLICK = 'UI:openTabTools',
   SELECT_TAB = 'WORK:selectTab', //tab state changes from event in the main process (i.e. change of focus from new view or intent resolution)
   TAB_SELECTED = 'WORK:tabSelected', //tab is selected by user action in the UI
   CLOSE_TAB = 'WORK:closeTab',
+  TAB_DRAG_START = 'WORK:tabDragStart',
+  TAB_DRAG_END = 'WORK:tabDragEnd',
+  TEAR_OUT_TAB = 'WORK:tearOutTab',
   DROP_TAB = 'WORK:dropTab',
+  REMOVE_TAB = 'WORK:removeTab', //prune tab without closing the view (when moving tab from one window to another)
   JOIN_CHANNEL = 'WORK:joinChannel',
   LEAVE_CHANNEL = 'WORK:leaveChannel',
   JOIN_WORKSPACE_TO_CHANNEL = 'FDC3:joinWorkspaceToChannel',

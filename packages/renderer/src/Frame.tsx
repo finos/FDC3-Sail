@@ -1,11 +1,9 @@
 import './Frame.css';
-import React from 'react';
+import React, { SyntheticEvent } from 'react';
 import {
   TextField,
   InputAdornment,
   IconButton,
-  Menu,
-  MenuItem,
   ButtonGroup,
   Tabs,
   Tab,
@@ -20,10 +18,18 @@ import {
   PostAdd,
   HiveOutlined,
   CloseOutlined,
+  OpenInNew,
   MoreVert,
 } from '@mui/icons-material';
 
 (window as any).frameReady = false;
+
+let draggedTab: string | null = null;
+
+let tabDragTimeout: number = 0;
+
+//flag to indicate we are dragging and dropping tabs within the tabset - not tearing ouut
+let internalDnD: boolean = false;
 
 const darkTheme = createTheme({
   palette: {
@@ -38,13 +44,14 @@ const newTab = () => {
   document.dispatchEvent(new CustomEvent(TOPICS.NEW_TAB_CLICK));
 };
 
-const openChannelPicker = (event: MouseEvent) => {
+const openChannelPicker = (event: SyntheticEvent) => {
   const pickerButtonHeight = 40;
+  const native: MouseEvent = event.nativeEvent as MouseEvent;
   document.dispatchEvent(
     new CustomEvent(TOPICS.OPEN_CHANNEL_PICKER_CLICK, {
       detail: {
-        mouseX: event.clientX,
-        mouseY: event.clientY + pickerButtonHeight,
+        mouseX: native.clientX,
+        mouseY: native.clientY + pickerButtonHeight,
       },
     }),
   );
@@ -100,6 +107,21 @@ export class Frame extends React.Component<
     });
   }
 
+  tearOut(tabId: string) {
+    //only tear out if there is more than one tab in the set
+    //only tear out if the 'internalDnD' flag is not set
+    console.log('tearOut', tabId, this.state.tabs.length);
+    if (this.state.tabs.length > 1) {
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.TEAR_OUT_TAB, {
+          detail: {
+            tabId: tabId,
+          },
+        }),
+      );
+    }
+  }
+
   handleNewTab(tabName: string, tabId: string) {
     this.setState({
       tabs: [...this.state.tabs, { tabId: tabId, tabName: tabName }],
@@ -125,6 +147,16 @@ export class Frame extends React.Component<
       }
     }) as EventListener);
 
+    document.addEventListener(TOPICS.REMOVE_TAB, ((event: CustomEvent) => {
+      console.log('Remove Tab called', event.detail);
+      const tabId = event.detail.tabId;
+      this.setState({
+        tabs: this.state.tabs.filter((tab) => {
+          return tab.tabId !== tabId;
+        }),
+      });
+    }) as EventListener);
+
     document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
       if (event.detail.selected) {
         this.setState({ selectedTab: event.detail.selected });
@@ -140,22 +172,6 @@ export class Frame extends React.Component<
 
   render() {
     const open = Boolean(this.state.anchorEl);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-      this.setState({ anchorEl: event.currentTarget });
-    };
-    const handleClose = () => {
-      this.setState({ anchorEl: null });
-    };
-
-    const openViewTools = () => {
-      document.dispatchEvent(new CustomEvent(TOPICS.OPEN_TAB_TOOLS_CLICK));
-      this.setState({ anchorEl: null });
-    };
-
-    const openFrameTools = () => {
-      document.dispatchEvent(new CustomEvent(TOPICS.OPEN_FRAME_TOOLS_CLICK));
-      this.setState({ anchorEl: null });
-    };
 
     const debounce = (callback: any, wait: number) => {
       let timeoutId: number | undefined = undefined;
@@ -180,16 +196,148 @@ export class Frame extends React.Component<
       }
     }, 400);
 
+    const devToolsClick = (event: SyntheticEvent) => {
+      const native: DragEvent = event.nativeEvent as DragEvent;
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.OPEN_TOOLS_MENU, {
+          detail: { clientX: native.clientX, clientY: native.clientY },
+        }),
+      );
+    };
+
+    const allowDrop = (ev: SyntheticEvent) => {
+      ev.preventDefault();
+      if (tabDragTimeout > 0) {
+        window.clearTimeout(tabDragTimeout);
+        tabDragTimeout = 0;
+      }
+      //internalDnD = false;
+    };
+
+    const allowFrameDrop = (ev: SyntheticEvent) => {
+      ev.preventDefault();
+    };
+
+    const drag = (tabId: string) => {
+      //start with internal drag and drop operation assumed
+      internalDnD = true;
+      draggedTab = tabId;
+      //inform of the tab dragstart
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.TAB_DRAG_START, {
+          detail: {
+            selected: tabId,
+          },
+        }),
+      );
+    };
+
+    const drop = (ev: SyntheticEvent) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      const target: HTMLElement = ev.target as HTMLElement;
+      console.log('tabDrop', ev, target, target.id);
+      if (internalDnD && draggedTab && target) {
+        const tabId = draggedTab;
+        //rewrite the tablist
+        //find the selected tab, and pop it out of the list
+
+        let dropTab: FrameTab | undefined = undefined;
+        let targetIndex = 0;
+        const newTabList: Array<FrameTab> = [];
+
+        this.state.tabs.forEach((tab, i) => {
+          if (tab.tabId !== tabId) {
+            newTabList.push(tab);
+          } else {
+            dropTab = tab;
+          }
+          if (tab.tabId === target.id) {
+            targetIndex = i;
+          }
+        });
+
+        if (dropTab) {
+          newTabList.splice(targetIndex, 0, dropTab);
+        }
+        this.setState({ tabs: newTabList });
+        //select the dragged tab
+        //do this with a delay to prevent race conditions with re-rendering the tab order
+        setTimeout(() => {
+          document.dispatchEvent(
+            new CustomEvent(TOPICS.TAB_SELECTED, {
+              detail: {
+                selected: tabId,
+              },
+            }),
+          );
+        }, 100);
+
+        draggedTab = null;
+        internalDnD = false;
+      } else {
+        //raise drop event for tear out
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.DROP_TAB, {
+            detail: {
+              frameTarget: true,
+            },
+          }),
+        );
+      }
+    };
+
+    const frameDrop = (ev: SyntheticEvent) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      console.log('tabDropped on frame target');
+      document.dispatchEvent(
+        new CustomEvent(TOPICS.DROP_TAB, {
+          detail: {
+            frameTarget: true,
+          },
+        }),
+      );
+    };
+
+    const leaveTab = () => {
+      tabDragTimeout = window.setTimeout(() => {
+        internalDnD = false;
+      }, 300);
+    };
+
+    const dragEnd = (ev: SyntheticEvent) => {
+      ev.preventDefault();
+
+      //if this is not an internal tab drag operation and this isn't the last tab in the window, allow tear out on drag end
+      /*if (draggedTab && !internalDnD && this.state.tabs.length > 1) {
+        ev.stopPropagation();
+        console.log('tabDropped outside target', draggedTab);
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.DROP_TAB, {
+            detail: {
+              tabId: draggedTab,
+            },
+          }),
+        );
+      }*/
+    };
+
     return (
       <ThemeProvider theme={darkTheme}>
         <Paper>
-          <div class="frameContainer">
+          <div
+            className="frameContainer"
+            onDrop={frameDrop}
+            onDragOver={allowFrameDrop}
+          >
             <AppBar position="static" color="inherit">
               <div id="buttonsContainer">
                 <Stack direction="row">
                   <TextField
                     id="search"
-                    class="frameSearch"
+                    className="frameSearch"
                     variant="outlined"
                     margin="dense"
                     size="small"
@@ -204,10 +352,9 @@ export class Frame extends React.Component<
                       ),
                     }}
                   />
-                  <ButtonGroup class="frameButtons">
+                  <ButtonGroup className="frameButtons">
                     <IconButton
                       size="small"
-                      variant="contained"
                       id="channelPicker"
                       onClick={openChannelPicker}
                       title="select channel"
@@ -220,32 +367,10 @@ export class Frame extends React.Component<
                       aria-controls={open ? 'more' : undefined}
                       aria-haspopup="true"
                       aria-expanded={open ? 'true' : undefined}
-                      onClick={handleClick}
+                      onClick={devToolsClick}
                     >
                       <MoreVert />
                     </IconButton>
-                    <Menu
-                      id="moreMenu"
-                      aria-labelledby="menuButton"
-                      anchorEl={this.state.anchorEl}
-                      open={open}
-                      onClose={handleClose}
-                      anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                      }}
-                      transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                      }}
-                    >
-                      <MenuItem key="frameTools" onClick={openFrameTools}>
-                        DevTools - Frame
-                      </MenuItem>
-                      <MenuItem key="viewTools" onClick={openViewTools}>
-                        DevTools - View
-                      </MenuItem>
-                    </Menu>
                   </ButtonGroup>
                 </Stack>
               </div>
@@ -261,13 +386,29 @@ export class Frame extends React.Component<
                   <Tab
                     label={tab.tabName}
                     value={tab.tabId}
+                    id={tab.tabId}
                     iconPosition="end"
+                    onDrop={drop}
+                    onDragLeave={leaveTab}
+                    onDragOver={allowDrop}
+                    onDragEnd={dragEnd}
+                    draggable="true"
+                    onDragStart={() => {
+                      drag(tab.tabId);
+                    }}
                     icon={
-                      <CloseOutlined
-                        onClick={() => {
-                          this.closeTab(tab.tabId);
-                        }}
-                      />
+                      <div>
+                        <OpenInNew
+                          onClick={() => {
+                            this.tearOut(tab.tabId);
+                          }}
+                        />
+                        <CloseOutlined
+                          onClick={() => {
+                            this.closeTab(tab.tabId);
+                          }}
+                        />
+                      </div>
                     }
                   />
                 ))}

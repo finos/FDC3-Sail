@@ -10,6 +10,7 @@ export interface FDC3Message {
   tabId?: number;
   selected?: FDC3App | null;
   context?: Context | null;
+  error?: string;
 }
 
 export interface FDC3MessageData {

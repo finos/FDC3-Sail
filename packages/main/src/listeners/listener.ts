@@ -6,8 +6,7 @@ import { Workspace } from '../workspace';
 import { getRuntime } from '../index';
 import { FDC3Message } from '../types/FDC3Message';
 import { DirectoryApp } from '../types/FDC3Data';
-import { Point } from 'electron';
-import { screen } from 'electron';
+import { Point, Menu, screen } from 'electron';
 import utils from '../utils';
 import fetch from 'electron-fetch';
 import { TOPICS, TARGETS } from '../constants';
@@ -15,7 +14,7 @@ import { TOPICS, TARGETS } from '../constants';
 /**
  * find workspace on a screen coordinate
  */
-const resolveWorkspaceFromPoint = (point: Point): Workspace | null => {
+/*const resolveWorkspaceFromPoint = (point: Point): Workspace | null => {
   const runtime = getRuntime();
   //compare to bounds of active workspace windows
   if (runtime) {
@@ -36,10 +35,12 @@ const resolveWorkspaceFromPoint = (point: Point): Workspace | null => {
     });
   }
   return null;
-};
+};*/
 
 export class RuntimeListener {
   runtime: Runtime;
+
+  draggedTab: { tabId: string; source: string } | null = null;
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
@@ -54,6 +55,19 @@ export class RuntimeListener {
       }
     });
 
+    /**
+     * register that a tab drag operation has started
+     */
+    ipcMain.on(TOPICS.TAB_DRAG_START, (event, args) => {
+      //bring selected browserview to front
+      //keep the dragged tab state in memory
+
+      const workspace = this.runtime.getWorkspace(args.source);
+      if (workspace) {
+        this.draggedTab = { tabId: args.selected, source: args.source };
+      }
+    });
+
     ipcMain.on(TOPICS.NEW_TAB, (event, args) => {
       //bring selected browserview to front
       const workspace = this.runtime.getWorkspace(args.source);
@@ -63,25 +77,41 @@ export class RuntimeListener {
     });
 
     ipcMain.on(TOPICS.DROP_TAB, async (event, args) => {
+      console.log('tab dropped', args.tabId, args.frameTarget, args.source);
+      if (this.draggedTab) {
+        console.log(
+          'dragged tab',
+          this.draggedTab.tabId,
+          this.draggedTab.source,
+        );
+      }
+      let tabId: string | undefined;
+      let source: string | undefined;
+      if (this.draggedTab) {
+        tabId = this.draggedTab.tabId;
+        source = this.draggedTab.source;
+        this.draggedTab = null;
+      }
       //to do: handle droppng on an existing workspace
       //get cursor position
       const p: Point = screen.getCursorScreenPoint();
-      const targetWS = resolveWorkspaceFromPoint(p);
-
+      //  const targetWS = resolveWorkspaceFromPoint(p);
+      let targetWS: Workspace | undefined;
       //add to existing?
-      //if (args.target){
-      //    targetWS = runtime.getWorkspace(args.target);
-      if (targetWS) {
-        const oldWorkspace = this.runtime.getWorkspace(args.source);
-        const draggedView = this.runtime.getView(args.tabId);
+      if (args.frameTarget) {
+        targetWS = runtime.getWorkspace(args.source);
+      }
+      if (targetWS && tabId && source) {
+        const oldWorkspace = this.runtime.getWorkspace(source);
+        const draggedView = this.runtime.getView(tabId);
         //workspace
         if (oldWorkspace && draggedView) {
+          //send event to UI to visually remove the tab
+          console.log('calling remove tab');
           await oldWorkspace.removeTab(draggedView.id);
-          if (targetWS) {
-            await targetWS.addTab(draggedView.id);
-          }
+          await targetWS.addTab(draggedView.id);
         }
-      } else {
+      } else if (tabId) {
         //make a new workspace and window
         const workspace = this.runtime.createWorkspace({
           x: p.x,
@@ -89,13 +119,64 @@ export class RuntimeListener {
           onInit: () => {
             console.log('workspace created', workspace.id);
             return new Promise((resolve) => {
-              const oldWorkspace = this.runtime.getWorkspace(args.source);
-              const draggedView = this.runtime.getView(args.tabId);
-              //workspace
-              if (oldWorkspace && draggedView) {
-                oldWorkspace.removeTab(draggedView.id).then(() => {
-                  workspace.addTab(draggedView.id);
-                });
+              if (tabId) {
+                const oldWorkspace = this.runtime.getWorkspace(args.source);
+                const draggedView = this.runtime.getView(tabId);
+                //workspace
+                if (oldWorkspace && draggedView) {
+                  //send event to UI to visually remove the tab
+                  if (oldWorkspace.window) {
+                    console.log('removing tab - sending message to client');
+                    oldWorkspace.window.webContents.send(TOPICS.REMOVE_TAB, {
+                      tabId: tabId,
+                    });
+                  }
+                  oldWorkspace.removeTab(tabId).then(() => {
+                    if (tabId) {
+                      workspace.addTab(tabId);
+                    }
+                  });
+                }
+              }
+              resolve();
+            });
+          },
+        });
+        this.draggedTab = null;
+      }
+    });
+
+    ipcMain.on(TOPICS.TEAR_OUT_TAB, async (event, args) => {
+      const tabId: string | undefined = args.tabId;
+
+      //to do: handle droppng on an existing workspace
+      //get cursor position
+      const p: Point = screen.getCursorScreenPoint();
+      if (tabId) {
+        //make a new workspace and window
+        const workspace = this.runtime.createWorkspace({
+          x: p.x,
+          y: p.y,
+          onInit: () => {
+            return new Promise((resolve) => {
+              if (tabId) {
+                const oldWorkspace = this.runtime.getWorkspace(args.source);
+                const draggedView = this.runtime.getView(tabId);
+                //workspace
+                if (oldWorkspace && draggedView) {
+                  //send event to UI to visually remove the tab
+                  if (oldWorkspace.window) {
+                    console.log('removing tab - sending message to client');
+                    oldWorkspace.window.webContents.send(TOPICS.REMOVE_TAB, {
+                      tabId: tabId,
+                    });
+                  }
+                  oldWorkspace.removeTab(tabId, true).then(() => {
+                    if (tabId) {
+                      workspace.addTab(tabId);
+                    }
+                  });
+                }
               }
               resolve();
             });
@@ -111,11 +192,37 @@ export class RuntimeListener {
         workspace.closeTab(args.tabId);
       }
     });
-    //{'source':id,'selected':event.detail.selected});
 
-    /*ipcMain.on(TOPICS.JOIN_CHANNEL, (event, args) => {
-      console.log('join channel', args.channel);
-    });*/
+    ipcMain.on(TOPICS.OPEN_TOOLS_MENU, (event, args) => {
+      //bring selected browserview to front
+      const workspace = this.runtime.getWorkspace(args.source);
+      if (workspace) {
+        const template = [
+          {
+            label: 'Frame Dev Tools',
+            click: () => {
+              if (workspace && workspace.window) {
+                workspace.window.webContents.openDevTools();
+              }
+            },
+          },
+          {
+            label: 'Tab Dev Tools',
+            click: () => {
+              if (workspace && workspace.selectedTab) {
+                const selectedTab = this.runtime.getView(workspace.selectedTab);
+                if (selectedTab && selectedTab.content) {
+                  selectedTab.content.webContents.openDevTools();
+                }
+              }
+            },
+          },
+        ];
+
+        const menu = Menu.buildFromTemplate(template);
+        menu.popup();
+      }
+    });
 
     ipcMain.on(TOPICS.FETCH_FROM_DIRECTORY, (event, args) => {
       console.log('ipcRenderer', event.type);
@@ -152,27 +259,6 @@ export class RuntimeListener {
           });
         });
       });
-    });
-
-    ipcMain.on(TOPICS.FRAME_DEV_TOOLS, (event, args) => {
-      //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event.type);
-      const sourceWS = runtime.getWorkspace(args.source);
-      if (sourceWS && sourceWS.window) {
-        sourceWS.window.webContents.openDevTools();
-      }
-    });
-
-    ipcMain.on(TOPICS.TAB_DEV_TOOLS, (event, args) => {
-      //for now, just assume one view per workspace, and open that
-      console.log('ipc-event', event.type);
-      const sourceWS = runtime.getWorkspace(args.source);
-      if (sourceWS && sourceWS.selectedTab) {
-        const selectedTab = this.runtime.getView(sourceWS.selectedTab);
-        if (selectedTab && selectedTab.content) {
-          selectedTab.content.webContents.openDevTools();
-        }
-      }
     });
 
     ipcMain.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
@@ -261,16 +347,28 @@ export class RuntimeListener {
     const runtime = this.runtime;
 
     ipcMain.on(l.name, (event, args) => {
-      l.handler.call(this, runtime, args as FDC3Message).then((r) => {
-        console.log('handler response', r, 'args', args);
+      l.handler.call(this, runtime, args as FDC3Message).then(
+        (r) => {
+          console.log('handler response', r, 'args', args);
 
-        if (event.ports) {
-          event.ports[0].postMessage({
-            topic: args.data.eventId,
-            data: r,
-          });
-        }
-      });
+          if (event.ports) {
+            event.ports[0].postMessage({
+              topic: args.data.eventId,
+              data: r,
+            });
+          }
+        },
+        (err) => {
+          console.log('handler error', err, 'args', args);
+
+          if (event.ports) {
+            event.ports[0].postMessage({
+              topic: args.data.eventId,
+              error: err,
+            });
+          }
+        },
+      );
     });
   }
 

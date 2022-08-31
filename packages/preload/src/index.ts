@@ -47,6 +47,16 @@ ipcRenderer.on(TOPICS.SELECT_TAB, (event, args) => {
   );
 });
 
+ipcRenderer.on(TOPICS.REMOVE_TAB, (event, args) => {
+  document.dispatchEvent(
+    new CustomEvent(TOPICS.REMOVE_TAB, {
+      detail: {
+        tabId: args.tabId,
+      },
+    }),
+  );
+});
+
 ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
   const channel =
     args.channel !== 'default'
@@ -58,6 +68,13 @@ ipcRenderer.on(TOPICS.CHANNEL_SELECTED, async (event, args) => {
     new CustomEvent(TOPICS.CHANNEL_SELECTED, { detail: { channel: channel } }),
   );
 });
+
+document.addEventListener(TOPICS.OPEN_TOOLS_MENU, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.OPEN_TOOLS_MENU, {
+    source: id,
+    data: event.detail,
+  });
+}) as EventListener);
 
 document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.JOIN_WORKSPACE_TO_CHANNEL, {
@@ -77,8 +94,26 @@ document.addEventListener(TOPICS.CLOSE_TAB, ((event: CustomEvent) => {
   ipcRenderer.send(TOPICS.CLOSE_TAB, { source: id, tabId: event.detail.tabId });
 }) as EventListener);
 
+document.addEventListener(TOPICS.TAB_DRAG_START, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.TAB_DRAG_START, {
+    source: id,
+    selected: event.detail.selected,
+  });
+}) as EventListener);
+
 document.addEventListener(TOPICS.DROP_TAB, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.DROP_TAB, { source: id, tabId: event.detail.tabId });
+  ipcRenderer.send(TOPICS.DROP_TAB, {
+    source: id,
+    tabId: event.detail.tabId,
+    frameTarget: event.detail.frameTarget,
+  });
+}) as EventListener);
+
+document.addEventListener(TOPICS.TEAR_OUT_TAB, ((event: CustomEvent) => {
+  ipcRenderer.send(TOPICS.TEAR_OUT_TAB, {
+    source: id,
+    tabId: event.detail.tabId,
+  });
 }) as EventListener);
 
 document.addEventListener(TOPICS.SEARCH, ((event: CustomEvent) => {
@@ -126,14 +161,6 @@ document.addEventListener(TOPICS.OPEN_CHANNEL_PICKER_CLICK, ((
     mouseY: event.detail.mouseY,
   });
 }) as EventListener);
-
-document.addEventListener(TOPICS.OPEN_FRAME_TOOLS_CLICK, () => {
-  ipcRenderer.send(TOPICS.FRAME_DEV_TOOLS, { source: id });
-});
-
-document.addEventListener(TOPICS.OPEN_TAB_TOOLS_CLICK, () => {
-  ipcRenderer.send(TOPICS.TAB_DEV_TOOLS, { source: id });
-});
 
 document.addEventListener(TOPICS.FRAME_READY, () => {
   frameReady = true;
