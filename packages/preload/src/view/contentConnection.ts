@@ -125,7 +125,10 @@ const wireTopic = (topic: string, config?: TopicConfig): void => {
     }
     //if  background script isn't ready yet, queue these messages...
     const msg: FDC3Message = { topic: topic, source: id, data: e.detail };
-    console.log(`FDC3:${topic} - connected state`, connected);
+
+    // (Seb) commented out to satisfy Static code analysis
+    // console.log(`FDC3:${topic} - connected state`, connected);
+
     if (!connected) {
       eventQ.push(msg);
     } else {
