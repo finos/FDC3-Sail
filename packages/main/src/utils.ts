@@ -58,7 +58,8 @@ const getSystemChannels = (): Array<ChannelData> => {
  */
 const setConnected = (item: ConnectedApp): boolean => {
   if (!connected.has(item.id)) {
-    console.log(`set connected id=${item.id} item=${item}`, connected);
+    // (Seb) commented out to satisfy Static code analysis
+    // console.log(`set connected id=${item.id} item=${item}`, connected);
     connected.set(item.id, item);
   }
   return true;
