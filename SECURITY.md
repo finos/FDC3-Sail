@@ -9,7 +9,7 @@
 ## Reporting a Vulnerability
 
 ### How to report a vulnerability: 
-* Click on Issues (https://github.com/dstrube1/playground_Xamarin/issues) and select New issue
+* Click on **New Issue** (https://github.com/finos/electron-fdc3/issues/new/choose) and select **Bug Report**
 
 ### How soon will I receive an initial response a reported vulnerability:
 * Within 14 days
