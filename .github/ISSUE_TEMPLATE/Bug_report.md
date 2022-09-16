@@ -22,3 +22,7 @@ about: If something isn't working as expected 🤔.
 
 ### Additional Context:
 ...add any other context about the problem here. If applicable, add screenshots to help explain...
+
+### Suggested Test Cases
+
+... describe how you would write unit tests to test this bug is fixed (might not be possible at the point of raising the issue)

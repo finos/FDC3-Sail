@@ -1,5 +1,5 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-![website build](https://github.com/finos/electron-fdc3/workflows/Docusaurus-website-build/badge.svg)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6303/badge)](https://bestpractices.coreinfrastructure.org/projects/6303)
 
 # Electron FDC3 Desktop Agent & App Directory
 
