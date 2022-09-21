@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron';
 import { contextBridge } from 'electron';
 import { channels } from '../../main/src/system-channels';
 import { TOPICS, TARGETS } from '../../main/src/constants';
+import { RUNTIME_TOPICS } from '../../main/src/handlers/runtime/index';
 
 //flag to indicate the background script is ready for fdc3!
 let connected = true;
@@ -83,36 +84,53 @@ document.addEventListener(TOPICS.JOIN_CHANNEL, ((event: CustomEvent) => {
   });
 }) as EventListener);
 
-document.addEventListener(TOPICS.TAB_SELECTED, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.TAB_SELECTED, {
+document.addEventListener(RUNTIME_TOPICS.TAB_SELECTED, ((
+  event: CustomEvent,
+) => {
+  ipcRenderer.send(RUNTIME_TOPICS.TAB_SELECTED, {
     source: id,
-    selected: event.detail.selected,
+    data: {
+      selected: event.detail.selected,
+    },
   });
 }) as EventListener);
 
-document.addEventListener(TOPICS.CLOSE_TAB, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.CLOSE_TAB, { source: id, tabId: event.detail.tabId });
-}) as EventListener);
-
-document.addEventListener(TOPICS.TAB_DRAG_START, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.TAB_DRAG_START, {
+document.addEventListener(RUNTIME_TOPICS.CLOSE_TAB, ((event: CustomEvent) => {
+  ipcRenderer.send(RUNTIME_TOPICS.CLOSE_TAB, {
     source: id,
-    selected: event.detail.selected,
+    data: { tabId: event.detail.tabId },
   });
 }) as EventListener);
 
-document.addEventListener(TOPICS.DROP_TAB, ((event: CustomEvent) => {
-  ipcRenderer.send(TOPICS.DROP_TAB, {
+document.addEventListener(RUNTIME_TOPICS.TAB_DRAG_START, ((
+  event: CustomEvent,
+) => {
+  ipcRenderer.send(RUNTIME_TOPICS.TAB_DRAG_START, {
     source: id,
-    tabId: event.detail.tabId,
-    frameTarget: event.detail.frameTarget,
+    data: {
+      selected: event.detail.selected,
+    },
   });
 }) as EventListener);
 
-document.addEventListener(TOPICS.TEAR_OUT_TAB, ((event: CustomEvent) => {
+document.addEventListener(RUNTIME_TOPICS.DROP_TAB, ((event: CustomEvent) => {
+  ipcRenderer.send(RUNTIME_TOPICS.DROP_TAB, {
+    source: id,
+    data: {
+      tabId: event.detail.tabId,
+      frameTarget: event.detail.frameTarget,
+    },
+  });
+}) as EventListener);
+
+document.addEventListener(RUNTIME_TOPICS.TEAR_OUT_TAB, ((
+  event: CustomEvent,
+) => {
   ipcRenderer.send(TOPICS.TEAR_OUT_TAB, {
     source: id,
-    tabId: event.detail.tabId,
+    data: {
+      tabId: event.detail.tabId,
+    },
   });
 }) as EventListener);
 
@@ -132,9 +150,11 @@ document.addEventListener(TOPICS.SEARCH, ((event: CustomEvent) => {
     },
   );
   // Fetch External Data Source
-  ipcRenderer.send(TOPICS.FETCH_FROM_DIRECTORY, {
+  ipcRenderer.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
     source: id,
-    query: `/apps/search?text=${query}`,
+    data: {
+      query: `/apps/search?text=${query}`,
+    },
   });
 }) as EventListener);
 
