@@ -2,11 +2,10 @@
  * connect from HTML content to main process
  */
 
-import utils from '../../../main/src/utils';
+import { fdc3Event, TOPICS } from '../lib/lib';
 import { FDC3Event } from '../../../main/src/types/FDC3Event';
 import { FDC3Message } from '../../../main/src/types/FDC3Message';
 import { ipcRenderer } from 'electron';
-import { TOPICS } from '../../../main/src/constants';
 
 //const {port1, port2} = new MessageChannel();
 
@@ -103,13 +102,13 @@ const wireTopic = (topic: string, config?: TopicConfig): void => {
               //handle errors
               if (msg.error) {
                 document.dispatchEvent(
-                  utils.fdc3Event(`return_${eventId}`, {
+                  fdc3Event(`return_${eventId}`, {
                     error: msg.error,
                   }),
                 );
               } else {
                 document.dispatchEvent(
-                  utils.fdc3Event(
+                  fdc3Event(
                     `return_${eventId}`,
                     msg && msg.data ? msg.data : {},
                   ),

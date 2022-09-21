@@ -387,6 +387,7 @@ export class Frame extends React.Component<
                     label={tab.tabName}
                     value={tab.tabId}
                     id={tab.tabId}
+                    key={tab.tabId}
                     iconPosition="end"
                     onDrop={drop}
                     onDragLeave={leaveTab}
