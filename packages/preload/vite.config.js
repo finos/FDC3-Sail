@@ -22,7 +22,7 @@ const config = {
     target: `chrome${chrome}`,
     outDir: 'dist',
     assetsDir: '.',
-    minify: true, //process.env.MODE !== 'development',
+    minify: process.env.MODE !== 'development',
     lib: {
       entry: 'src/index.ts',
       formats: ['cjs'],
