@@ -33,8 +33,8 @@ const SEARCH_RESULTS_PRELOAD = join(
   '../../preload/dist/searchResults/index.cjs',
 );
 
-const CHANNEL_WINDOW_WIDTH = 130;
-const CHANNEL_WINDOW_HEIGHT = 90;
+const CHANNEL_WINDOW_WIDTH = 140;
+const CHANNEL_WINDOW_HEIGHT = 100;
 
 export class Workspace {
   constructor(config?: WorkspaceConfig) {
@@ -45,7 +45,6 @@ export class Workspace {
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
       webPreferences: {
-        nativeWindowOpen: true,
         webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
         preload: join(__dirname, '../../preload/dist/index.cjs'),
       },
@@ -74,7 +73,7 @@ export class Workspace {
         // this.window.loadFile('src/windows/workspace/frame.html').then(() => {
         if (this.window) {
           this.window.webContents.send(TOPICS.WORKSPACE_START, { id: this.id });
-          //   this.window.webContents.openDevTools();
+          // this.window.webContents.openDevTools();
           console.log('workspace created', this.id);
           const runtime = getRuntime();
           if (runtime) {

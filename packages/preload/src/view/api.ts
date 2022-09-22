@@ -1,5 +1,5 @@
 import { contextBridge } from 'electron';
-import utils from '../../../main/src/utils';
+import { fdc3Event, TOPICS } from '../lib/lib';
 import { Listener } from '@finos/fdc3';
 import {
   Context,
@@ -12,7 +12,6 @@ import {
 import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { ChannelData } from '../../../main/src/types/FDC3Data';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
-import { TOPICS } from '../../../main/src/constants';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -62,7 +61,7 @@ export function createAPI() {
           _contextListeners.delete(this.id);
           //notify the background script
           document.dispatchEvent(
-            utils.fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
+            fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
           );
         } else if (this.type === 'intent' && this.intent) {
           const listeners = _intentListeners.get(this.intent);
@@ -71,7 +70,7 @@ export function createAPI() {
           }
           //notify the background script
           document.dispatchEvent(
-            utils.fdc3Event(FDC3EventEnum.DropIntentListener, {
+            fdc3Event(FDC3EventEnum.DropIntentListener, {
               id: this.id,
               intent: this.intent,
             }),
@@ -150,7 +149,7 @@ export function createAPI() {
           createListenerItem(listenerId, thisListener, thisContextType),
         );
         document.dispatchEvent(
-          utils.fdc3Event(FDC3EventEnum.AddContextListener, {
+          fdc3Event(FDC3EventEnum.AddContextListener, {
             id: listenerId,
             channel: channel.id,
             contextType: thisContextType,
@@ -189,7 +188,7 @@ export function createAPI() {
     detail.eventId = eventId;
     detail.ts = ts;
     if (config && config.void) {
-      document.dispatchEvent(utils.fdc3Event(method, detail));
+      document.dispatchEvent(fdc3Event(method, detail));
       return new Promise((resolve) => {
         resolve();
       });
@@ -210,7 +209,7 @@ export function createAPI() {
           { once: true },
         );
 
-        document.dispatchEvent(utils.fdc3Event(method, detail));
+        document.dispatchEvent(fdc3Event(method, detail));
       });
     }
   };
@@ -263,7 +262,7 @@ export function createAPI() {
         createListenerItem(listenerId, thisListener, thisContextType),
       );
       document.dispatchEvent(
-        utils.fdc3Event(FDC3EventEnum.AddContextListener, {
+        fdc3Event(FDC3EventEnum.AddContextListener, {
           id: listenerId,
           contextType: thisContextType,
         }),
@@ -280,7 +279,7 @@ export function createAPI() {
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
         document.dispatchEvent(
-          utils.fdc3Event(FDC3EventEnum.AddIntentListener, {
+          fdc3Event(FDC3EventEnum.AddIntentListener, {
             id: listenerId,
             intent: intent,
           }),
@@ -411,7 +410,7 @@ export function createAPI() {
       }
       //emit return event
       document.dispatchEvent(
-        utils.fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
+        fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
       );
     }
   }) as EventListener);
