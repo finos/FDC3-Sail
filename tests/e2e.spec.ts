@@ -62,9 +62,9 @@ test('Preload versions', async () => {
 
 test('workspace isConnected', async () => {
   const page = await electronApp.firstWindow();
-  const workspace = await page.evaluate(() => globalThis.workspace);
-  const connected = await page.evaluate(() => workspace.isConnected());
-  expect(workspace).toBeDefined();
+  const connected = await page.evaluate(() =>
+    globalThis.agentFrame.isConnected(),
+  );
   expect(connected).to.equal(true);
 });
 
