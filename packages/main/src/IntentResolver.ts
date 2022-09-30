@@ -48,7 +48,7 @@ export class IntentResolver {
         preload: RESOLVER_PRELOAD,
         webSecurity: true,
         nodeIntegration: true,
-        contextIsolation: false,
+        contextIsolation: true,
         devTools: devTools,
       },
     });
