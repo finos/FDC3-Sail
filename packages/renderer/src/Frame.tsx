@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { TOPICS } from '../../main/src/constants';
+import { RUNTIME_TOPICS } from '../../main/src/handlers/runtime/topics';
 import {
   PostAdd,
   HiveOutlined,
@@ -41,24 +41,20 @@ const darkTheme = createTheme({
 });
 
 const newTab = () => {
-  document.dispatchEvent(new CustomEvent(TOPICS.NEW_TAB_CLICK));
+  window.agentFrame.newTab();
 };
 
 const openChannelPicker = (event: SyntheticEvent) => {
   const pickerButtonHeight = 40;
   const native: MouseEvent = event.nativeEvent as MouseEvent;
-  document.dispatchEvent(
-    new CustomEvent(TOPICS.OPEN_CHANNEL_PICKER_CLICK, {
-      detail: {
-        mouseX: native.clientX,
-        mouseY: native.clientY + pickerButtonHeight,
-      },
-    }),
+  window.agentFrame.openChannelPicker(
+    native.clientX,
+    native.clientY + pickerButtonHeight,
   );
 };
 
 const hideResults = () => {
-  document.dispatchEvent(new CustomEvent(TOPICS.HIDE_RESULTS_WINDOW));
+  document.dispatchEvent(new CustomEvent(RUNTIME_TOPICS.HIDE_RESULTS_WINDOW));
 };
 
 interface FrameTab {
@@ -68,11 +64,21 @@ interface FrameTab {
 
 export class Frame extends React.Component<
   {},
-  { anchorEl: HTMLElement | null; tabs: Array<FrameTab>; selectedTab: string }
+  {
+    anchorEl: HTMLElement | null;
+    tabs: Array<FrameTab>;
+    selectedTab: string;
+    channelColor: string;
+  }
 > {
   constructor(props: any) {
     super(props);
-    this.state = { tabs: [], selectedTab: 'newTab', anchorEl: null };
+    this.state = {
+      tabs: [],
+      selectedTab: 'newTab',
+      anchorEl: null,
+      channelColor: '',
+    };
   }
 
   handleTabChange(newTabId: string) {
@@ -81,25 +87,13 @@ export class Frame extends React.Component<
       newTab();
     } else {
       this.setState({ selectedTab: newTabId });
-
-      document.dispatchEvent(
-        new CustomEvent(TOPICS.TAB_SELECTED, {
-          detail: {
-            selected: newTabId,
-          },
-        }),
-      );
+      window.agentFrame.selectTab(newTabId);
     }
   }
 
   closeTab(tabId: string) {
-    document.dispatchEvent(
-      new CustomEvent(TOPICS.CLOSE_TAB, {
-        detail: {
-          tabId: tabId,
-        },
-      }),
-    );
+    window.agentFrame.closeTab(tabId);
+
     this.setState({
       tabs: this.state.tabs.filter((tab: FrameTab) => {
         return tab.tabId !== tabId;
@@ -112,13 +106,7 @@ export class Frame extends React.Component<
     //only tear out if the 'internalDnD' flag is not set
     console.log('tearOut', tabId, this.state.tabs.length);
     if (this.state.tabs.length > 1) {
-      document.dispatchEvent(
-        new CustomEvent(TOPICS.TEAR_OUT_TAB, {
-          detail: {
-            tabId: tabId,
-          },
-        }),
-      );
+      window.agentFrame.tearOutTab(tabId);
     }
   }
 
@@ -130,7 +118,7 @@ export class Frame extends React.Component<
   }
 
   componentDidMount() {
-    document.addEventListener(TOPICS.ADD_TAB, ((event: CustomEvent) => {
+    document.addEventListener(RUNTIME_TOPICS.ADD_TAB, ((event: CustomEvent) => {
       console.log('Add Tab called', event.detail);
       const tabId = event.detail.viewId;
       const tabName = event.detail.title;
@@ -147,7 +135,9 @@ export class Frame extends React.Component<
       }
     }) as EventListener);
 
-    document.addEventListener(TOPICS.REMOVE_TAB, ((event: CustomEvent) => {
+    document.addEventListener(RUNTIME_TOPICS.REMOVE_TAB, ((
+      event: CustomEvent,
+    ) => {
       console.log('Remove Tab called', event.detail);
       const tabId = event.detail.tabId;
       this.setState({
@@ -157,17 +147,23 @@ export class Frame extends React.Component<
       });
     }) as EventListener);
 
-    document.addEventListener(TOPICS.SELECT_TAB, ((event: CustomEvent) => {
+    document.addEventListener(RUNTIME_TOPICS.SELECT_TAB, ((
+      event: CustomEvent,
+    ) => {
       if (event.detail.selected) {
         this.setState({ selectedTab: event.detail.selected });
       }
     }) as EventListener);
-    console.log('setting frameReady');
-    (window as any).frameReady = true;
-    const readyEvent = new CustomEvent(TOPICS.FRAME_READY, {
-      detail: {},
-    });
-    document.dispatchEvent(readyEvent);
+
+    document.addEventListener(RUNTIME_TOPICS.CHANNEL_SELECTED, ((
+      event: CustomEvent,
+    ) => {
+      this.setState({
+        channelColor: event.detail?.channel?.displayMetadata?.color,
+      });
+    }) as EventListener);
+
+    window.agentFrame.isReady();
   }
 
   render() {
@@ -190,18 +186,14 @@ export class Frame extends React.Component<
       const value = input && input.value ? input.value : '';
       //does the value meet the threshold
       if (value && value.length >= threshold) {
-        document.dispatchEvent(
-          new CustomEvent(TOPICS.SEARCH, { detail: { query: value } }),
-        );
+        window.agentFrame.searchDirectory(value);
       }
     }, 400);
 
     const devToolsClick = (event: SyntheticEvent) => {
-      const native: DragEvent = event.nativeEvent as DragEvent;
-      document.dispatchEvent(
-        new CustomEvent(TOPICS.OPEN_TOOLS_MENU, {
-          detail: { clientX: native.clientX, clientY: native.clientY },
-        }),
+      window.agentFrame.openToolsMenu(
+        (event.nativeEvent as PointerEvent).clientX,
+        (event.nativeEvent as PointerEvent).clientY,
       );
     };
 
@@ -223,13 +215,7 @@ export class Frame extends React.Component<
       internalDnD = true;
       draggedTab = tabId;
       //inform of the tab dragstart
-      document.dispatchEvent(
-        new CustomEvent(TOPICS.TAB_DRAG_START, {
-          detail: {
-            selected: tabId,
-          },
-        }),
-      );
+      window.agentFrame.tabDragStart(tabId);
     };
 
     const drop = (ev: SyntheticEvent) => {
@@ -265,26 +251,14 @@ export class Frame extends React.Component<
         //select the dragged tab
         //do this with a delay to prevent race conditions with re-rendering the tab order
         setTimeout(() => {
-          document.dispatchEvent(
-            new CustomEvent(TOPICS.TAB_SELECTED, {
-              detail: {
-                selected: tabId,
-              },
-            }),
-          );
+          window.agentFrame.selectTab(tabId);
         }, 100);
 
         draggedTab = null;
         internalDnD = false;
       } else {
         //raise drop event for tear out
-        document.dispatchEvent(
-          new CustomEvent(TOPICS.DROP_TAB, {
-            detail: {
-              frameTarget: true,
-            },
-          }),
-        );
+        window.agentFrame.dropTab(true);
       }
     };
 
@@ -292,13 +266,7 @@ export class Frame extends React.Component<
       ev.preventDefault();
       ev.stopPropagation();
       console.log('tabDropped on frame target');
-      document.dispatchEvent(
-        new CustomEvent(TOPICS.DROP_TAB, {
-          detail: {
-            frameTarget: true,
-          },
-        }),
-      );
+      window.agentFrame.dropTab(true);
     };
 
     const leaveTab = () => {
@@ -309,19 +277,6 @@ export class Frame extends React.Component<
 
     const dragEnd = (ev: SyntheticEvent) => {
       ev.preventDefault();
-
-      //if this is not an internal tab drag operation and this isn't the last tab in the window, allow tear out on drag end
-      /*if (draggedTab && !internalDnD && this.state.tabs.length > 1) {
-        ev.stopPropagation();
-        console.log('tabDropped outside target', draggedTab);
-        document.dispatchEvent(
-          new CustomEvent(TOPICS.DROP_TAB, {
-            detail: {
-              tabId: draggedTab,
-            },
-          }),
-        );
-      }*/
     };
 
     return (
@@ -356,6 +311,9 @@ export class Frame extends React.Component<
                     <IconButton
                       size="small"
                       id="channelPicker"
+                      sx={{
+                        background: this.state.channelColor,
+                      }}
                       onClick={openChannelPicker}
                       title="select channel"
                     >
@@ -387,6 +345,7 @@ export class Frame extends React.Component<
                     label={tab.tabName}
                     value={tab.tabId}
                     id={tab.tabId}
+                    key={tab.tabId}
                     iconPosition="end"
                     onDrop={drop}
                     onDragLeave={leaveTab}

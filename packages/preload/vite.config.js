@@ -1,6 +1,7 @@
 import { chrome } from '../../.electron-vendors.cache.json';
 import { join } from 'path';
 import { builtinModules } from 'module';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -36,16 +37,17 @@ const config = {
         entryFileNames: '[name].cjs',
       },
       input: {
-        index: './src/index.ts',
-        'channelPicker/index': './src/channelPicker/index.ts',
-        'view/index': './src/view/index.ts',
-        'homeView/index': './src/homeView/index.ts',
-        'intentResolver/index': './src/intentResolver/index.ts',
-        'searchResults/index': './src/searchResults/index.ts',
+        'frame/index': '/src/frame/index.ts',
+        'channelPicker/index': '/src/channelPicker/index.ts',
+        'view/index': '/src/view/index.ts',
+        'homeView/index': '/src/homeView/index.ts',
+        'intentResolver/index': '/src/intentResolver/index.ts',
+        'searchResults/index': '/src/searchResults/index.ts',
       },
     },
     emptyOutDir: true,
     brotliSize: false,
+    plugins: [nodeResolve()],
   },
 };
 

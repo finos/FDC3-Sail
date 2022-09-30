@@ -72,7 +72,7 @@ export class View {
         devTools: true,
         contextIsolation: true,
         webSecurity: true,
-        nodeIntegration: false,
+        nodeIntegration: true,
       },
     });
     //set bgcolor so view doesn't bleed through to hidden tabs
@@ -98,6 +98,7 @@ export class View {
 
     if (url) {
       this.content.webContents.loadURL(url).then(() => {
+        //   this.content.webContents.openDevTools();
         //   initView(config);
       });
 

@@ -3,11 +3,12 @@ import { RuntimeMessage } from '../runtimeMessage';
 import { WebContents } from 'electron';
 import utils from '../../utils';
 import fetch from 'electron-fetch';
-import { RUNTIME_TOPICS } from './index';
+import { RUNTIME_TOPICS } from './topics';
 
 export const fetchFromDirectory = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   const directoryUrl = await utils.getDirectoryUrl();
+
   const response = await fetch(`${directoryUrl}${message.data.query}`);
   const result = await response.json();
 

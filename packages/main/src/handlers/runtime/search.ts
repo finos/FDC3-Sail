@@ -11,6 +11,7 @@ export const hideSearchResults = async (message: RuntimeMessage) => {
 export const loadSearchResults = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   //bring selected browserview to front
+  console.log('loadSearchResults', message.data.results);
   const workspace = runtime?.getWorkspace(message.source);
   workspace?.loadSearchResults(message.data.results);
 };

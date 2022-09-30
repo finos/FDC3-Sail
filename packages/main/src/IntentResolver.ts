@@ -4,9 +4,9 @@ import { BrowserWindow } from 'electron';
 import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
 import { Context } from '@finos/fdc3';
 import { join } from 'path';
-import { TOPICS } from './constants';
 import { Workspace } from './workspace';
 import { randomUUID } from 'crypto';
+import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
 const RESOLVER_PRELOAD = join(
   __dirname,
@@ -108,7 +108,7 @@ export class IntentResolver {
 
         console.log('startObject options', JSON.stringify(options));
 
-        this.window.webContents.send(TOPICS.WINDOW_START, startObject);
+        this.window.webContents.send(RUNTIME_TOPICS.WINDOW_START, startObject);
 
         console.log(
           'intent resolver create',

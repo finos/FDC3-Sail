@@ -10,6 +10,7 @@ export const hideChannelWindow = async (message: RuntimeMessage) => {
 
 export const pickChannel = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
+  console.log('pickChannel', message.source, message.data);
   const sourceWS = runtime.getWorkspace(message.source);
   const mouseX: number = message.data.mouseX || 0;
   const mouseY: number = message.data.mouseY || 0;
@@ -19,6 +20,7 @@ export const pickChannel = async (message: RuntimeMessage) => {
 };
 
 export const joinChannel = async (message: RuntimeMessage) => {
+  console.log('joinChannel', message);
   const runtime = getRuntime();
   const sourceWS = runtime.getWorkspace(message.source);
   if (sourceWS) {

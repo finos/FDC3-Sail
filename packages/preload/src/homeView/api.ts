@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { TOPICS } from '../../../main/src/constants';
-import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/index';
-
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
+//const RUNTIME_TOPICS = {};
 /**
  * home api
  *  - getApps

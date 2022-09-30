@@ -119,7 +119,7 @@ app
 /**
  * Install Vue.js or some other devtools in development mode only
  */
-if (import.meta.env.DEV) {
+/*if (import.meta.env.DEV) {
   app
     .whenReady()
     .then(() => import('electron-devtools-installer'))
@@ -131,7 +131,7 @@ if (import.meta.env.DEV) {
       }),
     )
     .catch((e) => console.error('Failed install extension:', e));
-}
+}*/
 
 /**
  * Check new app version in production mode only

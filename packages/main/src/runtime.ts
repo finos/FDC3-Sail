@@ -96,16 +96,16 @@ export class Runtime {
    */
   addHandler(
     name: string,
-    handler: (args: RuntimeMessage) => Promise<any>,
+    handler: (args: RuntimeMessage) => Promise<unknown>,
     once?: boolean,
   ) {
-    const theHandler = async (event: IpcMainEvent, args: any) => {
+    const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
       try {
-        const r = await handler.call(undefined, args as RuntimeMessage);
+        const r = await handler.call(undefined, args);
 
         if (event.ports && args.data?.eventId) {
           event.ports[0].postMessage({
-            topic: args.data.eventId,
+            topic: (args as RuntimeMessage).data.eventId,
             data: r,
           });
         }

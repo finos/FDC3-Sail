@@ -1,6 +1,6 @@
 import { getRuntime } from '../../index';
 import { RuntimeMessage } from '../runtimeMessage';
-import { RUNTIME_TOPICS } from './index';
+import { RUNTIME_TOPICS } from './topics';
 import { Point, screen } from 'electron';
 import { Workspace } from '../../workspace';
 
