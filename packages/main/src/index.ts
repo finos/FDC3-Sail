@@ -52,7 +52,9 @@ export const createWindow = (): Promise<BrowserWindow> => {
  */
 export const getRuntime = (): Runtime => {
   if (!runtime) {
+    console.log('getRuntime - create runtime');
     runtime = new Runtime();
+    runtime.startup();
   }
   return runtime;
 };
@@ -95,6 +97,7 @@ app.on('activate', () => {
     runtime = null;
   }
   runtime = new Runtime();
+  runtime.startup();
   createWindow();
 });
 
@@ -104,9 +107,11 @@ app.on('activate', () => {
 app
   .whenReady()
   .then(() => {
+    console.log('index - create runtime');
     runtime = new Runtime();
+    runtime.startup();
     // restoreOrCreateWindow();
-
+    console.log('index - createWindow');
     createWindow();
   })
   .catch((e) => console.error('Failed create window:', e));

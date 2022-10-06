@@ -12,9 +12,11 @@ import { View } from './view';
 import { Workspace } from './workspace';
 import { ViewConfig } from './types/ViewConfig';
 import { WorkspaceConfig } from './types/WorkspaceConfig';
-import { net } from 'electron';
+import { net, ipcMain, IpcMainEvent } from 'electron';
 import utils from './utils';
 import { IntentResolver } from './IntentResolver';
+import { RuntimeMessage } from './handlers/runtimeMessage';
+import { register as registerRuntimeHandlers } from './handlers/runtime/index';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -59,6 +61,11 @@ export class Runtime {
 
   listener: RuntimeListener;
 
+  startup() {
+    //register handlers
+    registerRuntimeHandlers();
+  }
+
   getWorkspace(workspaceId: string): Workspace | undefined {
     return this.getWorkspaces().get(workspaceId);
   }
@@ -78,6 +85,51 @@ export class Runtime {
 
   getContexts() {
     return contexts;
+  }
+
+  draggedTab: { tabId: string; source: string } | null = null;
+  /**
+   * Dynamically add a Handler to the IPC bus
+   * @param name
+   * @param handler
+   * @param once
+   */
+  addHandler(
+    name: string,
+    handler: (args: RuntimeMessage) => Promise<unknown>,
+    once?: boolean,
+  ) {
+    const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
+      try {
+        const r = await handler.call(undefined, args);
+
+        if (event.ports && args.data?.eventId) {
+          event.ports[0].postMessage({
+            topic: (args as RuntimeMessage).data.eventId,
+            data: r,
+          });
+        }
+      } catch (err) {
+        console.log('handler error', err, 'args', args);
+
+        if (event.ports && args.data?.eventId) {
+          event.ports[0].postMessage({
+            topic: args.data.eventId,
+            error: err,
+          });
+        }
+      }
+    };
+
+    if (once) {
+      ipcMain.once(name, theHandler);
+    } else {
+      ipcMain.on(name, theHandler);
+    }
+  }
+
+  dropHandler(name: string) {
+    ipcMain.removeAllListeners(name);
   }
 
   /**

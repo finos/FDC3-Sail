@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { TOPICS } from '../../../main/src/constants';
-
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
+//const RUNTIME_TOPICS = {};
 /**
  * home api
  *  - getApps
@@ -23,16 +24,21 @@ ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
 export const getApps = () => {
   return new Promise((resolve, reject) => {
     try {
-      ipcRenderer.on(`${TOPICS.FETCH_FROM_DIRECTORY}-/apps`, (event, args) => {
-        console.log('ipcRenderer event', event.type);
-        const results = args.data;
-        resolve(results);
-      });
+      ipcRenderer.on(
+        `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-/apps`,
+        (event, args) => {
+          console.log('ipcRenderer event', event.type);
+          const results = args.data;
+          resolve(results);
+        },
+      );
       // Fetch External Data Source
-      ipcRenderer.send(TOPICS.FETCH_FROM_DIRECTORY, {
+      ipcRenderer.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
         source: id,
-        sourceType: 'view',
-        query: `/apps`,
+        data: {
+          sourceType: 'view',
+          query: `/apps`,
+        },
       });
     } catch (err) {
       reject(err);

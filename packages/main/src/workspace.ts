@@ -22,6 +22,7 @@ import {
   TOPICS,
 } from './constants';
 import { randomUUID } from 'crypto';
+import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
 const CHANNEL_PICKER_PRELOAD = join(
   __dirname,
@@ -46,7 +47,8 @@ export class Workspace {
       width: DEFAULT_WINDOW_WIDTH,
       webPreferences: {
         webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-        preload: join(__dirname, '../../preload/dist/index.cjs'),
+        preload: join(__dirname, '../../preload/dist/frame/index.cjs'),
+        nodeIntegration: true,
       },
     });
 
@@ -72,7 +74,9 @@ export class Workspace {
       this.window.loadURL(MAIN_WINDOW_CONTENT).then(() => {
         // this.window.loadFile('src/windows/workspace/frame.html').then(() => {
         if (this.window) {
-          this.window.webContents.send(TOPICS.WORKSPACE_START, { id: this.id });
+          this.window.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
+            id: this.id,
+          });
           // this.window.webContents.openDevTools();
           console.log('workspace created', this.id);
           const runtime = getRuntime();
@@ -352,7 +356,7 @@ export class Workspace {
         webPreferences: {
           webSecurity: true,
           nodeIntegration: true,
-          contextIsolation: false,
+          contextIsolation: true,
           preload: SEARCH_RESULTS_PRELOAD,
           devTools: true,
         },
@@ -371,11 +375,11 @@ export class Workspace {
         this.resultsWindow.loadURL(SEARCH_RESULTS_CONTENT as string).then(
           () => {
             if (this.resultsWindow) {
-              this.resultsWindow.webContents.send(TOPICS.WINDOW_START, {
+              this.resultsWindow.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
                 workspaceId: this.id,
               });
               console.log('results window created', this.resultsId);
-              // this.resultsWindow.webContents.openDevTools();
+              //this.resultsWindow.webContents.openDevTools();
               resolve();
             }
           },
@@ -388,7 +392,6 @@ export class Workspace {
   }
 
   createChannelWindow(): Promise<void> {
-    console.log('creatChannelWIndow');
     return new Promise((resolve, reject) => {
       this.channelWindow = new BrowserWindow({
         height: CHANNEL_WINDOW_HEIGHT,
@@ -400,7 +403,7 @@ export class Workspace {
         webPreferences: {
           webSecurity: true,
           nodeIntegration: true,
-          contextIsolation: false,
+          contextIsolation: true,
           preload: CHANNEL_PICKER_PRELOAD,
           devTools: true,
         },
@@ -419,7 +422,7 @@ export class Workspace {
         this.channelWindow.loadURL(CHANNEL_PICKER_CONTENT as string).then(
           () => {
             if (this.channelWindow) {
-              this.channelWindow.webContents.send(TOPICS.WINDOW_START, {
+              this.channelWindow.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
                 workspaceId: this.id,
               });
               console.log('channel window created', this.id);
@@ -472,7 +475,7 @@ export class Workspace {
       this.resultsWindow.setPosition(winPos[0] + 9, winPos[1] + 70);
 
       this.resultsWindow.showInactive();
-      this.resultsWindow.webContents.send(TOPICS.RES_LOAD_RESULTS, {
+      this.resultsWindow.webContents.send(RUNTIME_TOPICS.SEARCH_LOAD_RESULTS, {
         results: results,
       });
       // this.resultsWindow.webContents.openDevTools();
@@ -523,7 +526,7 @@ export class Workspace {
                 view.size();
                 this.setSelectedTab(view.id);
                 if (this.window) {
-                  this.window.webContents.send(TOPICS.ADD_TAB, {
+                  this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
                     viewId: view.id,
                     title: view.getTitle(),
                   });
@@ -551,7 +554,7 @@ export class Workspace {
       return new Promise((resolve, reject) => {
         if (this.window) {
           console.log('adding tab', view.id, view.getTitle());
-          this.window.webContents.send(TOPICS.ADD_TAB, {
+          this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
             viewId: view.id,
             title: view.getTitle(),
           });
@@ -602,12 +605,12 @@ export class Workspace {
           }
         });
         if (this.channelWindow) {
-          this.channelWindow.webContents.send(TOPICS.CHANNEL_SELECTED, {
+          this.channelWindow.webContents.send(RUNTIME_TOPICS.CHANNEL_SELECTED, {
             channel: channel,
           });
         }
         if (this.window) {
-          this.window.webContents.send(TOPICS.CHANNEL_SELECTED, {
+          this.window.webContents.send(RUNTIME_TOPICS.CHANNEL_SELECTED, {
             channel: channel,
           });
         }

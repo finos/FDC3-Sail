@@ -1,34 +1,37 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, contextBridge } from 'electron';
 import { TOPICS, TARGETS } from '../../../main/src/constants';
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 
 let workspaceId: string | null = null;
 
-ipcRenderer.on(TOPICS.WINDOW_START, (event, args) => {
+ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, (event, args) => {
   workspaceId = args.workspaceId;
   console.log(event.type, workspaceId);
 });
 
-ipcRenderer.on(TOPICS.RES_LOAD_RESULTS, (event, args) => {
-  console.log(event.type, args);
+ipcRenderer.on(RUNTIME_TOPICS.SEARCH_LOAD_RESULTS, (event, args) => {
   document.dispatchEvent(
-    new CustomEvent(TOPICS.RES_LOAD_RESULTS, {
+    new CustomEvent(RUNTIME_TOPICS.SEARCH_LOAD_RESULTS, {
       detail: { results: args.results },
     }),
   );
 });
 
-document.addEventListener(TOPICS.RESULT_SELECTED, ((event: CustomEvent) => {
-  const result = event.detail.result;
-  const selection = result.name;
-  if (selection) {
-    ipcRenderer.send(TOPICS.FDC3_OPEN, {
-      topic: 'open',
-      source: workspaceId,
-      data: { name: selection },
-    });
-  }
+const selectResult = (selection: string) => {
+  ipcRenderer.send(TOPICS.FDC3_OPEN, {
+    topic: 'open',
+    source: workspaceId,
+    data: { name: selection },
+  });
+
   ipcRenderer.send(TOPICS.HIDE_WINDOW, {
     source: workspaceId,
     target: TARGETS.SEARCH_RESULTS,
   });
-}) as EventListener);
+};
+
+const api = {
+  selectResult,
+};
+
+contextBridge.exposeInMainWorld('agentSearch', api);

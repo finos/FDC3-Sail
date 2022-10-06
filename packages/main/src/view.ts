@@ -98,6 +98,7 @@ export class View {
 
     if (url) {
       this.content.webContents.loadURL(url).then(() => {
+        //   this.content.webContents.openDevTools();
         //   initView(config);
       });
 
