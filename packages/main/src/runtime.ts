@@ -1,22 +1,23 @@
-import { RuntimeListener } from './listeners/listener';
 import { FDC3Listener } from './types/FDC3Listener';
 import { Context, IntentMetadata } from '@finos/fdc3';
 import {
   DirectoryApp,
   FDC3App,
   IntentInstance,
+  ChannelData,
   ResolverDetail,
 } from './types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';
 import { ViewConfig } from './types/ViewConfig';
-import { WorkspaceConfig } from './types/WorkspaceConfig';
+import { WorkspaceConfig } from '/@/types/WorkspaceConfig';
 import { net, ipcMain, IpcMainEvent } from 'electron';
 import utils from './utils';
 import { IntentResolver } from './IntentResolver';
 import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
+import { register as registerFDC3Handlers } from './handlers/fdc3/1_2/index';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -33,6 +34,9 @@ const views: Map<string, View> = new Map();
  */
 const workspaces: Map<string, Workspace> = new Map();
 
+//collection of app channel ids
+let app_channels: Array<ChannelData> = [];
+
 /**
  * map of all intent resolver dialogs
  */
@@ -40,11 +44,16 @@ const workspaces: Map<string, Workspace> = new Map();
 let resolver: IntentResolver | undefined = undefined;
 
 export class Runtime {
-  constructor() {
-    console.log('create runtime');
-    //initialize contexts
-    //set up listeners
+  // runtime : Runtime;
 
+  //listener: RuntimeListener;
+
+  startup() {
+    //register handlers
+    console.log('registering handlers');
+    registerRuntimeHandlers();
+    registerFDC3Handlers();
+    console.log('done registering handlers');
     //create context state
     //initialize the active channels
     //need to map channel membership to tabs, listeners to apps, and contexts to channels
@@ -52,18 +61,6 @@ export class Runtime {
       //    contextListeners.set(chan.id, new Map());
       contexts.set(chan.id, []);
     });
-
-    this.listener = new RuntimeListener(this);
-    this.listener.listen();
-  }
-
-  // runtime : Runtime;
-
-  listener: RuntimeListener;
-
-  startup() {
-    //register handlers
-    registerRuntimeHandlers();
   }
 
   getWorkspace(workspaceId: string): Workspace | undefined {
@@ -336,6 +333,18 @@ export class Runtime {
 
   dropResolver() {
     resolver = undefined;
+  }
+
+  getAppChannels(): Array<ChannelData> {
+    return app_channels;
+  }
+
+  setAppChannel(channel: ChannelData) {
+    app_channels.push(channel);
+  }
+
+  dropAppChannel(channelId: string) {
+    app_channels = app_channels.filter((channel) => channel.id !== channelId);
   }
 
   //cleanup state of the runtime
