@@ -26,6 +26,7 @@ const resolveTargetAppToName = (target: TargetApp): string | undefined => {
 };
 
 export const open = async (message: RuntimeMessage) => {
+  console.log('open', message);
   const runtime = getRuntime();
   const name =
     message.data && message.data.name
@@ -35,7 +36,7 @@ export const open = async (message: RuntimeMessage) => {
       : '';
 
   const result: DirectoryApp = (await runtime.fetchFromDirectory(
-    `/apps/${name}`,
+    `/apps${name !== '' ? '/' + name : ''}`,
   )) as DirectoryApp;
   if (result && result.start_url) {
     //get target workspace

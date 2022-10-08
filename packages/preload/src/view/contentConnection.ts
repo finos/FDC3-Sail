@@ -3,7 +3,7 @@
  */
 
 import { fdc3Event, TOPICS } from '../lib/lib';
-import { FDC3Event } from '../../../main/src/types/FDC3Event';
+import { FDC3EventDetail } from '../../../main/src/types/FDC3Event';
 import { FDC3Message } from '../../../main/src/types/FDC3Message';
 import { ipcRenderer } from 'electron';
 
@@ -80,64 +80,65 @@ interface FDC3ReturnListener {
 
 interface TopicConfig {
   isVoid?: boolean;
-  cb?: { (event: FDC3Event): void };
+  cb?: { (event: FDC3EventDetail): void };
 }
 
-const wireTopic = (topic: string, config?: TopicConfig): void => {
-  document.addEventListener(`FDC3:${topic}`, ((e: FDC3Event) => {
-    console.log('contentConnect event', e);
-    const cb = config ? config.cb : null;
-    const isVoid = config ? config.isVoid : null;
+export const wireTopic = (
+  topic: string,
+  e: FDC3EventDetail,
+  config?: TopicConfig,
+): void => {
+  //document.addEventListener(`FDC3:${topic}`, ((e: FDC3Event) => {
+  //  console.log('contentConnect event', e);
+  const cb = config ? config.cb : null;
+  const isVoid = config ? config.isVoid : null;
 
-    //get eventId and timestamp from the event
-    if (!isVoid) {
-      const eventId: string | null | undefined =
-        e.detail !== null ? e.detail.eventId : null;
-
-      if (eventId) {
-        returnListeners.set(eventId, {
-          ts: e.ts,
-          listener: function (msg: FDC3Message) {
-            if (msg) {
-              //handle errors
-              if (msg.error) {
-                document.dispatchEvent(
-                  fdc3Event(`return_${eventId}`, {
-                    error: msg.error,
-                  }),
-                );
-              } else {
-                document.dispatchEvent(
-                  fdc3Event(
-                    `return_${eventId}`,
-                    msg && msg.data ? msg.data : {},
-                  ),
-                );
-              }
+  //get eventId and timestamp from the event
+  if (!isVoid) {
+    if (e.eventId) {
+      returnListeners.set(e.eventId, {
+        ts: e.ts || Date.now(),
+        listener: function (msg: FDC3Message) {
+          if (msg) {
+            //handle errors
+            if (msg.error) {
+              document.dispatchEvent(
+                fdc3Event(`return_${e.eventId}`, {
+                  error: msg.error,
+                }),
+              );
+            } else {
+              document.dispatchEvent(
+                fdc3Event(
+                  `return_${e.eventId}`,
+                  msg && msg.data ? msg.data : {},
+                ),
+              );
             }
-          },
-        });
-      }
-      if (cb) {
-        cb.call(document, e);
-      }
+          }
+        },
+      });
     }
-    //if  background script isn't ready yet, queue these messages...
-    const msg: FDC3Message = { topic: topic, source: id, data: e.detail };
-
-    // (Seb) commented out to satisfy Static code analysis
-    // console.log(`FDC3:${topic} - connected state`, connected);
-
-    if (!connected) {
-      eventQ.push(msg);
-    } else {
-      sendMessage(msg);
+    if (cb) {
+      cb.call(this, e);
     }
-  }) as EventListener);
+  }
+  //if  background script isn't ready yet, queue these messages...
+  const msg: FDC3Message = { topic: topic, source: id, data: e };
+
+  // (Seb) commented out to satisfy Static code analysis
+  // console.log(`FDC3:${topic} - connected state`, connected);
+
+  if (!connected) {
+    eventQ.push(msg);
+  } else {
+    sendMessage(msg);
+  }
+  // }) as EventListener);
 };
 
 //listen for FDC3 events
-export const listen = () => {
+/*export const listen = () => {
   const topics = [
     'open',
     'raiseIntent',
@@ -170,6 +171,7 @@ export const listen = () => {
   wireTopic('dropContextListener', { isVoid: true });
   wireTopic('dropIntentListener', { isVoid: true });
 };
+*/
 
 export const connect = () => {
   console.log('connected');

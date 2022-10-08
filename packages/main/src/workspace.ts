@@ -23,7 +23,7 @@ import {
 } from './constants';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
-import { FDC3_TOPICS } from './handlers/fdc3/1_2/topics';
+import { FDC3_TOPICS } from './handlers/fdc3/1.2/topics';
 
 const CHANNEL_PICKER_PRELOAD = join(
   __dirname,
@@ -629,9 +629,11 @@ export class Workspace {
     conf.workspace = this;
     conf.onReady = (view) => {
       console.log('view ready');
+      this.views.push(view);
       return new Promise((resolve, reject) => {
         if (this.window) {
           console.log('adding tab', view.id, view.getTitle());
+
           this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
             viewId: view.id,
             title: view.getTitle(),
@@ -656,9 +658,9 @@ export class Workspace {
         }
       });
     };
+
     const view = new View(url, conf, this);
 
-    this.views.push(view);
     //add to view collection
     if (this.window) {
       this.window.addBrowserView(view.content);

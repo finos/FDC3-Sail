@@ -17,7 +17,8 @@ import utils from './utils';
 import { IntentResolver } from './IntentResolver';
 import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
-import { register as registerFDC3Handlers } from './handlers/fdc3/1_2/index';
+import { register as registerFDC3Handlers } from './handlers/fdc3/1.2/index';
+import { FDC3Response } from './types/FDC3Message';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -49,10 +50,13 @@ export class Runtime {
   //listener: RuntimeListener;
 
   startup() {
+    //clear all previous Handlers
+    ipcMain.removeAllListeners();
+
     //register handlers
     console.log('registering handlers');
-    registerRuntimeHandlers();
-    registerFDC3Handlers();
+    registerRuntimeHandlers(this);
+    registerFDC3Handlers(this);
     console.log('done registering handlers');
     //create context state
     //initialize the active channels
@@ -76,7 +80,6 @@ export class Runtime {
   }
 
   getView(viewId: string): View | undefined {
-    console.log('getView ', viewId);
     return this.getViews().get(viewId);
   }
 
@@ -97,21 +100,34 @@ export class Runtime {
     once?: boolean,
   ) {
     const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
+      console.log('handle message', name, args);
       try {
-        const r = await handler.call(undefined, args);
+        let r: FDC3Response;
+        try {
+          const result = await handler.call(undefined, args);
+          r = {
+            data: result,
+          };
+        } catch (err) {
+          r = {
+            error: (err as string) || 'unknown',
+            data: null,
+          };
+        }
+        console.log('message response', name, r);
 
-        if (event.ports && args.data?.eventId) {
+        if (event.ports && args.eventId) {
           event.ports[0].postMessage({
-            topic: (args as RuntimeMessage).data.eventId,
+            topic: args.eventId,
             data: r,
           });
         }
       } catch (err) {
         console.log('handler error', err, 'args', args);
 
-        if (event.ports && args.data?.eventId) {
+        if (event.ports && args.eventId) {
           event.ports[0].postMessage({
-            topic: args.data.eventId,
+            topic: args.eventId,
             error: err,
           });
         }
@@ -287,7 +303,7 @@ export class Runtime {
       utils.getDirectoryUrl().then((directoryUrl) => {
         const url = `${directoryUrl}${query}`;
         const request = net.request(url);
-
+        console.log('fetch from dir', url);
         const resultBuffer: Array<string> = [];
         try {
           request.on('response', (response) => {

@@ -45,8 +45,9 @@ export const addContextListener = async (message: RuntimeMessage) => {
               pending.context.type === message.data &&
               message.data.type
             ) {
+              console.log('send pending context');
               view.content.webContents.postMessage(FDC3_TOPICS.CONTEXT, {
-                topic: 'context',
+                topic: FDC3_TOPICS.CONTEXT,
                 data: pending.context,
                 source: source,
               });

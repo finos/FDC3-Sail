@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { TOPICS } from '../../../main/src/constants';
+import { FDC3_TOPICS } from '../../../main/src/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 //const RUNTIME_TOPICS = {};
 /**
@@ -8,40 +8,52 @@ import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
  *  - get directory listings of apps for the directory for this agent
  */
 
-let id: string | null = null;
+let instanceId = '';
+const eventQ: Array<{ topic: string; data: any }> = [];
 
 /**
  * listen for start event - assigning id for the instance
  */
-
-ipcRenderer.on(TOPICS.FDC3_START, async (event, args) => {
-  console.log('fdc3 start', args);
+ipcRenderer.on(FDC3_TOPICS.START, async (event, args) => {
+  console.log('home - FDC3 start', args);
   if (args.id) {
-    id = args.id;
+    instanceId = args.id;
+    console.log('calling Q', eventQ);
+    eventQ.forEach((msg) => {
+      ipcRenderer.send(msg.topic, {
+        source: instanceId,
+        data: msg.data,
+      });
+    });
   }
 });
 
 export const getApps = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      ipcRenderer.on(
-        `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-/apps`,
-        (event, args) => {
-          console.log('ipcRenderer event', event.type);
-          const results = args.data;
-          resolve(results);
-        },
-      );
+  return new Promise((resolve) => {
+    ipcRenderer.once(
+      `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-/apps`,
+      (event, args) => {
+        const results = args.data;
+        resolve(results);
+      },
+    );
+    if (instanceId !== '') {
       // Fetch External Data Source
       ipcRenderer.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
-        source: id,
+        source: instanceId,
         data: {
           sourceType: 'view',
           query: `/apps`,
         },
       });
-    } catch (err) {
-      reject(err);
+    } else {
+      eventQ.push({
+        topic: RUNTIME_TOPICS.FETCH_FROM_DIRECTORY,
+        data: {
+          sourceType: 'view',
+          query: `/apps`,
+        },
+      });
     }
   });
 };

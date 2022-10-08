@@ -1,4 +1,4 @@
-import { getRuntime } from '/@/index';
+import { Runtime } from '/@/runtime';
 import { dropContextListener, addContextListener } from './contextListeners';
 import { broadcast } from './broadcast';
 import { open } from './open';
@@ -13,11 +13,9 @@ import {
 } from './channels';
 import { dropIntentListener, addIntentListener } from './intentListeners';
 import { findIntent, findIntentsByContext } from './findIntent';
-import { raiseIntent, raiseIntentsForContext } from './raiseIntent';
+import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
-export const register = () => {
-  const runtime = getRuntime();
-
+export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_TOPICS.DROP_CONTEXT_LISTENER, dropContextListener);
   runtime.addHandler(FDC3_TOPICS.ADD_CONTEXT_LISTENER, addContextListener);
   runtime.addHandler(FDC3_TOPICS.BROADCAST, broadcast);
@@ -34,7 +32,7 @@ export const register = () => {
   runtime.addHandler(FDC3_TOPICS.FIND_INTENTS_BY_CONTEXT, findIntentsByContext);
   runtime.addHandler(FDC3_TOPICS.RAISE_INTENT, raiseIntent);
   runtime.addHandler(
-    FDC3_TOPICS.RAISE_INTENTS_FOR_CONTEXT,
-    raiseIntentsForContext,
+    FDC3_TOPICS.RAISE_INTENT_FOR_CONTEXT,
+    raiseIntentForContext,
   );
 };

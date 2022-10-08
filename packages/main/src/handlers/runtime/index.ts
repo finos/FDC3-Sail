@@ -1,4 +1,4 @@
-import { getRuntime } from '../../index';
+import { Runtime } from '/@/runtime';
 import { RUNTIME_TOPICS } from './topics';
 
 import {
@@ -15,9 +15,7 @@ import { pickChannel, joinChannel } from './channelPicker';
 import { loadSearchResults } from './search';
 import { resolveIntent } from '../fdc3/resolveIntent';
 
-export const register = () => {
-  const runtime = getRuntime();
-
+export const register = (runtime: Runtime) => {
   runtime.addHandler(RUNTIME_TOPICS.TAB_SELECTED, tabSelected);
   runtime.addHandler(RUNTIME_TOPICS.TAB_DRAG_START, tabDragStart);
   runtime.addHandler(RUNTIME_TOPICS.DROP_TAB, dropTab);

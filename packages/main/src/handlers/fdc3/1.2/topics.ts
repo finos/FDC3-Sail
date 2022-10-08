@@ -1,4 +1,6 @@
 export const FDC3_TOPICS = {
+  START: 'FDC3:start',
+  INITIATE: 'FDC3:initiate',
   DROP_CONTEXT_LISTENER: 'FDC3:dropContextListener',
   ADD_CONTEXT_LISTENER: 'FDC3:addContextListener',
   DROP_INTENT_LISTENER: 'FDC3:dropIntentListener',
@@ -16,5 +18,5 @@ export const FDC3_TOPICS = {
   FIND_INTENT: 'FDC3:findIntent',
   FIND_INTENTS_BY_CONTEXT: 'FDC3:findIntentsByContext',
   RAISE_INTENT: 'FDC3:raiseIntent',
-  RAISE_INTENTS_FOR_CONTEXT: 'FDC3:raiseIntentsForContext',
+  RAISE_INTENT_FOR_CONTEXT: 'FDC3:raiseIntentForContext',
 };
