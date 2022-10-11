@@ -13,7 +13,7 @@ import { View } from './view';
 import { getRuntime } from './index';
 import { Rectangle } from 'electron';
 import { BrowserWindow } from 'electron';
-import { joinViewToChannel } from './listeners/fdc3Listeners';
+//import { joinViewToChannel } from '/@/handlers/runtime/channelPicker';
 import { join } from 'path';
 import {
   DEFAULT_WINDOW_HEIGHT,
@@ -23,6 +23,7 @@ import {
 } from './constants';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
+import { FDC3_TOPICS } from './handlers/fdc3/1.2/topics';
 
 const CHANNEL_PICKER_PRELOAD = join(
   __dirname,
@@ -344,6 +345,83 @@ export class Workspace {
     });
   }
 
+  joinViewToChannel(
+    channel: string,
+    view: View,
+    restoreOnly?: boolean,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const runtime = getRuntime();
+      try {
+        //get the previous channel
+        const prevChan = view.channel || 'default';
+        //are the new channel and previous the same?  then no-op...
+        if (prevChan !== channel) {
+          //update channel membership on view
+          view.channel = channel;
+
+          //push current channel context
+          //if there is a context...
+          const contexts = runtime.getContexts();
+          const channelContext = contexts.get(channel);
+
+          //ensure the channel state for the view's workspace is updated
+          if (view.parent) {
+            const sourceWS = runtime.getWorkspace(view.parent.id);
+            //setChannel will result in calling joinViewToChannel again,
+            //so we are going to no op if that is the case
+            //which would mean that 'joinChannel' has been called programtically from the fdc3 api
+            if (sourceWS && sourceWS.channel !== channel) {
+              sourceWS.setChannel(channel);
+            } else {
+              if (channelContext) {
+                const ctx =
+                  channelContext.length > 0 ? channelContext[0] : null;
+                let contextSent = false;
+
+                if (ctx && (restoreOnly === undefined || !restoreOnly)) {
+                  // send to individual listenerIds
+
+                  view.listeners.forEach((l) => {
+                    //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
+                    if (!l.intent) {
+                      if (
+                        (!l.channel ||
+                          l.channel === 'default' ||
+                          (l.channel && l.channel === channel)) &&
+                        (!l.contextType ||
+                          (l.contextType && l.contextType === ctx.type))
+                      ) {
+                        view.content.webContents.send(FDC3_TOPICS.CONTEXT, {
+                          topic: 'context',
+                          listenerIds: [l.listenerId],
+                          data: { context: ctx, listenerId: l.listenerId },
+                          source: view.id,
+                        });
+                        contextSent = true;
+                      }
+                    }
+                  });
+                  if (!contextSent) {
+                    //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
+                    console.log(
+                      'setPendingContext',
+                      channelContext && channelContext[0],
+                    );
+                    view.setPendingContext(channelContext && channelContext[0]);
+                  }
+                }
+              }
+            }
+          }
+        }
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
   createResultsWindow(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.resultsWindow = new BrowserWindow({
@@ -532,7 +610,7 @@ export class Workspace {
                   });
 
                   if (this.channel && view.channel !== this.channel) {
-                    await joinViewToChannel(this.channel, view);
+                    await this.joinViewToChannel(this.channel, view);
                   }
                   resolve();
                 }
@@ -551,9 +629,11 @@ export class Workspace {
     conf.workspace = this;
     conf.onReady = (view) => {
       console.log('view ready');
+      this.views.push(view);
       return new Promise((resolve, reject) => {
         if (this.window) {
           console.log('adding tab', view.id, view.getTitle());
+
           this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
             viewId: view.id,
             title: view.getTitle(),
@@ -564,11 +644,11 @@ export class Workspace {
           // this.window.addBrowserView(view.content);
           console.log('createView - join view to channel', url, this.channel);
           if (this.channel) {
-            joinViewToChannel(this.channel, view).then(
+            this.joinViewToChannel(this.channel, view).then(
               () => {
                 resolve();
               },
-              (err) => {
+              (err: Error) => {
                 reject(err);
               },
             );
@@ -578,9 +658,9 @@ export class Workspace {
         }
       });
     };
+
     const view = new View(url, conf, this);
 
-    this.views.push(view);
     //add to view collection
     if (this.window) {
       this.window.addBrowserView(view.content);
@@ -599,11 +679,13 @@ export class Workspace {
     return new Promise((resolve, reject) => {
       try {
         this.channel = channel;
-        this.views.forEach(async (view) => {
-          if (view.channel !== channel) {
-            await joinViewToChannel(channel, view);
-          }
-        });
+        Promise.all(
+          this.views.map(async (view) => {
+            if (view.channel !== channel) {
+              await this.joinViewToChannel(channel, view);
+            }
+          }),
+        );
         if (this.channelWindow) {
           this.channelWindow.webContents.send(RUNTIME_TOPICS.CHANNEL_SELECTED, {
             channel: channel,

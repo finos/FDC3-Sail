@@ -2,14 +2,14 @@ import { FDC3App } from './FDC3Data';
 import { Context, TargetApp } from '@finos/fdc3';
 
 export interface FDC3Message {
-  topic: string | null;
+  topic: string;
   source: string;
-  name?: string | null;
-  intent?: string | null;
-  data?: FDC3MessageData | null;
+  name?: string;
+  intent?: string;
+  data: FDC3MessageData;
   tabId?: number;
-  selected?: FDC3App | null;
-  context?: Context | null;
+  selected?: FDC3App;
+  context?: Context;
   error?: string;
 }
 
@@ -30,4 +30,9 @@ export interface FDC3MessageData {
   restoreOnly?: boolean;
   selectedIntent?: string;
   selected?: FDC3App;
+}
+
+export interface FDC3Response {
+  error?: string;
+  data: any;
 }

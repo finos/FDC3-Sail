@@ -15,6 +15,7 @@ import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
 import { Pending } from './types/Pending';
 import { TOPICS, TOOLBAR_HEIGHT } from './constants';
+import { FDC3_TOPICS } from '/@/handlers/fdc3/1.2/topics';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
@@ -40,14 +41,12 @@ export class View {
       });
       this.initiated = true;
       console.log('view created', this.id, url);
-      const runtime = getRuntime();
-      if (runtime) {
-        runtime.getViews().set(this.id, this);
-      }
     };
 
     const initView = (config?: ViewConfig) => {
       const doInit = () => {
+        console.log('***** init view');
+
         setId();
         this.size();
         //call onInit handler, if in the config
@@ -61,6 +60,8 @@ export class View {
 
     this.id = randomUUID();
     this.parent = parent;
+    const runtime = getRuntime();
+    runtime.getViews().set(this.id, this);
 
     if (config) {
       this.directoryData = config.directoryData;
@@ -79,9 +80,7 @@ export class View {
     this.content.setBackgroundColor('#fff');
 
     this.content.webContents.on('ipc-message', (event, channel) => {
-      console.log('ipc-message', event.type, channel);
-      if (channel === TOPICS.FDC3_INITIATE && !this.initiated) {
-        console.log('fdc3 initiating!');
+      if (channel === FDC3_TOPICS.INITIATE && !this.initiated) {
         initView(config);
       }
     });
@@ -94,22 +93,20 @@ export class View {
       this.type = 'system';
     }
 
-    console.log('create view', url, this.type, config);
-
     if (url) {
       this.content.webContents.loadURL(url).then(() => {
-        //   this.content.webContents.openDevTools();
+        //       this.content.webContents.openDevTools();
         //   initView(config);
       });
 
       //listen for reloads and reset id
       this.content.webContents.on('devtools-reload-page', () => {
         this.content.webContents.once('did-finish-load', () => {
-          this.content.webContents.send(TOPICS.FDC3_START, {
+          this.content.webContents.send(FDC3_TOPICS.START, {
             id: this.id,
             directory: this.directoryData || null,
           });
-          console.log('FDC3 restart', this.id);
+          console.log('FDC3 start - reload', this.id);
         });
       });
 
@@ -117,11 +114,11 @@ export class View {
       //to do: ensure directory entry and new location match up!
       this.content.webContents.on('did-navigate', () => {
         this.content.webContents.once('did-finish-load', () => {
-          this.content.webContents.send(TOPICS.FDC3_START, {
+          this.content.webContents.send(FDC3_TOPICS.START, {
             id: this.id,
             directory: this.directoryData || null,
           });
-          console.log('FDC3 restart', this.id);
+          console.log('FDC3 start - navigate', this.id);
         });
       });
     }

@@ -1,17 +1,25 @@
-import { contextBridge } from 'electron';
+import { ipcRenderer } from 'electron';
 import { fdc3Event, TOPICS } from '../lib/lib';
-import { Listener } from '@finos/fdc3';
 import {
+  FDC3Message,
+  FDC3MessageData,
+  FDC3Response,
+} from '../../../main/src/types/FDC3Message';
+import { DesktopAgent, Listener } from '@finos/fdc3';
+import {
+  AppIntent,
   Context,
   DisplayMetadata,
   ContextHandler,
   Channel,
   ImplementationMetadata,
+  IntentResolution,
   TargetApp,
 } from '@finos/fdc3';
-import { FDC3Event, FDC3EventDetail } from '../../../main/src/types/FDC3Event';
+import { FDC3Event } from '../../../main/src/types/FDC3Event';
 import { ChannelData } from '../../../main/src/types/FDC3Data';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
+import { FDC3_TOPICS } from '../../../main/src/handlers/fdc3/1.2/topics';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -34,11 +42,147 @@ const guid = (): string => {
   return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`;
 };
 
+interface FDC3ReturnListener {
+  ts: number;
+  listener: { (msg: FDC3Message): void };
+}
+
+//flag to indicate the background script is ready for fdc3!
+let instanceId = '';
+
+//queue of pending events - accumulate until the background is ready
+const eventQ: Array<FDC3Message> = [];
+
+//collection of listeners for api calls coming back from the background script
+const returnListeners: Map<string, FDC3ReturnListener> = new Map();
+
+export const connect = () => {
+  /**
+   * listen for incomming contexts
+   */
+  ipcRenderer.on(FDC3_TOPICS.CONTEXT, async (event, args) => {
+    console.log('ipcrenderer event', event.type, args);
+    //check for handlers at the content script layer (automatic handlers) - if not, dispatch to the API layer...
+    //   let contextSent = false;
+    if (args.data && args.data.context) {
+      if (args.listenerIds) {
+        const listeners: Array<string> = args.listenerIds;
+        listeners.forEach((listenerId) => {
+          const data = args.data;
+          data.listenerId = listenerId;
+          console.log(
+            'connection dispatch context',
+            JSON.stringify(data),
+            args.source,
+          );
+          document.dispatchEvent(
+            new CustomEvent(TOPICS.FDC3_CONTEXT, {
+              detail: { data: data, source: args.source },
+            }),
+          );
+        });
+      } else if (args.listenerId) {
+        const data = args.data;
+        data.listenerId = args.listenerId;
+        document.dispatchEvent(
+          new CustomEvent(TOPICS.FDC3_CONTEXT, {
+            detail: { data: data, source: args.source },
+          }),
+        );
+      }
+
+      // }
+    }
+  });
+
+  /**
+   * listen for incoming intents
+   */
+  ipcRenderer.on(FDC3_TOPICS.INTENT, (event, args) => {
+    console.log('ipcrenderer event', event.type);
+    document.dispatchEvent(
+      new CustomEvent(TOPICS.FDC3_INTENT, {
+        detail: { data: args.data, source: args.source },
+      }),
+    );
+  });
+
+  /**
+   * listen for channel state update
+   * to do: do we need this?
+   */
+  /*ipcRenderer.on(RUNT.SET_CURRENT_CHANEL, (event, args) => {
+    console.log('ipcrenderer event', event.type);
+    if (args.data.channel) {
+      //  currentChannel = args.data.channel;
+    }
+  });*/
+};
+
+//handshake with main and get instanceId assigned
+ipcRenderer.on(FDC3_TOPICS.START, async (event, args) => {
+  console.log('api FDC3 start');
+  if (args.id) {
+    instanceId = args.id;
+    //send any queued messages
+    eventQ.forEach((msg) => {
+      sendMessage(msg.topic, msg.data);
+    });
+    if (!document.body) {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+      });
+    } else {
+      document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+    }
+  }
+});
+
+//send messages to main, handle responses, queue messages if not connected yet
+
+const sendMessage = (topic: string, data: FDC3MessageData): Promise<any> => {
+  //set up a return listener and assign as eventId
+  return new Promise((resolve, reject) => {
+    const eventId = `${topic}_${guid()}`;
+    data.eventId = eventId;
+    returnListeners.set(eventId, {
+      ts: Date.now(),
+      listener: (response: FDC3Response) => {
+        if (response.error) {
+          reject(response.error);
+        }
+        resolve(response.data);
+      },
+    });
+
+    if (instanceId) {
+      const { port1, port2 } = new MessageChannel();
+
+      port1.onmessage = (event: MessageEvent) => {
+        //is there a returnlistener registered for the event?
+        const listenerEntry = returnListeners.get(event.data.topic);
+        const listener = listenerEntry ? listenerEntry.listener : null;
+        if (listener) {
+          returnListeners.delete(event.data.topic);
+          console.log('sendMessage - calling listener', event.data.data);
+          resolve(listener.call(window, event.data.data));
+        }
+      };
+      const msg: FDC3Message = { topic: topic, data: data, source: instanceId };
+      console.log('send message to main', topic, msg);
+      ipcRenderer.postMessage(topic, msg, [port2]);
+    } else {
+      const msg: FDC3Message = { topic: topic, data: data, source: '-1' };
+      eventQ.push(msg);
+    }
+  });
+};
+
 /**
  * This file is injected into each Chrome tab by the Content script to make the FDC3 API available as a global
  */
 
-export function createAPI() {
+export const createAPI = (): DesktopAgent => {
   /**
    *  the Listener class
    */
@@ -59,10 +203,13 @@ export function createAPI() {
       this.unsubscribe = () => {
         if (this.type === 'context') {
           _contextListeners.delete(this.id);
-          //notify the background script
-          document.dispatchEvent(
+          //notify the main process
+          /* document.dispatchEvent(
             fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
-          );
+          );*/
+          sendMessage(FDC3EventEnum.DropContextListener, {
+            id: this.id,
+          });
         } else if (this.type === 'intent' && this.intent) {
           const listeners = _intentListeners.get(this.intent);
           if (listeners) {
@@ -111,15 +258,11 @@ export function createAPI() {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: (context: Context) => {
-        wireMethod(
-          'broadcast',
-          { context: context, channel: channel.id },
-          { void: true },
-        );
+        sendMessage('broadcast', { context: context, channel: channel.id });
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          wireMethod('getCurrentContext', {
+          sendMessage('getCurrentContext', {
             channel: channel.id,
             contextType: contextType,
           }).then(
@@ -148,13 +291,18 @@ export function createAPI() {
           listenerId,
           createListenerItem(listenerId, thisListener, thisContextType),
         );
-        document.dispatchEvent(
+        /* document.dispatchEvent(
           fdc3Event(FDC3EventEnum.AddContextListener, {
             id: listenerId,
             channel: channel.id,
             contextType: thisContextType,
           }),
-        );
+        );*/
+        sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
+          id: listenerId,
+          channel: channel.id,
+          contextType: thisContextType,
+        });
         return new FDC3Listener('context', listenerId);
       },
     };
@@ -162,59 +310,7 @@ export function createAPI() {
     return channel;
   };
 
-  interface MethodConfig {
-    void?: boolean;
-    resultHandler?: { (result: FDC3Result): FDC3Result };
-  }
-
-  type FDC3Result =
-    | FDC3EventDetail
-    | Array<ChannelData>
-    | ChannelData
-    | Array<Channel>
-    | Channel
-    | Context
-    | null
-    | void;
-
-  const wireMethod = (
-    method: string,
-    detail: FDC3EventDetail,
-    config?: MethodConfig,
-  ): Promise<FDC3Result> => {
-    const ts: number = Date.now();
-    const _guid: string = guid();
-    const eventId = `${method}_${_guid}`;
-    detail.eventId = eventId;
-    detail.ts = ts;
-    if (config && config.void) {
-      document.dispatchEvent(fdc3Event(method, detail));
-      return new Promise((resolve) => {
-        resolve();
-      });
-    } else {
-      return new Promise((resolve, reject) => {
-        document.addEventListener(
-          `FDC3:return_${eventId}`,
-          ((event: FDC3Event) => {
-            let r: FDC3Result = event.detail;
-            if (r.error) {
-              reject(r.error);
-            }
-            if (r !== null && config && config.resultHandler) {
-              r = config.resultHandler.call(document, r);
-            }
-            resolve(r);
-          }) as EventListener,
-          { once: true },
-        );
-
-        document.dispatchEvent(fdc3Event(method, detail));
-      });
-    }
-  };
-
-  const DesktopAgent = {
+  const desktopAgent: DesktopAgent = {
     getInfo(): ImplementationMetadata {
       return {
         fdc3Version: '1.2',
@@ -222,25 +318,32 @@ export function createAPI() {
       };
     },
 
-    open: (app: TargetApp, context?: Context) => {
-      return wireMethod('open', { target: app, context: context });
+    open: async (app: TargetApp, context?: Context) => {
+      return await sendMessage(FDC3_TOPICS.OPEN, {
+        target: app,
+        context: context,
+      });
     },
 
-    broadcast: (context: Context) => {
+    broadcast: async (context: Context) => {
       //void
-      wireMethod('broadcast', { context: context }, { void: true });
+      return await sendMessage(FDC3_TOPICS.BROADCAST, { context: context });
     },
 
-    raiseIntent: (intent: string, context: Context, app?: TargetApp) => {
-      return wireMethod('raiseIntent', {
+    raiseIntent: async (
+      intent: string,
+      context: Context,
+      app?: TargetApp,
+    ): Promise<IntentResolution> => {
+      return await sendMessage(FDC3_TOPICS.RAISE_INTENT, {
         intent: intent,
         context: context,
         target: app,
       });
     },
 
-    raiseIntentForContext(context: Context, app?: TargetApp) {
-      return wireMethod('raiseIntentForContext', {
+    raiseIntentForContext: async (context: Context, app?: TargetApp) => {
+      return await sendMessage(FDC3_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
         context: context,
         target: app,
       });
@@ -249,7 +352,7 @@ export function createAPI() {
     addContextListener: (
       contextType: ContextHandler | string | null,
       handler?: ContextHandler,
-    ) => {
+    ): Listener => {
       const thisListener: ContextHandler = handler
         ? handler
         : (contextType as ContextHandler);
@@ -261,16 +364,21 @@ export function createAPI() {
         listenerId,
         createListenerItem(listenerId, thisListener, thisContextType),
       );
-      document.dispatchEvent(
+      /* document.dispatchEvent(
         fdc3Event(FDC3EventEnum.AddContextListener, {
           id: listenerId,
           contextType: thisContextType,
         }),
-      );
+      );*/
+      sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
+        id: listenerId,
+        contextType: thisContextType,
+      });
+
       return new FDC3Listener('context', listenerId);
     },
 
-    addIntentListener: (intent: string, listener: ContextHandler) => {
+    addIntentListener: (intent: string, listener: ContextHandler): Listener => {
       const listenerId: string = guid();
       if (!_intentListeners.has(intent)) {
         _intentListeners.set(intent, new Map());
@@ -278,104 +386,86 @@ export function createAPI() {
       const listeners = _intentListeners.get(intent);
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
-        document.dispatchEvent(
+        /* document.dispatchEvent(
           fdc3Event(FDC3EventEnum.AddIntentListener, {
             id: listenerId,
             intent: intent,
           }),
-        );
-        return new FDC3Listener('intent', listenerId, intent);
-      } else {
-        console.error('listener could not be created');
-        return null;
+        );*/
+        sendMessage(FDC3_TOPICS.ADD_INTENT_LISTENER, {
+          id: listenerId,
+          intent: intent,
+        });
       }
+      return new FDC3Listener('intent', listenerId, intent);
     },
 
-    findIntent: (intent: string, context: Context) => {
-      return wireMethod('findIntent', { intent: intent, context: context });
+    findIntent: async (
+      intent: string,
+      context: Context,
+    ): Promise<AppIntent> => {
+      return await sendMessage(FDC3_TOPICS.FIND_INTENT, {
+        intent: intent,
+        context: context,
+      });
     },
 
-    findIntentsByContext: (context: Context) => {
-      return wireMethod('findIntentsByContext', { context: context });
+    findIntentsByContext: async (
+      context: Context,
+    ): Promise<Array<AppIntent>> => {
+      return await sendMessage(FDC3_TOPICS.FIND_INTENTS_BY_CONTEXT, {
+        context: context,
+      });
     },
 
-    getSystemChannels: () => {
-      return wireMethod(
-        'getSystemChannels',
+    getSystemChannels: async (): Promise<Array<Channel>> => {
+      const r: Array<ChannelData> = await sendMessage(
+        FDC3_TOPICS.GET_SYSTEM_CHANNELS,
         {},
-        {
-          resultHandler: (r: FDC3Result) => {
-            r = r as Array<ChannelData>;
-            const channels = r.map((c: ChannelData) => {
-              return createChannelObject(
-                c.id,
-                'system',
-                c.displayMetadata || { name: c.id },
-              );
-            });
-            return channels as FDC3Result;
-          },
-        },
       );
+      console.log('result', r);
+      const channels = r.map((c: ChannelData) => {
+        return createChannelObject(
+          c.id,
+          'system',
+          c.displayMetadata || { name: c.id },
+        );
+      });
+      return channels;
     },
 
-    getOrCreateChannel: (channelId: string) => {
-      return wireMethod(
-        'getOrCreateChannel',
+    getOrCreateChannel: async (channelId: string) => {
+      const result: ChannelData = await sendMessage(
+        FDC3_TOPICS.GET_OR_CREATE_CHANNEL,
         { channelId: channelId },
-        {
-          resultHandler: (r: FDC3Result) => {
-            const result: ChannelData = r as ChannelData;
-            if (result.id && result.type) {
-              return createChannelObject(
-                result.id,
-                result.type,
-                result.displayMetadata || { name: result.id },
-              );
-            } else {
-              return null;
-            }
-          },
-        },
+      );
+      return createChannelObject(
+        result.id,
+        result.type,
+        result.displayMetadata || { name: result.id },
       );
     },
 
-    joinChannel: (channel: string) => {
-      return wireMethod('joinChannel', { channel: channel });
+    joinChannel: async (channel: string) => {
+      return await sendMessage(FDC3_TOPICS.JOIN_CHANNEL, { channel: channel });
     },
 
-    leaveCurrentChannel: () => {
-      return wireMethod('leaveCurrentChannel', {});
+    leaveCurrentChannel: async () => {
+      return await sendMessage(FDC3_TOPICS.LEAVE_CURRENT_CHANNEL, {});
     },
 
-    getCurrentChannel: () => {
-      return wireMethod(
-        'getCurrentChannel',
+    getCurrentChannel: async () => {
+      const result: ChannelData = await sendMessage(
+        FDC3_TOPICS.GET_CURRENT_CHANNEL,
         {},
-        {
-          resultHandler: (r: FDC3Result) => {
-            const result: ChannelData = r as ChannelData;
-            return createChannelObject(
-              result.id,
-              result.type,
-              result.displayMetadata || { name: result.id },
-            );
-          },
-        },
+      );
+
+      return createChannelObject(
+        result.id,
+        result.type,
+        result.displayMetadata || { name: result.id },
       );
     },
-
-    /*  getAppInstance: (instanceId: string): Promise<AppInstance> => {
-      return wireMethod(
-        'getAppInstance',
-        { instanceId: instanceId },
-        {
-          resultHandler: (r: any) => {
-            return createAppInstance(r.instanceId, r.status) as AppInstance;
-          },
-        },
-      );
-    },*/
   };
 
   document.addEventListener(TOPICS.FDC3_CONTEXT, ((event: FDC3Event) => {
@@ -421,6 +511,8 @@ export function createAPI() {
   //map of intents holding map of listeners for each intent
   const _intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
 
-  /* expose the fdc3 api across the context isolation divide...*/
-  contextBridge.exposeInMainWorld('fdc3', DesktopAgent);
-}
+  //prevent timing issues from very first load of the preload
+  ipcRenderer.send(TOPICS.FDC3_INITIATE, {});
+
+  return desktopAgent;
+};

@@ -20,6 +20,7 @@ export const fetchFromDirectory = async (message: RuntimeMessage) => {
   if (message.data.sourceType && message.data.sourceType === 'view') {
     //ensure this is a view that has permissions for this api
     const sourceView = runtime.getView(message.source);
+
     if (sourceView && sourceView.isSystemView() && sourceView.content) {
       wContents = sourceView.content.webContents;
     }

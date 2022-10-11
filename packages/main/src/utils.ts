@@ -24,28 +24,6 @@ const getDirectoryUrl = (): Promise<string> => {
   });
 };
 
-/***
- * Error Objects
- */
-const OpenError = {
-  AppNotFound: 'AppNotFound',
-  ErrorOnLaunch: 'ErrorOnLaunch',
-  AppTimeout: 'AppTimeout',
-  ResolverUnavailable: 'ResolverUnavailable',
-};
-
-const ResolveError = {
-  NoAppsFound: 'NoAppsFound',
-  ResolverUnavailable: 'ResolverUnavailable',
-  ResolverTimeout: 'ResolverTimeout',
-};
-
-const ChannelError = {
-  NoChannelFound: 'NoChannelFound',
-  AccessDenied: 'AccessDenied',
-  CreationFailed: 'CreationFailed',
-};
-
 //connected end points / apps
 const connected: Map<string, ConnectedApp> = new Map();
 
@@ -95,31 +73,12 @@ const isDataIntent = (intentName: string): boolean => {
   return dataIntents.includes(intentName);
 };
 
-/**
- * generate an id from a port object
- * this is the identifier used for connection and channel tracking
- */
-/*const id = (port: chrome.runtime.Port, tab? : chrome.tabs.Tab) : string  => {
-    
-    if (port.sender){
-        const t = tab ? tab : port.sender.tab;
-        return `${port.sender.id}${t.id}`;
-    }
-    else {
-        return null;
-    }
-};*/
-
 export default {
   getDirectoryUrl,
   getSystemChannels,
   setConnected,
   getConnected,
   dropConnected,
-  //   bringToFront,
-  OpenError,
-  ResolveError,
-  ChannelError,
   fdc3Event,
   isDataIntent,
 };
