@@ -7,6 +7,7 @@ import {
 } from '@finos/fdc3';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
+import fetch from 'electron-fetch';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import {
   DirectoryApp,

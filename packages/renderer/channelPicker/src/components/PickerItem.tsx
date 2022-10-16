@@ -28,11 +28,11 @@ class PickerItem extends React.Component<
     const pickChannel = () => {
       console.log('pickChannel', this.props.id, this.state.selected);
       if (!this.state.selected) {
-        window.agentChannelPicker.joinChannel(this.props.id);
+        globalThis.sail.joinChannel(this.props.id);
         this.setState({ selected: true });
-        window.agentChannelPicker.hideWindow();
+        globalThis.sail.hideWindow();
       } else {
-        window.agentChannelPicker.leaveChannel(this.props.id);
+        globalThis.sail.leaveChannel(this.props.id);
       }
     };
 

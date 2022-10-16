@@ -18,10 +18,11 @@ import { TOPICS, TOOLBAR_HEIGHT } from './constants';
 import { FDC3_TOPICS } from '/@/handlers/fdc3/1.2/topics';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
+import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
 const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
 
-const HOME_PRELOAD = join(__dirname, '../../preload/dist/homeView/index.cjs');
+const HOME_PRELOAD = join(__dirname, '../../preload/dist/systemView/index.cjs');
 
 export class View {
   constructor(url?: string | null, config?: ViewConfig, parent?: Workspace) {
@@ -102,7 +103,7 @@ export class View {
       //listen for reloads and reset id
       this.content.webContents.on('devtools-reload-page', () => {
         this.content.webContents.once('did-finish-load', () => {
-          this.content.webContents.send(FDC3_TOPICS.START, {
+          this.content.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
             id: this.id,
             directory: this.directoryData || null,
           });
@@ -114,7 +115,7 @@ export class View {
       //to do: ensure directory entry and new location match up!
       this.content.webContents.on('did-navigate', () => {
         this.content.webContents.once('did-finish-load', () => {
-          this.content.webContents.send(FDC3_TOPICS.START, {
+          this.content.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
             id: this.id,
             directory: this.directoryData || null,
           });

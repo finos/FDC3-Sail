@@ -8,10 +8,7 @@ import { Workspace } from './workspace';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
-const RESOLVER_PRELOAD = join(
-  __dirname,
-  '../../preload/dist/intentResolver/index.cjs',
-);
+const SYSTEM_PRELOAD = join(__dirname, '../../preload/dist/system/index.cjs');
 
 const devTools = false;
 
@@ -45,7 +42,7 @@ export class IntentResolver {
       hasShadow: true,
       resizable: false,
       webPreferences: {
-        preload: RESOLVER_PRELOAD,
+        preload: SYSTEM_PRELOAD,
         webSecurity: true,
         nodeIntegration: true,
         contextIsolation: true,
@@ -99,22 +96,8 @@ export class IntentResolver {
           options: options,
         };
 
-        console.log(
-          'startObject',
-          this.id,
-          this.intent,
-          JSON.stringify(this.context),
-        );
-
-        console.log('startObject options', JSON.stringify(options));
-
         this.window.webContents.send(RUNTIME_TOPICS.WINDOW_START, startObject);
 
-        console.log(
-          'intent resolver create',
-          RESOLVER_CONTENT as string,
-          options,
-        );
         this.view = view;
       });
 

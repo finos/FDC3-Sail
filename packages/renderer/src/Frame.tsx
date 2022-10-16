@@ -41,13 +41,13 @@ const darkTheme = createTheme({
 });
 
 const newTab = () => {
-  window.agentFrame.newTab();
+  window.sail.tabs.new();
 };
 
 const openChannelPicker = (event: SyntheticEvent) => {
   const pickerButtonHeight = 40;
   const native: MouseEvent = event.nativeEvent as MouseEvent;
-  window.agentFrame.openChannelPicker(
+  window.sail.menu.openChannelPicker(
     native.clientX,
     native.clientY + pickerButtonHeight,
   );
@@ -87,12 +87,12 @@ export class Frame extends React.Component<
       newTab();
     } else {
       this.setState({ selectedTab: newTabId });
-      window.agentFrame.selectTab(newTabId);
+      window.sail.tabs.select(newTabId);
     }
   }
 
   closeTab(tabId: string) {
-    window.agentFrame.closeTab(tabId);
+    window.sail.tabs.close(tabId);
 
     this.setState({
       tabs: this.state.tabs.filter((tab: FrameTab) => {
@@ -106,7 +106,7 @@ export class Frame extends React.Component<
     //only tear out if the 'internalDnD' flag is not set
     console.log('tearOut', tabId, this.state.tabs.length);
     if (this.state.tabs.length > 1) {
-      window.agentFrame.tearOutTab(tabId);
+      window.sail.tabs.tearOut(tabId);
     }
   }
 
@@ -163,7 +163,7 @@ export class Frame extends React.Component<
       });
     }) as EventListener);
 
-    window.agentFrame.isReady();
+    window.sail.isReady();
   }
 
   render() {
@@ -186,12 +186,12 @@ export class Frame extends React.Component<
       const value = input && input.value ? input.value : '';
       //does the value meet the threshold
       if (value && value.length >= threshold) {
-        window.agentFrame.searchDirectory(value);
+        window.sail.search.searchDirectory(value);
       }
     }, 400);
 
     const devToolsClick = (event: SyntheticEvent) => {
-      window.agentFrame.openToolsMenu(
+      window.sail.menu.openTools(
         (event.nativeEvent as PointerEvent).clientX,
         (event.nativeEvent as PointerEvent).clientY,
       );
@@ -215,7 +215,7 @@ export class Frame extends React.Component<
       internalDnD = true;
       draggedTab = tabId;
       //inform of the tab dragstart
-      window.agentFrame.tabDragStart(tabId);
+      window.sail.tabs.dragStart(tabId);
     };
 
     const drop = (ev: SyntheticEvent) => {
@@ -251,14 +251,14 @@ export class Frame extends React.Component<
         //select the dragged tab
         //do this with a delay to prevent race conditions with re-rendering the tab order
         setTimeout(() => {
-          window.agentFrame.selectTab(tabId);
+          window.sail.tabs.select(tabId);
         }, 100);
 
         draggedTab = null;
         internalDnD = false;
       } else {
         //raise drop event for tear out
-        window.agentFrame.dropTab(true);
+        window.sail.tabs.drop(true);
       }
     };
 
@@ -266,7 +266,7 @@ export class Frame extends React.Component<
       ev.preventDefault();
       ev.stopPropagation();
       console.log('tabDropped on frame target');
-      window.agentFrame.dropTab(true);
+      window.sail.tabs.drop(true);
     };
 
     const leaveTab = () => {

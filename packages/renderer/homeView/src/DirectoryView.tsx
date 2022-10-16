@@ -23,23 +23,21 @@ export class DirectoryView extends React.Component<
   }
 
   componentDidMount() {
-    document.addEventListener('fdc3Ready', (() => {
+    document.addEventListener('fdc3Ready', (async () => {
       //fetch apps from the directory, using system API (only available to system apps)
-      if ((globalThis as any).home && (globalThis as any).home.getApps) {
-        (globalThis as any).home.getApps().then((apps) => {
-          //clean up / normalize some of the directory data
-          apps.forEach((app: DirectoryApp) => {
-            //put in place holder images and icons if they aren't there...
-            if (!app.images) {
-              app.images = [];
-            }
-            if (!app.icons) {
-              app.icons = [];
-            }
-          });
-          this.setState({ apps: apps });
-        });
-      }
+
+      const apps = await globalThis.sail.getApps();
+      //clean up / normalize some of the directory data
+      apps.forEach((app: DirectoryApp) => {
+        //put in place holder images and icons if they aren't there...
+        if (!app.images) {
+          app.images = [];
+        }
+        if (!app.icons) {
+          app.icons = [];
+        }
+      });
+      this.setState({ apps: apps });
     }) as EventListener);
   }
 
@@ -53,9 +51,7 @@ export class DirectoryView extends React.Component<
 
   render() {
     const openApp = (name: string) => {
-      if ((globalThis as any).fdc3) {
-        (globalThis as any).fdc3.open(name);
-      }
+      globalThis?.fdc3.open(name);
     };
 
     return (

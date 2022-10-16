@@ -20,7 +20,7 @@ export class SearchResults extends React.Component<
   }
 
   resultSelected(result: any) {
-    window.agentSearch.selectResult(result.name);
+    globalThis.sail.search.selectResult(result.name);
   }
 
   render() {

@@ -84,7 +84,7 @@ export class IntentResolver extends React.Component<
 
   render() {
     const resultSelected = (result: FDC3App, intent?: string) => {
-      window.agentResolver.resolveIntent({
+      globalThis.sail.resolveIntent({
         selected: result,
         selectedIntent: intent,
       });
