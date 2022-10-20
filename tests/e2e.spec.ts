@@ -54,7 +54,7 @@ test('Main window web content', async () => {
 
 test('Preload versions', async () => {
   const page = await electronApp.firstWindow();
-  const exposedVersions = await page.evaluate(() => globalThis.versions);
+  const exposedVersions = await page.evaluate(() => globalThis.sail.versions);
   const expectedVersions = await electronApp.evaluate(() => process.versions);
   expect(exposedVersions).toBeDefined();
   expect(exposedVersions).to.deep.equal(expectedVersions);
@@ -62,9 +62,7 @@ test('Preload versions', async () => {
 
 test('workspace isConnected', async () => {
   const page = await electronApp.firstWindow();
-  const connected = await page.evaluate(() =>
-    globalThis.agentFrame.isConnected(),
-  );
+  const connected = await page.evaluate(() => globalThis.sail.isConnected());
   expect(connected).to.equal(true);
 });
 

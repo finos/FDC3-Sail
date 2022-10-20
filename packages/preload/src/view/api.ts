@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { fdc3Event, TOPICS } from '../lib/lib';
+import { fdc3Event } from '../lib/lib';
 import {
   FDC3Message,
   FDC3MessageData,
@@ -20,6 +20,7 @@ import { FDC3Event } from '../../../main/src/types/FDC3Event';
 import { ChannelData } from '../../../main/src/types/FDC3Data';
 import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
 import { FDC3_TOPICS } from '../../../main/src/handlers/fdc3/1.2/topics';
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -76,7 +77,7 @@ export const connect = () => {
             args.source,
           );
           document.dispatchEvent(
-            new CustomEvent(TOPICS.FDC3_CONTEXT, {
+            new CustomEvent(FDC3_TOPICS.CONTEXT, {
               detail: { data: data, source: args.source },
             }),
           );
@@ -85,7 +86,7 @@ export const connect = () => {
         const data = args.data;
         data.listenerId = args.listenerId;
         document.dispatchEvent(
-          new CustomEvent(TOPICS.FDC3_CONTEXT, {
+          new CustomEvent(FDC3_TOPICS.CONTEXT, {
             detail: { data: data, source: args.source },
           }),
         );
@@ -101,7 +102,7 @@ export const connect = () => {
   ipcRenderer.on(FDC3_TOPICS.INTENT, (event, args) => {
     console.log('ipcrenderer event', event.type);
     document.dispatchEvent(
-      new CustomEvent(TOPICS.FDC3_INTENT, {
+      new CustomEvent(FDC3_TOPICS.INTENT, {
         detail: { data: args.data, source: args.source },
       }),
     );
@@ -120,7 +121,7 @@ export const connect = () => {
 };
 
 //handshake with main and get instanceId assigned
-ipcRenderer.on(FDC3_TOPICS.START, async (event, args) => {
+ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
   console.log('api FDC3 start');
   if (args.id) {
     instanceId = args.id;
@@ -468,7 +469,7 @@ export const createAPI = (): DesktopAgent => {
     },
   };
 
-  document.addEventListener(TOPICS.FDC3_CONTEXT, ((event: FDC3Event) => {
+  document.addEventListener(FDC3_TOPICS.CONTEXT, ((event: FDC3Event) => {
     console.log('Context', JSON.stringify(_contextListeners));
     const listeners = _contextListeners;
     if (
@@ -485,7 +486,7 @@ export const createAPI = (): DesktopAgent => {
     }
   }) as EventListener);
 
-  document.addEventListener(TOPICS.FDC3_INTENT, ((event: FDC3Event) => {
+  document.addEventListener(FDC3_TOPICS.INTENT, ((event: FDC3Event) => {
     const intent = event.detail.data && event.detail.data.intent;
     const context = event.detail.data && event.detail.data.context;
     if (intent) {
@@ -512,7 +513,7 @@ export const createAPI = (): DesktopAgent => {
   const _intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
 
   //prevent timing issues from very first load of the preload
-  ipcRenderer.send(TOPICS.FDC3_INITIATE, {});
+  ipcRenderer.send(FDC3_TOPICS.INITIATE, {});
 
   return desktopAgent;
 };

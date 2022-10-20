@@ -25,6 +25,9 @@ import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 import { FDC3_TOPICS } from './handlers/fdc3/1.2/topics';
 
+const SYSTEM_PRELOAD = join(__dirname, '../../preload/dist/system/index.cjs');
+
+/*
 const CHANNEL_PICKER_PRELOAD = join(
   __dirname,
   '../../preload/dist/channelPicker/index.cjs',
@@ -33,7 +36,7 @@ const CHANNEL_PICKER_PRELOAD = join(
 const SEARCH_RESULTS_PRELOAD = join(
   __dirname,
   '../../preload/dist/searchResults/index.cjs',
-);
+);*/
 
 const CHANNEL_WINDOW_WIDTH = 140;
 const CHANNEL_WINDOW_HEIGHT = 100;
@@ -48,7 +51,7 @@ export class Workspace {
       width: DEFAULT_WINDOW_WIDTH,
       webPreferences: {
         webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-        preload: join(__dirname, '../../preload/dist/frame/index.cjs'),
+        preload: SYSTEM_PRELOAD,
         nodeIntegration: true,
       },
     });
@@ -435,7 +438,7 @@ export class Workspace {
           webSecurity: true,
           nodeIntegration: true,
           contextIsolation: true,
-          preload: SEARCH_RESULTS_PRELOAD,
+          preload: SYSTEM_PRELOAD,
           devTools: true,
         },
       });
@@ -482,7 +485,7 @@ export class Workspace {
           webSecurity: true,
           nodeIntegration: true,
           contextIsolation: true,
-          preload: CHANNEL_PICKER_PRELOAD,
+          preload: SYSTEM_PRELOAD,
           devTools: true,
         },
       });
