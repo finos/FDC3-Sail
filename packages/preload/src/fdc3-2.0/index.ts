@@ -1,11 +1,8 @@
-import { connect, createAPI } from '../fdc3-1.2/api';
+import { connect, createAPI } from './api';
 import { contextBridge } from 'electron';
-import { api } from '../system/api';
 connect();
 //listen();
 //document.addEventListener('DOMContentLoaded', createAPI);
-
-/* expose the fdc3 api across the context isolation divide...*/
-contextBridge.exposeInMainWorld('sail', api);
 const DesktopAgent = createAPI();
+/* expose the fdc3 api across the context isolation divide...*/
 contextBridge.exposeInMainWorld('fdc3', DesktopAgent);

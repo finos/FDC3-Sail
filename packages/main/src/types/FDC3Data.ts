@@ -98,7 +98,7 @@ export interface DirectoryIntent {
  */
 export interface ChannelData {
   id: string;
-  type: string;
+  type: 'user' | 'app' | 'private';
   displayMetadata?: ChannelMetadata;
 }
 

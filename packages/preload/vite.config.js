@@ -37,7 +37,8 @@ const config = {
         entryFileNames: '[name].cjs',
       },
       input: {
-        'view/index': '/src/view/index.ts',
+        'fdc3-1.2/index': '/src/fdc3-1.2/index.ts',
+        'fdc3-2.0/index': '/src/fdc3-2.0/index.ts',
         'system/index': '/src/system/index.ts',
         'systemView/index': '/src/systemView/index.ts',
       },
