@@ -4,7 +4,7 @@ import {
   AppMetadata,
   IntentResolution,
   IntentMetadata,
-} from '@finos/fdc3';
+} from 'fdc3-1.2';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import fetch from 'electron-fetch';
@@ -14,7 +14,7 @@ import {
   FDC3App,
   IntentInstance,
   FDC3AppDetail,
-} from '/@/types/FDC3Data';
+} from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import utils from '/@/utils';
 import { FDC3_TOPICS } from './topics';
 import { ipcMain } from 'electron';
@@ -414,10 +414,6 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     intentListeners.forEach((listeners: Array<View>) => {
       //look up the details of the window and directory metadata in the "connected" store
       listeners.forEach((view: View) => {
-        // const connect : FDC3AppDetail= utils.getConnected(listener.appId);
-        //connect.intent = intent;
-        //decorate with the intent
-
         //de-dupe
         if (
           !r.find((item) => {
@@ -443,7 +439,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
    */
   const target: TargetApp | undefined =
     (message.data && message.data.target) || undefined;
-  const name: string = target
+  const name: string | undefined = target
     ? typeof target === 'string'
       ? target
       : (target as AppMetadata).name

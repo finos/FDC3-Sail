@@ -1,4 +1,4 @@
-import { Context, AppIdentifier } from '@finos/fdc3';
+import { Context, TargetApp } from 'fdc3-1.2';
 
 /**
  * Custom DOM event used by the FDC3 API
@@ -32,7 +32,7 @@ export interface FDC3EventDetail {
   data?: FDC3ResponseData | null;
   name?: string;
   context?: Context;
-  target?: AppIdentifier;
+  target?: TargetApp;
   source?: string;
   /* identifier of the browserView the event originated from */
   viewId?: string;

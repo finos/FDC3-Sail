@@ -2,7 +2,7 @@
  * metadata for the system channels
  */
 
-import type { ChannelData } from '/@/types/FDC3Data';
+import type { ChannelData } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 
 export const systemChannels: Array<ChannelData> = [
   {

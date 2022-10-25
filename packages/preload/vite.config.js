@@ -1,7 +1,8 @@
 import { chrome } from '../../.electron-vendors.cache.json';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { builtinModules } from 'module';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import tsConfigPaths from 'rollup-plugin-tsconfig-paths';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -16,6 +17,7 @@ const config = {
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@main/': resolve(PACKAGE_ROOT, '../main/src') + '/',
     },
   },
   build: {
@@ -45,7 +47,7 @@ const config = {
     },
     emptyOutDir: true,
     brotliSize: false,
-    plugins: [nodeResolve()],
+    plugins: [nodeResolve({ extensions: ['.tsx', '.ts'] }), tsConfigPaths()],
   },
 };
 

@@ -1,5 +1,5 @@
 import { FDC3App } from './FDC3Data';
-import { Context, TargetApp } from '@finos/fdc3';
+import { Context, AppIdentifier } from '@finos/fdc3';
 
 export interface FDC3Message {
   topic: string;
@@ -24,7 +24,7 @@ export interface FDC3MessageData {
   contextType?: string;
   instanceId?: string;
   ts?: number; //timestamp (for pending contexts/intents)
-  target?: TargetApp;
+  target?: AppIdentifier;
   channelId?: string; //to do : refactor with channel prop
   type?: string;
   restoreOnly?: boolean;

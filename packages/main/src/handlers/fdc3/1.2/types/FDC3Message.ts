@@ -1,6 +1,6 @@
-import { FDC3App } from '../types/FDC3Data';
-import { Context, TargetApp } from '@finos/fdc3';
-import { RuntimeMessage } from './runtimeMessage';
+import { FDC3App } from '/@/handlers/fdc3/1.2/types/FDC3Data';
+import { Context, TargetApp } from 'fdc3-1.2';
+import { RuntimeMessage } from '../../../runtimeMessage';
 
 export interface FDC3Message extends RuntimeMessage {
   name?: string;
@@ -26,4 +26,9 @@ export interface FDC3MessageData {
   restoreOnly?: boolean;
   selectedIntent?: string;
   selected?: FDC3App;
+}
+
+export interface FDC3Response {
+  error?: string;
+  data: any;
 }

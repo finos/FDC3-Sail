@@ -1,7 +1,7 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { ChannelData } from '/@/types/FDC3Data';
-import { Context, ChannelError } from '@finos/fdc3';
+import { ChannelData } from '/@/handlers/fdc3/1.2/types/FDC3Data';
+import { Context, ChannelError } from 'fdc3-1.2';
 import { systemChannels } from './systemChannels';
 
 export const getSystemChannels = async () => {

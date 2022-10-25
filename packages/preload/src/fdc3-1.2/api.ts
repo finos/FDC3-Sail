@@ -4,22 +4,27 @@ import {
   FDC3Message,
   FDC3MessageData,
   FDC3Response,
-} from '../../../main/src/types/FDC3Message';
-import { DesktopAgent } from './types/DesktopAgent';
-import { Listener } from './types/Listener';
-import { AppIntent } from './types/AppIntent';
-import { Context } from '@finos/fdc3';
-import { DisplayMetadata } from './types/DisplayMetadata';
-import { ContextHandler, TargetApp } from './types/Types';
-import { Channel } from './types/Channel';
-import { ImplementationMetadata } from './types/ImplementationMetadata';
-import { IntentResolution } from './types/IntentResolution';
+} from '/@main/handlers/fdc3/1.2/types/FDC3Message';
+import {
+  DesktopAgent,
+  Listener,
+  AppIntent,
+  Context,
+  DisplayMetadata,
+  ContextHandler,
+  TargetApp,
+  Channel,
+  ImplementationMetadata,
+  IntentResolution,
+} from 'fdc3-1.2';
 
-import { FDC3Event } from '../../../main/src/types/FDC3Event';
-import { ChannelData } from '../../../main/src/types/FDC3Data';
-import { FDC3EventEnum } from '../../../main/src/types/FDC3Event';
-import { FDC3_TOPICS } from '../../../main/src/handlers/fdc3/1.2/topics';
-import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
+import {
+  FDC3Event,
+  FDC3EventEnum,
+} from '/@main/handlers/fdc3/1.2/types/FDC3Event';
+import { ChannelData } from '/@main/handlers/fdc3/1.2/types/FDC3Data';
+import { FDC3_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
+import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -168,11 +173,21 @@ const sendMessage = (topic: string, data: FDC3MessageData): Promise<any> => {
           resolve(listener.call(window, event.data.data));
         }
       };
-      const msg: FDC3Message = { topic: topic, data: data, source: instanceId };
+      const msg: FDC3Message = {
+        topic: topic,
+        data: data,
+        eventId: data.eventId || guid(),
+        source: instanceId,
+      };
       console.log('send message to main', topic, msg);
       ipcRenderer.postMessage(topic, msg, [port2]);
     } else {
-      const msg: FDC3Message = { topic: topic, data: data, source: '-1' };
+      const msg: FDC3Message = {
+        topic: topic,
+        data: data,
+        eventId: data.eventId || guid(),
+        source: '-1',
+      };
       eventQ.push(msg);
     }
   });
@@ -203,10 +218,7 @@ export const createAPI = (): DesktopAgent => {
       this.unsubscribe = () => {
         if (this.type === 'context') {
           _contextListeners.delete(this.id);
-          //notify the main process
-          /* document.dispatchEvent(
-            fdc3Event(FDC3EventEnum.DropContextListener, { id: this.id }),
-          );*/
+
           sendMessage(FDC3EventEnum.DropContextListener, {
             id: this.id,
           });
@@ -291,13 +303,7 @@ export const createAPI = (): DesktopAgent => {
           listenerId,
           createListenerItem(listenerId, thisListener, thisContextType),
         );
-        /* document.dispatchEvent(
-          fdc3Event(FDC3EventEnum.AddContextListener, {
-            id: listenerId,
-            channel: channel.id,
-            contextType: thisContextType,
-          }),
-        );*/
+
         sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
           id: listenerId,
           channel: channel.id,
@@ -364,12 +370,7 @@ export const createAPI = (): DesktopAgent => {
         listenerId,
         createListenerItem(listenerId, thisListener, thisContextType),
       );
-      /* document.dispatchEvent(
-        fdc3Event(FDC3EventEnum.AddContextListener, {
-          id: listenerId,
-          contextType: thisContextType,
-        }),
-      );*/
+
       sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
         id: listenerId,
         contextType: thisContextType,
@@ -386,12 +387,7 @@ export const createAPI = (): DesktopAgent => {
       const listeners = _intentListeners.get(intent);
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
-        /* document.dispatchEvent(
-          fdc3Event(FDC3EventEnum.AddIntentListener, {
-            id: listenerId,
-            intent: intent,
-          }),
-        );*/
+
         sendMessage(FDC3_TOPICS.ADD_INTENT_LISTENER, {
           id: listenerId,
           intent: intent,
