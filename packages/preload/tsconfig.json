@@ -14,7 +14,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "/@/*": ["./src/*"]
+      "/@/*": ["./src/*"],
+      "/@main/*": ["../main/src/*"],
     }
   },
   "include": ["src/**/*.ts", "../../types/**/*.d.ts"],

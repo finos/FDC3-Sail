@@ -1,6 +1,6 @@
 import { getRuntime } from '../../index';
 import { RuntimeMessage } from '../runtimeMessage';
-import { DirectoryApp } from '../../types/FDC3Data';
+import { DirectoryApp } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import { TOPICS } from '../../constants';
 
 export const resolveIntent = async (message: RuntimeMessage) => {

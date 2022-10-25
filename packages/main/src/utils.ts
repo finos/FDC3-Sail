@@ -3,7 +3,7 @@
  */
 
 import { channels } from './system-channels';
-import { ConnectedApp, ChannelData } from './types/FDC3Data';
+import { ChannelData } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
 import { DirectoryPort } from '../../../directory/src/config';
 
@@ -24,32 +24,8 @@ const getDirectoryUrl = (): Promise<string> => {
   });
 };
 
-//connected end points / apps
-const connected: Map<string, ConnectedApp> = new Map();
-
 const getSystemChannels = (): Array<ChannelData> => {
   return channels;
-};
-
-/**
- * add a new tab to the collection of tracked tabs
- */
-const setConnected = (item: ConnectedApp): boolean => {
-  if (!connected.has(item.id)) {
-    // (Seb) commented out to satisfy Static code analysis
-    // console.log(`set connected id=${item.id} item=${item}`, connected);
-    connected.set(item.id, item);
-  }
-  return true;
-};
-
-//if id is passed, return that item, if no or false args, return all connected items
-const getConnected = (id: string): ConnectedApp | undefined => {
-  return connected.get(id);
-};
-
-const dropConnected = (id: string) => {
-  connected.delete(id);
 };
 
 /**
@@ -76,9 +52,6 @@ const isDataIntent = (intentName: string): boolean => {
 export default {
   getDirectoryUrl,
   getSystemChannels,
-  setConnected,
-  getConnected,
-  dropConnected,
   fdc3Event,
   isDataIntent,
 };

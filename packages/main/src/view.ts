@@ -20,7 +20,7 @@ import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
-const VIEW_PRELOAD = join(__dirname, '../../preload/dist/view/index.cjs');
+const VIEW_PRELOAD = join(__dirname, '../../preload/dist/fdc3-2.0/index.cjs');
 
 const HOME_PRELOAD = join(__dirname, '../../preload/dist/systemView/index.cjs');
 

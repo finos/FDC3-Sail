@@ -1,7 +1,8 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { DirectoryApp } from '/@/types/FDC3Data';
-import { AppIntent, AppMetadata, IntentMetadata } from '@finos/fdc3';
+import { DirectoryApp } from '/@/handlers/fdc3/1.2/types/FDC3Data';
+import { AppMetadata } from './types/AppMetadata';
+import { AppIntent, IntentMetadata } from 'fdc3-1.2';
 
 export const findIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();

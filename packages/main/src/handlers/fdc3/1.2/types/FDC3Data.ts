@@ -58,11 +58,11 @@ export interface DirectoryIntent {
 }
 
 /**
- * cross version representation of channel data
+ * representation of channel data
  */
 export interface ChannelData {
   id: string;
-  type: 'system' | 'user' | 'app' | 'private';
+  type: 'app' | 'system';
   displayMetadata?: ChannelMetadata;
 }
 

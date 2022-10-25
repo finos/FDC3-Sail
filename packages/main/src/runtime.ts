@@ -6,7 +6,7 @@ import {
   IntentInstance,
   ChannelData,
   ResolverDetail,
-} from './types/FDC3Data';
+} from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';
