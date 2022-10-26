@@ -21,7 +21,7 @@ import {
 import { FDC3Event } from '/@main/types/FDC3Event';
 import { ChannelData } from '/@main/types/FDC3Data';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
-import { FDC3_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
+import { FDC3_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -119,7 +119,7 @@ export const connect = () => {
 
 //handshake with main and get instanceId assigned
 ipcRenderer.on(FDC3_TOPICS.START, async (event, args) => {
-  console.log('api FDC3 start');
+  console.log('api FDC3 start', args);
   if (args.id) {
     instanceId = args.id;
     //send any queued messages
@@ -128,9 +128,11 @@ ipcRenderer.on(FDC3_TOPICS.START, async (event, args) => {
     });
     if (!document.body) {
       document.addEventListener('DOMContentLoaded', () => {
+        console.log('fdc3Ready');
         document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
       });
     } else {
+      console.log('fdc3Ready');
       document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
     }
   }
@@ -487,7 +489,7 @@ export const createAPI = (): DesktopAgent => {
 
     getUserChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
-        FDC3_TOPICS.GET_SYSTEM_CHANNELS,
+        FDC3_TOPICS.GET_USER_CHANNELS,
         {},
       );
       console.log('result', r);
@@ -521,7 +523,9 @@ export const createAPI = (): DesktopAgent => {
     },
 
     joinUserChannel: async (channel: string) => {
-      return await sendMessage(FDC3_TOPICS.JOIN_CHANNEL, { channel: channel });
+      return await sendMessage(FDC3_TOPICS.JOIN_USER_CHANNEL, {
+        channel: channel,
+      });
     },
 
     joinChannel: async (channel: string) => {
