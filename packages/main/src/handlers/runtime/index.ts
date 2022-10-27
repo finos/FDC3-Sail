@@ -10,7 +10,7 @@ import {
   dropTab,
 } from './tabs';
 import { openToolsMenu } from './toolbar';
-import { fetchFromDirectory } from './directory';
+import { initFetchFromDirectory } from './directory';
 import { pickChannel, joinChannel } from './channelPicker';
 import { loadSearchResults } from './search';
 import { resolveIntent } from '../fdc3/resolveIntent';
@@ -22,7 +22,10 @@ export const register = (runtime: Runtime) => {
   runtime.addHandler(RUNTIME_TOPICS.NEW_TAB, newTab);
   runtime.addHandler(RUNTIME_TOPICS.TEAR_OUT_TAB, tearOutTab);
   runtime.addHandler(RUNTIME_TOPICS.CLOSE_TAB, closeTab);
-  runtime.addHandler(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, fetchFromDirectory);
+  runtime.addHandler(
+    RUNTIME_TOPICS.FETCH_FROM_DIRECTORY,
+    initFetchFromDirectory(runtime),
+  );
   runtime.addHandler(RUNTIME_TOPICS.OPEN_TOOLS_MENU, openToolsMenu);
   runtime.addHandler(RUNTIME_TOPICS.OPEN_CHANNEL_PICKER, pickChannel);
   runtime.addHandler(RUNTIME_TOPICS.JOIN_WORKSPACE_TO_CHANNEL, joinChannel);
