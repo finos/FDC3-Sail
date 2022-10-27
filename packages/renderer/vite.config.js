@@ -1,7 +1,7 @@
 /* eslint-env node */
 
 import { chrome } from '../../.electron-vendors.cache.json';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { builtinModules } from 'module';
 import react from '@vitejs/plugin-react';
 
@@ -16,7 +16,8 @@ const config = {
   root: PACKAGE_ROOT,
   resolve: {
     alias: {
-      '/@/': join(PACKAGE_ROOT, 'src') + '/'
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@main/': resolve(PACKAGE_ROOT, '../main/src') + '/',
     },
   },
   plugins: [react()],
@@ -33,14 +34,13 @@ const config = {
     assetsDir: '.',
     rollupOptions: {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
-      input:{
-        'index':'index.html',
-        'homeView':'homeView.html',
-        'channelPicker':'channelPicker.html',
-        'intentResolver':'intentResolver.html',
-        'searchResults':'searchResults.html'
+      input: {
+        index: 'index.html',
+        homeView: 'homeView.html',
+        channelPicker: 'channelPicker.html',
+        intentResolver: 'intentResolver.html',
+        searchResults: 'searchResults.html',
       },
-     
     },
     emptyOutDir: true,
     brotliSize: false,

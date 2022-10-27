@@ -1,4 +1,4 @@
-import { connect, createAPI } from '../fdc3-1.2/api';
+import { connect, createAPI } from '../fdc3-2.0/api';
 import { contextBridge } from 'electron';
 import { api } from '../system/api';
 connect();
