@@ -68,4 +68,10 @@ export class Directory {
   retrieveByName(name: string): DirectoryApp[] {
     return this.retrieve((app) => app.name == name);
   }
+
+  retrieveByQuery(query: string): DirectoryApp[] {
+    // tbd
+    console.log('Directory Query: ' + query);
+    return this.apps;
+  }
 }

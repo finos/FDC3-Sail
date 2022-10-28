@@ -56,9 +56,6 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
     process.env.VITE_DEV_SERVER_CHANNEL_URL = `${protocol}//${host}:${port}${path}channelPicker.html`;
     process.env.VITE_DEV_SERVER_SEARCH_URL = `${protocol}//${host}:${port}${path}searchResults.html`;
     process.env.VITE_DEV_SERVER_INTENTS_URL = `${protocol}//${host}:${port}${path}intentResolver.html`;
-
-    //set directory address.  'local' will be resolved to the local directory in the project
-    process.env.VITE_DEV_DIRECTORY_URL = 'local';
   }
 
   const logger = createLogger(LOG_LEVEL, {

@@ -13,7 +13,7 @@ import { openToolsMenu } from './toolbar';
 import { pickChannel, joinChannel } from './channelPicker';
 import { loadSearchResults } from './search';
 import { resolveIntent } from '../fdc3/resolveIntent';
-import { initFetchFromDirectory } from './directory';
+import { initFetchFromDirectory } from './directory-fetch';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(RUNTIME_TOPICS.TAB_SELECTED, tabSelected);

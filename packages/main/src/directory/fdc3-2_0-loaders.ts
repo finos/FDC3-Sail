@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import { DirectoryApp } from './directory';
+import fetch from 'electron-fetch';
 
 const convertToDirectoryList = (data: unknown) => data as DirectoryApp[];
 const convertSingleApp = (data: unknown) => [data] as DirectoryApp[];
@@ -10,7 +11,6 @@ const convertSingleApp = (data: unknown) => [data] as DirectoryApp[];
  */
 export function fdc3AppDirectoryLoader(u: string): Promise<DirectoryApp[]> {
   let converter;
-  console.log('IN: ' + process.cwd());
 
   if (u.endsWith('/v2/apps') || u.endsWith('/v2/apps/')) {
     // whole directory

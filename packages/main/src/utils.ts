@@ -5,22 +5,16 @@
 import { channels } from './system-channels';
 import { ChannelData } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
-import { DirectoryPort } from '../../../directory/src/config';
 
-const productionDirectory = 'https://appd.kolbito.com';
+const DEFAULT_DIRECTORY = 'https://directory.fdc3.finos.org/v2/apps';
 
 const getDirectoryUrl = (): Promise<string> => {
-  return new Promise((resolve) => {
-    const url: string =
-      import.meta.env.DEV && import.meta.env.VITE_DEV_DIRECTORY_URL
-        ? `${import.meta.env.VITE_DEV_DIRECTORY_URL}`
-        : productionDirectory;
+  return new Promise(() => {
+    const url: string = import.meta.env.SAIL_DIRECTORY_URL
+      ? `${import.meta.env.SAIL_DIRECTORY_URL}`
+      : DEFAULT_DIRECTORY;
 
-    if (url === 'local') {
-      resolve(`http://localhost:${DirectoryPort}`);
-    } else {
-      resolve(url);
-    }
+    return url;
   });
 };
 

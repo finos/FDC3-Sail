@@ -1,8 +1,6 @@
 import { getRuntime } from '../../index';
 import { RuntimeMessage } from '../runtimeMessage';
 import { WebContents } from 'electron';
-import utils from '../../utils';
-import fetch from 'electron-fetch';
 import { RUNTIME_TOPICS } from './topics';
 import { Runtime } from '/@/runtime';
 
@@ -10,10 +8,9 @@ export function initFetchFromDirectory(
   runtime: Runtime = getRuntime(),
 ): (message: RuntimeMessage) => Promise<void> {
   return async (message: RuntimeMessage) => {
-    const directoryUrl = await utils.getDirectoryUrl();
+    const directory = runtime.getDirectory();
 
-    const response = await fetch(`${directoryUrl}${message.data.query}`);
-    const result = await response.json();
+    const result = directory.retrieveByQuery(message.data.query);
 
     //request can come frome 2 types of (priviledged) sources: the workspace UI and views
     //if the sourceType is View.  We need to check that the view is a 'system' view and can access the directory
