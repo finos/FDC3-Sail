@@ -71,16 +71,9 @@ export class Runtime {
     this.initDirectory();
   }
 
-  initDirectory(): void {
-    utils
-      .getDirectoryUrl()
-      .then((u) => u.split(','))
-      .then((urls) => new Directory(urls, [fdc3AppDirectoryLoader]))
-      .then((d) => {
-        this.directory = d;
-        this.directory.reload();
-        console.log('Directory loaded with ' + JSON.stringify(d.urls));
-      });
+  initDirectory() {
+    const urls = utils.getDirectoryUrl().split(',');
+    this.directory = new Directory(urls, [fdc3AppDirectoryLoader]);
   }
 
   getDirectory(): Directory {

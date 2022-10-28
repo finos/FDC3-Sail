@@ -1,9 +1,17 @@
 import { readFile } from 'fs/promises';
 import { DirectoryApp } from './directory';
 import fetch from 'electron-fetch';
+import { components } from './generated-schema';
 
-const convertToDirectoryList = (data: unknown) => data as DirectoryApp[];
-const convertSingleApp = (data: unknown) => [data] as DirectoryApp[];
+/**
+ * Replace this with the actual definitoo
+ */
+type schemas = components['schemas'];
+export type AllApplicationsResponse = schemas['AllApplicationsResponse'];
+
+const convertToDirectoryList = (data: AllApplicationsResponse) =>
+  data.applications as DirectoryApp[];
+const convertSingleApp = (data: DirectoryApp) => [data] as DirectoryApp[];
 
 /**
  * Load data in FDC3 2.0 Directory format.  Here, we make the assumption
