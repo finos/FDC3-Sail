@@ -50,6 +50,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jsdom": "^19.0.0",
     "nano-staged": "^0.5.0",
+    "openapi-typescript": "^5.4.1",
     "playwright": "^1.19.2",
     "prettier": "^2.5.1",
     "rollup-plugin-tsconfig-paths": "^1.4.0",

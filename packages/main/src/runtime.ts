@@ -1,7 +1,6 @@
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context, IntentMetadata } from '@finos/fdc3';
+import { Context } from '@finos/fdc3';
 import {
-  DirectoryApp,
   FDC3App,
   IntentInstance,
   ChannelData,
@@ -12,13 +11,15 @@ import { View } from './view';
 import { Workspace } from './workspace';
 import { ViewConfig } from './types/ViewConfig';
 import { WorkspaceConfig } from '/@/types/WorkspaceConfig';
-import { net, ipcMain, IpcMainEvent } from 'electron';
+import { ipcMain, IpcMainEvent } from 'electron';
 import utils from './utils';
 import { IntentResolver } from './IntentResolver';
 import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
 import { register as registerFDC3Handlers } from './handlers/fdc3/1.2/index';
 import { FDC3Response } from './types/FDC3Message';
+import { Directory } from './directory/directory';
+import { fdc3AppDirectoryLoader } from './directory/fdc3-2_0-loaders';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -45,6 +46,8 @@ let app_channels: Array<ChannelData> = [];
 let resolver: IntentResolver | undefined = undefined;
 
 export class Runtime {
+  directory: Directory | null = null;
+
   // runtime : Runtime;
 
   //listener: RuntimeListener;
@@ -65,6 +68,27 @@ export class Runtime {
       //    contextListeners.set(chan.id, new Map());
       contexts.set(chan.id, []);
     });
+    this.initDirectory();
+  }
+
+  initDirectory(): void {
+    utils
+      .getDirectoryUrl()
+      .then((u) => u.split(','))
+      .then((urls) => new Directory(urls, [fdc3AppDirectoryLoader]))
+      .then((d) => {
+        this.directory = d;
+        this.directory.reload();
+        console.log('Directory loaded with ' + JSON.stringify(d.urls));
+      });
+  }
+
+  getDirectory(): Directory {
+    if (this.directory) {
+      return this.directory;
+    } else {
+      throw Error('Directory not initialized');
+    }
   }
 
   getWorkspace(workspaceId: string): Workspace | undefined {
@@ -243,10 +267,11 @@ export class Runtime {
     //match on context for the intents for the entry
     this.getViews().forEach((view) => {
       const entry = view.directoryData;
-      if (entry && entry.intents) {
+      if (entry && entry.interop?.intents) {
         //iterate through the intents
-        entry.intents.forEach((entryIntent) => {
-          const intent = entryIntent.name;
+        const listensFor = entry.interop?.intents.listensFor ?? {};
+        Object.keys(listensFor).forEach((intent) => {
+          const entryIntent = listensFor[intent];
           if (entryIntent.contexts.indexOf(context) > -1) {
             if (!result.has(intent)) {
               result.set(intent, []);
@@ -286,43 +311,6 @@ export class Runtime {
     //  workspaces.set(workspace.id,workspace);
 
     return workspace;
-  }
-
-  fetchFromDirectory(
-    query: string,
-  ): Promise<
-    | DirectoryApp
-    | Array<DirectoryApp>
-    | IntentMetadata
-    | Array<IntentMetadata>
-    | Context
-    | Array<Context>
-    | void
-  > {
-    return new Promise((resolve, reject) => {
-      utils.getDirectoryUrl().then((directoryUrl) => {
-        const url = `${directoryUrl}${query}`;
-        const request = net.request(url);
-        console.log('fetch from dir', url);
-        const resultBuffer: Array<string> = [];
-        try {
-          request.on('response', (response) => {
-            response.on('data', (chunk) => {
-              resultBuffer.push(chunk.toString());
-            });
-            response.on('end', () => {
-              resolve(JSON.parse(resultBuffer.join('')));
-            });
-            response.on('error', () => {
-              reject();
-            });
-          });
-          request.end();
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
   }
 
   /**

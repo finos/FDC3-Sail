@@ -1,4 +1,13 @@
-import { DirectoryApp } from '../types/FDC3Data';
+import { components } from './generated-schema';
+
+/**
+ * Replace this with the actual definitoo
+ */
+type schemas = components['schemas'];
+export type DirectoryApp = schemas['Application'];
+export type DirectoryInterop = schemas['Interop'];
+export type DirectoryAppLaunchDetails = schemas['LaunchDetails'];
+export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
 
 /**
  * A loader takes a URL and attempts to load it into an array of DirectoryApp.
@@ -47,5 +56,16 @@ export class Directory {
    */
   retrieve(filter: (d: DirectoryApp) => boolean): DirectoryApp[] {
     return this.apps.filter(filter);
+  }
+
+  retrieveAll(): DirectoryApp[] {
+    return this.apps;
+  }
+
+  /**
+   * For FDC3 1.2, retreives by the name of the app
+   */
+  retrieveByName(name: string): DirectoryApp[] {
+    return this.retrieve((app) => app.name == name);
   }
 }

@@ -1,34 +1,21 @@
-import { DirectoryApp } from '../types/FDC3Data';
-//import { DirectoryApp as OldDirectoryApp, DirectoryIcon as OldIcon } from "../handlers/fdc3/1.2/types/FDC3Data";
 import { readFile } from 'fs/promises';
-
-// function convertAppEntryTo2_0(record: object) : DirectoryApp {
-//     const o = record as OldDirectoryApp
-
-//     return {
-//         appId: o.appId,
-//         name: o.name,
-//         title: o.title,
-//         description: o.description,
-//         icons: null,
-
-//     } as DirectoryApp
-// }
+import { DirectoryApp } from './directory';
 
 const convertToDirectoryList = (data: unknown) => data as DirectoryApp[];
 const convertSingleApp = (data: unknown) => [data] as DirectoryApp[];
 
 /**
- * Load data in FDC3 1.x Directory format.
+ * Load data in FDC3 2.0 Directory format.  Here, we make the assumption
+ * that the data is formatted correctly.
  */
 export function fdc3AppDirectoryLoader(u: string): Promise<DirectoryApp[]> {
   let converter;
   console.log('IN: ' + process.cwd());
 
-  if (u.endsWith('/v1/apps') || u.endsWith('/v1/apps/')) {
+  if (u.endsWith('/v2/apps') || u.endsWith('/v2/apps/')) {
     // whole directory
     converter = convertToDirectoryList;
-  } else if (u.endsWith('.json') || u.includes('/v1/apps')) {
+  } else if (u.endsWith('.json') || u.includes('/v2/apps')) {
     // single app
     converter = convertSingleApp;
   } else {

@@ -10,10 +10,10 @@ import {
   dropTab,
 } from './tabs';
 import { openToolsMenu } from './toolbar';
-import { initFetchFromDirectory } from './directory';
 import { pickChannel, joinChannel } from './channelPicker';
 import { loadSearchResults } from './search';
 import { resolveIntent } from '../fdc3/resolveIntent';
+import { initFetchFromDirectory } from './directory';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(RUNTIME_TOPICS.TAB_SELECTED, tabSelected);

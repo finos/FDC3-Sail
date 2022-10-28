@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { fdc3AppDirectoryLoader } from '../src/directory/fdc3_3-loaders';
+import { fdc3AppDirectoryLoader } from '../src/directory/fdc3-2_0-loaders';
 
 test('Test Remote Directory Load in FDC3 2.0 Format', async () => {
   const results = await fdc3AppDirectoryLoader(
