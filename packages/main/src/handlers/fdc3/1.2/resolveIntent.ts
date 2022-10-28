@@ -1,7 +1,8 @@
-import { getRuntime } from '../../index';
-import { RuntimeMessage } from '../runtimeMessage';
+import { getRuntime } from '/@/index';
+import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { DirectoryApp } from '/@/handlers/fdc3/1.2/types/FDC3Data';
-import { TOPICS } from '../../constants';
+import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
+import { FDC3_1_2_TOPICS } from '/@/handlers/fdc3/1.2/topics';
 
 export const resolveIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
@@ -30,11 +31,19 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const view = runtime.getView(message.data.selected?.instanceId);
     //send new intent
     if (view && view.parent) {
-      view.content.webContents.send(TOPICS.FDC3_INTENT, {
-        topic: 'intent',
-        data: { intent: message.data.intent, context: message.data.context },
-        source: message.data.id,
-      });
+      if (view.fdc3Version === '1.2') {
+        view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+          source: message.data.id,
+        });
+      } else {
+        view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+          source: message.data.id,
+        });
+      }
       view.parent.setSelectedTab(view.id);
     }
   }

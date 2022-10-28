@@ -16,7 +16,8 @@ import {
   FDC3AppDetail,
 } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import utils from '/@/utils';
-import { FDC3_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
 import { ipcMain } from 'electron';
 import { RUNTIME_TOPICS } from '/@/handlers/runtime/topics';
 
@@ -102,18 +103,26 @@ const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
           console.log('send intent from source', source);
           const app = getRuntime().getView(appId);
           if (app && app.content) {
-            app.content.webContents.send(FDC3_TOPICS.INTENT, {
-              topic: 'intent',
-              data: {
-                intent: message.data.intent,
-                context: message.data.context,
-              },
-              source: source,
-            });
-            //bringing the tab to front conditional on the type of intent
-            /*if (! utils.isDataIntent(message.intent)){
-                            utils.bringToFront(appId); 
-                        }*/
+            if (app.fdc3Version === '1.2') {
+              app.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+                topic: 'intent',
+                data: {
+                  intent: message.data.intent,
+                  context: message.data.context,
+                },
+                source: source,
+              });
+            } else {
+              app.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+                topic: 'intent',
+                data: {
+                  intent: message.data.intent,
+                  context: message.data.context,
+                },
+                source: source,
+              });
+            }
+
             if (sView && sView.parent && sView.parent.window) {
               sView.parent.window.webContents.send(RUNTIME_TOPICS.SELECT_TAB, {
                 viewId: sView.id,
@@ -238,6 +247,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const r: Array<FDC3App> = [];
   const intent = message.data?.intent;
 
+  console.log('************** raiseIntent', message);
   if (!intent) {
     throw 'No Intent Provided';
   }
@@ -313,11 +323,19 @@ export const raiseIntent = async (message: RuntimeMessage) => {
       if (r[0].type === 'window' && r[0].details && r[0].details.instanceId) {
         const view = runtime.getView(r[0].details.instanceId);
         if (view) {
-          view.content.webContents.send(FDC3_TOPICS.INTENT, {
-            topic: 'intent',
-            data: message.data,
-            source: message.source,
-          });
+          if (view.fdc3Version === '1.2') {
+            view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+              topic: 'intent',
+              data: message.data,
+              source: message.source,
+            });
+          } else {
+            view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+              topic: 'intent',
+              data: message.data,
+              source: message.source,
+            });
+          }
           //bringing the tab to front conditional on the type of intent
           if (!utils.isDataIntent(intent)) {
             /* utils.bringToFront(r[0].details.port); */
@@ -332,7 +350,6 @@ export const raiseIntent = async (message: RuntimeMessage) => {
         const start_url = r[0].details.directoryData.start_url;
         const pending = true;
 
-        //let win = window.open(start_url,"_blank");
         const workspace = getRuntime().createWorkspace();
 
         const view = workspace.createView(start_url, {
@@ -473,11 +490,19 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
       if (r[0].type === 'window' && r[0].details.instanceId) {
         const view = runtime.getView(r[0].details.instanceId);
         if (view) {
-          view.content.webContents.send(FDC3_TOPICS.INTENT, {
-            topic: 'intent',
-            data: message.data,
-            source: message.source,
-          });
+          if (view.fdc3Version === '1.2') {
+            view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+              topic: 'intent',
+              data: message.data,
+              source: message.source,
+            });
+          } else {
+            view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+              topic: 'intent',
+              data: message.data,
+              source: message.source,
+            });
+          }
 
           return { source: message.source, version: '1.2' };
         } else {

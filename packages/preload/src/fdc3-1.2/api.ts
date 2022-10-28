@@ -22,9 +22,9 @@ import {
   FDC3Event,
   FDC3EventEnum,
 } from '/@main/handlers/fdc3/1.2/types/FDC3Event';
-import { ChannelData } from '/@main/handlers/fdc3/1.2/types/FDC3Data';
-import { FDC3_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
-import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
+import { ChannelData } from '/@main/types/Channel';
+import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
+import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -65,7 +65,7 @@ export const connect = () => {
   /**
    * listen for incomming contexts
    */
-  ipcRenderer.on(FDC3_TOPICS.CONTEXT, async (event, args) => {
+  ipcRenderer.on(FDC3_1_2_TOPICS.CONTEXT, async (event, args) => {
     console.log('ipcrenderer event', event.type, args);
     //check for handlers at the content script layer (automatic handlers) - if not, dispatch to the API layer...
     //   let contextSent = false;
@@ -81,7 +81,7 @@ export const connect = () => {
             args.source,
           );
           document.dispatchEvent(
-            new CustomEvent(FDC3_TOPICS.CONTEXT, {
+            new CustomEvent(FDC3_1_2_TOPICS.CONTEXT, {
               detail: { data: data, source: args.source },
             }),
           );
@@ -90,7 +90,7 @@ export const connect = () => {
         const data = args.data;
         data.listenerId = args.listenerId;
         document.dispatchEvent(
-          new CustomEvent(FDC3_TOPICS.CONTEXT, {
+          new CustomEvent(FDC3_1_2_TOPICS.CONTEXT, {
             detail: { data: data, source: args.source },
           }),
         );
@@ -103,10 +103,10 @@ export const connect = () => {
   /**
    * listen for incoming intents
    */
-  ipcRenderer.on(FDC3_TOPICS.INTENT, (event, args) => {
+  ipcRenderer.on(FDC3_1_2_TOPICS.INTENT, (event, args) => {
     console.log('ipcrenderer event', event.type);
     document.dispatchEvent(
-      new CustomEvent(FDC3_TOPICS.INTENT, {
+      new CustomEvent(FDC3_1_2_TOPICS.INTENT, {
         detail: { data: args.data, source: args.source },
       }),
     );
@@ -126,7 +126,7 @@ export const connect = () => {
 
 //handshake with main and get instanceId assigned
 ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
-  console.log('api FDC3 start');
+  console.log('api FDC3 start', args.id);
   if (args.id) {
     instanceId = args.id;
     //send any queued messages
@@ -304,7 +304,7 @@ export const createAPI = (): DesktopAgent => {
           createListenerItem(listenerId, thisListener, thisContextType),
         );
 
-        sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
+        sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
           id: listenerId,
           channel: channel.id,
           contextType: thisContextType,
@@ -320,12 +320,12 @@ export const createAPI = (): DesktopAgent => {
     getInfo(): ImplementationMetadata {
       return {
         fdc3Version: '1.2',
-        provider: 'electron-fdc3',
+        provider: 'fdc3-sail',
       };
     },
 
     open: async (app: TargetApp, context?: Context) => {
-      return await sendMessage(FDC3_TOPICS.OPEN, {
+      return await sendMessage(FDC3_1_2_TOPICS.OPEN, {
         target: app,
         context: context,
       });
@@ -333,7 +333,7 @@ export const createAPI = (): DesktopAgent => {
 
     broadcast: async (context: Context) => {
       //void
-      return await sendMessage(FDC3_TOPICS.BROADCAST, { context: context });
+      return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, { context: context });
     },
 
     raiseIntent: async (
@@ -341,7 +341,7 @@ export const createAPI = (): DesktopAgent => {
       context: Context,
       app?: TargetApp,
     ): Promise<IntentResolution> => {
-      return await sendMessage(FDC3_TOPICS.RAISE_INTENT, {
+      return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
         intent: intent,
         context: context,
         target: app,
@@ -349,7 +349,7 @@ export const createAPI = (): DesktopAgent => {
     },
 
     raiseIntentForContext: async (context: Context, app?: TargetApp) => {
-      return await sendMessage(FDC3_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
+      return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
         context: context,
         target: app,
       });
@@ -371,7 +371,7 @@ export const createAPI = (): DesktopAgent => {
         createListenerItem(listenerId, thisListener, thisContextType),
       );
 
-      sendMessage(FDC3_TOPICS.ADD_CONTEXT_LISTENER, {
+      sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
         id: listenerId,
         contextType: thisContextType,
       });
@@ -388,7 +388,7 @@ export const createAPI = (): DesktopAgent => {
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
 
-        sendMessage(FDC3_TOPICS.ADD_INTENT_LISTENER, {
+        sendMessage(FDC3_1_2_TOPICS.ADD_INTENT_LISTENER, {
           id: listenerId,
           intent: intent,
         });
@@ -400,7 +400,7 @@ export const createAPI = (): DesktopAgent => {
       intent: string,
       context: Context,
     ): Promise<AppIntent> => {
-      return await sendMessage(FDC3_TOPICS.FIND_INTENT, {
+      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENT, {
         intent: intent,
         context: context,
       });
@@ -409,14 +409,14 @@ export const createAPI = (): DesktopAgent => {
     findIntentsByContext: async (
       context: Context,
     ): Promise<Array<AppIntent>> => {
-      return await sendMessage(FDC3_TOPICS.FIND_INTENTS_BY_CONTEXT, {
+      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENTS_BY_CONTEXT, {
         context: context,
       });
     },
 
     getSystemChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
-        FDC3_TOPICS.GET_SYSTEM_CHANNELS,
+        FDC3_1_2_TOPICS.GET_SYSTEM_CHANNELS,
         {},
       );
       console.log('result', r);
@@ -432,7 +432,7 @@ export const createAPI = (): DesktopAgent => {
 
     getOrCreateChannel: async (channelId: string) => {
       const result: ChannelData = await sendMessage(
-        FDC3_TOPICS.GET_OR_CREATE_CHANNEL,
+        FDC3_1_2_TOPICS.GET_OR_CREATE_CHANNEL,
         { channelId: channelId },
       );
       return createChannelObject(
@@ -443,16 +443,18 @@ export const createAPI = (): DesktopAgent => {
     },
 
     joinChannel: async (channel: string) => {
-      return await sendMessage(FDC3_TOPICS.JOIN_CHANNEL, { channel: channel });
+      return await sendMessage(FDC3_1_2_TOPICS.JOIN_CHANNEL, {
+        channel: channel,
+      });
     },
 
     leaveCurrentChannel: async () => {
-      return await sendMessage(FDC3_TOPICS.LEAVE_CURRENT_CHANNEL, {});
+      return await sendMessage(FDC3_1_2_TOPICS.LEAVE_CURRENT_CHANNEL, {});
     },
 
     getCurrentChannel: async () => {
       const result: ChannelData = await sendMessage(
-        FDC3_TOPICS.GET_CURRENT_CHANNEL,
+        FDC3_1_2_TOPICS.GET_CURRENT_CHANNEL,
         {},
       );
 
@@ -464,7 +466,7 @@ export const createAPI = (): DesktopAgent => {
     },
   };
 
-  document.addEventListener(FDC3_TOPICS.CONTEXT, ((event: FDC3Event) => {
+  document.addEventListener(FDC3_1_2_TOPICS.CONTEXT, ((event: FDC3Event) => {
     console.log('Context', JSON.stringify(_contextListeners));
     const listeners = _contextListeners;
     if (
@@ -481,7 +483,7 @@ export const createAPI = (): DesktopAgent => {
     }
   }) as EventListener);
 
-  document.addEventListener(FDC3_TOPICS.INTENT, ((event: FDC3Event) => {
+  document.addEventListener(FDC3_1_2_TOPICS.INTENT, ((event: FDC3Event) => {
     const intent = event.detail.data && event.detail.data.intent;
     const context = event.detail.data && event.detail.data.context;
     if (intent) {
@@ -508,7 +510,7 @@ export const createAPI = (): DesktopAgent => {
   const _intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
 
   //prevent timing issues from very first load of the preload
-  ipcRenderer.send(FDC3_TOPICS.INITIATE, {});
+  ipcRenderer.send(SAIL_TOPICS.INITIATE, {});
 
   return desktopAgent;
 };

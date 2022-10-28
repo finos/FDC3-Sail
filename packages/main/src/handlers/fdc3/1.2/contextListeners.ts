@@ -1,7 +1,7 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { View } from '/@/view';
-import { FDC3_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from './topics';
 import { Pending } from '/@/types/Pending';
 
 export const dropContextListener = async (message: RuntimeMessage) => {
@@ -46,8 +46,8 @@ export const addContextListener = async (message: RuntimeMessage) => {
               message.data.type
             ) {
               console.log('send pending context');
-              view.content.webContents.postMessage(FDC3_TOPICS.CONTEXT, {
-                topic: FDC3_TOPICS.CONTEXT,
+              view.content.webContents.postMessage(FDC3_1_2_TOPICS.CONTEXT, {
+                topic: FDC3_1_2_TOPICS.CONTEXT,
                 data: pending.context,
                 source: source,
               });
@@ -92,7 +92,7 @@ export const addContextListener = async (message: RuntimeMessage) => {
             pending.context.type === message.data &&
             message.data.type)
         ) {
-          view.content.webContents.send(FDC3_TOPICS.CONTEXT, {
+          view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
             topic: 'context',
             listenerId: message.data && message.data.id,
             data: {
