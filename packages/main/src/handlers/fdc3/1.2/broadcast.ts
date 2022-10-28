@@ -2,7 +2,7 @@ import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { View } from '/@/view';
 import { FDC3Listener } from '/@/types/FDC3Listener';
-import { FDC3_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from './topics';
 
 interface ViewListener {
   view: View;
@@ -54,7 +54,7 @@ export const broadcast = async (message: RuntimeMessage) => {
             ts: message.data && message.data.ts,
             context: message.data && message.data.context,
           };
-          viewL.view.content.webContents.send(FDC3_TOPICS.CONTEXT, {
+          viewL.view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
             topic: 'context',
             listenerId: viewL.listenerId,
             data: data,
@@ -126,7 +126,7 @@ export const broadcast = async (message: RuntimeMessage) => {
       });
       //if there are listeners found, broadcast the context to the view (with all listenerIds)
       if (viewListeners.length > 0) {
-        v.content.webContents.send(FDC3_TOPICS.CONTEXT, {
+        v.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
           topic: 'context',
           listenerIds: viewListeners,
           data: {

@@ -3,7 +3,8 @@ import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { TARGETS } from '/@main/constants';
 import { userChannels } from '/@main/handlers/fdc3/userChannels';
 import { Context } from '@finos/fdc3';
-import { FDC3_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 
 let id: string | undefined = undefined;
 let intent: string | undefined = undefined;
@@ -39,7 +40,7 @@ ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, (event, args) => {
 const resolveIntent = (data: any) => {
   //no op if intent is not defined
   if (data.selectedIntent || intent) {
-    ipcRenderer.send(RUNTIME_TOPICS.RES_RESOLVE_INTENT, {
+    ipcRenderer.send(FDC3_1_2_TOPICS.RESOLVE_INTENT, {
       id: id,
       data: {
         intent: data.selectedIntent || intent,
@@ -264,7 +265,7 @@ const searchDirectory = (query: string) => {
 };
 
 const selectResult = (selection: string) => {
-  ipcRenderer.send(FDC3_TOPICS.OPEN, {
+  ipcRenderer.send(FDC3_2_0_TOPICS.OPEN, {
     source: workspaceId,
     data: { name: selection },
   });

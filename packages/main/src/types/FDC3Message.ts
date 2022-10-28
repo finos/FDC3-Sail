@@ -15,6 +15,7 @@ export interface FDC3Message {
 
 export interface FDC3MessageData {
   id?: string;
+  appIdentifier?: AppIdentifier;
   eventId?: string;
   context?: Context;
   name?: string;
