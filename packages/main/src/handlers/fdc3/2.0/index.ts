@@ -20,15 +20,12 @@ import { open } from './open';
 import {
   dropIntentListener,
   addIntentListener,
-} from '/@/handlers/fdc3/1.2/intentListeners';
+} from '/@/handlers/fdc3/2.0/intentListeners';
 import {
   findIntent,
   findIntentsByContext,
 } from '/@/handlers/fdc3/1.2/findIntent';
-import {
-  raiseIntent,
-  raiseIntentForContext,
-} from '/@/handlers/fdc3/1.2/raiseIntent';
+import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);

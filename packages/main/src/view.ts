@@ -191,7 +191,7 @@ export class View {
 
   initiated = false;
 
-  fdc3Version: '2.0' | '1.2' = '1.2';
+  fdc3Version: '2.0' | '1.2' = '2.0';
 
   private type: 'system' | 'app' = 'app';
 
