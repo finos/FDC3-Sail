@@ -100,7 +100,7 @@ export class DirectoryView extends React.Component<
                 <CardActions>
                   <Button
                     onClick={() => {
-                      if (app.appId) {
+                      if (app.name) {
                         openApp(app.name);
                       }
                     }}

@@ -1,52 +1,35 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { DirectoryApp } from '/@/handlers/fdc3/1.2/types/FDC3Data';
-import { AppMetadata } from './types/AppMetadata';
-import { AppIntent, IntentMetadata } from 'fdc3-1.2';
+import { AppIntent, AppMetadata } from 'fdc3-1.2';
+import { DirectoryApp, DirectoryIntent } from '/@/directory/directory';
+
+function convertApp(a: DirectoryApp): AppMetadata {
+  return {
+    name: a.name ?? a.appId ?? '',
+    title: a.title,
+    description: a.description,
+    icons: a?.icons?.map((i) => i.src ?? '') ?? [],
+  };
+}
 
 export const findIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   const intent = message.data && message.data.intent;
   const context = message.data && message.data.context;
   if (intent) {
-    let url = `/apps/search?intent=${intent}`;
-    if (context) {
-      url += `&context=${context.type}`;
-    }
+    const result = runtime
+      .getDirectory()
+      .retrieveByIntentAndContextType(intent, context.type);
 
-    const result: Array<DirectoryApp> =
-      ((await runtime.fetchFromDirectory(url)) as Array<DirectoryApp>) || [];
+    const intentDisplayName =
+      runtime.getDirectory().retreiveAllIntentsByName(intent)[0]?.displayName ??
+      intent;
 
-    let r: AppIntent = {
-      intent: { name: '', displayName: '' },
-      apps: [],
+    const r: AppIntent = {
+      intent: { name: intent, displayName: intentDisplayName },
+      apps: result.map(convertApp),
     };
 
-    // r.apps = j;
-    //find intent display name from app directory data
-    const intnt = result[0].intents.filter((i) => {
-      return i.name === intent;
-    });
-    if (intnt.length > 0) {
-      r = {
-        intent: {
-          name: intnt[0].name,
-          displayName: intnt[0].display_name,
-        },
-        apps: [],
-      };
-    }
-
-    result.forEach((dirApp) => {
-      r.apps.push({
-        name: dirApp.name,
-        title: dirApp.title,
-        description: dirApp.description,
-        icons: dirApp.icons.map((icon) => {
-          return icon.icon;
-        }),
-      });
-    });
     return r;
   }
 };
@@ -54,48 +37,46 @@ export const findIntent = async (message: RuntimeMessage) => {
 export const findIntentsByContext = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   const context = message.data && message.data.context;
-  const r: Array<AppIntent> = [];
   if (context && context.type) {
-    const url = `/apps/search?context=${context.type}`;
-    const result = await runtime.fetchFromDirectory(url);
+    const d: Array<DirectoryApp> = runtime
+      .getDirectory()
+      .retrieveByContextType(context.type);
 
-    const d: Array<DirectoryApp> = result as Array<DirectoryApp>;
+    const matches: { [intentName: string]: DirectoryApp[] } = {};
+    const intentData: { [intentName: string]: DirectoryIntent } = {};
 
-    if (d) {
-      const found: Map<string, Array<AppMetadata>> = new Map();
-      const intents: Array<IntentMetadata> = [];
-      d.forEach((item) => {
-        const appMeta: AppMetadata = {
-          name: item.name,
-          title: item.title,
-          description: item.description,
-          icons: item.icons.map((icon) => {
-            return icon.icon;
-          }),
-        };
-
-        item.intents.forEach((intent) => {
-          if (!found.has(intent.name)) {
-            intents.push({
-              name: intent.name,
-              displayName: intent.display_name,
-            });
-            found.set(intent.name, [appMeta]);
-          } else {
-            const apps = found.get(intent.name);
-            if (apps) {
-              apps.push(appMeta);
+    d.forEach((app) => {
+      const intents = app?.interop?.intents?.listensFor ?? {};
+      Object.keys(intents).forEach((intent) => {
+        const values = intents[intent];
+        values
+          .filter((id) => id.contexts.includes(context.type))
+          .forEach((id) => {
+            if (!intentData[intent]) {
+              intentData[intent] = id;
             }
-          }
-        });
-      });
 
-      intents.forEach((intent) => {
-        const apps = found.get(intent.name);
-        const entry: AppIntent = { intent: intent, apps: apps || [] };
-        r.push(entry);
+            if (!matches[intent]) {
+              matches[intent] = [];
+            }
+
+            matches[intent].push(app);
+          });
       });
-    }
+    });
+
+    const result: AppIntent[] = Object.keys(matches).map((k) => {
+      return {
+        intent: {
+          name: k,
+          displayName: intentData[k].displayName,
+        },
+        apps: matches[k].map((a) => convertApp(a)),
+      } as AppIntent;
+    });
+
+    return result;
+  } else {
+    return [];
   }
-  return r;
 };

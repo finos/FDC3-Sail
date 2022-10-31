@@ -1,11 +1,14 @@
 import { components } from './generated-schema';
 
 /**
- * Replace this with the actual definitoo
+ * Replace this with the actual definition
  */
 type schemas = components['schemas'];
 export type DirectoryApp = schemas['Application'];
+export type DirectoryIcon = schemas['Icon'];
+export type DirectoryScreenshot = schemas['Screenshot'];
 export type DirectoryInterop = schemas['Interop'];
+export type DirectoryIntent = schemas['Intent'];
 export type DirectoryAppLaunchDetails = schemas['LaunchDetails'];
 export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
 
@@ -13,7 +16,7 @@ export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
  * A loader takes a URL and attempts to load it into an array of DirectoryApp.
  * If it can't do this for any reason, it returns the empty array.
  */
-type Loader = (url: string) => Promise<DirectoryApp[]>;
+export type Loader = (url: string) => Promise<DirectoryApp[]>;
 
 export class Directory {
   loaders: Loader[];
@@ -23,21 +26,27 @@ export class Directory {
   constructor(urls: string[], loaders: Loader[]) {
     this.loaders = loaders;
     this.urls = urls;
-    this.reload();
   }
 
   /**
    * Asynchronously reloads the entire app list
    */
-  reload() {
-    const newApps: DirectoryApp[] = [];
-    this.urls.forEach((url) => this.load(url));
-    this.apps = newApps;
-
-    Promise.all(this.urls.map((u) => this.load(u)))
-      .then((data) => data.flatMap((d) => d))
+  async reload(): Promise<number> {
+    return Promise.all(this.urls.map((u) => this.load(u)))
+      .then((data) =>
+        data.flatMap((d) => {
+          console.log('here');
+          return d;
+        }),
+      )
       .then((result) => {
         this.apps = result;
+        console.log('Loaded ' + result.length + ' apps');
+        return result.length;
+      })
+      .catch((err) => {
+        console.log('Problem loading app directory');
+        throw err;
       });
   }
 
@@ -45,9 +54,20 @@ export class Directory {
    * Loads from a given url, using available loaders.  Places loaded apps into 'into'
    */
   load(url: string): Promise<DirectoryApp[]> {
-    return Promise.all(this.loaders.map((l) => l(url))).then((data) =>
-      data.flatMap((d) => d),
+    console.log('Loading');
+    const individualLoaders: Promise<DirectoryApp[]>[] = this.loaders.map((l) =>
+      l(url),
     );
+
+    return Promise.all(individualLoaders)
+      .then((data) => {
+        console.log('Coalescing');
+        return data.flatMap((d) => d);
+      })
+      .catch((err) => {
+        console.log('Problem loading: ' + url);
+        throw err;
+      });
   }
 
   /**
@@ -55,11 +75,11 @@ export class Directory {
    * filter function.
    */
   retrieve(filter: (d: DirectoryApp) => boolean): DirectoryApp[] {
-    return this.apps.filter(filter);
+    return this.retrieveAll().filter(filter);
   }
 
   retrieveAll(): DirectoryApp[] {
-    return this.apps;
+    return this.apps.filter((d) => d.type == 'web');
   }
 
   /**
@@ -69,9 +89,67 @@ export class Directory {
     return this.retrieve((app) => app.name == name);
   }
 
+  retrieveByContextType(contextType: string): DirectoryApp[] {
+    return this.retrieve((d) => {
+      const listensFor = Object.values(d.interop?.intents?.listensFor ?? {});
+      const listensForFlat = listensFor.flatMap((i) => i);
+      const foundContextTypes = listensForFlat.filter((i) =>
+        i.contexts.includes(contextType),
+      );
+      return foundContextTypes.length > 0;
+    });
+  }
+
+  retrieveByIntentAndContextType(
+    intent: string,
+    contextType?: string,
+  ): DirectoryApp[] {
+    return this.retrieve((d) => {
+      const listensFor = d.interop?.intents?.listensFor ?? {};
+      if (!Object.keys(listensFor).includes(intent)) {
+        return false;
+      }
+
+      if (contextType != null) {
+        const theIntents = listensFor[intent] as DirectoryIntent[];
+        const found = theIntents
+          .map((i) => {
+            const cs = i.contexts;
+            return cs == null || cs.includes(contextType);
+          })
+          .reduce((a, b) => a || b);
+        return found;
+      }
+
+      return true;
+    });
+  }
+
   retrieveByQuery(query: string): DirectoryApp[] {
     // tbd
     console.log('Directory Query: ' + query);
     return this.apps;
+  }
+
+  retrieveAllIntents(): { [index: string]: DirectoryIntent[] } {
+    const out: { [index: string]: DirectoryIntent[] } = {};
+
+    this.retrieveAll().forEach((d) => {
+      const lf = d.interop?.intents?.listensFor ?? {};
+      Object.keys(lf).forEach((intent) => {
+        const intentData = lf[intent];
+        if (!out[intent]) {
+          out[intent] = [];
+        }
+
+        intentData.forEach((id) => out[intent].push(id));
+      });
+    });
+
+    return out;
+  }
+
+  retreiveAllIntentsByName(i: string): DirectoryIntent[] {
+    return this.retrieveAllIntents()[i];
   }
 }

@@ -19,7 +19,8 @@ import { register as registerRuntimeHandlers } from './handlers/runtime/index';
 import { register as registerFDC3Handlers } from './handlers/fdc3/1.2/index';
 import { FDC3Response } from './types/FDC3Message';
 import { Directory } from './directory/directory';
-import { fdc3AppDirectoryLoader } from './directory/fdc3-2_0-loaders';
+import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
+import { fdc3_1_2_AppDirectoryLoader } from './directory/fdc3-12-loader';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -73,7 +74,11 @@ export class Runtime {
 
   initDirectory() {
     const urls = utils.getDirectoryUrl().split(',');
-    this.directory = new Directory(urls, [fdc3AppDirectoryLoader]);
+    this.directory = new Directory(urls, [
+      fdc3_2_0_AppDirectoryLoader,
+      fdc3_1_2_AppDirectoryLoader,
+    ]);
+    this.directory.reload();
   }
 
   getDirectory(): Directory {

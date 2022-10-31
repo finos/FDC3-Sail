@@ -1,5 +1,5 @@
 import { readFile } from 'fs/promises';
-import { DirectoryApp } from './directory';
+import { DirectoryApp, Loader } from './directory';
 import fetch from 'electron-fetch';
 import { components } from './generated-schema';
 
@@ -13,17 +13,27 @@ const convertToDirectoryList = (data: AllApplicationsResponse) =>
   data.applications as DirectoryApp[];
 const convertSingleApp = (data: DirectoryApp) => [data] as DirectoryApp[];
 
+export function loadRemotely(u: string) {
+  return fetch(u).then((response) => response.json());
+}
+
+export function loadLocally(u: string) {
+  return readFile(u)
+    .then((buf) => buf.toString('utf8'))
+    .then((data) => JSON.parse(data));
+}
+
 /**
  * Load data in FDC3 2.0 Directory format.  Here, we make the assumption
  * that the data is formatted correctly.
  */
-export function fdc3AppDirectoryLoader(u: string): Promise<DirectoryApp[]> {
+export const fdc3_2_0_AppDirectoryLoader: Loader = (u: string) => {
   let converter;
 
   if (u.endsWith('/v2/apps') || u.endsWith('/v2/apps/')) {
     // whole directory
     converter = convertToDirectoryList;
-  } else if (u.endsWith('.json') || u.includes('/v2/apps')) {
+  } else if (u.includes('/v2/apps')) {
     // single app
     converter = convertSingleApp;
   } else {
@@ -34,18 +44,8 @@ export function fdc3AppDirectoryLoader(u: string): Promise<DirectoryApp[]> {
   }
 
   if (u.startsWith('http')) {
-    return loadRemotely().then(converter);
+    return loadRemotely(u).then(converter);
   } else {
-    return loadLocally().then(converter);
+    return loadLocally(u).then(converter);
   }
-
-  function loadRemotely() {
-    return fetch(u).then((response) => response.json());
-  }
-
-  function loadLocally() {
-    return readFile(u)
-      .then((buf) => buf.toString('utf8'))
-      .then((data) => JSON.parse(data));
-  }
-}
+};

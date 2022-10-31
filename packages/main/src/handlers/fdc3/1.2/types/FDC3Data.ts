@@ -2,7 +2,7 @@ import { Context, DisplayMetadata, IntentMetadata } from 'fdc3-1.2';
 import { DirectoryApp } from '/@/directory/directory';
 
 /**
- * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
+ * representation of an FDC3 App - whether it is running (connected) or not (directory only)
  */
 export interface FDC3App {
   type: string;
