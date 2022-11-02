@@ -1,7 +1,7 @@
 import React from 'react';
 import { Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { RUNTIME_TOPICS } from '../../../../main/src/handlers/runtime/topics';
+import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 
 class PickerItem extends React.Component<
   { id: string; color: string; altColor: string },

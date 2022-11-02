@@ -1,11 +1,18 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { ChannelData } from '/@/types/Channel';
-import { Context, ChannelError } from 'fdc3-1.2';
-import { systemChannels } from './systemChannels';
+import { Context, ChannelError } from '@finos/fdc3';
+import { userChannels } from '../userChannels';
 
+/** deprecate */
 export const getSystemChannels = async () => {
-  return systemChannels;
+  return userChannels.map((c) => {
+    return { ...c, type: 'system' };
+  });
+};
+
+export const getUserChannels = async () => {
+  return userChannels;
 };
 
 export const getCurrentChannel = async (message: RuntimeMessage) => {
@@ -45,7 +52,7 @@ export const getOrCreateChannel = async (message: RuntimeMessage) => {
   if (id === 'default') {
     throw ChannelError.CreationFailed;
   } else {
-    let channel: ChannelData | null = getChannelMeta(id);
+    let channel: ChannelData | undefined = getChannelMeta(id);
 
     //if not found... create as an app channel
     if (!channel) {
@@ -75,7 +82,7 @@ export const leaveCurrentChannel = async (message: RuntimeMessage) => {
   }
 };
 
-export const joinChannel = async (message: RuntimeMessage) => {
+export const joinUserChannel = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   const channel = message.data && message.data.channel;
   const view = runtime.getView(message.source);
@@ -89,18 +96,15 @@ export const joinChannel = async (message: RuntimeMessage) => {
   }
 };
 
-//generate / get full channel object from an id - returns null if channel id is not a system channel or a registered app channel
-const getChannelMeta = (id: string): ChannelData | null => {
-  let channel: ChannelData | null = null;
-  //is it a system channel?
-  const sChannels: Array<ChannelData> = systemChannels;
-  const sc = sChannels.find((c) => {
+//generate / get full channel object from an id - returns null if channel id is not a user channel or a registered app channel
+const getChannelMeta = (id: string): ChannelData | undefined => {
+  let channel: ChannelData | undefined;
+  //is it a user channel?
+  const sChannels = userChannels;
+  channel = sChannels.find((c) => {
     return c.id === id;
   });
 
-  if (sc) {
-    channel = { id: id, type: 'system', displayMetadata: sc.displayMetadata };
-  }
   //is it already an app channel?
   if (!channel) {
     const runtime = getRuntime();

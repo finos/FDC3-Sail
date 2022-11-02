@@ -22,5 +22,9 @@
     "../../types/**/*.d.ts",
     "../preload/exposedInMainWorld.d.ts"
   ],
+  "paths": {
+    "/@/*": ["./src/*"],
+    "/@main/*": ["../main/src/*"],
+  },
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

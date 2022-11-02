@@ -3,7 +3,6 @@ import { Context } from '@finos/fdc3';
 import {
   FDC3App,
   IntentInstance,
-  ChannelData,
   ResolverDetail,
 } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import { channels } from './system-channels';
@@ -16,8 +15,9 @@ import utils from './utils';
 import { IntentResolver } from './IntentResolver';
 import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
-import { register as registerFDC3Handlers } from './handlers/fdc3/1.2/index';
+import { register as registerFDC3Handlers } from './handlers/fdc3/2.0/index';
 import { FDC3Response } from './types/FDC3Message';
+import { ChannelData } from './types/Channel';
 import { Directory } from './directory/directory';
 import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { fdc3_1_2_AppDirectoryLoader } from './directory/fdc3-12-loader';

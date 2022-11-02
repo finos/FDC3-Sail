@@ -689,11 +689,13 @@ export class Workspace {
             }
           }),
         );
+
         if (this.channelWindow) {
           this.channelWindow.webContents.send(RUNTIME_TOPICS.CHANNEL_SELECTED, {
             channel: channel,
           });
         }
+
         if (this.window) {
           this.window.webContents.send(RUNTIME_TOPICS.CHANNEL_SELECTED, {
             channel: channel,

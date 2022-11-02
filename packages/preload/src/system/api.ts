@@ -1,9 +1,9 @@
 import { ipcRenderer } from 'electron';
-import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
-import { TARGETS } from '../../../main/src/constants';
-import { channels } from '../../../main/src/system-channels';
+import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
+import { TARGETS } from '/@main/constants';
+import { userChannels } from '/@main/handlers/fdc3/userChannels';
 import { Context } from '@finos/fdc3';
-import { FDC3_TOPICS } from '../../../main/src/handlers/fdc3/1.2/topics';
+import { FDC3_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 
 let id: string | undefined = undefined;
 let intent: string | undefined = undefined;
@@ -105,7 +105,7 @@ ipcRenderer.on(RUNTIME_TOPICS.REMOVE_TAB, (event, args) => {
 ipcRenderer.on(RUNTIME_TOPICS.CHANNEL_SELECTED, async (event, args) => {
   const channel =
     args.channel !== 'default'
-      ? channels.find((c) => {
+      ? userChannels.find((c) => {
           return c.id === args.channel;
         })
       : { id: 'default', displayMetadata: { color: '', color2: '' } };

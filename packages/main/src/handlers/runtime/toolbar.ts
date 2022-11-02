@@ -6,6 +6,7 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   //bring selected browserview to front
   const workspace = runtime?.getWorkspace(message.source);
+
   if (workspace) {
     const template = [
       {
