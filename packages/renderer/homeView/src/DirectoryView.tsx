@@ -23,7 +23,7 @@ export class DirectoryView extends React.Component<
   }
 
   componentDidMount() {
-    document.addEventListener('fdc3Ready', (async () => {
+    const onFDC3Ready = async () => {
       //fetch apps from the directory, using system API (only available to system apps)
 
       const apps = await globalThis.sail.getApps();
@@ -38,7 +38,13 @@ export class DirectoryView extends React.Component<
         }
       });
       this.setState({ apps: apps });
-    }) as EventListener);
+    };
+
+    if (window.fdc3) {
+      onFDC3Ready();
+    } else {
+      document.addEventListener('fdc3Ready', onFDC3Ready);
+    }
   }
 
   resultSelected(result: any) {
