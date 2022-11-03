@@ -99,4 +99,12 @@ test('Retrieve just intent data', async () => {
   expect(intents1['ViewNews']).toBeDefined();
   const intents2 = directory.retrieveAllIntentsByName('ViewNews');
   expect(intents2.length).toEqual(1);
+
+  const intents3 = directory.retrieveAllIntentsByContext('fdc3.instrument');
+  expect(Object.keys(intents3).length).toEqual(3);
+  expect(Object.keys(intents3)).toEqual([
+    'ViewChart',
+    'myApp.GetPrice',
+    'ViewNews',
+  ]);
 });

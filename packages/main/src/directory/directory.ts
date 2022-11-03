@@ -8,7 +8,10 @@ export type DirectoryApp = schemas['Application'];
 export type DirectoryIcon = schemas['Icon'];
 export type DirectoryScreenshot = schemas['Screenshot'];
 export type DirectoryInterop = schemas['Interop'];
-export type DirectoryIntent = schemas['Intent'];
+export type DirectoryIntent = schemas['Intent'] & {
+  // this allows us to refer back to the app creating this intent
+  app: DirectoryApp;
+};
 export type DirectoryAppLaunchDetails = schemas['LaunchDetails'];
 export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
 
@@ -91,6 +94,13 @@ export class Directory {
     return this.retrieve((app) => app.name == name);
   }
 
+  /**
+   * For FDC3 2, retrieves by appId
+   */
+  retrieveByAppId(appId: string): DirectoryApp[] {
+    return this.retrieve((app) => app.appId == appId);
+  }
+
   retrieveByContextType(contextType: string): DirectoryApp[] {
     return this.retrieve((d) => {
       const listensFor = Object.values(d.interop?.intents?.listensFor ?? {});
@@ -103,18 +113,24 @@ export class Directory {
   }
 
   retrieveByIntentAndContextType(
-    intent: string,
-    contextType?: string,
+    intent: string | null = null,
+    contextType: string | null = null,
   ): DirectoryApp[] {
     return this.retrieve((d) => {
       const listensFor = d.interop?.intents?.listensFor ?? {};
-      if (!Object.keys(listensFor).includes(intent)) {
-        return false;
-      }
-
-      if (contextType != null) {
+      if (intent && contextType) {
         const theIntent = listensFor[intent] as DirectoryIntent;
         return theIntent && theIntent.contexts.includes(contextType);
+      } else if (intent != null) {
+        if (!Object.keys(listensFor).includes(intent)) {
+          return false;
+        }
+      } else if (contextType != null) {
+        return (
+          Object.values(listensFor).filter((v) =>
+            v.contexts.includes(contextType),
+          ).length > 0
+        );
       }
 
       return true;
@@ -146,7 +162,8 @@ export class Directory {
     this.retrieveAll().forEach((d) => {
       const lf = d.interop?.intents?.listensFor ?? {};
       Object.keys(lf).forEach((intent) => {
-        const intentData = lf[intent];
+        const intentData = { ...lf[intent] } as DirectoryIntent;
+        intentData.app = d;
         if (!out[intent]) {
           out[intent] = [];
         }
@@ -160,5 +177,27 @@ export class Directory {
 
   retrieveAllIntentsByName(i: string): DirectoryIntent[] {
     return this.retrieveAllIntents()[i];
+  }
+
+  retrieveAllIntentsByContext(contextType: string): {
+    [index: string]: DirectoryIntent[];
+  } {
+    const all = this.retrieveAllIntents();
+    const out: { [index: string]: DirectoryIntent[] } = {};
+
+    Object.keys(all).forEach((k) => {
+      const intentValues = all[k];
+      intentValues
+        .filter((intent) => intent.contexts.includes(contextType))
+        .forEach((i) => {
+          if (out[k] == undefined) {
+            out[k] = [i];
+          } else {
+            out[k].push(i);
+          }
+        });
+    });
+
+    return out;
   }
 }
