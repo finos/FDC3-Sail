@@ -1,8 +1,11 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { DirectoryApp } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
 import { FDC3_1_2_TOPICS } from '/@/handlers/fdc3/1.2/topics';
+import {
+  DirectoryApp,
+  DirectoryAppLaunchDetailsWeb,
+} from '/@/directory/directory';
 
 export const resolveIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
@@ -16,9 +19,12 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const runtime = getRuntime();
     if (runtime) {
       const win = runtime.createWorkspace();
-      const view = win.createView(data.start_url, {
-        directoryData: data as DirectoryApp,
-      });
+      const view = win.createView(
+        (data.details as DirectoryAppLaunchDetailsWeb).url,
+        {
+          directoryData: data as DirectoryApp,
+        },
+      );
 
       //set pending intent and context
       view.setPendingIntent(

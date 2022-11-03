@@ -1,5 +1,4 @@
 import { WebContents } from 'electron';
-import { DirectoryApp } from './FDC3Data';
 
 /**
  * represents an app instance when resolving intents
@@ -29,6 +28,7 @@ export enum InstanceTypeEnum {
  */
 
 import { Context, ContextHandler, Listener } from '@finos/fdc3';
+import { DirectoryApp } from '/@/directory/directory';
 
 /**
  * An interface that relates an instance of an app to other apps

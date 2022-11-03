@@ -22,7 +22,7 @@ export const findIntent = async (message: RuntimeMessage) => {
       .retrieveByIntentAndContextType(intent, context.type);
 
     const intentDisplayName =
-      runtime.getDirectory().retreiveAllIntentsByName(intent)[0]?.displayName ??
+      runtime.getDirectory().retrieveAllIntentsByName(intent)[0]?.displayName ??
       intent;
 
     const r: AppIntent = {
@@ -37,41 +37,20 @@ export const findIntent = async (message: RuntimeMessage) => {
 export const findIntentsByContext = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
   const context = message.data && message.data.context;
+
   if (context && context.type) {
-    const d: Array<DirectoryApp> = runtime
+    const matchingIntents: { [key: string]: DirectoryIntent[] } = runtime
       .getDirectory()
-      .retrieveByContextType(context.type);
+      .retrieveAllIntentsByContext(context.type);
 
-    const matches: { [intentName: string]: DirectoryApp[] } = {};
-    const intentData: { [intentName: string]: DirectoryIntent } = {};
-
-    d.forEach((app) => {
-      const intents = app?.interop?.intents?.listensFor ?? {};
-      Object.keys(intents).forEach((intent) => {
-        const values = intents[intent];
-        values
-          .filter((id) => id.contexts.includes(context.type))
-          .forEach((id) => {
-            if (!intentData[intent]) {
-              intentData[intent] = id;
-            }
-
-            if (!matches[intent]) {
-              matches[intent] = [];
-            }
-
-            matches[intent].push(app);
-          });
-      });
-    });
-
-    const result: AppIntent[] = Object.keys(matches).map((k) => {
+    const result: AppIntent[] = Object.keys(matchingIntents).map((k) => {
+      const apps = matchingIntents[k].map((o) => convertApp(o.app));
       return {
         intent: {
           name: k,
-          displayName: intentData[k].displayName,
+          displayName: matchingIntents[k][0].displayName,
         },
-        apps: matches[k].map((a) => convertApp(a)),
+        apps: apps,
       } as AppIntent;
     });
 
