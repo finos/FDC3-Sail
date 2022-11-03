@@ -3,7 +3,6 @@
  * Do not make direct changes to the file.
  */
 
-/* tslint:disable */
 export interface paths {
   '/v2/apps/{appId}': {
     get: {
@@ -436,7 +435,7 @@ export interface components {
          *
          * Used to support intent resolution by desktop agents. Replaces the `intents` element used in appD records prior to FDC3 2.0.
          */
-        listensFor?: { [key: string]: components['schemas']['Intent'][] };
+        listensFor?: { [key: string]: components['schemas']['Intent'] };
         /**
          * @description A mapping of Intent names that an app raises (via `fdc3.raiseIntent`) to an array of context
          * type names that it may be raised with.

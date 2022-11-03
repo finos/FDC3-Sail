@@ -1,7 +1,11 @@
 import { expect, test } from 'vitest';
 import { fdc3_2_0_AppDirectoryLoader } from '../src/directory/fdc3-20-loader';
 import { fdc3_1_2_AppDirectoryLoader } from '../src/directory/fdc3-12-loader';
-import { Directory, DirectoryApp } from '../src/directory/directory';
+import {
+  Directory,
+  DirectoryApp,
+  DirectoryIntent,
+} from '../src/directory/directory';
 
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
 const LOCAL_V2 = 'tests/v2/apps/appd-record.v2.json';
@@ -45,8 +49,10 @@ test('Test Returned Intents', async () => {
     directory.retrieveByIntentAndContextType('ViewNews');
   expect(matchedApps.length).toEqual(1);
   expect(matchedApps[0].appId).toEqual('News-Demo');
-  const listensFor = matchedApps[0]?.interop?.intents?.listensFor as any;
-  const intent = listensFor['ViewNews'][0];
+  const listensFor = matchedApps[0]?.interop?.intents?.listensFor as {
+    [key: string]: DirectoryIntent;
+  };
+  const intent = listensFor['ViewNews'];
   expect(intent?.displayName).toEqual('View News');
   expect(intent?.contexts).toContain('fdc3.instrument');
 
@@ -56,10 +62,12 @@ test('Test Returned Intents', async () => {
     'fdc3.instrument',
   );
   expect(matchedApps2.length).toEqual(1);
-  expect(matchedApps[0].appId).toEqual('my-application');
+  expect(matchedApps2[0].appId).toEqual('my-application');
 
-  const listensFor2 = matchedApps[0]?.interop?.intents?.listensFor as any;
-  const intent2 = listensFor2['ViewChart'][0];
+  const listensFor2 = matchedApps2[0]?.interop?.intents?.listensFor as {
+    [key: string]: DirectoryIntent;
+  };
+  const intent2 = listensFor2['ViewChart'];
   expect(intent2?.displayName).toEqual('View Chart');
   expect(intent2?.contexts).toContain('fdc3.instrument');
 });
@@ -78,4 +86,17 @@ test('Full Text Search', async () => {
   expect(directory.retrieveByQuery('FDC3 fully')[0].appId).toEqual(
     'my-application',
   );
+});
+
+test('Retrieve just intent data', async () => {
+  const directory = new Directory(
+    [LOCAL_V2, LOCAL_V1],
+    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+  );
+
+  await directory.reload();
+  const intents1 = directory.retrieveAllIntents();
+  expect(intents1['ViewNews']).toBeDefined();
+  const intents2 = directory.retrieveAllIntentsByName('ViewNews');
+  expect(intents2.length).toEqual(1);
 });

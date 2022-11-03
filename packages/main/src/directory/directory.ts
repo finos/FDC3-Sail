@@ -113,14 +113,8 @@ export class Directory {
       }
 
       if (contextType != null) {
-        const theIntents = listensFor[intent] as DirectoryIntent[];
-        const found = theIntents
-          .map((i) => {
-            const cs = i.contexts;
-            return cs == null || cs.includes(contextType);
-          })
-          .reduce((a, b) => a || b);
-        return found;
+        const theIntent = listensFor[intent] as DirectoryIntent;
+        return theIntent && theIntent.contexts.includes(contextType);
       }
 
       return true;
@@ -157,14 +151,14 @@ export class Directory {
           out[intent] = [];
         }
 
-        intentData.forEach((id) => out[intent].push(id));
+        out[intent].push(intentData);
       });
     });
 
     return out;
   }
 
-  retreiveAllIntentsByName(i: string): DirectoryIntent[] {
+  retrieveAllIntentsByName(i: string): DirectoryIntent[] {
     return this.retrieveAllIntents()[i];
   }
 }

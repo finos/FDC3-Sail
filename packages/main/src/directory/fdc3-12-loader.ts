@@ -26,9 +26,9 @@ const convertSingleApp = (data: DirectoryAppV1) =>
   [convertApp(data)] as DirectoryApp[];
 
 function convertIntents(intents: DirectoryIntentV1[]): {
-  [key: string]: DirectoryIntent[];
+  [key: string]: DirectoryIntent;
 } {
-  const out: { [index: string]: DirectoryIntent[] } = {};
+  const out: { [index: string]: DirectoryIntent } = {};
   intents.forEach((i) => {
     const displayName = i.displayName ?? i.name;
     const key = i.name;
@@ -37,11 +37,7 @@ function convertIntents(intents: DirectoryIntentV1[]): {
       displayName: displayName,
     } as DirectoryIntent;
 
-    if (out[key]) {
-      out[key].push(intent);
-    } else {
-      out[key] = [intent];
-    }
+    out[key] = intent;
   });
 
   return out;
