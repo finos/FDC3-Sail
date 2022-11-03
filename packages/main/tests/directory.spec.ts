@@ -56,3 +56,19 @@ test('Test Returned Intents', async () => {
   );
   expect(matchedApps2.length).toEqual(1);
 });
+
+test('Full Text Search', async () => {
+  const directory = new Directory(
+    [LOCAL_V2, LOCAL_V1],
+    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+  );
+
+  await directory.reload();
+  expect(directory.retrieveAll().length).toEqual(2);
+
+  expect(directory.retrieveByQuery('NewsAPI')[0].appId).toEqual('News-Demo');
+  expect(directory.retrieveByQuery('Sasquatch').length).toEqual(0);
+  expect(directory.retrieveByQuery('FDC3 fully')[0].appId).toEqual(
+    'my-application',
+  );
+});

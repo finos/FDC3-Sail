@@ -22,10 +22,12 @@ export class Directory {
   loaders: Loader[];
   urls: string[];
   apps: DirectoryApp[] = [];
+  fullText: Map<string, DirectoryApp>;
 
   constructor(urls: string[], loaders: Loader[]) {
     this.loaders = loaders;
     this.urls = urls;
+    this.fullText = new Map();
   }
 
   /**
@@ -40,6 +42,7 @@ export class Directory {
       )
       .then((result) => {
         this.apps = result;
+        this.fullText = new Map(result.map((o) => [JSON.stringify(o), o]));
         console.log('Loaded ' + result.length + ' apps');
         return result.length;
       })
@@ -125,9 +128,19 @@ export class Directory {
   }
 
   retrieveByQuery(query: string): DirectoryApp[] {
-    // tbd
-    console.log('Directory Query: ' + query);
-    return this.apps;
+    const terms = query.split(' ');
+    const keys: string[] = Array.from(this.fullText.keys());
+    const matches: DirectoryApp[] = keys
+      .filter((k) => {
+        // must match all terms
+        return terms.filter((t) => k.includes(t)).length == terms.length;
+      })
+      .map((k) => {
+        const entry = this.fullText.get(k) as DirectoryApp;
+        return entry;
+      });
+
+    return matches;
   }
 
   retrieveAllIntents(): { [index: string]: DirectoryIntent[] } {
