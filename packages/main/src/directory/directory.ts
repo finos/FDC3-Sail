@@ -35,7 +35,6 @@ export class Directory {
     return Promise.all(this.urls.map((u) => this.load(u)))
       .then((data) =>
         data.flatMap((d) => {
-          console.log('here');
           return d;
         }),
       )
@@ -45,7 +44,7 @@ export class Directory {
         return result.length;
       })
       .catch((err) => {
-        console.log('Problem loading app directory');
+        console.error('Problem loading app directory: ' + err);
         throw err;
       });
   }
