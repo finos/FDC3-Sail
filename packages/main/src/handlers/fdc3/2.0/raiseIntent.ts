@@ -1,10 +1,11 @@
 import {
   ResolveError,
-  TargetApp,
+  AppIdentifier,
   AppMetadata,
   IntentResolution,
+  IntentResult,
   IntentMetadata,
-} from 'fdc3-1.2';
+} from '@finos/fdc3';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import fetch from 'electron-fetch';
@@ -16,33 +17,10 @@ import {
   FDC3AppDetail,
 } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import utils from '/@/utils';
-import { FDC3_1_2_TOPICS } from './topics';
-import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
+import { FDC3_2_0_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from '/@/handlers/fdc3/1.2/topics';
 import { ipcMain } from 'electron';
 import { RUNTIME_TOPICS } from '/@/handlers/runtime/topics';
-
-/**
- *
- * @param target
- * Given a TargetApp input, return the app Name or undefined
- */
-const resolveTargetAppToName = (target: TargetApp): string | undefined => {
-  if (!target) {
-    return undefined;
-  } else {
-    let name = undefined;
-    //is target typeof string?  if so, it is just going to be an app name
-    if (typeof target === 'string') {
-      name = target;
-    } else {
-      const app: AppMetadata = target as AppMetadata;
-      if (app && app.name) {
-        name = app.name;
-      }
-    }
-    return name;
-  }
-};
 
 /**
  *
@@ -50,29 +28,13 @@ const resolveTargetAppToName = (target: TargetApp): string | undefined => {
  * Given a TargetApp input, return a search query string to append to an appD search call
  * e.g.  '&name=AppName' or '&text=AppTitle'
  */
-const resolveTargetAppToQuery = (target: TargetApp): string => {
+const resolveAppIdentifierToQuery = (target: AppIdentifier): string => {
   if (!target) {
     return '';
   } else {
     let query = '';
-    //is there a valid app name?
-    const name = resolveTargetAppToName(target);
-    if (name) {
-      query = `&name=${name}`;
-    } else {
-      const app: AppMetadata = target as AppMetadata;
-      if (app) {
-        //construct a text search, prefering id, then title, then description
-        //this is currently punting on a more complicated heuristic on potentailly ambiguous results (by version, etc)
-        if (app.appId) {
-          query = `&text=${app.appId}`;
-        } else if (app.title) {
-          query = `&text=${app.title}`;
-        } else if (app.description) {
-          query = `&text=${app.description}`;
-        }
-      }
-    }
+
+    query = `&name=${target.appId}`;
     return query;
   }
 };
@@ -127,17 +89,22 @@ const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
               sView.parent.window.webContents.send(RUNTIME_TOPICS.SELECT_TAB, {
                 viewId: sView.id,
               });
-              const id = (sView && sView.id) || null;
-              const appName: string = sView.directoryData
-                ? sView.directoryData.name
-                : 'unknown';
+              const id = (sView && sView.id) || '';
+
               resolve({
                 source: {
-                  name: appName,
-                  title: sView.getTitle(),
-                  appId: id || '',
+                  appId: id,
                 },
+                intent: message.data.intent,
                 version: '1.2',
+                getResult: (): Promise<IntentResult> => {
+                  return new Promise((resolve) => {
+                    //to do...
+                    resolve({
+                      type: 'emptyResult',
+                    });
+                  });
+                },
               });
             }
           }
@@ -298,7 +265,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
   const query =
     message.data && message.data.target
-      ? resolveTargetAppToQuery(message.data.target)
+      ? resolveAppIdentifierToQuery(message.data.target)
       : '';
 
   const data: Array<DirectoryApp> = (await runtime.fetchFromDirectory(
@@ -454,7 +421,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
   /**
    * To Do: Support additional AppMetadata searching (other than name)
    */
-  const target: TargetApp | undefined =
+  const target: AppIdentifier =
     (message.data && message.data.target) || undefined;
   const name: string | undefined = target
     ? typeof target === 'string'

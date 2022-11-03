@@ -21,3 +21,8 @@ export const RUNTIME_TOPICS = {
   RES_LOAD_RESULTS: 'runtime:loadResolverResults',
   RES_RESOLVE_INTENT: 'runtime:resolveIntent',
 };
+
+export const SAIL_TOPICS = {
+  START: 'sail:start',
+  INITIATE: 'sail:initiate',
+};

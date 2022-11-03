@@ -14,18 +14,31 @@ import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
 import { Pending } from './types/Pending';
-import { TOPICS, TOOLBAR_HEIGHT } from './constants';
-import { FDC3_TOPICS } from '/@/handlers/fdc3/1.2/topics';
+import { TOOLBAR_HEIGHT } from './constants';
+import { SAIL_TOPICS } from '/@/handlers/runtime/topics';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 
-const VIEW_PRELOAD = join(__dirname, '../../preload/dist/fdc3-2.0/index.cjs');
+const FDC3_1_2_PRELOAD = join(
+  __dirname,
+  '../../preload/dist/fdc3-1.2/index.cjs',
+);
+
+const FDC3_2_0_PRELOAD = join(
+  __dirname,
+  '../../preload/dist/fdc3-2.0/index.cjs',
+);
 
 const HOME_PRELOAD = join(__dirname, '../../preload/dist/systemView/index.cjs');
 
 export class View {
-  constructor(url?: string | null, config?: ViewConfig, parent?: Workspace) {
+  constructor(
+    url?: string | null,
+    config?: ViewConfig,
+    parent?: Workspace,
+    fdc3Version?: '2.0' | '1.2',
+  ) {
     const VIEW_DEFAULT =
       import.meta.env.DEV &&
       import.meta.env.VITE_DEV_SERVER_DEFAULT_URL !== undefined
@@ -36,7 +49,7 @@ export class View {
           ).toString();
 
     const setId = () => {
-      this.content.webContents.send(TOPICS.FDC3_START, {
+      this.content.webContents.send(SAIL_TOPICS.START, {
         id: this.id,
         directory: this.directoryData || null,
       });
@@ -46,8 +59,6 @@ export class View {
 
     const initView = (config?: ViewConfig) => {
       const doInit = () => {
-        console.log('***** init view');
-
         setId();
         this.size();
         //call onInit handler, if in the config
@@ -61,16 +72,28 @@ export class View {
 
     this.id = randomUUID();
     this.parent = parent;
+
+    if (fdc3Version) {
+      this.fdc3Version = fdc3Version;
+    }
+
     const runtime = getRuntime();
+
     runtime.getViews().set(this.id, this);
 
     if (config) {
       this.directoryData = config.directoryData;
     }
 
+    const preload = url
+      ? this.fdc3Version === '1.2'
+        ? FDC3_1_2_PRELOAD
+        : FDC3_2_0_PRELOAD
+      : HOME_PRELOAD;
+
     this.content = new BrowserView({
       webPreferences: {
-        preload: url ? VIEW_PRELOAD : HOME_PRELOAD,
+        preload: preload,
         devTools: true,
         contextIsolation: true,
         webSecurity: true,
@@ -81,7 +104,7 @@ export class View {
     this.content.setBackgroundColor('#fff');
 
     this.content.webContents.on('ipc-message', (event, channel) => {
-      if (channel === FDC3_TOPICS.INITIATE && !this.initiated) {
+      if (channel === SAIL_TOPICS.INITIATE && !this.initiated) {
         initView(config);
       }
     });
@@ -167,6 +190,8 @@ export class View {
   parent?: Workspace;
 
   initiated = false;
+
+  fdc3Version: '2.0' | '1.2' = '2.0';
 
   private type: 'system' | 'app' = 'app';
 

@@ -1,6 +1,6 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_2_0_TOPICS } from './topics';
 
 export const dropIntentListener = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
@@ -37,7 +37,7 @@ export const addIntentListener = async (message: RuntimeMessage) => {
           console.log('applying pending intent', pIntent);
           //refactor with other instances of this logic
           if (view && view.content) {
-            view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+            view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
               topic: 'intent',
               data: {
                 intent: pIntent.intent,
@@ -46,11 +46,6 @@ export const addIntentListener = async (message: RuntimeMessage) => {
               source: pIntent.source,
             });
           }
-          //bringing the tab to front conditional on the type of intent
-          /* if (! utils.isDataIntent(pIntent.intent)){
-                                utils.bringToFront(port.sender.tab);
-                            }*/
-          //remove the applied intent
           view.removePendingIntent(index);
         }
       });
