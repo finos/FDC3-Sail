@@ -128,6 +128,9 @@ export class Directory {
   }
 
   retrieveByQuery(query: string): DirectoryApp[] {
+    if (query.trim().length == 0) {
+      return this.retrieveAll();
+    }
     const terms = query.split(' ');
     const keys: string[] = Array.from(this.fullText.keys());
     const matches: DirectoryApp[] = keys
