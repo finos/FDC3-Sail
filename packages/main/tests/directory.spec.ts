@@ -44,6 +44,7 @@ test('Test Returned Intents', async () => {
   const matchedApps: DirectoryApp[] =
     directory.retrieveByIntentAndContextType('ViewNews');
   expect(matchedApps.length).toEqual(1);
+  expect(matchedApps[0].appId).toEqual('News-Demo');
   const listensFor = matchedApps[0]?.interop?.intents?.listensFor as any;
   const intent = listensFor['ViewNews'][0];
   expect(intent?.displayName).toEqual('View News');
@@ -51,10 +52,16 @@ test('Test Returned Intents', async () => {
 
   // retrieve by intent and context
   const matchedApps2 = directory.retrieveByIntentAndContextType(
-    'ViewNews',
+    'ViewChart',
     'fdc3.instrument',
   );
   expect(matchedApps2.length).toEqual(1);
+  expect(matchedApps[0].appId).toEqual('my-application');
+
+  const listensFor2 = matchedApps[0]?.interop?.intents?.listensFor as any;
+  const intent2 = listensFor2['ViewChart'][0];
+  expect(intent2?.displayName).toEqual('View Chart');
+  expect(intent2?.contexts).toContain('fdc3.instrument');
 });
 
 test('Full Text Search', async () => {
