@@ -8,7 +8,6 @@ import {
 } from '@finos/fdc3';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
-import fetch from 'electron-fetch';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import {
   FDC3App,
@@ -413,24 +412,15 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
       ? target
       : (target as AppMetadata).name
     : '';
-  const directoryUrl = await utils.getDirectoryUrl();
 
-  const _r = await fetch(
-    `${directoryUrl}/apps/search?context=${context}&name=${name}`,
-  );
-  if (_r) {
-    let data = null;
-    try {
-      data = await _r.json();
-    } catch (err) {
-      console.log('error parsing json', err);
-    }
+  const data = getRuntime()
+    .getDirectory()
+    .retrieveByIntentAndContextType(name, context.type);
 
-    if (data) {
-      data.forEach((entry: DirectoryApp) => {
-        r.push({ type: 'directory', details: { directoryData: entry } });
-      });
-    }
+  if (data) {
+    data.forEach((entry: DirectoryApp) => {
+      r.push({ type: 'directory', details: { directoryData: entry } });
+    });
   }
 
   if (r.length > 0) {

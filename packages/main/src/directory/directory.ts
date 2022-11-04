@@ -138,7 +138,7 @@ export class Directory {
   }
 
   retrieveByQuery(query: string): DirectoryApp[] {
-    if (query.trim().length == 0) {
+    if (query?.trim()?.length ?? 0 == 0) {
       return this.retrieveAll();
     }
     const terms = query.split(' ');

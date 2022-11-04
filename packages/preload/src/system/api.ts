@@ -37,7 +37,10 @@ ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, (event, args) => {
   }
 });
 
-const resolveIntent = (data: any) => {
+const resolveIntent = (data: {
+  selectedIntent: any;
+  selected: { details: any };
+}) => {
   //no op if intent is not defined
   if (data.selectedIntent || intent) {
     ipcRenderer.send(FDC3_1_2_TOPICS.RESOLVE_INTENT, {
@@ -54,7 +57,7 @@ const resolveIntent = (data: any) => {
 const getApps = () => {
   return new Promise((resolve) => {
     ipcRenderer.once(
-      `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-/apps`,
+      `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-`,
       (event, args) => {
         const results = args.data;
         resolve(results);
@@ -66,7 +69,7 @@ const getApps = () => {
         source: id,
         data: {
           sourceType: 'view',
-          query: `/apps`,
+          query: '',
         },
       });
     } else {
@@ -75,7 +78,7 @@ const getApps = () => {
           source: id,
           data: {
             sourceType: 'view',
-            query: `/apps`,
+            query: '',
           },
         });
       });
