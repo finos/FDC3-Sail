@@ -5,6 +5,7 @@ import {
   Directory,
   DirectoryApp,
   DirectoryIntent,
+  getSailManifest,
 } from '../src/directory/directory';
 
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
@@ -81,8 +82,8 @@ test('Full Text Search', async () => {
   await directory.reload();
   expect(directory.retrieveAll().length).toEqual(2);
 
-  expect(directory.retrieveByQuery('NewsAPI')[0].appId).toEqual('News-Demo');
   expect(directory.retrieveByQuery('Sasquatch').length).toEqual(0);
+  expect(directory.retrieveByQuery('NewsAPI')[0].appId).toEqual('News-Demo');
   expect(directory.retrieveByQuery('FDC3 fully')[0].appId).toEqual(
     'my-application',
   );
@@ -107,4 +108,26 @@ test('Retrieve just intent data', async () => {
     'myApp.GetPrice',
     'ViewNews',
   ]);
+});
+
+test('Ensure Manifests Set Correctly', async () => {
+  const directory = new Directory(
+    [LOCAL_V2, LOCAL_V1],
+    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+  );
+  await directory.reload();
+
+  // test 1.2 manifest is set correctly
+  const sailManifest1 = getSailManifest(
+    directory.retrieveByAppId('News-Demo')[0],
+  );
+  expect(sailManifest1['inject-api']).toEqual('1.2');
+  expect(sailManifest1.searchable).toEqual(true);
+
+  // test 2.0 defaulting
+  const sailManifest2 = getSailManifest(
+    directory.retrieveByAppId('my-application')[0],
+  );
+  expect(sailManifest2['inject-api']).toEqual('2.0');
+  expect(sailManifest2.searchable).toEqual(true);
 });

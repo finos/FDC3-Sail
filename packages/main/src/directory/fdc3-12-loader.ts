@@ -1,9 +1,11 @@
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
+  DirectoryAppSailManifest,
   DirectoryIcon,
   DirectoryIntent,
   DirectoryScreenshot,
+  HostManifest,
   Loader,
 } from './directory';
 import { loadLocally, loadRemotely } from './fdc3-20-loader';
@@ -18,6 +20,11 @@ export type DirectoryAppV1 = schemas['ApplicationV1'];
 export type DirectoryIconV1 = schemas['IconV1'];
 export type DirectoryIntentV1 = schemas['IntentV1'];
 export type AllApplicationsResponseV1 = schemas['ApplicationSearchResponseV1'];
+
+const DEFAULT_1_2_MANIFEST: DirectoryAppSailManifest = {
+  'inject-api': '1.2',
+  searchable: true,
+};
 
 const convertToDirectoryList = (data: AllApplicationsResponseV1) =>
   data.applications?.map((a) => convertApp(a)) as DirectoryApp[];
@@ -63,9 +70,17 @@ function convertIcons(d: DirectoryAppV1): DirectoryIcon[] {
   );
 }
 
+type WithUrl = { start_url: string };
+
 function convertDetails(d: DirectoryAppV1): DirectoryAppLaunchDetailsWeb {
   return {
-    url: (d as any)['start_url'],
+    url: (d as unknown as WithUrl)['start_url'],
+  };
+}
+
+function convertHostManifests(): { [index: string]: HostManifest | string } {
+  return {
+    sail: DEFAULT_1_2_MANIFEST,
   };
 }
 
@@ -79,6 +94,7 @@ function convertApp(d: DirectoryAppV1): DirectoryApp {
     icons: convertIcons(d),
     screenshots: convertScreenshots(d),
     details: convertDetails(d),
+    hostManifests: convertHostManifests(d),
     interop: {
       intents: {
         listensFor: convertIntents(d.intents ?? []),

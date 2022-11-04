@@ -14,6 +14,11 @@ export type DirectoryIntent = schemas['Intent'] & {
 };
 export type DirectoryAppLaunchDetails = schemas['LaunchDetails'];
 export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
+export type HostManifest = schemas['HostManifest'];
+export type DirectoryAppSailManifest = {
+  'inject-api': string;
+  searchable: boolean;
+};
 
 /**
  * A loader takes a URL and attempts to load it into an array of DirectoryApp.
@@ -138,7 +143,7 @@ export class Directory {
   }
 
   retrieveByQuery(query: string): DirectoryApp[] {
-    if (query?.trim()?.length ?? 0 == 0) {
+    if (!query || query.trim().length == 0) {
       return this.retrieveAll();
     }
     const terms = query.split(' ');
@@ -200,4 +205,9 @@ export class Directory {
 
     return out;
   }
+}
+
+export function getSailManifest(d: DirectoryApp): DirectoryAppSailManifest {
+  // because of defaulting, this should always return something
+  return d.hostManifests?.sail as DirectoryAppSailManifest;
 }

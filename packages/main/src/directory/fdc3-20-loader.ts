@@ -1,5 +1,5 @@
 import { readFile } from 'fs/promises';
-import { DirectoryApp, Loader } from './directory';
+import { DirectoryApp, DirectoryAppSailManifest, Loader } from './directory';
 import fetch from 'electron-fetch';
 import { components } from './generated-schema';
 
@@ -10,8 +10,37 @@ type schemas = components['schemas'];
 export type AllApplicationsResponse = schemas['AllApplicationsResponse'];
 
 const convertToDirectoryList = (data: AllApplicationsResponse) =>
-  data.applications as DirectoryApp[];
-const convertSingleApp = (data: DirectoryApp) => [data] as DirectoryApp[];
+  data.applications?.map(applyDefaults) as DirectoryApp[];
+const convertSingleApp = (data: DirectoryApp) =>
+  [applyDefaults(data)] as DirectoryApp[];
+
+function applyDefaults(d: DirectoryApp): DirectoryApp {
+  // first, check manifest is set
+  const hostManifests = d.hostManifests ?? {};
+  if (!d.hostManifests) {
+    d.hostManifests = hostManifests;
+  }
+
+  let sailManifest = hostManifests.sail;
+
+  if (!sailManifest) {
+    sailManifest = {};
+    hostManifests.sail = sailManifest;
+  }
+
+  const typedManifest = sailManifest as DirectoryAppSailManifest;
+
+  // check version
+  if (!typedManifest['inject-api']) {
+    typedManifest['inject-api'] = '2.0';
+  }
+
+  if (!typedManifest['searchable']) {
+    typedManifest['searchable'] = true;
+  }
+
+  return d;
+}
 
 export function loadRemotely(u: string) {
   return fetch(u).then((response) => response.json());
