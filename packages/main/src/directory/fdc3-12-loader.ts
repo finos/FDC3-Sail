@@ -94,7 +94,7 @@ function convertApp(d: DirectoryAppV1): DirectoryApp {
     icons: convertIcons(d),
     screenshots: convertScreenshots(d),
     details: convertDetails(d),
-    hostManifests: convertHostManifests(d),
+    hostManifests: convertHostManifests(),
     interop: {
       intents: {
         listensFor: convertIntents(d.intents ?? []),
