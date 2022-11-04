@@ -52,6 +52,14 @@ interface FDC3ReturnListener {
   listener: { (msg: FDC3Message): void };
 }
 
+//backwards compatability support for fdc3 namespaced intents
+const stripNS = (intent: string): string => {
+  if (intent.startsWith('fdc3.')) {
+    intent = intent.substring(5);
+  }
+  return intent;
+};
+
 //flag to indicate the background script is ready for fdc3!
 let instanceId = '';
 
@@ -342,7 +350,7 @@ export const createAPI = (): DesktopAgent => {
       app?: TargetApp,
     ): Promise<IntentResolution> => {
       return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
-        intent: intent,
+        intent: stripNS(intent),
         context: context,
         target: app,
       });
@@ -381,6 +389,7 @@ export const createAPI = (): DesktopAgent => {
 
     addIntentListener: (intent: string, listener: ContextHandler): Listener => {
       const listenerId: string = guid();
+      intent = stripNS(intent);
       if (!_intentListeners.has(intent)) {
         _intentListeners.set(intent, new Map());
       }

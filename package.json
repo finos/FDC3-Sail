@@ -28,7 +28,8 @@
     "typecheck:renderer": "npm run build:preload:types && tsc --noEmit -p packages/renderer/tsconfig.json",
     "typecheck:directory": "tsc --noEmit -p directory/tsconfig.json",
     "typecheck": "npm run typecheck:main",
-    "update-versions": "node scripts/update-electron-vendors.js"
+    "update-versions": "node scripts/update-electron-vendors.js",
+    "directory-openapi": "npx openapi-typescript packages/main/src/directory/app-directory-schema-2.0.yml --output packages/main/src/directory/generated-schema.ts"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^14.1.0",
@@ -50,6 +51,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jsdom": "^19.0.0",
     "nano-staged": "^0.5.0",
+    "openapi-typescript": "^5.4.1",
     "playwright": "^1.19.2",
     "prettier": "^2.5.1",
     "rollup-plugin-tsconfig-paths": "^1.4.0",

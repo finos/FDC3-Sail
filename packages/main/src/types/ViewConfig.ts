@@ -1,6 +1,6 @@
 import { Workspace } from '../workspace';
 import { View } from '../view';
-import { DirectoryApp } from './FDC3Data';
+import { DirectoryApp } from '../directory/directory';
 
 export interface ViewConfig {
   workspace?: Workspace;

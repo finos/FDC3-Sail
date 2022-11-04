@@ -11,7 +11,7 @@ import {
   Grid,
 } from '@mui/material';
 import { TOPICS } from '../../../main/src/constants';
-import { DirectoryApp } from '../../../main/src/types/FDC3Data';
+import { DirectoryApp } from '../../../main/src/directory/directory';
 
 export class DirectoryView extends React.Component<
   {},
@@ -30,8 +30,8 @@ export class DirectoryView extends React.Component<
       //clean up / normalize some of the directory data
       apps.forEach((app: DirectoryApp) => {
         //put in place holder images and icons if they aren't there...
-        if (!app.images) {
-          app.images = [];
+        if (!app.screenshots) {
+          app.screenshots = [];
         }
         if (!app.icons) {
           app.icons = [];
@@ -72,11 +72,11 @@ export class DirectoryView extends React.Component<
           {this.state.apps.map((app: DirectoryApp) => (
             <Grid item xs={4}>
               <Card sx={{ maxWidth: 345, minHeight: 350 }}>
-                {app.images.length > 0 ? (
-                  app.images.map((image) => (
+                {app.screenshots!!.length > 0 ? (
+                  app.screenshots!!.map((image) => (
                     <CardMedia
                       component="img"
-                      image={image.url}
+                      image={image.src}
                       height="120"
                     ></CardMedia>
                   ))
@@ -92,7 +92,7 @@ export class DirectoryView extends React.Component<
                   <Typography gutterBottom variant="h5" component="div">
                     {app.icons && app.icons.length > 0 && (
                       <img
-                        src={app.icons[0].icon}
+                        src={app.icons[0].src}
                         className="appIcon"
                         alt={`${app.name} - icon`}
                       ></img>
@@ -106,7 +106,9 @@ export class DirectoryView extends React.Component<
                 <CardActions>
                   <Button
                     onClick={() => {
-                      openApp(app.name);
+                      if (app.name) {
+                        openApp(app.name);
+                      }
                     }}
                     size="small"
                   >

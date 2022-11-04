@@ -1,0 +1,29 @@
+{
+  "intents": [
+    {
+      "name": "ViewNews",
+      "displayName": "View News",
+      "contexts": [
+        "fdc3.instrument"
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "icon": "https://newsapi.org/favicon-32x32.png"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://appd.kolbito.com/demos/news-demo/screen-1.png"
+    }
+  ],
+  "start_url": "https://appd.kolbito.com/demos/news-demo/",
+  "appId": "News-Demo",
+  "description": "Demo fdc3 news feed using services from NewsAPI.org",
+  "name": "News-Demo",
+  "manifest_type": "web",
+  "title": "News Feed Demo",
+  "manifest": "undefined/manifests/News-Demo",
+  "icon": "https://newsapi.org/favicon-32x32.png"
+}

@@ -8,7 +8,7 @@
 import { ViewConfig } from './types/ViewConfig';
 import { getRuntime } from './index';
 import { BrowserView } from 'electron';
-import { DirectoryApp } from './types/FDC3Data';
+import { DirectoryApp } from './directory/directory';
 import { Context } from '@finos/fdc3';
 import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
@@ -191,7 +191,7 @@ export class View {
 
   initiated = false;
 
-  fdc3Version: '2.0' | '1.2' = '2.0';
+  fdc3Version: '2.0' | '1.2' = '1.2';
 
   private type: 'system' | 'app' = 'app';
 

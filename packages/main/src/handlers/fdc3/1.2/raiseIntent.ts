@@ -7,75 +7,21 @@ import {
 } from 'fdc3-1.2';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
-import fetch from 'electron-fetch';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import {
-  DirectoryApp,
   FDC3App,
   IntentInstance,
   FDC3AppDetail,
 } from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import utils from '/@/utils';
 import { FDC3_1_2_TOPICS } from './topics';
-import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
 import { ipcMain } from 'electron';
 import { RUNTIME_TOPICS } from '/@/handlers/runtime/topics';
-
-/**
- *
- * @param target
- * Given a TargetApp input, return the app Name or undefined
- */
-const resolveTargetAppToName = (target: TargetApp): string | undefined => {
-  if (!target) {
-    return undefined;
-  } else {
-    let name = undefined;
-    //is target typeof string?  if so, it is just going to be an app name
-    if (typeof target === 'string') {
-      name = target;
-    } else {
-      const app: AppMetadata = target as AppMetadata;
-      if (app && app.name) {
-        name = app.name;
-      }
-    }
-    return name;
-  }
-};
-
-/**
- *
- * @param target
- * Given a TargetApp input, return a search query string to append to an appD search call
- * e.g.  '&name=AppName' or '&text=AppTitle'
- */
-const resolveTargetAppToQuery = (target: TargetApp): string => {
-  if (!target) {
-    return '';
-  } else {
-    let query = '';
-    //is there a valid app name?
-    const name = resolveTargetAppToName(target);
-    if (name) {
-      query = `&name=${name}`;
-    } else {
-      const app: AppMetadata = target as AppMetadata;
-      if (app) {
-        //construct a text search, prefering id, then title, then description
-        //this is currently punting on a more complicated heuristic on potentailly ambiguous results (by version, etc)
-        if (app.appId) {
-          query = `&text=${app.appId}`;
-        } else if (app.title) {
-          query = `&text=${app.title}`;
-        } else if (app.description) {
-          query = `&text=${app.description}`;
-        }
-      }
-    }
-    return query;
-  }
-};
+import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import {
+  DirectoryApp,
+  DirectoryAppLaunchDetailsWeb,
+} from '/@/directory/directory';
 
 const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
   return new Promise((resolve, reject) => {
@@ -128,9 +74,7 @@ const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
                 viewId: sView.id,
               });
               const id = (sView && sView.id) || null;
-              const appName: string = sView.directoryData
-                ? sView.directoryData.name
-                : 'unknown';
+              const appName: string = sView?.directoryData?.name ?? 'unknown';
               resolve({
                 source: {
                   name: appName,
@@ -160,36 +104,40 @@ const buildIntentInstanceTree = (
 ): Array<IntentInstance> => {
   const r: Array<IntentInstance> = [];
 
+  const found: Map<string, Array<FDC3App>> = new Map();
+  const intentMetadata: Array<IntentMetadata> = [];
+
   if (data) {
-    const found: Map<string, Array<FDC3App>> = new Map();
-    const intents: Array<IntentMetadata> = [];
     data.forEach((item) => {
-      if (item.details.directoryData && item.details.directoryData.intents) {
-        item.details.directoryData.intents.forEach((intent) => {
-          if (!found.has(intent.name)) {
-            intents.push({
-              name: intent.name,
-              displayName: intent.display_name,
-            });
-            found.set(intent.name, [item]);
-          } else {
-            const intents = found.get(intent.name);
-            if (intents) {
-              intents.push(item);
-            }
+      const intents =
+        item.details.directoryData?.interop?.intents?.listensFor ?? {};
+
+      Object.keys(intents).forEach((intentId) => {
+        if (!found.has(intentId)) {
+          const intent = intents[intentId];
+          intentMetadata.push({
+            name: intentId,
+            displayName: intent.displayName ?? intentId,
+          });
+          found.set(intentId, [item]);
+        } else {
+          const intents = found.get(intentId);
+          if (intents) {
+            intents.push(item);
           }
-        });
-      }
-    });
-
-    intents.forEach((intent) => {
-      const apps: Array<FDC3App> = found.get(intent.name) || [];
-
-      const entry: IntentInstance = { intent: intent, apps: apps };
-
-      r.push(entry);
+        }
+      });
     });
   }
+
+  intentMetadata.forEach((intent) => {
+    const apps: Array<FDC3App> = found.get(intent.name) || [];
+
+    const entry: IntentInstance = { intent: intent, apps: apps };
+
+    r.push(entry);
+  });
+
   return r;
 };
 
@@ -202,7 +150,7 @@ const getAppTitle = (app: FDC3App): string => {
     ? app.details.directoryData
     : null;
   return directory
-    ? directory.title
+    ? directory.title ?? 'Untitled'
     : view &&
       view.content.webContents &&
       view.content.webContents.hostWebContents
@@ -296,14 +244,9 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     ctx = message.data.context.type;
   }
 
-  const query =
-    message.data && message.data.target
-      ? resolveTargetAppToQuery(message.data.target)
-      : '';
-
-  const data: Array<DirectoryApp> = (await runtime.fetchFromDirectory(
-    `/apps/search?intent=${intent}&context=${ctx}${query}`,
-  )) as Array<DirectoryApp>;
+  const data: Array<DirectoryApp> = runtime
+    .getDirectory()
+    .retrieveByIntentAndContextType(intent, ctx);
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
@@ -347,7 +290,9 @@ export const raiseIntent = async (message: RuntimeMessage) => {
           };
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
-        const start_url = r[0].details.directoryData.start_url;
+        const start_url = (
+          r[0].details.directoryData.details as DirectoryAppLaunchDetailsWeb
+        ).url;
         const pending = true;
 
         const workspace = getRuntime().createWorkspace();
@@ -419,26 +364,44 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
 
   const r: Array<FDC3App> = [];
 
-  const context =
+  const context: string =
     message.data?.context && message.data?.context?.type
       ? message.data.context.type
       : '';
+  /**
+   * To Do: Support additional AppMetadata searching (other than name)
+   */
+  const target: TargetApp | undefined =
+    (message.data && message.data.target) || undefined;
+  const name: string | undefined = target
+    ? typeof target === 'string'
+      ? target
+      : (target as AppMetadata).name
+    : '';
 
   const intentListeners = runtime.getIntentListenersByContext(context);
 
   if (intentListeners) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listeners: Array<View>) => {
+      let addListener = true;
       //look up the details of the window and directory metadata in the "connected" store
       listeners.forEach((view: View) => {
+        if (name && name !== view.directoryData?.name) {
+          addListener = false;
+        }
         //de-dupe
         if (
-          !r.find((item) => {
+          r.find((item) => {
             return (
               item.details.instanceId && item.details.instanceId === view.id
             );
           })
         ) {
+          addListener = false;
+        }
+
+        if (addListener) {
           const title = view.getTitle();
           const details: FDC3AppDetail = {
             instanceId: view.id,
@@ -451,34 +414,14 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     });
   }
 
-  /**
-   * To Do: Support additional AppMetadata searching (other than name)
-   */
-  const target: TargetApp | undefined =
-    (message.data && message.data.target) || undefined;
-  const name: string | undefined = target
-    ? typeof target === 'string'
-      ? target
-      : (target as AppMetadata).name
-    : '';
-  const directoryUrl = await utils.getDirectoryUrl();
+  const data = getRuntime().getDirectory().retrieveByContextType(context);
 
-  const _r = await fetch(
-    `${directoryUrl}/apps/search?context=${context}&name=${name}`,
-  );
-  if (_r) {
-    let data = null;
-    try {
-      data = await _r.json();
-    } catch (err) {
-      console.log('error parsing json', err);
-    }
-
-    if (data) {
-      data.forEach((entry: DirectoryApp) => {
+  if (data) {
+    data.forEach((entry: DirectoryApp) => {
+      if (!name || (name && entry.name === name)) {
         r.push({ type: 'directory', details: { directoryData: entry } });
-      });
-    }
+      }
+    });
   }
 
   if (r.length > 0) {
@@ -509,7 +452,9 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
           throw ResolveError.NoAppsFound;
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
-        const start_url = r[0].details.directoryData.start_url;
+        const start_url = (
+          r[0].details.directoryData.details as DirectoryAppLaunchDetailsWeb
+        ).url;
         const pending = true;
 
         //let win = window.open(start_url,"_blank");

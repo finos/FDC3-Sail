@@ -82,7 +82,16 @@ The local appD will run at `localhost:8080` by default.
 
 By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change the local settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and change the production setting by modifying the value for `productionDirectory` in `packages/main/src/utils.ts`.
 
-## Getting Started
+## Getting Started (Using the FINOS App Directory)
+
+~~~
+npm install
+npm start
+~~~
+
+This will use the FINOS app directory at https://directory.fdc3.finos.org/v2/apps
+
+## Getting Started With Your Own App Directory
 
 Install dependencies:
 
@@ -98,6 +107,12 @@ npm run start:directory
 ~~~
 
 This will run a local App Directory on port 8080.
+
+Set the environment variable to use this directory: 
+
+~~~
+export SAIL_DIRECTORY_URL=https://localhost:8080
+~~~
 
 Start the FDC3 application:
 

@@ -25,6 +25,7 @@ import {
   findIntent,
   findIntentsByContext,
 } from '/@/handlers/fdc3/1.2/findIntent';
+
 import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
