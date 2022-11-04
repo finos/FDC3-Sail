@@ -364,26 +364,44 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
 
   const r: Array<FDC3App> = [];
 
-  const context =
+  const context: string =
     message.data?.context && message.data?.context?.type
       ? message.data.context.type
       : '';
+  /**
+   * To Do: Support additional AppMetadata searching (other than name)
+   */
+  const target: TargetApp | undefined =
+    (message.data && message.data.target) || undefined;
+  const name: string | undefined = target
+    ? typeof target === 'string'
+      ? target
+      : (target as AppMetadata).name
+    : '';
 
   const intentListeners = runtime.getIntentListenersByContext(context);
 
   if (intentListeners) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listeners: Array<View>) => {
+      let addListener = true;
       //look up the details of the window and directory metadata in the "connected" store
       listeners.forEach((view: View) => {
+        if (name && name !== view.directoryData?.name) {
+          addListener = false;
+        }
         //de-dupe
         if (
-          !r.find((item) => {
+          r.find((item) => {
             return (
               item.details.instanceId && item.details.instanceId === view.id
             );
           })
         ) {
+          addListener = false;
+        }
+
+        if (addListener) {
           const title = view.getTitle();
           const details: FDC3AppDetail = {
             instanceId: view.id,
@@ -396,24 +414,13 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     });
   }
 
-  /**
-   * To Do: Support additional AppMetadata searching (other than name)
-   */
-  const target: TargetApp | undefined =
-    (message.data && message.data.target) || undefined;
-  const name: string | undefined = target
-    ? typeof target === 'string'
-      ? target
-      : (target as AppMetadata).name
-    : '';
-
-  const data = getRuntime()
-    .getDirectory()
-    .retrieveByIntentAndContextType(name, context.type);
+  const data = getRuntime().getDirectory().retrieveByContextType(context);
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
-      r.push({ type: 'directory', details: { directoryData: entry } });
+      if (!name || (name && entry.name === name)) {
+        r.push({ type: 'directory', details: { directoryData: entry } });
+      }
     });
   }
 
