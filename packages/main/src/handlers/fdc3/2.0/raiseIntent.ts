@@ -81,7 +81,7 @@ const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
                   appId: id,
                 },
                 intent: message.data.intent,
-                version: '1.2',
+                version: '2.0',
                 getResult: (): Promise<IntentResult> => {
                   return new Promise((resolve) => {
                     //to do...
@@ -202,7 +202,6 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const r: Array<FDC3App> = [];
   const intent = message.data?.intent;
 
-  console.log('************** raiseIntent', message);
   if (!intent) {
     throw 'No Intent Provided';
   }
@@ -265,12 +264,14 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
   if (r.length > 0) {
     if (r.length === 1) {
+      const theApp = r[0];
+      const appDetails = theApp.details;
       //if there is only one result, use that
       //if it is an existing view, post a message directly to it
       //if it is a directory entry resolve the destination for the intent and launch it
       //dedupe window and directory items
-      if (r[0].type === 'window' && r[0].details && r[0].details.instanceId) {
-        const view = runtime.getView(r[0].details.instanceId);
+      if (theApp.type === 'window' && appDetails && appDetails.instanceId) {
+        const view = runtime.getView(appDetails.instanceId);
         if (view) {
           if (view.fdc3Version === '1.2') {
             view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
@@ -292,19 +293,21 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
           return {
             source: { name: view.directoryData?.name, appId: message.source },
-            version: '1.2',
+            version: '2.0',
           };
         }
-      } else if (r[0].type === 'directory' && r[0].details.directoryData) {
-        const start_url = (
-          r[0].details.directoryData.details as DirectoryAppLaunchDetailsWeb
-        ).url;
+      } else if (theApp.type === 'directory' && appDetails.directoryData) {
+        const directoryData = appDetails.directoryData;
+        const directoryDetails = appDetails.directoryData
+          .details as DirectoryAppLaunchDetailsWeb;
+
+        const start_url = directoryDetails.url;
         const pending = true;
 
         const workspace = getRuntime().createWorkspace();
 
         const view = workspace.createView(start_url, {
-          directoryData: r[0].details.directoryData,
+          directoryData: directoryData,
         });
         //view.directoryData = r[0].details.directoryData;
         //set pending intent for the view..
@@ -318,7 +321,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
         return {
           source: { name: sourceName, appId: message.source },
-          version: '1.2',
+          version: '2.0',
         };
 
         //send the context - if the default start_url was used...
