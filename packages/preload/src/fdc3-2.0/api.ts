@@ -59,6 +59,14 @@ const eventQ: Array<FDC3Message> = [];
 //collection of listeners for api calls coming back from the background script
 const returnListeners: Map<string, FDC3ReturnListener> = new Map();
 
+//backwards compatability support for fdc3 namespaced intents
+const stripNS = (intent: string): string => {
+  if (intent.startsWith('fdc3.')) {
+    intent = intent.substring(5);
+  }
+  return intent;
+};
+
 export const connect = () => {
   /**
    * listen for incomming contexts
@@ -341,7 +349,7 @@ export const createAPI = (): DesktopAgent => {
     appIdentity?: unknown,
   ): Promise<IntentResolution> {
     return await sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
-      intent: intent,
+      intent: stripNS(intent),
       context: context,
       target:
         typeof appIdentity === 'string'
@@ -448,7 +456,7 @@ export const createAPI = (): DesktopAgent => {
 
         sendMessage(FDC3_2_0_TOPICS.ADD_INTENT_LISTENER, {
           id: listenerId,
-          intent: intent,
+          intent: stripNS(intent),
         });
       }
       return new FDC3Listener('intent', listenerId, intent);

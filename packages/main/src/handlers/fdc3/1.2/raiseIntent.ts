@@ -195,9 +195,8 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const r: Array<FDC3App> = [];
   const intent = message.data?.intent;
 
-  console.log('************** raiseIntent', message);
   if (!intent) {
-    throw 'No Intent Provided';
+    throw new Error(ResolveError.NoAppsFound);
   }
 
   //only support string targets for now...
@@ -205,7 +204,9 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     message.data?.target && typeof message.data.target === 'string'
       ? message.data.target
       : undefined;
-  const intentListeners = runtime.getIntentListeners(intent, target);
+  const intentListeners = target
+    ? runtime.getIntentListenersByAppName(intent, target)
+    : runtime.getIntentListeners(intent);
 
   const sourceView = runtime.getView(message.source);
   const sourceName =
