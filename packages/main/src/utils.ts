@@ -9,9 +9,8 @@ import { FDC3EventDetail } from './types/FDC3Event';
 const DEFAULT_DIRECTORY = 'https://directory.fdc3.finos.org/v2/apps';
 
 const getDirectoryUrl = (): string => {
-  const dir = import.meta.env.SAIL_DIRECTORY_URL
-    ? `${import.meta.env.SAIL_DIRECTORY_URL}`
-    : DEFAULT_DIRECTORY;
+  const envVar = process.env['SAIL_DIRECTORY_URL'];
+  const dir = envVar ? envVar : DEFAULT_DIRECTORY;
   console.log('SAIL_DIRECTORY_URL: ' + dir);
   return dir;
 };

@@ -9,20 +9,12 @@ import {
 } from '../src/directory/directory';
 
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
-const LOCAL_V2 = 'tests/v2/apps/appd-record.v2.json';
-const LOCAL_V1 = 'tests/v1/apps/appd-record.v1.json';
+const LOCAL_V2 = 'tests/v2/apps/appd-records.v2.json';
+const LOCAL_V1 = 'tests/v1/apps/appd-records.v1.json';
 
 test('Test Remote Directory Load in FDC3 2.0 Format', async () => {
   const results = await fdc3_2_0_AppDirectoryLoader(REMOTE_V2);
   expect(results.length).toBeGreaterThan(3);
-});
-
-test('Test Single App Load in FDC3 2.0 Format', async () => {
-  const results = await fdc3_2_0_AppDirectoryLoader(
-    'https://directory.fdc3.finos.org/v2/apps/fdc3-workbench/',
-  );
-  expect(results.length).toEqual(1);
-  expect(results[0].appId).toEqual('fdc3-workbench');
 });
 
 test('Test Local App Load in FDC3 2.0 Format', async () => {
