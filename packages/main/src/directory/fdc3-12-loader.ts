@@ -29,9 +29,6 @@ const DEFAULT_1_2_MANIFEST: DirectoryAppSailManifest = {
 const convertToDirectoryList = (data: AllApplicationsResponseV1) =>
   data.applications?.map((a) => convertApp(a)) as DirectoryApp[];
 
-const convertSingleApp = (data: DirectoryAppV1) =>
-  [convertApp(data)] as DirectoryApp[];
-
 function convertIntents(intents: DirectoryIntentV1[]): {
   [key: string]: DirectoryIntent;
 } {
@@ -110,12 +107,9 @@ function convertApp(d: DirectoryAppV1): DirectoryApp {
 export const fdc3_1_2_AppDirectoryLoader: Loader = (u: string) => {
   let converter;
 
-  if (u.endsWith('/v1/apps') || u.endsWith('/v1/apps/')) {
+  if (u.includes('/v1/apps') || u.includes('.v1.json')) {
     // whole directory
     converter = convertToDirectoryList;
-  } else if (u.includes('/v1/apps')) {
-    // single app
-    converter = convertSingleApp;
   } else {
     // not handled by this loader
     return new Promise((resolve) => {

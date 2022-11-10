@@ -11,8 +11,6 @@ export type AllApplicationsResponse = schemas['AllApplicationsResponse'];
 
 const convertToDirectoryList = (data: AllApplicationsResponse) =>
   data.applications?.map(applyDefaults) as DirectoryApp[];
-const convertSingleApp = (data: DirectoryApp) =>
-  [applyDefaults(data)] as DirectoryApp[];
 
 function applyDefaults(d: DirectoryApp): DirectoryApp {
   // first, check manifest is set
@@ -59,12 +57,9 @@ export function loadLocally(u: string) {
 export const fdc3_2_0_AppDirectoryLoader: Loader = (u: string) => {
   let converter;
 
-  if (u.endsWith('/v2/apps') || u.endsWith('/v2/apps/')) {
+  if (u.endsWith('/v2/apps') || u.includes('.v2.json')) {
     // whole directory
     converter = convertToDirectoryList;
-  } else if (u.includes('/v2/apps')) {
-    // single app
-    converter = convertSingleApp;
   } else {
     // not handled by this loader
     return new Promise((resolve) => {
