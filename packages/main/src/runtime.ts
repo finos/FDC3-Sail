@@ -1,5 +1,5 @@
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context } from '@finos/fdc3';
+import { Context, AppIdentifier } from '@finos/fdc3';
 import {
   FDC3App,
   IntentInstance,
@@ -226,29 +226,55 @@ export class Runtime {
     return result;
   }
 
-  getIntentListeners(
+  getIntentListenersByAppName(
     intent: string,
-    target?: string,
+    name: string,
   ): Map<string, FDC3Listener> {
     const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
 
     this.getViews().forEach((view) => {
       //if a target is provided, filter by the app name
-      if (target) {
-        if (view.directoryData && view.directoryData.name === target) {
-          view.listeners.forEach((l) => {
-            if (l.intent && l.intent === intent) {
-              result.set(l.listenerId, l);
-            }
-          });
-        }
-      } else {
+
+      if (view.directoryData && view.directoryData.name === name) {
         view.listeners.forEach((l) => {
           if (l.intent && l.intent === intent) {
             result.set(l.listenerId, l);
           }
         });
       }
+    });
+    return result;
+  }
+
+  getIntentListenersByAppId(
+    intent: string,
+    id: AppIdentifier,
+  ): Map<string, FDC3Listener> {
+    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+
+    this.getViews().forEach((view) => {
+      //if a appIdentifier target is provided, filter
+      //to do - instance targeting
+      if (view.directoryData && view.directoryData.appId === id.appId) {
+        view.listeners.forEach((l) => {
+          if (l.intent && l.intent === intent) {
+            result.set(l.listenerId, l);
+          }
+        });
+      }
+    });
+    return result;
+  }
+
+  getIntentListeners(intent: string): Map<string, FDC3Listener> {
+    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+
+    this.getViews().forEach((view) => {
+      view.listeners.forEach((l) => {
+        if (l.intent && l.intent === intent) {
+          result.set(l.listenerId, l);
+        }
+      });
     });
     return result;
   }

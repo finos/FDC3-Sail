@@ -1,7 +1,6 @@
 import {
   ResolveError,
   AppIdentifier,
-  AppMetadata,
   IntentResolution,
   IntentResult,
   IntentMetadata,
@@ -202,17 +201,14 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const r: Array<FDC3App> = [];
   const intent = message.data?.intent;
 
-  console.log('************** raiseIntent', message);
   if (!intent) {
-    throw 'No Intent Provided';
+    throw new Error(ResolveError.NoAppsFound);
   }
 
   //only support string targets for now...
-  const target: string | undefined =
-    message.data?.target && typeof message.data.target === 'string'
-      ? message.data.target
-      : undefined;
-  const intentListeners = runtime.getIntentListeners(intent, target);
+  const target: AppIdentifier = message.data.target;
+
+  const intentListeners = runtime.getIntentListenersByAppId(intent, target);
 
   const sourceView = runtime.getView(message.source);
   const sourceName =
@@ -407,19 +403,18 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
    */
   const target: AppIdentifier =
     (message.data && message.data.target) || undefined;
-  const name: string | undefined = target
-    ? typeof target === 'string'
-      ? target
-      : (target as AppMetadata).name
-    : '';
 
-  const data = getRuntime()
-    .getDirectory()
-    .retrieveByIntentAndContextType(name, context.type);
+  const data = getRuntime().getDirectory().retrieveByContextType(context);
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
-      r.push({ type: 'directory', details: { directoryData: entry } });
+      if (target) {
+        if (entry.appId === target.appId) {
+          r.push({ type: 'directory', details: { directoryData: entry } });
+        }
+      } else {
+        r.push({ type: 'directory', details: { directoryData: entry } });
+      }
     });
   }
 
