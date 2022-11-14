@@ -19,6 +19,8 @@ import { SAIL_TOPICS } from '/@/handlers/runtime/topics';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
+import { getSailManifest } from '/@/directory/directory';
+import { FDC3_VERSIONS } from '/@/types/Versions';
 
 const FDC3_1_2_PRELOAD = join(
   __dirname,
@@ -37,7 +39,7 @@ export class View {
     url?: string | null,
     config?: ViewConfig,
     parent?: Workspace,
-    fdc3Version?: '2.0' | '1.2',
+    fdc3Version?: FDC3_VERSIONS,
   ) {
     const VIEW_DEFAULT =
       import.meta.env.DEV &&
@@ -72,18 +74,23 @@ export class View {
 
     this.id = randomUUID();
     this.parent = parent;
+    if (config) {
+      this.directoryData = config.directoryData;
+    }
 
     if (fdc3Version) {
       this.fdc3Version = fdc3Version;
-    }
+    } else if (this.directoryData) {
+      //parse the directoryData
+      const sailManifest = getSailManifest(this.directoryData);
 
+      this.fdc3Version = (sailManifest['inject-api'] as FDC3_VERSIONS) || '2.0';
+    }
     const runtime = getRuntime();
 
     runtime.getViews().set(this.id, this);
 
-    if (config) {
-      this.directoryData = config.directoryData;
-    }
+    console.log('View - fdc3Version', this.fdc3Version);
 
     const preload = url
       ? this.fdc3Version === '1.2'
@@ -191,7 +198,7 @@ export class View {
 
   initiated = false;
 
-  fdc3Version: '2.0' | '1.2' = '1.2';
+  fdc3Version: '2.0' | '1.2' = '2.0';
 
   private type: 'system' | 'app' = 'app';
 

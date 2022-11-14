@@ -667,7 +667,7 @@ export class Workspace {
       });
     };
 
-    const view = new View(url, conf, this);
+    const view = new View(url, conf, this, conf.version);
 
     //add to view collection
     if (this.window) {
