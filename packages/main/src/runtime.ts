@@ -22,6 +22,12 @@ import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
 import { FDC3Response } from './types/FDC3Message';
 import { ChannelData } from './types/Channel';
+import {
+  SessionState,
+  ViewState,
+  WorkspaceState,
+  ChannelState,
+} from '/@/types/SessionState';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -111,6 +117,45 @@ export class Runtime {
     return contexts;
   }
 
+  getSessionState(): SessionState {
+    const viewStates: Array<ViewState> = [];
+    const workspaceStates: Array<WorkspaceState> = [];
+    const channelStates: Array<ChannelState> = [];
+
+    views.forEach((view) => {
+      viewStates.push({
+        id: view.id,
+        parent: view.parent ? view.parent.id : '',
+        fdc3Version: view.fdc3Version,
+        url: view.content.webContents.getURL(),
+        title: view.getTitle(),
+        channel: view.channel || '',
+        directoryData: view.directoryData || null,
+      });
+    });
+
+    /* workspaces.forEach( workspace => {
+
+    });*/
+
+    //combine the user / system channels and app channels
+    const allChannels = [...channels, ...app_channels];
+
+    allChannels.forEach((channel) => {
+      const channelContext = contexts.get(channel.id) || [];
+
+      channelStates.push({
+        channel: channel,
+        contexts: channelContext,
+      });
+    });
+
+    return {
+      views: viewStates,
+      workspaces: workspaceStates,
+      channels: channelStates,
+    };
+  }
   draggedTab: { tabId: string; source: string } | null = null;
   /**
    * Dynamically add a Handler to the IPC bus
