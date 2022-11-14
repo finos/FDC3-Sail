@@ -56,7 +56,7 @@ const resolveIntent = (data: {
 
 const getSessionState = () => {
   return new Promise((resolve) => {
-    ipcRenderer.once(`${RUNTIME_TOPICS.GET_SESSION_STATE}-`, (event, args) => {
+    ipcRenderer.once(RUNTIME_TOPICS.GET_SESSION_STATE, (event, args) => {
       const results = args.data;
       resolve(results);
     });
@@ -72,13 +72,10 @@ const getSessionState = () => {
 
 const getApps = () => {
   return new Promise((resolve) => {
-    ipcRenderer.once(
-      `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-`,
-      (event, args) => {
-        const results = args.data;
-        resolve(results);
-      },
-    );
+    ipcRenderer.once(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, (event, args) => {
+      const results = args.data;
+      resolve(results);
+    });
     if (id) {
       ipcRenderer.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
         source: id,
