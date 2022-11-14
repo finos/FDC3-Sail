@@ -134,9 +134,15 @@ export class Runtime {
       });
     });
 
-    /* workspaces.forEach( workspace => {
-
-    });*/
+    workspaces.forEach((workspace) => {
+      workspaceStates.push({
+        id: workspace.id,
+        channel: workspace.channel || '',
+        views: workspace.views.map((v) => {
+          return v.id;
+        }),
+      });
+    });
 
     //combine the user / system channels and app channels
     const allChannels = [...channels, ...app_channels];

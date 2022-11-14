@@ -14,6 +14,7 @@ export interface ViewState {
 }
 
 export interface WorkspaceState {
+  id: string;
   views: Array<string>; //array of viewIds
   channel: string;
 }
