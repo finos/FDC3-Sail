@@ -85,7 +85,8 @@ export class Runtime {
 
   getDirectory(): Directory {
     if (this.directory) {
-      return this.directory;
+      const out = this.directory;
+      return out;
     } else {
       throw Error('Directory not initialized');
     }

@@ -1,6 +1,6 @@
 import { getRuntime } from '/@/index';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { AppIntent, AppMetadata } from 'fdc3-1.2';
+import { AppIntent, AppMetadata, ResolveError } from 'fdc3-1.2';
 import { DirectoryApp, DirectoryIntent } from '/@/directory/directory';
 
 function convertApp(a: DirectoryApp): AppMetadata {
@@ -17,13 +17,18 @@ export const findIntent = async (message: RuntimeMessage) => {
   const intent = message.data && message.data.intent;
   const context = message.data && message.data.context;
   if (intent) {
-    const result = runtime
-      .getDirectory()
-      .retrieveByIntentAndContextType(intent, context.type);
+    const dir = runtime.getDirectory();
+    const result = dir.retrieveByIntentAndContextType(
+      intent,
+      context == undefined ? null : context.type,
+    );
+
+    if (result.length == 0) {
+      throw new Error(ResolveError.NoAppsFound);
+    }
 
     const intentDisplayName =
-      runtime.getDirectory().retrieveAllIntentsByName(intent)[0]?.displayName ??
-      intent;
+      dir.retrieveAllIntentsByName(intent)[0]?.displayName ?? intent;
 
     const r: AppIntent = {
       intent: { name: intent, displayName: intentDisplayName },
