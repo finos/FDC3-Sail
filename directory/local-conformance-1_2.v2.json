@@ -30,7 +30,7 @@
       "description": "Testing Conformance",
       "type": "web",
       "details": {
-        "url": "http://localhost:3000/index.html"
+        "url": "http://localhost:3500/index.html"
       },
       "screenshots": [
         {
