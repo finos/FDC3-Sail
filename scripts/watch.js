@@ -75,7 +75,11 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
         spawnProcess = null;
       }
 
-      spawnProcess = spawn(String(electronPath), ['.']);
+      spawnProcess = spawn(String(electronPath), [
+        '.',
+        '--inspect=5858',
+        '--remote-debugging-port=9223',
+      ]);
 
       spawnProcess.stdout.on(
         'data',
