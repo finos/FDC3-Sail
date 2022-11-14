@@ -354,7 +354,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
-    throw ResolveError.NoAppsFound;
+    throw new Error(ResolveError.NoAppsFound);
   }
 };
 
@@ -453,7 +453,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
 
           return { source: message.source, version: '1.2' };
         } else {
-          throw ResolveError.NoAppsFound;
+          throw new Error(ResolveError.NoAppsFound);
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
         const start_url = (
@@ -515,6 +515,6 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
-    throw ResolveError.NoAppsFound;
+    throw new Error(ResolveError.NoAppsFound);
   }
 };

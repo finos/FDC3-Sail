@@ -50,7 +50,7 @@ export const getOrCreateChannel = async (message: RuntimeMessage) => {
   const id = (message.data && message.data.channelId) || 'default';
   //reject with error is reserved 'default' term
   if (id === 'default') {
-    throw ChannelError.CreationFailed;
+    throw new Error(ChannelError.CreationFailed);
   } else {
     let channel: ChannelData | undefined = getChannelMeta(id);
 
@@ -78,7 +78,7 @@ export const leaveCurrentChannel = async (message: RuntimeMessage) => {
     view.parent?.joinViewToChannel('default', view);
     return;
   } else {
-    throw 'View not found';
+    throw new Error('View not found');
   }
 };
 

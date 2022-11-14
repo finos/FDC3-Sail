@@ -30,5 +30,5 @@ export const open = async (message: RuntimeMessage) => {
     }
     return;
   }
-  throw OpenError.AppNotFound;
+  throw new Error(OpenError.AppNotFound);
 };
