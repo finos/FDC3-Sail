@@ -60,11 +60,19 @@ const getSessionState = () => {
       const results = args.data;
       resolve(results);
     });
+
     if (id) {
       // Get the session state
       ipcRenderer.send(RUNTIME_TOPICS.GET_SESSION_STATE, {
         source: id,
         data: {},
+      });
+    } else {
+      eventQ.push(() => {
+        ipcRenderer.send(RUNTIME_TOPICS.GET_SESSION_STATE, {
+          source: id,
+          data: {},
+        });
       });
     }
   });

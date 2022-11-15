@@ -76,6 +76,7 @@ export class View {
     this.parent = parent;
     if (config) {
       this.directoryData = config.directoryData;
+      this.title = config.title;
     }
 
     if (fdc3Version) {
@@ -92,11 +93,16 @@ export class View {
 
     console.log('View - fdc3Version', this.fdc3Version);
 
-    const preload = url
-      ? this.fdc3Version === '1.2'
-        ? FDC3_1_2_PRELOAD
-        : FDC3_2_0_PRELOAD
-      : HOME_PRELOAD;
+    const isSystem = config?.isSystem || url === undefined ? true : false;
+    let preload;
+
+    if (isSystem) {
+      this.type = 'system';
+      preload = HOME_PRELOAD;
+    } else {
+      preload =
+        this.fdc3Version === '1.2' ? FDC3_1_2_PRELOAD : FDC3_2_0_PRELOAD;
+    }
 
     this.content = new BrowserView({
       webPreferences: {
@@ -122,6 +128,7 @@ export class View {
     }
     if (url === (VIEW_DEFAULT as string)) {
       this.type = 'system';
+      this.title = 'Home';
     }
 
     if (url) {
@@ -154,6 +161,7 @@ export class View {
       });
     }
   }
+
   /**
    * size the view to the parent
    */
@@ -197,6 +205,8 @@ export class View {
   parent?: Workspace;
 
   initiated = false;
+
+  title?: string;
 
   fdc3Version: '2.0' | '1.2' = '2.0';
 
@@ -249,15 +259,12 @@ export class View {
   };
 
   getTitle(): string {
-    //is it a system view?
-    console.log('View getTitle', this.isSystemView());
-    if (this.isSystemView()) {
-      return 'Home';
-    } else {
-      return this.directoryData && this.directoryData.title
-        ? this.directoryData.title
-        : this.content.webContents.getTitle();
-    }
+    console.log('****getTItle', this.title);
+    return this.title
+      ? this.title
+      : this.directoryData && this.directoryData.title
+      ? this.directoryData.title
+      : this.content.webContents.getTitle();
   }
 
   close() {

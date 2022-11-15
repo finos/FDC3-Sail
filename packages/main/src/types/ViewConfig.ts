@@ -11,4 +11,8 @@ export interface ViewConfig {
   directoryData?: DirectoryApp;
 
   version?: FDC3_VERSIONS;
+
+  title?: string;
+
+  isSystem?: boolean;
 }
