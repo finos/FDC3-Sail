@@ -3,5 +3,5 @@ node_modules
 dist
 *.local
 thumbs.db
-
 .eslintcache
+packages/preload/exposedInMainWorld.d.ts
