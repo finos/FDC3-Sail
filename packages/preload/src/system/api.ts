@@ -54,17 +54,37 @@ const resolveIntent = (data: {
   }
 };
 
+const getSessionState = () => {
+  return new Promise((resolve) => {
+    ipcRenderer.once(RUNTIME_TOPICS.GET_SESSION_STATE, (event, args) => {
+      const results = args.data;
+      resolve(results);
+    });
+
+    if (id) {
+      // Get the session state
+      ipcRenderer.send(RUNTIME_TOPICS.GET_SESSION_STATE, {
+        source: id,
+        data: {},
+      });
+    } else {
+      eventQ.push(() => {
+        ipcRenderer.send(RUNTIME_TOPICS.GET_SESSION_STATE, {
+          source: id,
+          data: {},
+        });
+      });
+    }
+  });
+};
+
 const getApps = () => {
   return new Promise((resolve) => {
-    ipcRenderer.once(
-      `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-`,
-      (event, args) => {
-        const results = args.data;
-        resolve(results);
-      },
-    );
+    ipcRenderer.once(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, (event, args) => {
+      const results = args.data;
+      resolve(results);
+    });
     if (id) {
-      // Fetch External Data Source
       ipcRenderer.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
         source: id,
         data: {
@@ -334,6 +354,7 @@ export const api = {
   resolveIntent,
   versions: process.versions,
   getApps,
+  getSessionState,
   tabs: {
     select: selectTab,
     tearOut: tearOutTab,

@@ -28,6 +28,12 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
           }
         },
       },
+      {
+        label: 'View Session',
+        click: async () => {
+          await workspace.createSessionView();
+        },
+      },
     ];
 
     const menu = Menu.buildFromTemplate(template);

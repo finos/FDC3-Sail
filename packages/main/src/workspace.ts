@@ -477,6 +477,27 @@ export class Workspace {
     });
   }
 
+  /**
+   * create a developer view of the Session State
+   */
+  async createSessionView(): Promise<void> {
+    const VIEW_PATH =
+      import.meta.env.DEV &&
+      import.meta.env.VITE_DEV_SERVER_SESSION_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_SESSION_URL
+        : new URL(
+            '../renderer/dist/sessionView.html',
+            'file://' + __dirname,
+          ).toString();
+
+    this.createView(VIEW_PATH, {
+      workspace: this,
+      isSystem: true,
+      title: 'Session View',
+    });
+    return;
+  }
+
   createChannelWindow(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.channelWindow = new BrowserWindow({

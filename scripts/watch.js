@@ -53,6 +53,7 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
     process.env.VITE_DEV_SERVER_URL = `${protocol}//${host}:${port}${path}`;
     process.env.VITE_DEV_SERVER_FRAME_URL = `${protocol}//${host}:${port}${path}index.html`;
     process.env.VITE_DEV_SERVER_DEFAULT_URL = `${protocol}//${host}:${port}${path}homeView.html`;
+    process.env.VITE_DEV_SERVER_SESSION_URL = `${protocol}//${host}:${port}${path}sessionView.html`;
     process.env.VITE_DEV_SERVER_CHANNEL_URL = `${protocol}//${host}:${port}${path}channelPicker.html`;
     process.env.VITE_DEV_SERVER_SEARCH_URL = `${protocol}//${host}:${port}${path}searchResults.html`;
     process.env.VITE_DEV_SERVER_INTENTS_URL = `${protocol}//${host}:${port}${path}intentResolver.html`;
@@ -75,7 +76,11 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
         spawnProcess = null;
       }
 
-      spawnProcess = spawn(String(electronPath), ['.']);
+      spawnProcess = spawn(String(electronPath), [
+        '.',
+        '--inspect=5858',
+        '--remote-debugging-port=9223',
+      ]);
 
       spawnProcess.stdout.on(
         'data',

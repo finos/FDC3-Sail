@@ -32,12 +32,9 @@ export function initFetchFromDirectory(
     }
 
     if (wContents) {
-      wContents.send(
-        `${RUNTIME_TOPICS.FETCH_FROM_DIRECTORY}-${message.data.query}`,
-        {
-          data: result,
-        },
-      );
+      wContents.send(RUNTIME_TOPICS.FETCH_FROM_DIRECTORY, {
+        data: result,
+      });
     }
   };
 }

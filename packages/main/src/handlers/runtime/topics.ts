@@ -20,6 +20,7 @@ export const RUNTIME_TOPICS = {
   SEARCH_LOAD_RESULTS: 'runtime:loadSearchResults',
   RES_LOAD_RESULTS: 'runtime:loadResolverResults',
   RES_RESOLVE_INTENT: 'runtime:resolveIntent',
+  GET_SESSION_STATE: 'runtime:getSessionState',
 };
 
 export const SAIL_TOPICS = {
