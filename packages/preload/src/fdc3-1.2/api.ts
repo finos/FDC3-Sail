@@ -278,11 +278,14 @@ export const createAPI = (): DesktopAgent => {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: (context: Context) => {
-        sendMessage('broadcast', { context: context, channel: channel.id });
+        sendMessage(FDC3_1_2_TOPICS.BROADCAST, {
+          context: context,
+          channel: channel.id,
+        });
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage('getCurrentContext', {
+          sendMessage(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, {
             channel: channel.id,
             contextType: contextType,
           }).then(

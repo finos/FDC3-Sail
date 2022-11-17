@@ -1,0 +1,32 @@
+{
+  "applications": [
+    {
+      "appId": "Conformance1",
+      "name": "Conformance1",
+      "title": "FDC3 1.2 Conformance Framework",
+      "description": "Testing Conformance",
+      "type": "web",
+      "details": {
+        "url": "http://localhost:3500/index.html"
+      },
+      "screenshots": [
+        {
+          "src": "https://directory.fdc3.finos.org/assets/app/Conformance1.png"
+        }
+      ],
+      "hostManifests": {
+        "sail": {
+          "inject-api": "2.0"
+        }
+      },
+      "version": "1.0.0",
+      "publisher": "Scott Logic",
+      "icons": [
+        {
+          "src": "https://www.scottlogic.com/sites/default/files/scott-logic-favicon.jpg"
+        }
+      ]
+    }
+  ],
+  "message": "OK"
+}
