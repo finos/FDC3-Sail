@@ -3,6 +3,7 @@ import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { View } from '/@/view';
 import { FDC3Listener } from '/@/types/FDC3Listener';
 import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_2_0_TOPICS } from '../2.0/topics';
 
 interface ViewListener {
   view: View;
@@ -126,16 +127,29 @@ export const broadcast = async (message: RuntimeMessage) => {
       });
       //if there are listeners found, broadcast the context to the view (with all listenerIds)
       if (viewListeners.length > 0) {
-        v.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
-          topic: 'context',
-          listenerIds: viewListeners,
-          data: {
-            eventId: message.data && message.data.eventId,
-            ts: message.data && message.data.ts,
-            context: message.data && message.data.context,
-          },
-          source: message.source,
-        });
+        if (v.fdc3Version === '2.0') {
+          v.content.webContents.send(FDC3_2_0_TOPICS.CONTEXT, {
+            topic: 'context',
+            listenerIds: viewListeners,
+            data: {
+              eventId: message.data && message.data.eventId,
+              ts: message.data && message.data.ts,
+              context: message.data && message.data.context,
+            },
+            source: message.source,
+          });
+        } else {
+          v.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
+            topic: 'context',
+            listenerIds: viewListeners,
+            data: {
+              eventId: message.data && message.data.eventId,
+              ts: message.data && message.data.ts,
+              context: message.data && message.data.context,
+            },
+            source: message.source,
+          });
+        }
       }
     });
   }

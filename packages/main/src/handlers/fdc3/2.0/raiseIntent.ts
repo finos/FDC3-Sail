@@ -208,7 +208,12 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   //only support string targets for now...
   const target: AppIdentifier = message.data.target;
 
-  const intentListeners = runtime.getIntentListenersByAppId(intent, target);
+  let intentListeners;
+  if (target) {
+    intentListeners = runtime.getIntentListenersByAppId(intent, target);
+  } else {
+    intentListeners = runtime.getIntentListeners(intent);
+  }
 
   const sourceView = runtime.getView(message.source);
   const sourceName =
