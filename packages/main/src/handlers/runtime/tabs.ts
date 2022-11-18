@@ -114,10 +114,24 @@ export const dropTab = async (message: RuntimeMessage) => {
 
 export const closeTab = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
-  //bring selected browserview to front
-  const workspace = runtime.getWorkspace(message.source);
+  let workspace: Workspace | undefined;
+  let tabId = message.data.tabId;
+  if (message.data.closeType && message.data.closeType === 'view') {
+    const view = runtime.getView(message.source);
+    workspace = view?.parent;
+    tabId = workspace?.selectedTab;
+    //if we got the workspace from the view, then send a message telling it to clean up the tab (this didn't come from a user action!)
+    if (workspace && workspace.window) {
+      workspace.window.webContents.send(RUNTIME_TOPICS.REMOVE_TAB, {
+        tabId: tabId,
+      });
+    }
+  } else {
+    //bring selected browserview to front
+    workspace = runtime.getWorkspace(message.source);
+  }
   if (workspace) {
-    workspace.closeTab(message.data.tabId);
+    workspace.closeTab(tabId);
   }
   return;
 };
