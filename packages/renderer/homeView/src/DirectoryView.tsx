@@ -70,7 +70,7 @@ export class DirectoryView extends React.Component<
       >
         <Grid container spacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
           {this.state.apps.map((app: DirectoryApp) => (
-            <Grid item xs={4}>
+            <Grid item xs={4} key={app.appId}>
               <Card sx={{ maxWidth: 345, minHeight: 350 }}>
                 {app.screenshots!!.length > 0 ? (
                   app.screenshots!!.map((image) => (
