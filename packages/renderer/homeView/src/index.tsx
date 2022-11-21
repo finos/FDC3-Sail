@@ -7,7 +7,7 @@ import SideNavigation from './SideNavigation';
 ReactDOM.render(
   <React.StrictMode>
     <div className="container">
-      <SideNavigation />
+      {/* <SideNavigation /> */}
       <DirectoryView />
     </div>
   </React.StrictMode>,
