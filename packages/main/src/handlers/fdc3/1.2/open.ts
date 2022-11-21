@@ -1,17 +1,13 @@
 import { getRuntime } from '/@/index';
+import { View } from '/@/view';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { TargetApp, AppMetadata, OpenError } from 'fdc3-1.2';
 import {
   DirectoryApp,
-  DirectoryAppLaunchDetails,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
+import { getSailManifest } from '/@/directory/directory';
 
-function isWeb(
-  details: DirectoryAppLaunchDetails,
-): details is DirectoryAppLaunchDetailsWeb {
-  return Object.hasOwn(details, 'url');
-}
 /**
  *
  * @param target
@@ -49,24 +45,34 @@ export const open = async (message: RuntimeMessage) => {
       ? runtime.getDirectory().retrieveByName(name)
       : runtime.getDirectory().retrieveAll();
 
-  const result = allResults ? allResults[0] : null;
+  if (allResults.length > 0) {
+    const directoryEntry: DirectoryApp = allResults[0];
+    const start_url = (directoryEntry.details as DirectoryAppLaunchDetailsWeb)
+      .url;
+    const manifest = getSailManifest(directoryEntry);
 
-  if (result && result.type == 'web') {
-    //get target workspace
-    const sourceView = runtime.getView(message.source);
-    const work =
-      runtime.getWorkspace(message.source) || (sourceView && sourceView.parent);
-    const details = result.details as DirectoryAppLaunchDetails;
-    if (isWeb(details)) {
-      const newView =
-        work && work.createView(details.url, { directoryData: result });
+    let newView: View | undefined;
 
-      //set provided context
-      if (newView && message.data.context) {
-        newView.setPendingContext(message.data.context, message.source);
-      }
-      return;
+    //if manifest is set to force a new window, then launch a new workspace
+    if (manifest.forceNewWindow && manifest.forceNewWindow === true) {
+      newView = await runtime.createView(start_url, {
+        directoryData: directoryEntry,
+      });
+    } else {
+      //else get target workspace
+      const sourceView = runtime.getView(message.source);
+      const work =
+        runtime.getWorkspace(message.source) ||
+        (sourceView && sourceView.parent);
+      newView =
+        work && work.createView(start_url, { directoryData: directoryEntry });
     }
+
+    //set provided context
+    if (newView && message.data.context) {
+      newView.setPendingContext(message.data.context, message.source);
+    }
+    return;
   }
   throw new Error(OpenError.AppNotFound);
 };

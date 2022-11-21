@@ -18,6 +18,7 @@ export type HostManifest = schemas['HostManifest'];
 export type DirectoryAppSailManifest = {
   'inject-api': string;
   searchable: boolean;
+  forceNewWindow: boolean;
 };
 
 /**
