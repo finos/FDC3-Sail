@@ -26,7 +26,7 @@ This project provides a fully open source implementation of the [FDC3](https://f
     - directory search
 - A local file-based app directory implementation
 
-## FDC3 Primer
+## FDC3 Standard Primer
 
 If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
 
