@@ -1,11 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {DirectoryView} from './DirectoryView';
+import { DirectoryView } from './DirectoryView';
 import './index.css';
+import SideNavigation from './SideNavigation';
 
 ReactDOM.render(
   <React.StrictMode>
-    <DirectoryView />
+    <div className="container">
+      <SideNavigation />
+      <DirectoryView />
+    </div>
   </React.StrictMode>,
   document.getElementById('homeView'),
 );

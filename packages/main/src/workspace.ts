@@ -50,6 +50,8 @@ export class Workspace {
       // show: false, // Use 'ready-to-show' event to show window
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 25, y: 25 },
       webPreferences: {
         webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
         preload: SYSTEM_PRELOAD,

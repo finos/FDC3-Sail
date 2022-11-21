@@ -1,3 +1,10 @@
+/**
+ *
+ * I Replaced this Component by TopNavigation.tsx
+ * Kept this until we are happy it all works well
+ * (Seb)
+ *
+ */
 import './Frame.css';
 import React, { SyntheticEvent } from 'react';
 import {
