@@ -287,24 +287,28 @@ export default class TopNavigation extends React.Component<
       <ThemeProvider theme={darkTheme}>
         <div className="window-draggable"></div>
         <div className="frameContainer">
-          <Stack className="topNavContainer" direction={'row'}>
+          <Stack
+            direction={'row'}
+            alignContent={'center'}
+            alignItems="center"
+            className="h-12 bg-gray-800 rounded-lg pl-24 content-center"
+          >
             <div className="verticalLineGrey"></div>
 
             <img
               alt="FDC3 Sail"
               src="../assets/sail_logo.png"
-              height={40}
-              className="logo"
+              className="h-9 mr-6"
             />
 
-            <IconButton aria-label="home" size="small" className="topNavButton">
-              <HomeOutlined fontSize="small" />
+            <IconButton aria-label="home" className="h-6 w-6">
+              <HomeOutlined className="text-xs" />
             </IconButton>
 
             <div className="verticalLineBlack"></div>
 
             <Tabs
-              className="tabContainer"
+              className="w-full h-full"
               value={this.state.selectedTab}
               onChange={(event, newTabId) => {
                 this.handleTabChange(newTabId);
@@ -371,9 +375,3 @@ export default class TopNavigation extends React.Component<
     );
   }
 }
-
-/**
- *
- */
-
-// export default TopNavigation;
