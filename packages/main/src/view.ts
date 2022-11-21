@@ -107,7 +107,6 @@ export class View {
     this.content = new BrowserView({
       webPreferences: {
         preload: preload,
-        devTools: true,
         contextIsolation: true,
         webSecurity: true,
         nodeIntegration: true,

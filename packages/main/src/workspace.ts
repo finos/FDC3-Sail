@@ -79,12 +79,11 @@ export class Workspace {
     // and load the index.html of the app.
     if (this.window && MAIN_WINDOW_CONTENT) {
       this.window.loadURL(MAIN_WINDOW_CONTENT).then(() => {
-        // this.window.loadFile('src/windows/workspace/frame.html').then(() => {
         if (this.window) {
           this.window.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
             id: this.id,
           });
-          // this.window.webContents.openDevTools();
+
           console.log('workspace created', this.id);
           const runtime = getRuntime();
           if (runtime) {
@@ -446,7 +445,6 @@ export class Workspace {
           nodeIntegration: true,
           contextIsolation: true,
           preload: SYSTEM_PRELOAD,
-          devTools: true,
         },
       });
 
@@ -514,7 +512,6 @@ export class Workspace {
           nodeIntegration: true,
           contextIsolation: true,
           preload: SYSTEM_PRELOAD,
-          devTools: true,
         },
       });
       const CHANNEL_PICKER_CONTENT =
@@ -587,7 +584,7 @@ export class Workspace {
       this.resultsWindow.webContents.send(RUNTIME_TOPICS.SEARCH_LOAD_RESULTS, {
         results: results,
       });
-      // this.resultsWindow.webContents.openDevTools();
+
       let hideTimer: NodeJS.Timeout | null = null;
 
       //clear previous handlers
