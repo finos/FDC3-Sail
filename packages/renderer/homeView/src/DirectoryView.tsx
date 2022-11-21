@@ -1,4 +1,7 @@
 import React from 'react';
+
+import './DirectoryView.css';
+
 import {
   Paper,
   Card,
@@ -61,14 +64,13 @@ export class DirectoryView extends React.Component<
     };
 
     return (
-      <Paper
-        sx={{
-          padding: '1rem',
-          margin: '1rem',
-          backgroundColor: '#ccc',
-        }}
-      >
-        <Grid container spacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
+      <div className="directoryContainer">
+        <Grid
+          container
+          spacing={2}
+          columns={{ xs: 4, sm: 8, md: 12 }}
+          padding={2}
+        >
           {this.state.apps.map((app: DirectoryApp) => (
             <Grid item xs={4} key={app.appId}>
               <Card sx={{ maxWidth: 345, minHeight: 350 }}>
@@ -77,14 +79,14 @@ export class DirectoryView extends React.Component<
                     <CardMedia
                       component="img"
                       image={image.src}
-                      height="120"
+                      height="100"
                     ></CardMedia>
                   ))
                 ) : (
                   <CardHeader
                     sx={{
                       backgroundColor: '#999',
-                      height: 80,
+                      height: 60,
                     }}
                   ></CardHeader>
                 )}
@@ -119,7 +121,7 @@ export class DirectoryView extends React.Component<
             </Grid>
           ))}
         </Grid>
-      </Paper>
+      </div>
     );
   }
 }

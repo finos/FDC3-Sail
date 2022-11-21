@@ -41,6 +41,10 @@ const config = {
         channelPicker: 'channelPicker.html',
         intentResolver: 'intentResolver.html',
         searchResults: 'searchResults.html',
+        /**
+         * Need to rename Frame to TopNavigation and move to vite config (Seb)
+         */
+        // topNavigation: 'topNavigation.html'
       },
     },
     emptyOutDir: true,

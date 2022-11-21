@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Frame from './Frame';
+import TopNavigation from './TopNavigation';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Frame />
+    <TopNavigation />
   </React.StrictMode>,
   document.getElementById('frame'),
 );
