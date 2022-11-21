@@ -1,0 +1,11 @@
+.directoryContainer {
+    border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: #000;
+    border-style: solid;
+    border-color: #333;
+    border-width: 2px;
+    height: 97.4vh;
+    flex-grow: 1;
+    overflow-y: scroll;
+}

@@ -1,10 +1,3 @@
-/**
- *
- * I Replaced this Component by TopNavigation.tsx
- * Kept this until we are happy it all works well
- * (Seb)
- *
- */
 import './Frame.css';
 import React, { SyntheticEvent } from 'react';
 import {
@@ -17,16 +10,20 @@ import {
   AppBar,
   Paper,
   Stack,
+  Container,
+  Box,
+  Button,
 } from '@mui/material';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RUNTIME_TOPICS } from '../../main/src/handlers/runtime/topics';
+import AddIcon from '@mui/icons-material/Add';
 import {
-  PostAdd,
   HiveOutlined,
   CloseOutlined,
   OpenInNew,
   MoreVert,
+  HomeOutlined,
 } from '@mui/icons-material';
 
 (window as any).frameReady = false;
@@ -42,7 +39,7 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#1976d2',
+      main: '#fff',
     },
   },
 });
@@ -69,7 +66,7 @@ interface FrameTab {
   tabName: string;
 }
 
-export class Frame extends React.Component<
+export default class TopNavigation extends React.Component<
   {},
   {
     anchorEl: HTMLElement | null;
@@ -288,101 +285,88 @@ export class Frame extends React.Component<
 
     return (
       <ThemeProvider theme={darkTheme}>
-        <Paper>
-          <div
-            className="frameContainer"
-            onDrop={frameDrop}
-            onDragOver={allowFrameDrop}
-          >
-            <AppBar position="static" color="inherit">
-              <div id="buttonsContainer">
-                <Stack direction="row">
-                  <TextField
-                    id="search"
-                    className="frameSearch"
-                    variant="outlined"
-                    margin="dense"
-                    size="small"
-                    onFocus={hideResults}
-                    onChange={searchChange}
-                    fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchRounded />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  <ButtonGroup className="frameButtons">
-                    <IconButton
-                      size="small"
-                      id="channelPicker"
-                      sx={{
-                        background: this.state.channelColor,
-                      }}
-                      onClick={openChannelPicker}
-                      title="select channel"
-                    >
-                      <HiveOutlined />
-                    </IconButton>
+        <div className="window-draggable"></div>
+        <div className="frameContainer">
+          <Stack className="topNavContainer" direction={'row'}>
+            <div className="verticalLineGrey"></div>
 
-                    <IconButton
-                      id="menuButton"
-                      aria-controls={open ? 'more' : undefined}
-                      aria-haspopup="true"
-                      aria-expanded={open ? 'true' : undefined}
-                      onClick={devToolsClick}
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  </ButtonGroup>
-                </Stack>
-              </div>
-              <Tabs
-                value={this.state.selectedTab}
-                onChange={(event, newTabId) => {
-                  this.handleTabChange(newTabId);
-                }}
-                variant="scrollable"
-                scrollButtons="auto"
-              >
-                {this.state.tabs.map((tab: FrameTab) => (
-                  <Tab
-                    label={tab.tabName}
-                    value={tab.tabId}
-                    id={tab.tabId}
-                    key={tab.tabId}
-                    iconPosition="end"
-                    onDrop={drop}
-                    onDragLeave={leaveTab}
-                    onDragOver={allowDrop}
-                    onDragEnd={dragEnd}
-                    draggable="true"
-                    onDragStart={() => {
-                      drag(tab.tabId);
-                    }}
-                    icon={
-                      <div>
-                        <OpenInNew
-                          onClick={() => {
-                            this.tearOut(tab.tabId);
-                          }}
-                        />
-                        <CloseOutlined
-                          onClick={() => {
-                            this.closeTab(tab.tabId);
-                          }}
-                        />
-                      </div>
-                    }
-                  />
-                ))}
-                <Tab icon={<PostAdd />} value="newTab" />
-              </Tabs>
-            </AppBar>
-          </div>
-        </Paper>
+            <img
+              alt="FDC3 Sail"
+              src="../assets/sail_logo.png"
+              height={40}
+              className="logo"
+            />
+
+            <IconButton aria-label="home" size="small" className="topNavButton">
+              <HomeOutlined fontSize="small" />
+            </IconButton>
+
+            <div className="verticalLineBlack"></div>
+
+            <Tabs
+              className="tabContainer"
+              value={this.state.selectedTab}
+              onChange={(event, newTabId) => {
+                this.handleTabChange(newTabId);
+              }}
+              variant="scrollable"
+              scrollButtons="auto"
+            >
+              {this.state.tabs.map((tab: FrameTab) => (
+                <Tab
+                  label={tab.tabName}
+                  value={tab.tabId}
+                  id={tab.tabId}
+                  key={tab.tabId}
+                  iconPosition="end"
+                  onDrop={drop}
+                  onDragLeave={leaveTab}
+                  onDragOver={allowDrop}
+                  onDragEnd={dragEnd}
+                  draggable="true"
+                  onDragStart={() => {
+                    drag(tab.tabId);
+                  }}
+                  icon={
+                    <div>
+                      <OpenInNew
+                        onClick={() => {
+                          this.tearOut(tab.tabId);
+                        }}
+                      />
+                      <CloseOutlined
+                        onClick={() => {
+                          this.closeTab(tab.tabId);
+                        }}
+                      />
+                    </div>
+                  }
+                />
+              ))}
+            </Tabs>
+            <IconButton
+              size="small"
+              id="channelPicker"
+              sx={{
+                background: this.state.channelColor,
+              }}
+              onClick={openChannelPicker}
+              title="select channel"
+            >
+              <HiveOutlined />
+            </IconButton>
+            <IconButton
+              id="menuButton"
+              aria-controls={open ? 'more' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={devToolsClick}
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <MoreVert />
+            </IconButton>
+          </Stack>
+        </div>
       </ThemeProvider>
     );
   }
@@ -392,4 +376,4 @@ export class Frame extends React.Component<
  *
  */
 
-export default Frame;
+// export default TopNavigation;

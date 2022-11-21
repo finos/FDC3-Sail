@@ -10,7 +10,7 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
   if (workspace) {
     const template = [
       {
-        label: 'Frame Dev Tools',
+        label: 'Top Nav Dev Tools',
         click: () => {
           if (workspace && workspace.window) {
             workspace.window.webContents.openDevTools();
@@ -18,7 +18,7 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
         },
       },
       {
-        label: 'Tab Dev Tools',
+        label: 'Main Dev Tools',
         click: () => {
           if (workspace && workspace.selectedTab) {
             const selectedTab = runtime.getView(workspace.selectedTab);

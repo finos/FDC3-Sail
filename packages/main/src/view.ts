@@ -107,7 +107,6 @@ export class View {
     this.content = new BrowserView({
       webPreferences: {
         preload: preload,
-        devTools: true,
         contextIsolation: true,
         webSecurity: true,
         nodeIntegration: true,
@@ -128,14 +127,11 @@ export class View {
     }
     if (url === (VIEW_DEFAULT as string)) {
       this.type = 'system';
-      this.title = 'Home';
+      this.title = 'Worskpace';
     }
 
     if (url) {
-      this.content.webContents.loadURL(url).then(() => {
-        //       this.content.webContents.openDevTools();
-        //   initView(config);
-      });
+      this.content.webContents.loadURL(url);
 
       //listen for reloads and reset id
       this.content.webContents.on('devtools-reload-page', () => {

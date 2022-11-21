@@ -1,7 +1,23 @@
-[![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6303/badge)](https://bestpractices.coreinfrastructure.org/projects/6303)
+<p align="center">
+    <img height="300" src="./images/logo_bg_white_2x.png" alt="FDC3 Sail Icon">
+</p>
 
-# Electron FDC3 Desktop Agent & App Directory
+<h1 align="center">FDC3 Sail</h3>
+
+<h3 align="center">Develop easier. &nbsp; Build faster. &nbsp; Integrate quicker.</h3>
+
+<br />
+
+<p align="center">
+    <a href="https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating"><img src="https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg"></a>
+    <a href="https://bestpractices.coreinfrastructure.org/projects/6303"><img src="https://bestpractices.coreinfrastructure.org/projects/6303/badge"></a>
+    <a href="https://github.com/finos/electron-fdc3/blob/main/LICENSE"><img src="https://img.shields.io/github/license/finos/electron-fdc3"></a>
+</p>
+
+<!-- [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6303/badge)](https://bestpractices.coreinfrastructure.org/projects/6303) -->
+
+## What is FDC3 Sail?
 
 This project provides a fully open source implementation of the [FDC3](https://fdc3.finos.com) interoperability standard.  Including:
 - A fully featured and secure electron desktop agent featuring:
@@ -10,7 +26,7 @@ This project provides a fully open source implementation of the [FDC3](https://f
     - directory search
 - A local file-based app directory implementation
 
-## FDC3 Primer
+## FDC3 Standard Primer
 
 If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
 
