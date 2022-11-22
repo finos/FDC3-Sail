@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { RUNTIME_TOPICS } from '../../main/src/handlers/runtime/topics';
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 import AddIcon from '@mui/icons-material/Add';
 import {
   HiveOutlined,
@@ -295,11 +295,7 @@ export default class TopNavigation extends React.Component<
           >
             <div className="verticalLineGrey"></div>
 
-            <img
-              alt="FDC3 Sail"
-              src="../assets/sail_logo.png"
-              className="h-9 mr-6"
-            />
+            <img alt="FDC3 Sail" src="sail_logo.png" className="h-9 mr-6" />
 
             <IconButton aria-label="home" className="h-6 w-6">
               <HomeOutlined className="text-xs" />

@@ -43,8 +43,8 @@ export class View {
   ) {
     const VIEW_DEFAULT =
       import.meta.env.DEV &&
-      import.meta.env.VITE_DEV_SERVER_DEFAULT_URL !== undefined
-        ? import.meta.env.VITE_DEV_SERVER_DEFAULT_URL
+      import.meta.env.VITE_DEV_SERVER_HOMEVIEW_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_HOMEVIEW_URL
         : new URL(
             '../renderer/dist/homeView.html',
             'file://' + __dirname,
