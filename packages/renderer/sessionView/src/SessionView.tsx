@@ -8,14 +8,10 @@ import {
   ChannelState,
 } from '../../../main/src/types/SessionState';
 import { ViewCard } from './ViewCard';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
 import Fade from '@mui/material/Fade';
@@ -29,12 +25,6 @@ import { TransitionProps } from '@mui/material/transitions';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { TabPanel, a11yProps } from './TabPanel';
-
-import AppsIcon from '@mui/icons-material/Apps';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
-import { stringify } from 'querystring';
 
 function MinusSquare(props: SvgIconProps) {
   return (
@@ -119,6 +109,7 @@ export class SessionView extends React.Component<
       session: {
         workspaces: [],
         views: [],
+        viewsMap: {},
         channels: [],
       },
       selectedTab: 0,
@@ -220,7 +211,7 @@ export class SessionView extends React.Component<
           onChange={(event, newValue) => {
             this.tabChange(event, newValue);
           }}
-          aria-label="basic tabs example"
+          aria-label="Sail SessionView Tabs"
         >
           <Tab label="Workspaces" {...a11yProps(0)} />
           <Tab label="Views" {...a11yProps(1)} />
@@ -241,7 +232,7 @@ export class SessionView extends React.Component<
               overflowY: 'auto',
             }}
           >
-            <StyledTreeItem nodeId="workspaces" label="Workspaces">
+            <StyledTreeItem nodeId="workspaces" label="All Workspaces">
               {this.state.session.workspaces.map(
                 (workspace: WorkspaceState) => (
                   <StyledTreeItem nodeId={workspace.id} label={workspace.id}>
@@ -253,6 +244,9 @@ export class SessionView extends React.Component<
                         <StyledTreeItem
                           nodeId={`${workspace.id}_view_${i}`}
                           label={this.getView(viewId).title}
+                          onClick={() => {
+                            this.openModal('view', viewId);
+                          }}
                         />
                       ))}
                     </StyledTreeItem>
@@ -267,6 +261,38 @@ export class SessionView extends React.Component<
           index={1}
           sx={{ height: '100%' }}
         >
+          <TreeView
+            aria-label="customized"
+            defaultExpanded={['1']}
+            defaultCollapseIcon={<MinusSquare />}
+            defaultExpandIcon={<PlusSquare />}
+            defaultEndIcon={<CloseSquare />}
+            sx={{
+              height: '100%',
+              flexGrow: 1,
+              maxWidth: '100%',
+              width: '100%',
+              overflowY: 'auto',
+            }}
+          >
+            <StyledTreeItem nodeId="views" label="All Views">
+              {Object.keys(this.state.session.viewsMap).map(
+                (key: string, i: number) => (
+                  <StyledTreeItem nodeId={`view_${i}`} label={key}>
+                    {this.state.session.viewsMap[key].map((viewId: string) => (
+                      <StyledTreeItem
+                        nodeId={viewId}
+                        label={`${this.getView(viewId).title} (${viewId})`}
+                        onClick={() => {
+                          this.openModal('view', viewId);
+                        }}
+                      />
+                    ))}
+                  </StyledTreeItem>
+                ),
+              )}
+            </StyledTreeItem>
+          </TreeView>
           <List>
             {this.state.session.views.map((view: ViewState) => (
               <ListItem
@@ -308,7 +334,12 @@ export class SessionView extends React.Component<
                       <StyledTreeItem
                         nodeId={`${channelState.channel.id}_context_${i}`}
                         label={context.type}
-                      />
+                      >
+                        <StyledTreeItem
+                          nodeId={`${channelState.channel.id}_context_${i}_content`}
+                          label={JSON.stringify(context)}
+                        ></StyledTreeItem>
+                      </StyledTreeItem>
                     ))}
                   </StyledTreeItem>
                 </StyledTreeItem>

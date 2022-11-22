@@ -10,7 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ReactJson from 'react-json-view';
-import { TabPanel } from './TabPanel';
+import { TabPanel, a11yProps } from './TabPanel';
 
 export class ViewCard extends React.Component<
   {
