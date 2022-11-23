@@ -23,19 +23,93 @@ import {
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 
-const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
+export const resolveIntent = async (message: RuntimeMessage) => {
+  const runtime = getRuntime();
+
+  //TODO: autojoin the new app to the channel which the 'open' call is sourced from
+  let resolvedView: View | undefined;
+
+  if (!message.data.selected.instanceId) {
+    const data: DirectoryApp = message.data.selected?.directoryData;
+
+    //launch window
+    const runtime = getRuntime();
+    if (runtime) {
+      const win = runtime.createWorkspace();
+      resolvedView = win.createView(
+        (data.details as DirectoryAppLaunchDetailsWeb).url,
+        {
+          directoryData: data as DirectoryApp,
+        },
+      );
+
+      //set pending intent and context
+      resolvedView.setPendingIntent(
+        message.data.intent,
+        message.data.context,
+        message.data.id,
+      );
+    }
+  } else {
+    resolvedView = runtime.getView(message.data.selected?.instanceId);
+    //send new intent
+    if (resolvedView && resolvedView.parent) {
+      if (resolvedView.fdc3Version === '1.2') {
+        resolvedView.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+        });
+      } else {
+        resolvedView.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+          source: message.data.id,
+        });
+
+        resolvedView.parent.setSelectedTab(resolvedView.id);
+      }
+    }
+  }
+  //close the resolver
+  const resolver = runtime.getResolver();
+  if (resolver) {
+    resolver.close();
+  }
+
+  const result: IntentResolution = {
+    source: {
+      appId: resolvedView?.directoryData?.appId || '',
+      instanceId: resolvedView?.id,
+    },
+    intent: message.data.intent,
+    version: '2.0',
+    getResult: (): Promise<IntentResult> => {
+      return new Promise((resolve) => {
+        //to do...
+        resolve({
+          type: 'emptyResult',
+        });
+      });
+    },
+  };
+
+  return result;
+};
+
+export const _resolveIntent = (
+  message: RuntimeMessage,
+): Promise<IntentResolution> => {
   return new Promise((resolve, reject) => {
     //find the app to route to
     try {
-      const sView =
-        message.data.selected &&
-        message.data.selected.details &&
-        message.data.selected.details.instanceId
-          ? getRuntime().getView(message.data.selected.details.instanceId)
-          : null;
-      const source = message.source;
-      if (message.data.intent) {
-        const listeners = getRuntime().getIntentListeners(message.data.intent);
+      const selected = message.data.selected;
+      const sView = selected?.details?.instanceId
+        ? getRuntime().getView(selected.details.instanceId)
+        : null;
+      const source = message.data.source;
+      const intent = message.data.intent;
+      if (intent) {
+        const listeners = getRuntime().getIntentListeners(intent);
         //let keys = Object.keys(listeners);
         let appId: string | undefined = undefined;
         const id = (sView && sView.id) || undefined;
@@ -336,14 +410,6 @@ export const raiseIntent = async (message: RuntimeMessage) => {
       //sort results alphabetically, with directory entries first (before window entries)
 
       r.sort(sortApps);
-
-      const eventId = `resolveIntent-${Date.now()}`;
-
-      //set a handler for resolving the intent (when end user selects a destination)
-      ipcMain.on(eventId, async (event, args) => {
-        const r: IntentResolution = await resolveIntent(args);
-        return r;
-      });
 
       //launch window with resolver UI
       // console.log('resolve intent - options', r);

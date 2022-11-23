@@ -11,6 +11,7 @@ import { join } from 'path';
 import { Workspace } from './workspace';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
+import { FDC3_VERSIONS } from '/@/types/Versions';
 
 const SYSTEM_PRELOAD = join(__dirname, '../../preload/dist/system/index.cjs');
 
@@ -27,12 +28,20 @@ export class IntentResolver {
 
   context: Context | null;
 
+  source: string; //id of the app that raised the intent
+
+  fdc3Version: FDC3_VERSIONS;
+
   constructor(
     view: View,
     detail: ResolverDetail,
     options?: Array<FDC3App> | Array<IntentInstance>,
   ) {
     this.id = randomUUID();
+
+    this.source = view.id;
+
+    this.fdc3Version = view.fdc3Version;
 
     this.intent = detail.intent;
 
@@ -96,6 +105,8 @@ export class IntentResolver {
         const startObject = {
           id: this.id,
           intent: this.intent || '',
+          source: this.source,
+          fdc3Version: this.fdc3Version,
           context: this.context,
           options: options,
         };

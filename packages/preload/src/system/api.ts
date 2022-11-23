@@ -5,6 +5,7 @@ import { userChannels } from '/@main/handlers/fdc3/userChannels';
 import { Context } from '@finos/fdc3';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
+import { FDC3_VERSIONS } from '/@main/types/Versions';
 
 let id: string | undefined = undefined;
 let intent: string | undefined = undefined;
@@ -12,6 +13,8 @@ let context: Context | undefined = undefined;
 let frameReady = false;
 let workspaceId: string | null = null;
 let selectedChannel: string | null = null;
+let fdc3Version: FDC3_VERSIONS | undefined;
+let source: string | undefined = undefined;
 
 const eventQ: Array<() => void> = [];
 /**
@@ -23,6 +26,8 @@ ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, (event, args) => {
   intent = args.intent;
   context = args.context;
   workspaceId = args.workspaceId;
+  source = args.source;
+  fdc3Version = args.fdc3Version;
 
   //if this is an intent resolver, dispatch the options
   if (args.options) {
@@ -41,14 +46,21 @@ const resolveIntent = (data: {
   selectedIntent: any;
   selected: { details: any };
 }) => {
+  //get the view's fdc3 version to determine which event to raise
+
+  const topic =
+    fdc3Version === '2.0'
+      ? FDC3_2_0_TOPICS.RESOLVE_INTENT
+      : FDC3_1_2_TOPICS.RESOLVE_INTENT;
   //no op if intent is not defined
   if (data.selectedIntent || intent) {
-    ipcRenderer.send(FDC3_1_2_TOPICS.RESOLVE_INTENT, {
+    ipcRenderer.send(topic, {
       id: id,
       data: {
         intent: data.selectedIntent || intent,
         selected: data.selected && data.selected.details,
         context: context,
+        source: source,
       },
     });
   }
