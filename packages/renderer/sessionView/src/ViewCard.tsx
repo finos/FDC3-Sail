@@ -9,7 +9,8 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import ReactJson from 'react-json-view';
+import MarkdownPreview from '@uiw/react-markdown-preview';
+import { formatJSON } from './jsonFormatter';
 import { TabPanel, a11yProps } from './TabPanel';
 
 export class ViewCard extends React.Component<
@@ -36,6 +37,10 @@ export class ViewCard extends React.Component<
       marginRight: '.6rem',
     };
     const directoryData = this.data.directoryData;
+    const startBlock = '```json';
+    const directoryDataMd = `${startBlock}
+      ${formatJSON(JSON.stringify(directoryData))}
+    `;
 
     return (
       <Box sx={{ overflow: 'scroll', height: window.innerHeight - 200 }}>
@@ -126,7 +131,10 @@ export class ViewCard extends React.Component<
             <CardContent>
               {directoryData ? (
                 <Typography component="div">
-                  <ReactJson theme="hopscotch" src={directoryData} />
+                  <MarkdownPreview
+                    source={directoryDataMd}
+                    disableCopy={true}
+                  />
                 </Typography>
               ) : (
                 <Typography component="h6">
