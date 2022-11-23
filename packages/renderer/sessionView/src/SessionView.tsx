@@ -10,7 +10,6 @@ import {
 import { ViewCard } from './ViewCard';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
@@ -20,8 +19,6 @@ import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { alpha, styled } from '@mui/material/styles';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
-import { useSpring, animated } from 'react-spring';
-import { TransitionProps } from '@mui/material/transitions';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { TabPanel, a11yProps } from './TabPanel';
@@ -58,27 +55,8 @@ function CloseSquare(props: SvgIconProps) {
   );
 }
 
-function TransitionComponent(props: TransitionProps) {
-  const style = useSpring({
-    from: {
-      opacity: 0,
-      transform: 'translate3d(20px,0,0)',
-    },
-    to: {
-      opacity: props.in ? 1 : 0,
-      transform: `translate3d(${props.in ? 0 : 20}px,0,0)`,
-    },
-  });
-
-  return (
-    <animated.div style={style}>
-      <Collapse {...props} />
-    </animated.div>
-  );
-}
-
 const StyledTreeItem = styled((props: TreeItemProps) => (
-  <TreeItem {...props} TransitionComponent={TransitionComponent} />
+  <TreeItem {...props} />
 ))(({ theme }) => ({
   [`& .${treeItemClasses.iconContainer}`]: {
     '& .close': {
