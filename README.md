@@ -75,18 +75,13 @@ The following libraries are used:
 - `directory/`   - the app directory implementation, built with fastify
 - `packages/main` - the main Electron application, has access to Node
 - `packages/preload` - preload scripts for web renderers.  Bridges the frontend ui to the main process through events and apis
-    - `packages/preload/channelPicker` - preload for the channel picker UI
-    - `packages/preload/homeView` - preload for the default home view UI. Note: this exposes an additional API on top of the standard FDC3 one - which can only be accessed by native "system" views.
-    - `packages/preload/intentResolver` - preload for the intent resolver UI
-    - `packages/preload/searchResults` - preload for the searchResults UI
-    - `packages/preload/view` - preload for all content views.  This is where the FDC3 API is implemented.
-    - `packages/preload/index.ts` - preload for the main window - i.e. the frame around all view content.
 - `packages/renderer` - the parts of the desktop agent UI built with [React], isolated from main app, and shown in a window on the desktop
-    - `packages/renderer/channelPicker` - UI for the channel picker
-    - `packages/renderer/homeView` - UI for the default home view
-    - `packages/renderer/intentResolver` - UI for the intent resolver window
-    - `packages/renderer/searchResults` - UI for the searchResults window
-    - `packages/preload/src` - UI for the main window - i.e. the frame around all view content.  This covers the search bar, channel picker button, and tabs.
+    - `channelPicker` - UI for the channel picker
+    - `homeView` - UI for the default home view
+    - `intentResolver` - UI for the intent resolver window
+    - `searchResults` - UI for the searchResults window
+    - `sessionView` - UI for the sessionView window
+    - `topNavigation` - UI for the Top Navigation that includes the Tabs, channel picker button, and Dev Tools Menu.
 
 ## App Directory Setup
 
@@ -109,28 +104,22 @@ This will use the FINOS app directory at https://directory.fdc3.finos.org/v2/app
 
 ## Getting Started With Your Own App Directory
 
-Install dependencies:
+1. Install dependencies:
 
 ~~~
 npm install
 ~~~
 
-Build and run the app directory:
+2. Create your own local App directory manifest .e.g. `local.v2.json` in the `/directory` folder
 
-~~~
-npm run build:directory
-npm run start:directory
-~~~
 
-This will run a local App Directory on port 8080.
+3. Set the environment variable to use this directory: 
 
-Set the environment variable to use this directory: 
-
-~~~
-export SAIL_DIRECTORY_URL=https://localhost:8080
+~~~bash
+export SAIL_DIRECTORY_URL=directory/local.v2.json
 ~~~
 
-Start the FDC3 application:
+4. Start the FDC3 application:
 
 ~~~
 npm start
@@ -139,10 +128,10 @@ npm start
 Other useful commands:
 
 1. `npm start` / `npm run watch` - Start the Electron app in dev mode.
-1. `npm run compile` - Build the app for local debugging only.
-1. `npm run lint` - Lint the code.
-1. `npm run typecheck` - Run a TypeScript check.
-1. `npm run test` - Run tests for all parts of the application, including end-to-end tests.
+2. `npm run compile` - Build the app for local debugging only.
+3. `npm run lint` - Lint the code.
+4. `npm run typecheck` - Run a TypeScript check.
+5. `npm run test` - Run tests for all parts of the application, including end-to-end tests.
 
 ## Mailing List
 
