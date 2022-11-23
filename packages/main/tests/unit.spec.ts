@@ -1,3 +1,9 @@
+import { describe } from 'vitest';
+
+describe.skip('skipped suite', () => {
+  // skipped test
+});
+
 /*import { MaybeMocked } from 'vitest';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createWindow } from '../src/index';

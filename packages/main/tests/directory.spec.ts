@@ -7,10 +7,15 @@ import {
   DirectoryIntent,
   getSailManifest,
 } from '../src/directory/directory';
+import { join } from 'path';
+
+const PACKAGE_ROOT = __dirname;
 
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
-const LOCAL_V2 = 'tests/v2/apps/appd-records.v2.json';
-const LOCAL_V1 = 'tests/v1/apps/appd-records.v1.json';
+
+// const LOCAL_V2 = './v2/apps/appd-records.v2.json';
+const LOCAL_V2 = join(PACKAGE_ROOT, '/v2/apps/appd-records.v2.json');
+const LOCAL_V1 = join(PACKAGE_ROOT, '/v1/apps/appd-records.v1.json');
 
 test('Test Remote Directory Load in FDC3 2.0 Format', async () => {
   const results = await fdc3_2_0_AppDirectoryLoader(REMOTE_V2);
