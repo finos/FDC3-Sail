@@ -4,6 +4,7 @@ import { chrome } from '../../.electron-vendors.cache.json';
 import { join, resolve } from 'path';
 import { builtinModules } from 'module';
 import react from '@vitejs/plugin-react';
+import tailwindcss from 'tailwindcss';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -14,13 +15,14 @@ const PACKAGE_ROOT = __dirname;
 const config = {
   mode: process.env.MODE,
   root: PACKAGE_ROOT,
+  publicDir: join(PACKAGE_ROOT, 'assets') + '/',
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
       '/@main/': resolve(PACKAGE_ROOT, '../main/src') + '/',
     },
   },
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   base: '',
   server: {
     fs: {
@@ -35,16 +37,13 @@ const config = {
     rollupOptions: {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       input: {
-        index: 'index.html',
+        // index: 'index.html',
+        topNavigation: 'topNavigation.html',
         homeView: 'homeView.html',
         sessionView: 'sessionView.html',
         channelPicker: 'channelPicker.html',
         intentResolver: 'intentResolver.html',
         searchResults: 'searchResults.html',
-        /**
-         * Need to rename Frame to TopNavigation and move to vite config (Seb)
-         */
-        // topNavigation: 'topNavigation.html'
       },
     },
     emptyOutDir: true,

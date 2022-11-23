@@ -51,8 +51,8 @@ const setupMainPackageWatcher = ({ config: { server } }) => {
     const port = server.port; // Vite searches for and occupies the first free port: 3000, 3001, 3002 and so on
     const path = '/';
     process.env.VITE_DEV_SERVER_URL = `${protocol}//${host}:${port}${path}`;
-    process.env.VITE_DEV_SERVER_FRAME_URL = `${protocol}//${host}:${port}${path}index.html`;
-    process.env.VITE_DEV_SERVER_DEFAULT_URL = `${protocol}//${host}:${port}${path}homeView.html`;
+    process.env.VITE_DEV_SERVER_TOPNAVIGATION_URL = `${protocol}//${host}:${port}${path}topNavigation.html`;
+    process.env.VITE_DEV_SERVER_HOMEVIEW_URL = `${protocol}//${host}:${port}${path}homeView.html`;
     process.env.VITE_DEV_SERVER_SESSION_URL = `${protocol}//${host}:${port}${path}sessionView.html`;
     process.env.VITE_DEV_SERVER_CHANNEL_URL = `${protocol}//${host}:${port}${path}channelPicker.html`;
     process.env.VITE_DEV_SERVER_SEARCH_URL = `${protocol}//${host}:${port}${path}searchResults.html`;

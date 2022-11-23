@@ -69,10 +69,12 @@ export class Workspace {
     console.log('main window content DEV = ', import.meta.env.DEV);
 
     const MAIN_WINDOW_CONTENT =
-      import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
-        ? import.meta.env.VITE_DEV_SERVER_URL
+      import.meta.env.DEV &&
+      import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL !== undefined
+        ? import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL
         : new URL(
-            '../renderer/dist/index.html',
+            // '../renderer/dist/index.html',
+            '../renderer/dist/topNavigation.html',
             'file://' + __dirname,
           ).toString();
 
