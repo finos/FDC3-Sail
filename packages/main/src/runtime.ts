@@ -120,11 +120,12 @@ export class Runtime {
 
   getSessionState(): SessionState {
     const viewStates: Array<ViewState> = [];
+    const viewsMap: { [key: string]: Array<string> } = {};
     const workspaceStates: Array<WorkspaceState> = [];
     const channelStates: Array<ChannelState> = [];
 
-    views.forEach((view) => {
-      viewStates.push({
+    const toViewState = (view: View) => {
+      return {
         id: view.id,
         parent: view.parent ? view.parent.id : '',
         fdc3Version: view.fdc3Version,
@@ -132,7 +133,37 @@ export class Runtime {
         title: view.getTitle(),
         channel: view.channel || '',
         directoryData: view.directoryData || null,
+      };
+    };
+
+    const vMap: Map<string, Array<string>> = new Map();
+    views.forEach((view) => {
+      //is it a system view?
+      if (view.isSystemView()) {
+        if (!vMap.has('system views')) {
+          vMap.set('system views', []);
+        }
+        vMap.get('system views')?.push(view.id);
+      } else if (view.directoryData && view.directoryData.appId) {
+        //is there an array for the view id?
+        if (!vMap.has(view.directoryData.appId)) {
+          vMap.set(view.directoryData.appId, []);
+        }
+        vMap.get(view.directoryData.appId)?.push(view.id);
+      } else {
+        if (!vMap.has('ad hoc views')) {
+          vMap.set('ad hoc views', []);
+        }
+        vMap.get('ad hoc views')?.push(view.id);
+      }
+
+      vMap.forEach((views: Array<string>, key: string) => {
+        viewsMap[key] = views;
       });
+    });
+
+    views.forEach((view) => {
+      viewStates.push(toViewState(view));
     });
 
     workspaces.forEach((workspace) => {
@@ -159,10 +190,12 @@ export class Runtime {
 
     return {
       views: viewStates,
+      viewsMap: viewsMap,
       workspaces: workspaceStates,
       channels: channelStates,
     };
   }
+
   draggedTab: { tabId: string; source: string } | null = null;
   /**
    * Dynamically add a Handler to the IPC bus
