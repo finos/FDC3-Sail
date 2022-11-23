@@ -44,7 +44,7 @@ test('Main window state', async () => {
 
 test('Main window web content', async () => {
   const page = await electronApp.firstWindow();
-  const element = await page.$('#frame', { strict: true });
+  const element = await page.$('#topNavigation', { strict: true });
   expect(element, "Can't find root element").toBeDefined();
   expect(
     (await element.innerHTML()).trim(),
