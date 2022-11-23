@@ -1,4 +1,5 @@
 import React from 'react';
+import { Context } from '@finos/fdc3';
 import { Paper } from '@mui/material';
 import {
   SessionState,
@@ -7,25 +8,89 @@ import {
   ChannelState,
 } from '../../../main/src/types/SessionState';
 import { ViewCard } from './ViewCard';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
 import Fade from '@mui/material/Fade';
 import Box from '@mui/material/Box';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import StarBorder from '@mui/icons-material/StarBorder';
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
+import { alpha, styled } from '@mui/material/styles';
+import TreeView from '@mui/lab/TreeView';
+import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
+import { useSpring, animated } from 'react-spring';
+import { TransitionProps } from '@mui/material/transitions';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { TabPanel, a11yProps } from './TabPanel';
+
+function MinusSquare(props: SvgIconProps) {
+  return (
+    <SvgIcon fontSize="inherit" style={{ width: 14, height: 14 }} {...props}>
+      {/* tslint:disable-next-line: max-line-length */}
+      <path d="M22.047 22.074v0 0-20.147 0h-20.12v0 20.147 0h20.12zM22.047 24h-20.12q-.803 0-1.365-.562t-.562-1.365v-20.147q0-.776.562-1.351t1.365-.575h20.147q.776 0 1.351.575t.575 1.351v20.147q0 .803-.575 1.365t-1.378.562v0zM17.873 11.023h-11.826q-.375 0-.669.281t-.294.682v0q0 .401.294 .682t.669.281h11.826q.375 0 .669-.281t.294-.682v0q0-.401-.294-.682t-.669-.281z" />
+    </SvgIcon>
+  );
+}
+
+function PlusSquare(props: SvgIconProps) {
+  return (
+    <SvgIcon fontSize="inherit" style={{ width: 14, height: 14 }} {...props}>
+      {/* tslint:disable-next-line: max-line-length */}
+      <path d="M22.047 22.074v0 0-20.147 0h-20.12v0 20.147 0h20.12zM22.047 24h-20.12q-.803 0-1.365-.562t-.562-1.365v-20.147q0-.776.562-1.351t1.365-.575h20.147q.776 0 1.351.575t.575 1.351v20.147q0 .803-.575 1.365t-1.378.562v0zM17.873 12.977h-4.923v4.896q0 .401-.281.682t-.682.281v0q-.375 0-.669-.281t-.294-.682v-4.896h-4.923q-.401 0-.682-.294t-.281-.669v0q0-.401.281-.682t.682-.281h4.923v-4.896q0-.401.294-.682t.669-.281v0q.401 0 .682.281t.281.682v4.896h4.923q.401 0 .682.281t.281.682v0q0 .375-.281.669t-.682.294z" />
+    </SvgIcon>
+  );
+}
+
+function CloseSquare(props: SvgIconProps) {
+  return (
+    <SvgIcon
+      className="close"
+      fontSize="inherit"
+      style={{ width: 14, height: 14 }}
+      {...props}
+    >
+      {/* tslint:disable-next-line: max-line-length */}
+      <path d="M17.485 17.512q-.281.281-.682.281t-.696-.268l-4.12-4.147-4.12 4.147q-.294.268-.696.268t-.682-.281-.281-.682.294-.669l4.12-4.147-4.12-4.147q-.294-.268-.294-.669t.281-.682.682-.281.696 .268l4.12 4.147 4.12-4.147q.294-.268.696-.268t.682.281 .281.669-.294.682l-4.12 4.147 4.12 4.147q.294.268 .294.669t-.281.682zM22.047 22.074v0 0-20.147 0h-20.12v0 20.147 0h20.12zM22.047 24h-20.12q-.803 0-1.365-.562t-.562-1.365v-20.147q0-.776.562-1.351t1.365-.575h20.147q.776 0 1.351.575t.575 1.351v20.147q0 .803-.575 1.365t-1.378.562v0z" />
+    </SvgIcon>
+  );
+}
+
+function TransitionComponent(props: TransitionProps) {
+  const style = useSpring({
+    from: {
+      opacity: 0,
+      transform: 'translate3d(20px,0,0)',
+    },
+    to: {
+      opacity: props.in ? 1 : 0,
+      transform: `translate3d(${props.in ? 0 : 20}px,0,0)`,
+    },
+  });
+
+  return (
+    <animated.div style={style}>
+      <Collapse {...props} />
+    </animated.div>
+  );
+}
+
+const StyledTreeItem = styled((props: TreeItemProps) => (
+  <TreeItem {...props} TransitionComponent={TransitionComponent} />
+))(({ theme }) => ({
+  [`& .${treeItemClasses.iconContainer}`]: {
+    '& .close': {
+      opacity: 0.3,
+    },
+  },
+  [`& .${treeItemClasses.group}`]: {
+    marginLeft: 15,
+    paddingLeft: 18,
+    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+  },
+}));
 
 export class SessionView extends React.Component<
   {},
@@ -35,6 +100,7 @@ export class SessionView extends React.Component<
     modalOpen: boolean;
     modalType: 'workspace' | 'view' | 'channel' | undefined;
     modalData: WorkspaceState | ViewState | ChannelState | undefined;
+    selectedTab: number;
   }
 > {
   constructor(props) {
@@ -43,8 +109,10 @@ export class SessionView extends React.Component<
       session: {
         workspaces: [],
         views: [],
+        viewsMap: {},
         channels: [],
       },
+      selectedTab: 0,
       openWorkspaces: [],
       modalOpen: false,
       modalType: undefined,
@@ -78,12 +146,23 @@ export class SessionView extends React.Component<
 
       this.setState({ session: session });
     };
+
+    if (window.innerHeight) {
+      document.getElementById('sessionView').style.height = `${
+        window.innerHeight - 150
+      }px`;
+    }
+
     if (window.fdc3) {
       onFDC3Ready();
     } else {
       document.addEventListener('fdc3Ready', onFDC3Ready);
     }
   }
+
+  tabChange = (event: React.SyntheticEvent, newValue: number) => {
+    this.setState({ selectedTab: newValue });
+  };
 
   handleClick(id: string) {
     const i = this.state.openWorkspaces.indexOf(id);
@@ -123,112 +202,151 @@ export class SessionView extends React.Component<
         sx={{
           padding: '1rem',
           margin: '1rem',
+          height: '100%',
           backgroundColor: '#ccc',
         }}
       >
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
+        <Tabs
+          value={this.state.selectedTab}
+          onChange={(event, newValue) => {
+            this.tabChange(event, newValue);
+          }}
+          aria-label="Sail SessionView Tabs"
+        >
+          <Tab label="Workspaces" {...a11yProps(0)} />
+          <Tab label="Views" {...a11yProps(1)} />
+          <Tab label="Channels" {...a11yProps(2)} />
+        </Tabs>
+        <TabPanel value={this.state.selectedTab} index={0}>
+          <TreeView
+            aria-label="customized"
+            defaultExpanded={['1']}
+            defaultCollapseIcon={<MinusSquare />}
+            defaultExpandIcon={<PlusSquare />}
+            defaultEndIcon={<CloseSquare />}
+            sx={{
+              height: '100%',
+              flexGrow: 1,
+              maxWidth: '100%',
+              width: '100%',
+              overflowY: 'auto',
+            }}
           >
-            <Typography>Workspaces</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
+            <StyledTreeItem nodeId="workspaces" label="All Workspaces">
               {this.state.session.workspaces.map(
                 (workspace: WorkspaceState) => (
-                  <ListItem>
-                    {workspace.id}
-
-                    <ListItemButton
-                      onClick={() => {
-                        this.handleClick(workspace.id);
-                      }}
+                  <StyledTreeItem nodeId={workspace.id} label={workspace.id}>
+                    <StyledTreeItem
+                      nodeId={`${workspace.id}_views`}
+                      label="Views"
                     >
-                      <ListItemIcon>
-                        <InboxIcon />
-                      </ListItemIcon>
-                      <ListItemText primary="Views" />
-                      {this.state.openWorkspaces.indexOf(workspace.id) > -1 ? (
-                        <ExpandLess />
-                      ) : (
-                        <ExpandMore />
-                      )}
-                    </ListItemButton>
-                    <Collapse
-                      in={this.state.openWorkspaces.indexOf(workspace.id) > -1}
-                      timeout="auto"
-                      unmountOnExit
-                    >
-                      <List component="div" disablePadding>
-                        {workspace.views.map((viewId) => (
-                          <ListItemButton sx={{ pl: 4 }}>
-                            <ListItemIcon>
-                              <StarBorder />
-                            </ListItemIcon>
-                            <ListItemText
-                              onClick={() => {
-                                this.openModal('view', viewId);
-                              }}
-                              primary={this.getView(viewId)?.title}
-                            />
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    </Collapse>
-                  </ListItem>
+                      {workspace.views.map((viewId: string, i) => (
+                        <StyledTreeItem
+                          nodeId={`${workspace.id}_view_${i}`}
+                          label={this.getView(viewId).title}
+                          onClick={() => {
+                            this.openModal('view', viewId);
+                          }}
+                        />
+                      ))}
+                    </StyledTreeItem>
+                  </StyledTreeItem>
                 ),
               )}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
+            </StyledTreeItem>
+          </TreeView>
+        </TabPanel>
+        <TabPanel
+          value={this.state.selectedTab}
+          index={1}
+          sx={{ height: '100%' }}
+        >
+          <TreeView
+            aria-label="customized"
+            defaultExpanded={['1']}
+            defaultCollapseIcon={<MinusSquare />}
+            defaultExpandIcon={<PlusSquare />}
+            defaultEndIcon={<CloseSquare />}
+            sx={{
+              height: '100%',
+              flexGrow: 1,
+              maxWidth: '100%',
+              width: '100%',
+              overflowY: 'auto',
+            }}
           >
-            <Typography>Views</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
-              {this.state.session.views.map((view: ViewState) => (
-                <ListItem
-                  onClick={() => {
-                    this.openModal('view', view.id);
-                  }}
-                >
-                  {view.title}
-                </ListItem>
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
+            <StyledTreeItem nodeId="views" label="All Views">
+              {Object.keys(this.state.session.viewsMap).map(
+                (key: string, i: number) => (
+                  <StyledTreeItem nodeId={`view_${i}`} label={key}>
+                    {this.state.session.viewsMap[key].map((viewId: string) => (
+                      <StyledTreeItem
+                        nodeId={viewId}
+                        label={`${this.getView(viewId).title} (${viewId})`}
+                        onClick={() => {
+                          this.openModal('view', viewId);
+                        }}
+                      />
+                    ))}
+                  </StyledTreeItem>
+                ),
+              )}
+            </StyledTreeItem>
+          </TreeView>
+          <List>
+            {this.state.session.views.map((view: ViewState) => (
+              <ListItem
+                onClick={() => {
+                  this.openModal('view', view.id);
+                }}
+              >
+                {view.title}
+              </ListItem>
+            ))}
+          </List>
+        </TabPanel>
+        <TabPanel value={this.state.selectedTab} index={2}>
+          <TreeView
+            aria-label="customized"
+            defaultExpanded={['1']}
+            defaultCollapseIcon={<MinusSquare />}
+            defaultExpandIcon={<PlusSquare />}
+            defaultEndIcon={<CloseSquare />}
+            sx={{
+              height: '100%',
+              flexGrow: 1,
+              maxWidth: '100%',
+              width: '100%',
+              overflowY: 'auto',
+            }}
           >
-            <Typography>Channels</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
+            <StyledTreeItem nodeId="channels" label="Channels">
               {this.state.session.channels.map((channelState: ChannelState) => (
-                <ListItem
-                  onClick={() => {
-                    this.openModal('channel', channelState.channel.id);
-                  }}
+                <StyledTreeItem
+                  nodeId={channelState.channel.id}
+                  label={channelState.channel.id}
                 >
-                  {channelState.channel.id}
-                </ListItem>
+                  <StyledTreeItem
+                    nodeId={`${channelState.channel.id}_contexts`}
+                    label="Contexts"
+                  >
+                    {channelState.contexts.map((context: Context, i) => (
+                      <StyledTreeItem
+                        nodeId={`${channelState.channel.id}_context_${i}`}
+                        label={context.type}
+                      >
+                        <StyledTreeItem
+                          nodeId={`${channelState.channel.id}_context_${i}_content`}
+                          label={JSON.stringify(context)}
+                        ></StyledTreeItem>
+                      </StyledTreeItem>
+                    ))}
+                  </StyledTreeItem>
+                </StyledTreeItem>
               ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
+            </StyledTreeItem>
+          </TreeView>
+        </TabPanel>
         <Modal
           aria-labelledby="transition-modal-title"
           aria-describedby="transition-modal-description"

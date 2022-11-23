@@ -26,6 +26,7 @@ export interface ChannelState {
 
 export interface SessionState {
   views: Array<ViewState>;
+  viewsMap: { [key: string]: Array<string> };
   workspaces: Array<WorkspaceState>;
   channels: Array<ChannelState>;
 }
