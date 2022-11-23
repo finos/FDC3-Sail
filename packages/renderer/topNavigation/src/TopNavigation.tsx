@@ -1,23 +1,10 @@
 import './Frame.css';
 import React, { SyntheticEvent } from 'react';
-import {
-  TextField,
-  InputAdornment,
-  IconButton,
-  ButtonGroup,
-  Tabs,
-  Tab,
-  AppBar,
-  Paper,
-  Stack,
-  Container,
-  Box,
-  Button,
-} from '@mui/material';
-import SearchRounded from '@mui/icons-material/SearchRounded';
+import { IconButton, Tabs, Tab, Stack } from '@mui/material';
+// import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
-import AddIcon from '@mui/icons-material/Add';
+// import AddIcon from '@mui/icons-material/Add';
 import {
   HiveOutlined,
   CloseOutlined,
@@ -57,9 +44,9 @@ const openChannelPicker = (event: SyntheticEvent) => {
   );
 };
 
-const hideResults = () => {
-  document.dispatchEvent(new CustomEvent(RUNTIME_TOPICS.HIDE_RESULTS_WINDOW));
-};
+// const hideResults = () => {
+//   document.dispatchEvent(new CustomEvent(RUNTIME_TOPICS.HIDE_RESULTS_WINDOW));
+// };
 
 interface FrameTab {
   tabId: string;
@@ -173,26 +160,26 @@ export default class TopNavigation extends React.Component<
   render() {
     const open = Boolean(this.state.anchorEl);
 
-    const debounce = (callback: any, wait: number) => {
-      let timeoutId: number | undefined = undefined;
-      return (...args: any[]) => {
-        window.clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => {
-          callback.apply(null, args);
-        }, wait);
-      };
-    };
+    // const debounce = (callback: any, wait: number) => {
+    //   let timeoutId: number | undefined = undefined;
+    //   return (...args: any[]) => {
+    //     window.clearTimeout(timeoutId);
+    //     timeoutId = window.setTimeout(() => {
+    //       callback.apply(null, args);
+    //     }, wait);
+    //   };
+    // };
 
-    const searchChange = debounce((event: InputEvent) => {
-      const threshold = 3;
-      const input: HTMLInputElement = event.target as HTMLInputElement;
+    // const searchChange = debounce((event: InputEvent) => {
+    //   const threshold = 3;
+    //   const input: HTMLInputElement = event.target as HTMLInputElement;
 
-      const value = input && input.value ? input.value : '';
-      //does the value meet the threshold
-      if (value && value.length >= threshold) {
-        window.sail.search.searchDirectory(value);
-      }
-    }, 400);
+    //   const value = input && input.value ? input.value : '';
+    //   //does the value meet the threshold
+    //   if (value && value.length >= threshold) {
+    //     window.sail.search.searchDirectory(value);
+    //   }
+    // }, 400);
 
     const devToolsClick = (event: SyntheticEvent) => {
       window.sail.menu.openTools(
@@ -210,9 +197,9 @@ export default class TopNavigation extends React.Component<
       //internalDnD = false;
     };
 
-    const allowFrameDrop = (ev: SyntheticEvent) => {
-      ev.preventDefault();
-    };
+    // const allowFrameDrop = (ev: SyntheticEvent) => {
+    //   ev.preventDefault();
+    // };
 
     const drag = (tabId: string) => {
       //start with internal drag and drop operation assumed
@@ -266,12 +253,12 @@ export default class TopNavigation extends React.Component<
       }
     };
 
-    const frameDrop = (ev: SyntheticEvent) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      console.log('tabDropped on frame target');
-      window.sail.tabs.drop(true);
-    };
+    // const frameDrop = (ev: SyntheticEvent) => {
+    //   ev.preventDefault();
+    //   ev.stopPropagation();
+    //   console.log('tabDropped on frame target');
+    //   window.sail.tabs.drop(true);
+    // };
 
     const leaveTab = () => {
       tabDragTimeout = window.setTimeout(() => {

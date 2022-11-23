@@ -3,7 +3,6 @@ import React from 'react';
 import './DirectoryView.css';
 
 import {
-  Paper,
   Card,
   CardContent,
   CardMedia,
