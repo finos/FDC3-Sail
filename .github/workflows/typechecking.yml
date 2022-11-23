@@ -1,8 +1,6 @@
 name: Typechecking
 on:
   push:
-    branches:
-      - main
     paths:
       - '**.ts'
       - '**.tsx'
