@@ -26,7 +26,11 @@ import {
   findIntentsByContext,
 } from '/@/handlers/fdc3/1.2/findIntent';
 
-import { raiseIntent, raiseIntentForContext } from './raiseIntent';
+import {
+  raiseIntent,
+  raiseIntentForContext,
+  resolveIntent,
+} from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);
@@ -57,6 +61,7 @@ export const register = (runtime: Runtime) => {
     findIntentsByContext,
   );
   runtime.addHandler(FDC3_2_0_TOPICS.RAISE_INTENT, raiseIntent);
+  runtime.addHandler(FDC3_2_0_TOPICS.RESOLVE_INTENT, resolveIntent);
   runtime.addHandler(
     FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
     raiseIntentForContext,

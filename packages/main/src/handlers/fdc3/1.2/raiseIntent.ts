@@ -1,10 +1,4 @@
-import {
-  ResolveError,
-  TargetApp,
-  AppMetadata,
-  IntentResolution,
-  IntentMetadata,
-} from 'fdc3-1.2';
+import { ResolveError, TargetApp, AppMetadata, IntentMetadata } from 'fdc3-1.2';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
@@ -13,87 +7,64 @@ import {
   IntentInstance,
   FDC3AppDetail,
 } from '/@/handlers/fdc3/1.2/types/FDC3Data';
-import utils from '/@/utils';
 import { FDC3_1_2_TOPICS } from './topics';
-import { ipcMain } from 'electron';
-import { RUNTIME_TOPICS } from '/@/handlers/runtime/topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 
-const resolveIntent = (message: RuntimeMessage): Promise<IntentResolution> => {
-  return new Promise((resolve, reject) => {
-    //find the app to route to
-    try {
-      const sView =
-        message.data.selected &&
-        message.data.selected.details &&
-        message.data.selected.details.instanceId
-          ? getRuntime().getView(message.data.selected.details.instanceId)
-          : null;
-      const source = message.source;
-      if (message.data.intent) {
-        const listeners = getRuntime().getIntentListeners(message.data.intent);
-        //let keys = Object.keys(listeners);
-        let appId: string | undefined = undefined;
-        const id = (sView && sView.id) || undefined;
-        listeners.forEach((listener) => {
-          if (listener.source === id) {
-            appId = listener.source;
-          }
+export const resolveIntent = async (message: RuntimeMessage) => {
+  const runtime = getRuntime();
+
+  //TODO: autojoin the new app to the channel which the 'open' call is sourced from
+
+  if (!message.data.selected.instanceId) {
+    const data: DirectoryApp = message.data.selected?.directoryData;
+
+    //launch window
+    const runtime = getRuntime();
+    if (runtime) {
+      const win = runtime.createWorkspace();
+      const view = win.createView(
+        (data.details as DirectoryAppLaunchDetailsWeb).url,
+        {
+          directoryData: data as DirectoryApp,
+        },
+      );
+
+      //set pending intent and context
+      view.setPendingIntent(
+        message.data.intent,
+        message.data.context,
+        message.data.id,
+      );
+    }
+  } else {
+    const view = runtime.getView(message.data.selected?.instanceId);
+    //send new intent
+    if (view && view.parent) {
+      if (view.fdc3Version === '1.2') {
+        view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+        });
+      } else {
+        view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
+          topic: 'intent',
+          data: { intent: message.data.intent, context: message.data.context },
+          source: message.data.id,
         });
 
-        if (appId) {
-          console.log('send intent from source', source);
-          const app = getRuntime().getView(appId);
-          if (app && app.content) {
-            if (app.fdc3Version === '1.2') {
-              app.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
-                topic: 'intent',
-                data: {
-                  intent: message.data.intent,
-                  context: message.data.context,
-                },
-                source: source,
-              });
-            } else {
-              app.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
-                topic: 'intent',
-                data: {
-                  intent: message.data.intent,
-                  context: message.data.context,
-                },
-                source: source,
-              });
-            }
-
-            if (sView && sView.parent && sView.parent.window) {
-              sView.parent.window.webContents.send(RUNTIME_TOPICS.SELECT_TAB, {
-                viewId: sView.id,
-              });
-              const id = (sView && sView.id) || null;
-              const appName: string = sView?.directoryData?.name ?? 'unknown';
-              resolve({
-                source: {
-                  name: appName,
-                  title: sView.getTitle(),
-                  appId: id || '',
-                },
-                version: '1.2',
-              });
-            }
-          }
-
-          //keep array of pending, id by url,  store intent & context, timestamp
-          //when a new window connects, throw out anything more than 2 minutes old, then match on url
-        }
+        view.parent.setSelectedTab(view.id);
       }
-    } catch (err) {
-      reject(err);
     }
-  });
+  }
+  //close the resolver
+  const resolver = runtime.getResolver();
+  if (resolver) {
+    resolver.close();
+  }
 };
 
 /**
@@ -192,8 +163,9 @@ const sortApps = (a: FDC3App, b: FDC3App): number => {
 
 export const raiseIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
-  const r: Array<FDC3App> = [];
+  const results: Array<FDC3App> = [];
   const intent = message.data?.intent;
+  let intentTarget: string | undefined; //the id of the app the intent gets routed to (if unambigious)
 
   if (!intent) {
     throw new Error(ResolveError.NoAppsFound);
@@ -201,18 +173,11 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
   //only support string targets for now...
   const target: string | undefined =
-    message.data?.target && typeof message.data.target === 'string'
-      ? message.data.target
-      : undefined;
+    typeof message?.data?.target === 'string' ? message.data.target : undefined;
+
   const intentListeners = target
     ? runtime.getIntentListenersByAppName(intent, target)
     : runtime.getIntentListeners(intent);
-
-  const sourceView = runtime.getView(message.source);
-  const sourceName =
-    sourceView && sourceView.directoryData
-      ? sourceView.directoryData.name
-      : 'unknown';
 
   if (intentListeners) {
     // let keys = Object.keys(intentListeners);
@@ -224,11 +189,11 @@ export const raiseIntent = async (message: RuntimeMessage) => {
         //de-dupe
         if (
           view &&
-          !r.find((item) => {
+          !results.find((item) => {
             return item.details.instanceId === view.id;
           })
         ) {
-          r.push({
+          results.push({
             type: 'window',
             details: {
               instanceId: view.id,
@@ -240,34 +205,32 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     });
   }
   //pull intent handlers from the directory
-  let ctx = '';
-  if (message.data && message.data.context) {
-    ctx = message.data.context.type;
-  }
+  const intentContext = message.data?.context?.type || '';
 
   const data: Array<DirectoryApp> = runtime
     .getDirectory()
-    .retrieveByIntentAndContextType(intent, ctx);
+    .retrieveByIntentAndContextType(intent, intentContext);
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
-      r.push({
+      results.push({
         type: 'directory',
         details: { directoryData: entry },
       });
     });
   }
 
-  if (r.length > 0) {
-    if (r.length === 1) {
-      const theApp = r[0];
+  if (results.length > 0) {
+    if (results.length === 1) {
+      const theApp = results[0];
       const appDetails = theApp.details;
       //if there is only one result, use that
       //if it is an existing view, post a message directly to it
       //if it is a directory entry resolve the destination for the intent and launch it
       //dedupe window and directory items
       if (theApp.type === 'window' && appDetails?.instanceId) {
-        const view = runtime.getView(appDetails.instanceId);
+        intentTarget = appDetails?.instanceId;
+        const view = runtime.getView(intentTarget);
         if (view) {
           if (view.fdc3Version === '1.2') {
             view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
@@ -282,13 +245,12 @@ export const raiseIntent = async (message: RuntimeMessage) => {
               source: message.source,
             });
           }
-          //bringing the tab to front conditional on the type of intent
-          if (!utils.isDataIntent(intent)) {
-            /* utils.bringToFront(r[0].details.port); */
-          }
 
           return {
-            source: { name: view.directoryData?.name, appId: message.source },
+            source: {
+              name: view.directoryData?.name,
+              appId: view.directoryData?.appId,
+            },
             version: '1.2',
           };
         }
@@ -315,31 +277,14 @@ export const raiseIntent = async (message: RuntimeMessage) => {
         }
 
         return {
-          source: { name: sourceName, appId: message.source },
+          source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
         };
-
-        //send the context - if the default start_url was used...
-        //get the window/tab...
-        // resolve({result:true});
       }
     } else {
-      //show resolver UI
-      // Send a message to the active tab
-      //sort results alphabetically, with directory entries first (before window entries)
-
-      r.sort(sortApps);
-
-      const eventId = `resolveIntent-${Date.now()}`;
-
-      //set a handler for resolving the intent (when end user selects a destination)
-      ipcMain.on(eventId, async (event, args) => {
-        const r: IntentResolution = await resolveIntent(args);
-        return r;
-      });
-
       //launch window with resolver UI
-      // console.log('resolve intent - options', r);
+
+      results.sort(sortApps);
       const sourceView = getRuntime().getView(message.source);
       if (sourceView) {
         getRuntime().openResolver(
@@ -348,7 +293,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
             context: (message.data && message.data.context) || undefined,
           },
           sourceView,
-          r,
+          results,
         );
       }
     }
@@ -489,14 +434,6 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
       //sort results alphabetically, with directory entries first (before window entries)
 
       r.sort(sortApps);
-
-      const eventId = `resolveIntent-${Date.now()}`;
-
-      //set a handler for resolving the intent (when end user selects a destination)
-      ipcMain.on(eventId, async (event, args) => {
-        const r = await resolveIntent(args);
-        return r;
-      });
 
       //launch window with resolver UI
       console.log('resolve intent - options', r);

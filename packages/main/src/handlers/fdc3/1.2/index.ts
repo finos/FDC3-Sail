@@ -13,8 +13,11 @@ import {
 } from './channels';
 import { dropIntentListener, addIntentListener } from './intentListeners';
 import { findIntent, findIntentsByContext } from './findIntent';
-import { raiseIntent, raiseIntentForContext } from './raiseIntent';
-import { resolveIntent } from './resolveIntent';
+import {
+  resolveIntent,
+  raiseIntent,
+  raiseIntentForContext,
+} from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(

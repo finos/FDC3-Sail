@@ -18,5 +18,6 @@ export const FDC3_2_0_TOPICS = {
   FIND_INTENT: 'FDC3_2.0:findIntent',
   FIND_INTENTS_BY_CONTEXT: 'FDC3_2.0:findIntentsByContext',
   RAISE_INTENT: 'FDC3_2.0:raiseIntent',
+  RESOLVE_INTENT: 'FDC3_2.0:resolveIntent',
   RAISE_INTENT_FOR_CONTEXT: 'FDC3_2.0:raiseIntentForContext',
 };
