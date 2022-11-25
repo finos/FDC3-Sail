@@ -1,8 +1,6 @@
 name: Tests
 on:
   push:
-    branches:
-      - main
     paths:
       - 'packages/**'
       - 'tests/**'
@@ -24,8 +22,8 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
@@ -36,8 +34,8 @@ jobs:
   preload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
@@ -48,8 +46,8 @@ jobs:
   renderer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
@@ -63,8 +61,8 @@ jobs:
         os: [ windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'

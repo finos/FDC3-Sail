@@ -65,23 +65,3 @@ test('workspace isConnected', async () => {
   const connected = await page.evaluate(() => globalThis.sail.isConnected());
   expect(connected).to.equal(true);
 });
-
-/*test('Preload nodeCrypto', async () => {
-  const page = await electronApp.firstWindow();
-
-  const exposedNodeCrypto = await page.evaluate(() => globalThis.nodeCrypto);
-  expect(exposedNodeCrypto).to.an('object').that.has.key('sha256sum');
-
-  const sha256sumType = await page.evaluate(
-    () => typeof globalThis.nodeCrypto.sha256sum,
-  );
-  expect(sha256sumType).toEqual('function');
-
-  const data = 'raw data';
-  const hash = await page.evaluate(
-    (d) => globalThis.nodeCrypto.sha256sum(d),
-    data,
-  );
-  const expectedHash = createHash('sha256').update(data).digest('hex');
-  expect(hash).toEqual(expectedHash);
-});*/
