@@ -1,15 +1,11 @@
 import React from 'react';
-import './SideNavigation.css';
 
 export default function SideNavigation() {
   return (
-    <div className="sideNavigationContainer">
-      <h3 style={{ marginLeft: '10px' }}>App Directory</h3>
-      <br />
-      <span style={{ marginLeft: '10px' }}>FINOS Directory</span>
-      <br />
-      <br />
-      <span style={{ marginLeft: '10px' }}>Local Directory</span>
+    <div className="bg-gray-800 text-white flex-col" style={{ width: 900 }}>
+      <div className="text-center mt-5">App Directory</div>
+      <div className="ml-3 mt-10">FINOS Directory</div>
+      <div className="ml-3 mt-5">Local Directory</div>
     </div>
   );
 }

@@ -49,49 +49,68 @@ function DirectoryView() {
   };
 
   return (
-    <div className="directoryContainer">
+    <div className="h-full overflow-y-scroll pb-10">
       <Grid
         container
         spacing={2}
         columns={{ xs: 4, sm: 8, md: 12 }}
-        padding={2}
+        className="p-6"
       >
         {apps.map((app: DirectoryApp) => (
           <Grid item xs={4} key={app.appId}>
-            <Card sx={{ maxWidth: 345, minHeight: 350 }}>
+            <Card
+              sx={{ maxWidth: 370, minHeight: 320 }}
+              className="flex flex-col"
+            >
               {app.screenshots!!.length > 0 ? (
                 app.screenshots!!.map((image) => (
                   <CardMedia
                     component="img"
                     image={image.src}
-                    height="100"
+                    className="h-40 p-4"
+                    sx={{
+                      backgroundColor: '#F7E9F2',
+                    }}
                     key={app.appId}
                   ></CardMedia>
                 ))
               ) : (
                 <CardHeader
                   sx={{
-                    backgroundColor: '#999',
-                    height: 60,
+                    backgroundColor: '#F7E9F2',
                   }}
+                  className="h-40"
                 ></CardHeader>
               )}
-              <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
+              <CardContent
+                sx={{
+                  backgroundColor: '#323232',
+                }}
+                className="h-full flex-grow"
+              >
+                <Typography
+                  gutterBottom
+                  component="div"
+                  className="flex text-white"
+                >
                   {app.icons && app.icons.length > 0 && (
                     <img
                       src={app.icons[0].src}
-                      className="appIcon"
+                      className="h-6 mr-3"
                       alt={`${app.name} - icon`}
                     ></img>
                   )}
                   {app.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" className="text-gray-400">
                   {app.description}
                 </Typography>
               </CardContent>
-              <CardActions>
+              <CardActions
+                sx={{
+                  backgroundColor: '#323232',
+                }}
+              >
                 <Button
                   onClick={() => {
                     if (app.name) {
@@ -99,6 +118,7 @@ function DirectoryView() {
                     }
                   }}
                   size="small"
+                  sx={{ color: '#fff' }}
                 >
                   Open
                 </Button>
