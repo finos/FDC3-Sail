@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { DirectoryView } from './DirectoryView';
+import DirectoryView from './DirectoryView';
 import './index.css';
 // import SideNavigation from './SideNavigation';
 
