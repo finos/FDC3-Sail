@@ -117,12 +117,16 @@ export class SessionView extends React.Component<
   }
 
   componentDidMount() {
-    const onFDC3Ready = async () => {
+    const onFDC3Ready = () => {
       //fetch apps from the directory, using system API (only available to system apps)
+      const getState = async () => {
+        const session = await globalThis.sail.getSessionState();
 
-      const session = await globalThis.sail.getSessionState();
+        this.setState({ session: session });
 
-      this.setState({ session: session });
+        setTimeout(getState, 3000);
+      };
+      getState();
     };
 
     if (window.innerHeight) {

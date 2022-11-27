@@ -12,6 +12,7 @@ import Tab from '@mui/material/Tab';
 import MarkdownPreview from '@uiw/react-markdown-preview';
 import { formatJSON } from './jsonFormatter';
 import { TabPanel, a11yProps } from './TabPanel';
+import { Directory } from '../../../main/src/directory/directory';
 
 export class ViewCard extends React.Component<
   {
@@ -38,8 +39,14 @@ export class ViewCard extends React.Component<
     };
     const directoryData = this.data.directoryData;
     const startBlock = '```json';
+    let directoryJson = '';
+    try {
+      directoryJson = formatJSON(JSON.stringify(directoryData));
+    } catch (err) {
+      console.log('error parsing directory json', err);
+    }
     const directoryDataMd = `${startBlock}
-      ${formatJSON(JSON.stringify(directoryData))}
+      ${directoryJson}
     `;
 
     return (
