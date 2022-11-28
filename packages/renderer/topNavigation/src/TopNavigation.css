@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .window-draggable {
   height: 30px;
   left: 0;
