@@ -1,16 +1,9 @@
 import { FDC3App } from './FDC3Data';
 import { Context, AppIdentifier } from '@finos/fdc3';
+import { RuntimeMessage } from '../handlers/runtimeMessage';
 
-export interface FDC3Message {
-  topic: string;
-  source: string;
-  name?: string;
-  intent?: string;
+export interface FDC3Message extends RuntimeMessage {
   data: FDC3MessageData;
-  tabId?: number;
-  selected?: FDC3App;
-  context?: Context;
-  error?: string;
 }
 
 export interface FDC3MessageData {
@@ -25,7 +18,7 @@ export interface FDC3MessageData {
   contextType?: string;
   instanceId?: string;
   ts?: number; //timestamp (for pending contexts/intents)
-  target?: AppIdentifier;
+  target?: TargetApp;
   channelId?: string; //to do : refactor with channel prop
   type?: string;
   restoreOnly?: boolean;

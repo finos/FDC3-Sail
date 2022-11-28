@@ -3,6 +3,7 @@ import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { View } from '/@/view';
 import { FDC3_1_2_TOPICS } from './topics';
 import { Pending } from '/@/types/Pending';
+import { FDC3Message } from '/@/types/FDC3Message';
 
 export const dropContextListener = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
@@ -21,8 +22,9 @@ export const addContextListener = async (message: RuntimeMessage) => {
 
   //if there is an instanceId specified, this call is to listen to context from a specific app instance
   const view = runtime.getView(message.source);
+  const data = (message as FDC3Message).data;
 
-  const instanceId = message.data && message.data.instanceId;
+  const instanceId = data.instanceId;
   if (instanceId && view) {
     const target: View | undefined = runtime.getView(instanceId);
     if (target) {
@@ -30,8 +32,8 @@ export const addContextListener = async (message: RuntimeMessage) => {
       target.listeners.push({
         viewId: view.id,
         source: instanceId,
-        listenerId: (message.data && message.data.id) || '',
-        contextType: (message.data && message.data.contextType) || '',
+        listenerId: data.id || '',
+        contextType: data.contextType || '',
       });
       const pendingContexts = target.getPendingContexts();
       if (pendingContexts && pendingContexts.length > 0) {
@@ -60,38 +62,28 @@ export const addContextListener = async (message: RuntimeMessage) => {
   }
 
   //use channel from the event message first, or use the channel of the sending app, or use default
-  const channel: string =
-    message.data && message.data.channel
-      ? message.data.channel
-      : view && view.channel
-      ? view.channel
-      : 'default'; //: (c && c.channel) ? c.channel
+  const channel: string = data.channel
+    ? data.channel
+    : view && view.channel
+    ? view.channel
+    : 'default'; //: (c && c.channel) ? c.channel
 
   if (view) {
     view.listeners.push({
-      listenerId: (message.data && message.data.id) || '',
+      listenerId: data.id || '',
       viewId: view.id,
-      contextType: (message.data && message.data.contextType) || undefined,
+      contextType: data.contextType || undefined,
       channel: channel,
       isChannel: channel !== 'default',
     });
 
-    /*
-              are there any pending contexts for the listener just added? 
-              */
+    /* are there any pending contexts for the listener just added? */
     const pending = view.getPendingContexts();
     if (pending && pending.length > 0) {
       pending.forEach((pending: Pending, i: number) => {
         //is there a match on contextType (if specified...)
 
-        if (
-          message.data === undefined ||
-          (message.data && message.data.type === undefined) ||
-          (pending.context &&
-            pending.context.type &&
-            pending.context.type === message.data &&
-            message.data.type)
-        ) {
+        if (data.type === undefined || pending?.context?.type === data.type) {
           view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
             topic: 'context',
             listenerId: message.data && message.data.id,

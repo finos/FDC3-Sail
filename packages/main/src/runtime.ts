@@ -1,10 +1,5 @@
 import { FDC3Listener } from './types/FDC3Listener';
 import { Context, AppIdentifier } from '@finos/fdc3';
-import {
-  FDC3App,
-  IntentInstance,
-  ResolverDetail,
-} from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -27,6 +22,7 @@ import {
   WorkspaceState,
   ChannelState,
 } from '/@/types/SessionState';
+import { FDC3App, IntentInstance, ResolverDetail } from './types/FDC3Data';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -212,7 +208,7 @@ export class Runtime {
       console.log('handle message', name, args);
       try {
         let error: string | undefined = undefined;
-        let data: any;
+        let data: unknown;
         try {
           data = await handler.call(undefined, args);
         } catch (err) {
@@ -399,7 +395,7 @@ export class Runtime {
   createView(url?: string, config?: ViewConfig): Promise<View> {
     return new Promise((resolve, reject) => {
       try {
-        const workspace = new Workspace();
+        const workspace = this.createWorkspace();
         resolve(workspace.createView(url, config));
       } catch (err) {
         reject(err);
