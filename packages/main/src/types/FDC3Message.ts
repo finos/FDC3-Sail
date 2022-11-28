@@ -1,6 +1,7 @@
 import { FDC3App } from './FDC3Data';
 import { Context, AppIdentifier } from '@finos/fdc3';
 import { RuntimeMessage } from '../handlers/runtimeMessage';
+import { TargetApp } from 'fdc3-1.2';
 
 export interface FDC3Message extends RuntimeMessage {
   data: FDC3MessageData;
