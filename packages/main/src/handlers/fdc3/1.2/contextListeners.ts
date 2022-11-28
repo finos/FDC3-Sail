@@ -83,13 +83,16 @@ export const addContextListener = async (message: RuntimeMessage) => {
       pending.forEach((pending: Pending, i: number) => {
         //is there a match on contextType (if specified...)
 
-        if (data.type === undefined || pending?.context?.type === data.type) {
+        if (
+          data.contextType === undefined ||
+          pending?.context?.type === data.contextType
+        ) {
           view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
             topic: 'context',
-            listenerId: message.data && message.data.id,
+            listenerId: data.id,
             data: {
               context: pending.context,
-              listenerId: message.data && message.data.id,
+              listenerId: data.id,
             },
             source: source,
           });
