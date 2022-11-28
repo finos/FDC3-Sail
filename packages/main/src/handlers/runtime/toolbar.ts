@@ -13,7 +13,7 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
         label: 'Nav Dev Tools',
         click: () => {
           if (workspace && workspace.window) {
-            workspace.window.webContents.openDevTools();
+            workspace.window.webContents.openDevTools({ mode: 'detach' });
           }
         },
       },
@@ -23,7 +23,7 @@ export const openToolsMenu = async (message: RuntimeMessage) => {
           if (workspace && workspace.selectedTab) {
             const selectedTab = runtime.getView(workspace.selectedTab);
             if (selectedTab && selectedTab.content) {
-              selectedTab.content.webContents.openDevTools();
+              selectedTab.content.webContents.openDevTools({ mode: 'detach' });
             }
           }
         },
