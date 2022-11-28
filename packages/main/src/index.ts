@@ -2,6 +2,9 @@ import { app, BrowserWindow } from 'electron';
 import './security-restrictions';
 //import { restoreOrCreateWindow } from '/@/mainWindow';
 import { Runtime } from './runtime';
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-devtools-installer';
 
 let runtime: Runtime | null = null;
 
@@ -107,10 +110,14 @@ app.on('activate', () => {
 app
   .whenReady()
   .then(() => {
+    if (import.meta.env.DEV) {
+      installExtension(REACT_DEVELOPER_TOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err));
+    }
     console.log('index - create runtime');
     runtime = new Runtime();
     runtime.startup();
-    // restoreOrCreateWindow();
     console.log('index - createWindow');
     createWindow();
   })

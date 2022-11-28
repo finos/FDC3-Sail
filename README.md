@@ -32,7 +32,7 @@ If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check ou
 
 ## Electron Implementation
 
-The Electron implementation is built from the [Vite Electron Builder Boilerplate] (also see [TEMPLATE.md](./TEMPLATE.md)). 
+The Electron implementation is built from the [Vite Electron Builder Boilerplate]
 
 The UI for the desktop agent is built using React MUI.
 

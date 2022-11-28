@@ -1,14 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     background-color: #000;
     overflow-y: hidden;
-}
-
-.container {
-    display: flex;
-    flex-direction: row;
-}
-
-.appIcon {
-    width:1rem;
-    margin-right:.3rem;
 }

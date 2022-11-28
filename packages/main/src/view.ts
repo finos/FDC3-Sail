@@ -127,7 +127,7 @@ export class View {
     }
     if (url === (VIEW_DEFAULT as string)) {
       this.type = 'system';
-      this.title = 'Worskpace';
+      this.title = 'Workspace';
     }
 
     if (url) {
