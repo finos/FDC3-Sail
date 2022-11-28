@@ -397,19 +397,13 @@ export class Runtime {
   }
 
   createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise(() => {
-      new Workspace({
-        onInit: (workspace: Workspace) => {
-          return new Promise((resolve, reject) => {
-            try {
-              const view = workspace.createView(url, config);
-              resolve(view);
-            } catch (err) {
-              reject(err);
-            }
-          });
-        },
-      });
+    return new Promise((resolve, reject) => {
+      try {
+        const workspace = new Workspace();
+        resolve(workspace.createView(url, config));
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 
