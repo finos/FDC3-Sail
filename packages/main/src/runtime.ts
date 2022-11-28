@@ -20,7 +20,6 @@ import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { fdc3_1_2_AppDirectoryLoader } from './directory/fdc3-12-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
-import { FDC3Response } from './types/FDC3Message';
 import { ChannelData } from './types/Channel';
 import {
   SessionState,
@@ -197,6 +196,7 @@ export class Runtime {
   }
 
   draggedTab: { tabId: string; source: string } | null = null;
+
   /**
    * Dynamically add a Handler to the IPC bus
    * @param name
@@ -211,24 +211,21 @@ export class Runtime {
     const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
       console.log('handle message', name, args);
       try {
-        let r: FDC3Response;
+        let error: string | undefined = undefined;
+        let data: unknown;
         try {
-          const result = await handler.call(undefined, args);
-          r = {
-            data: result,
-          };
+          data = await handler.call(undefined, args);
         } catch (err) {
-          r = {
-            error: (err as string) || 'unknown',
-            data: null,
-          };
+          error = (err as string) || 'unknown';
+          data = null;
         }
-        console.log('message response', name, r);
+        console.log('message response', data, error);
 
         if (event.ports && args.eventId) {
           event.ports[0].postMessage({
             topic: args.eventId,
-            data: r,
+            data: data,
+            error: error,
           });
         }
       } catch (err) {
@@ -400,19 +397,13 @@ export class Runtime {
   }
 
   createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise(() => {
-      new Workspace({
-        onInit: (workspace: Workspace) => {
-          return new Promise((resolve, reject) => {
-            try {
-              const view = workspace.createView(url, config);
-              resolve(view);
-            } catch (err) {
-              reject(err);
-            }
-          });
-        },
-      });
+    return new Promise((resolve, reject) => {
+      try {
+        const workspace = this.createWorkspace();
+        resolve(workspace.createView(url, config));
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 

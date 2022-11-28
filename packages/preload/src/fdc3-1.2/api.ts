@@ -18,10 +18,7 @@ import {
   IntentResolution,
 } from 'fdc3-1.2';
 
-import {
-  FDC3Event,
-  FDC3EventEnum,
-} from '/@main/handlers/fdc3/1.2/types/FDC3Event';
+import { FDC3Event, FDC3EventEnum } from '/@main/types/FDC3Event';
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
@@ -47,11 +44,6 @@ const guid = (): string => {
   return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`;
 };
 
-interface FDC3ReturnListener {
-  ts: number;
-  listener: { (msg: FDC3Message): void };
-}
-
 //backwards compatability support for fdc3 namespaced intents
 const stripNS = (intent: string): string => {
   if (intent.startsWith('fdc3.')) {
@@ -64,10 +56,15 @@ const stripNS = (intent: string): string => {
 let instanceId = '';
 
 //queue of pending events - accumulate until the background is ready
-const eventQ: Array<FDC3Message> = [];
 
-//collection of listeners for api calls coming back from the background script
-const returnListeners: Map<string, FDC3ReturnListener> = new Map();
+type QueueItem = {
+  data: FDC3MessageData;
+  topic: string;
+  resolve: (x: unknown) => void;
+  reject: (x: string) => void;
+};
+
+const eventQ: Array<QueueItem> = [];
 
 export const connect = () => {
   /**
@@ -137,66 +134,69 @@ ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
   console.log('api FDC3 start', args.id);
   if (args.id) {
     instanceId = args.id;
-    //send any queued messages
-    eventQ.forEach((msg) => {
-      sendMessage(msg.topic, msg.data);
-    });
     if (!document.body) {
       document.addEventListener('DOMContentLoaded', () => {
         document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+        //send any queued messages
+        eventQ.forEach((msg) => {
+          processQueueItem(msg);
+        });
       });
     } else {
       document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
+      //send any queued messages
+      eventQ.forEach((msg) => {
+        processQueueItem(msg);
+      });
     }
   }
 });
 
 //send messages to main, handle responses, queue messages if not connected yet
 
+const processQueueItem = (qi: QueueItem) => {
+  const { port1, port2 } = new MessageChannel();
+
+  port1.onmessage = (event: MessageEvent<FDC3Response>) => {
+    //is there a returnlistener registered for the event?
+    const response: FDC3Response = event.data;
+    console.log('send message - returned ', response);
+    if (response.error) {
+      qi.reject(response.error);
+    } else {
+      qi.resolve(response.data);
+    }
+  };
+
+  const eventId = `${qi.topic}_${guid()}`;
+
+  const msg: FDC3Message = {
+    topic: qi.topic,
+    data: qi.data,
+    eventId: eventId,
+    source: instanceId,
+  };
+
+  ipcRenderer.postMessage(qi.topic, msg, [port2]);
+  console.log('sent message to main', msg);
+};
+
 const sendMessage = (topic: string, data: FDC3MessageData): Promise<any> => {
+  console.log('Beginning send message:', topic, data);
   //set up a return listener and assign as eventId
   return new Promise((resolve, reject) => {
-    const eventId = `${topic}_${guid()}`;
-    data.eventId = eventId;
-    returnListeners.set(eventId, {
-      ts: Date.now(),
-      listener: (response: FDC3Response) => {
-        if (response.error) {
-          reject(response.error);
-        }
-        resolve(response.data);
-      },
-    });
+    const queueItem: QueueItem = {
+      data: data,
+      topic: topic,
+      resolve: resolve,
+      reject: reject,
+    };
 
     if (instanceId) {
-      const { port1, port2 } = new MessageChannel();
-
-      port1.onmessage = (event: MessageEvent) => {
-        //is there a returnlistener registered for the event?
-        const listenerEntry = returnListeners.get(event.data.topic);
-        const listener = listenerEntry ? listenerEntry.listener : null;
-        if (listener) {
-          returnListeners.delete(event.data.topic);
-          console.log('sendMessage - calling listener', event.data.data);
-          resolve(listener.call(window, event.data.data));
-        }
-      };
-      const msg: FDC3Message = {
-        topic: topic,
-        data: data,
-        eventId: data.eventId || guid(),
-        source: instanceId,
-      };
-      console.log('send message to main', topic, msg);
-      ipcRenderer.postMessage(topic, msg, [port2]);
+      processQueueItem(queueItem);
     } else {
-      const msg: FDC3Message = {
-        topic: topic,
-        data: data,
-        eventId: data.eventId || guid(),
-        source: '-1',
-      };
-      eventQ.push(msg);
+      eventQ.push(queueItem);
+      console.log('queued message', topic, data);
     }
   });
 };
@@ -278,11 +278,14 @@ export const createAPI = (): DesktopAgent => {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: (context: Context) => {
-        sendMessage('broadcast', { context: context, channel: channel.id });
+        sendMessage(FDC3_1_2_TOPICS.BROADCAST, {
+          context: context,
+          channel: channel.id,
+        });
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage('getCurrentContext', {
+          sendMessage(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, {
             channel: channel.id,
             contextType: contextType,
           }).then(
