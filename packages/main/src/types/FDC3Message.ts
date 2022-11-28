@@ -36,4 +36,5 @@ export interface FDC3MessageData {
 export interface FDC3Response {
   error?: string;
   data: any;
+  topic: string;
 }

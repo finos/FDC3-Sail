@@ -4,7 +4,7 @@
     "target": "esnext",
     "sourceMap": false,
     "moduleResolution": "Node",
-    "skipLibCheck": true,
+ //   "skipLibCheck": false,
     "strict": true,
     "isolatedModules": true,
 

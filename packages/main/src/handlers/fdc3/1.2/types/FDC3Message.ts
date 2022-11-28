@@ -3,13 +3,10 @@ import { Context, TargetApp } from 'fdc3-1.2';
 import { RuntimeMessage } from '../../../runtimeMessage';
 
 export interface FDC3Message extends RuntimeMessage {
-  name?: string;
-  intent?: string;
-  selected?: FDC3App;
-  context?: Context;
+  data: FDC3MessageData;
 }
 
-export interface FDC3MessageData {
+export type FDC3MessageData = {
   id?: string;
   eventId?: string;
   context?: Context;
@@ -26,7 +23,7 @@ export interface FDC3MessageData {
   restoreOnly?: boolean;
   selectedIntent?: string;
   selected?: FDC3App;
-}
+};
 
 export interface FDC3Response {
   error?: string;
