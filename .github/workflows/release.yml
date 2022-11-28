@@ -62,6 +62,7 @@ jobs:
           ref: ${{ github.ref }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           running-workflow-name: 'draft'
+          allowed-conclusions: success,skipped,neutral
 
       - name: Delete outdated drafts
         uses: hugo19941994/delete-draft-releases@v1.0.0
