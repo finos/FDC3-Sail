@@ -37,7 +37,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Get last git tag
         id: tag
@@ -58,7 +58,7 @@ jobs:
 
 
       - name: Waiting on All checks
-        uses: lewagon/wait-on-check-action@v0.2
+        uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -109,7 +109,7 @@ jobs:
 
       # Compile app and upload artifacts
       - name: Compile & release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+        uses: samuelmeuli/action-electron-builder@v1.6.0
         env:
           VITE_APP_VERSION: ${{ needs.draft.outputs.version }}
         with:
