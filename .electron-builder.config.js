@@ -14,6 +14,7 @@ const config = {
     output: 'dist',
     buildResources: 'buildResources',
   },
+  productName: 'FDC3 Sail',
   snap: {
     publish: 'github',
   },

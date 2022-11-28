@@ -11,11 +11,8 @@
 <p align="center">
     <a href="https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating"><img src="https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg"></a>
     <a href="https://bestpractices.coreinfrastructure.org/projects/6303"><img src="https://bestpractices.coreinfrastructure.org/projects/6303/badge"></a>
-    <a href="https://github.com/finos/electron-fdc3/blob/main/LICENSE"><img src="https://img.shields.io/github/license/finos/electron-fdc3"></a>
+    <a href="https://github.com/finos/fdc3-sail/blob/main/LICENSE"><img src="https://img.shields.io/github/license/finos/fdc3-sail"></a>
 </p>
-
-<!-- [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6303/badge)](https://bestpractices.coreinfrastructure.org/projects/6303) -->
 
 ## What is FDC3 Sail?
 
@@ -140,7 +137,7 @@ To join the Electron FDC3 Desktop Agent & App Directory mailing list please emai
 
 ## Contributing
 
-1. Fork it (<https://github.com/finos/electron-fdc3/fork>)
+1. Fork it (<https://github.com/finos/fdc3-sail/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
 4. Commit your changes (`git commit -am 'Add some fooBar'`)

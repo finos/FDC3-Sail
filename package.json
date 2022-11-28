@@ -1,5 +1,5 @@
 {
-  "name": "electron-fdc3",
+  "name": "fdc3-sail",
   "private": true,
   "engines": {
     "node": ">=v16.13",
