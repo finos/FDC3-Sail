@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .window-draggable {
-  height: 30px;
+  height: 60px;
   left: 0;
   pointer-events: none;
   position: absolute;
@@ -34,4 +34,9 @@
 
 .tabContainer {
   height: 100%;
+}
+
+.tabStyle {
+  padding-top: 0px;
+  -webkit-app-region: no-drag;
 }
