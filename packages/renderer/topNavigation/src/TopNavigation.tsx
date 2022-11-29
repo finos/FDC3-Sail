@@ -282,9 +282,13 @@ export default class TopNavigation extends React.Component<
           >
             <div className="verticalLineGrey"></div>
 
-            <img alt="FDC3 Sail" src="sail_logo.png" className="h-9 mr-6" />
+            <img
+              alt="FDC3 Sail"
+              src="sail_logo.png"
+              className="h-9 mr-6 self-center"
+            />
 
-            <div className="h-full pt-4">
+            <div>
               <IconButton aria-label="home" className="h-6 w-6">
                 <HomeOutlined className="text-xs" />
               </IconButton>
@@ -302,7 +306,8 @@ export default class TopNavigation extends React.Component<
             >
               {this.state.tabs.map((tab: FrameTab) => (
                 <Tab
-                  style={{ paddingTop: '0px' }}
+                  className="tabStyle"
+                  style={{ minHeight: '50px' }}
                   label={tab.tabName}
                   value={tab.tabId}
                   id={tab.tabId}
