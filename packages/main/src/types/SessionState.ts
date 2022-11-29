@@ -1,6 +1,6 @@
 import { FDC3_VERSIONS } from './Versions';
 import { ChannelData } from './Channel';
-import { Context } from '@finos/fdc3';
+import { Context } from './FDC3Data';
 import { DirectoryApp } from '../directory/directory';
 
 export interface ViewState {

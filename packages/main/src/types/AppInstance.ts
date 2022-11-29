@@ -27,7 +27,7 @@ export enum InstanceTypeEnum {
  * Copyright 2020 FINOS FDC3 contributors - see NOTICE file
  */
 
-import { Context, ContextHandler, Listener } from '@finos/fdc3';
+import { Context, ContextHandler, Listener } from './FDC3Data';
 import { DirectoryApp } from '../directory/directory';
 
 /**

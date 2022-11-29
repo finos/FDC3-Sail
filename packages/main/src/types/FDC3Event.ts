@@ -1,4 +1,4 @@
-import { Context, AppIdentifier } from '@finos/fdc3';
+import { Context, AppIdentifier } from './FDC3Data';
 
 /**
  * Custom DOM event used by the FDC3 API

@@ -1,5 +1,5 @@
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context, AppIdentifier } from '@finos/fdc3';
+import { Context, AppIdentifier } from './types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';

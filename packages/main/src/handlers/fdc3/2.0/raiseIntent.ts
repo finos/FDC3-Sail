@@ -8,11 +8,6 @@ import {
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import {
-  FDC3App,
-  IntentInstance,
-  FDC3AppDetail,
-} from '/@/handlers/fdc3/1.2/types/FDC3Data';
 import utils from '/@/utils';
 import { FDC3_2_0_TOPICS } from './topics';
 import { FDC3_1_2_TOPICS } from '/@/handlers/fdc3/1.2/topics';
@@ -22,6 +17,7 @@ import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
+import { FDC3App, FDC3AppDetail, IntentInstance } from '/@/types/FDC3Data';
 
 export const resolveIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();

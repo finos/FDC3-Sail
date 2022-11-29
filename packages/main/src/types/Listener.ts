@@ -1,7 +1,6 @@
 import { FDC3Message } from './FDC3Message';
-import { ChannelData } from './FDC3Data';
+import { ChannelData, Context, AppIntent, IntentResolution } from './FDC3Data';
 import { Runtime } from '../runtime';
-import { Context, AppIntent, IntentResolution } from '@finos/fdc3';
 
 export interface Listener {
   name: string;

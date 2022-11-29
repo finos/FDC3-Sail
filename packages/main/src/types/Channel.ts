@@ -1,4 +1,4 @@
-import { DisplayMetadata } from '@finos/fdc3';
+import { DisplayMetadata } from './FDC3Data';
 /**
  * cross-version
  * metadata for channels

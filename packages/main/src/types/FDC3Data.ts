@@ -1,5 +1,27 @@
-import { Context, DisplayMetadata, IntentMetadata } from 'fdc3-1.2';
+/**
+ * Importing these from fdc3 2.0 since they are backwards-compatible.
+ */
+import { Context } from 'fdc3-1.2/dist/context/ContextTypes';
+import { ContextHandler } from 'fdc3-1.2/dist/api/Types';
+import { Listener } from 'fdc3-1.2/dist/api/Listener';
+import { IntentMetadata } from 'fdc3-1.2/dist/api/IntentMetadata';
+import { AppIntent } from 'fdc3-1.2/dist/api/AppIntent';
+import { IntentResolution } from 'fdc3-1.2/dist/api/IntentResolution';
+import { DisplayMetadata } from 'fdc3-1.2/dist/api/DisplayMetadata';
 import { DirectoryApp } from '../directory/directory';
+import { AppIdentifier } from 'fdc3-1.2/dist/api/AppIdentifier';
+
+export type {
+  Context,
+  IntentMetadata,
+  DisplayMetadata,
+  AppIdentifier,
+  AppIntent,
+  IntentResolution,
+  ContextHandler,
+  Listener,
+};
+
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
  */
