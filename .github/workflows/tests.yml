@@ -6,6 +6,7 @@ on:
       - 'tests/**'
       - 'package-lock.json'
       - '.github/workflows/tests.yml'
+
   pull_request:
     paths:
       - 'packages/**'
@@ -53,7 +54,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run test:renderer
-
 
   e2e:
     strategy:

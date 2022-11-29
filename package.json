@@ -1,5 +1,5 @@
 {
-  "name": "electron-fdc3",
+  "name": "fdc3-sail",
   "private": true,
   "engines": {
     "node": ">=v16.13",
@@ -45,7 +45,6 @@
     "dts-for-context-bridge": "^0.7.1",
     "electron": "^21.0.1",
     "electron-builder": "^23.5.1",
-    "electron-devtools-installer": "^3.2.0",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-react-app": "^7.0.1",

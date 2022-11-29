@@ -1,4 +1,4 @@
-import './Frame.css';
+import './TopNavigation.css';
 import React, { SyntheticEvent } from 'react';
 import { IconButton, Tabs, Tab, Stack } from '@mui/material';
 // import SearchRounded from '@mui/icons-material/SearchRounded';
@@ -284,10 +284,11 @@ export default class TopNavigation extends React.Component<
 
             <img alt="FDC3 Sail" src="sail_logo.png" className="h-9 mr-6" />
 
-            <IconButton aria-label="home" className="h-6 w-6">
-              <HomeOutlined className="text-xs" />
-            </IconButton>
-
+            <div className="h-full pt-4">
+              <IconButton aria-label="home" className="h-6 w-6">
+                <HomeOutlined className="text-xs" />
+              </IconButton>
+            </div>
             <div className="verticalLineBlack"></div>
 
             <Tabs
@@ -301,6 +302,7 @@ export default class TopNavigation extends React.Component<
             >
               {this.state.tabs.map((tab: FrameTab) => (
                 <Tab
+                  style={{ paddingTop: '0px' }}
                   label={tab.tabName}
                   value={tab.tabId}
                   id={tab.tabId}

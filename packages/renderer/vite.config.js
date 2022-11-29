@@ -4,7 +4,6 @@ import { chrome } from '../../.electron-vendors.cache.json';
 import { join, resolve } from 'path';
 import { builtinModules } from 'module';
 import react from '@vitejs/plugin-react';
-import tailwindcss from 'tailwindcss';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -22,7 +21,7 @@ const config = {
       '/@main/': resolve(PACKAGE_ROOT, '../main/src') + '/',
     },
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   base: '',
   server: {
     fs: {
@@ -37,7 +36,6 @@ const config = {
     rollupOptions: {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       input: {
-        // index: 'index.html',
         topNavigation: 'topNavigation.html',
         homeView: 'homeView.html',
         sessionView: 'sessionView.html',
