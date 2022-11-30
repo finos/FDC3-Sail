@@ -6,10 +6,10 @@ import './index.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <div className="flex border-gray-800">
+    <div className="flex">
       {/* <SideNavigation /> */}
       <div className="rightContainer flex-grow overflow-y-hidden">
-        <div className="text-white h-10 border-gray-800 border-b-2 pl-2 pt-2  select-none">
+        <div className="text-white h-10 border-[#333] border-b-2 pl-2 pt-2  select-none">
           App Directory
         </div>
         <DirectoryView />

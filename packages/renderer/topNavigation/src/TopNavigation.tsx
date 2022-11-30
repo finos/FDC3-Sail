@@ -279,7 +279,7 @@ export default class TopNavigation extends React.Component<
             direction={'row'}
             alignContent={'center'}
             alignItems="center"
-            className="h-12 bg-gray-800 pl-24 content-center"
+            className="h-12 bg-[#383838] pl-24 content-center"
           >
             <div className="verticalLineGrey"></div>
 
