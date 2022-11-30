@@ -16,9 +16,10 @@ export type DirectoryAppLaunchDetails = schemas['LaunchDetails'];
 export type DirectoryAppLaunchDetailsWeb = schemas['WebAppDetails'];
 export type HostManifest = schemas['HostManifest'];
 export type DirectoryAppSailManifest = {
-  'inject-api': string;
+  injectApi: string;
   searchable: boolean;
   forceNewWindow: boolean;
+  framesApi: boolean;
 };
 
 /**

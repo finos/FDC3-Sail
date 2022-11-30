@@ -29,8 +29,8 @@ function applyDefaults(d: DirectoryApp): DirectoryApp {
   const typedManifest = sailManifest as DirectoryAppSailManifest;
 
   // check version
-  if (!typedManifest['inject-api']) {
-    typedManifest['inject-api'] = '2.0';
+  if (!typedManifest.injectApi) {
+    typedManifest.injectApi = '2.0';
   }
 
   if (!typedManifest['searchable']) {
