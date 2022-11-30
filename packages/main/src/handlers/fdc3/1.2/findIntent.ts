@@ -50,6 +50,7 @@ export const findIntentsByContext = async (message: RuntimeMessage) => {
 
     const result: AppIntent[] = Object.keys(matchingIntents).map((k) => {
       const apps = matchingIntents[k].map((o) => convertApp(o.app));
+
       return {
         intent: {
           name: k,
@@ -58,9 +59,9 @@ export const findIntentsByContext = async (message: RuntimeMessage) => {
         apps: apps,
       } as AppIntent;
     });
-
-    return result;
-  } else {
-    return [];
+    if (result.length > 0) {
+      return result;
+    }
   }
+  throw new Error(ResolveError.NoAppsFound);
 };

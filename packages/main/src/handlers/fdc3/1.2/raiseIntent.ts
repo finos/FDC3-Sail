@@ -26,7 +26,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const runtime = getRuntime();
     if (runtime) {
       const win = runtime.createWorkspace();
-      const view = win.createView(
+      const view = await win.createView(
         (data.details as DirectoryAppLaunchDetailsWeb).url,
         {
           directoryData: data as DirectoryApp,
@@ -172,8 +172,13 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   }
 
   //only support string targets for now...
-  const target: string | undefined =
-    typeof message?.data?.target === 'string' ? message.data.target : undefined;
+  const target: string | undefined = message?.data?.target?.name
+    ? message.data.target.name
+    : message?.data?.target?.appId
+    ? message.data.target.appId
+    : typeof message?.data?.target === 'string'
+    ? message.data.target
+    : undefined;
 
   const intentListeners = target
     ? runtime.getIntentListenersByAppName(intent, target)
@@ -261,21 +266,19 @@ export const raiseIntent = async (message: RuntimeMessage) => {
         const start_url = directoryDetails.url;
         const pending = true;
 
-        const workspace = getRuntime().createWorkspace();
-
-        const view = workspace.createView(start_url, {
+        const view = await getRuntime().createView(start_url, {
           directoryData: directoryData,
         });
 
         //set pending intent for the view..
-        if (pending) {
+        if (view && pending) {
           view.setPendingIntent(
             intent,
             (message.data && message.data.context) || undefined,
             message.source,
           );
         }
-
+        console.log('***** return raise intent');
         return {
           source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
@@ -409,7 +412,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
         //let win = window.open(start_url,"_blank");
         const workspace = getRuntime().createWorkspace();
 
-        const view = workspace.createView(start_url, {
+        const view = await workspace.createView(start_url, {
           directoryData: r[0].details.directoryData,
         });
         //view.directoryData = r[0].details.directoryData;

@@ -1,36 +1,13 @@
 {
   "applications": [
     {
-      "appId": "ChannelsAppId",
-      "name": "ChannelsApp",
-      "title": "Channels App",
-      "description": "Part of the FDC3 1.2 Conformance Tests",
-      "type": "web",
-      "details": {
-        "url": "http://localhost:3103/index.html"
-      },
-      "hostManifests": {
-        "sail": {
-          "inject-api": "1.2",
-          "searchable": false
-        }
-      },
-      "version": "1.0.0",
-      "publisher": "Scott Logic",
-      "icons": [
-        {
-          "src": "https://www.scottlogic.com/sites/default/files/scott-logic-favicon.jpg"
-        }
-      ]
-    },
-    {
       "appId": "Conformance1",
       "name": "Conformance1",
       "title": "FDC3 1.2 Conformance Framework",
       "description": "Testing Conformance",
       "type": "web",
       "details": {
-        "url": "http://localhost:3500/index.html"
+        "url": "http://localhost:3001/v1.2/app/index.html"
       },
       "screenshots": [
         {
@@ -51,18 +28,43 @@
       ]
     },
     {
+      "appId": "ChannelsAppId",
+      "name": "ChannelsApp",
+      "title": "Channels App",
+      "description": "Part of the FDC3 1.2 Conformance Tests",
+      "type": "web",
+      "details": {
+        "url": "http://localhost:3001/v1.2/channels"
+      },
+      "hostManifests": {
+        "sail": {
+          "inject-api": "1.2",
+          "searchable": false,
+          "forceNewWindow": true
+        }
+      },
+      "version": "1.0.0",
+      "publisher": "Scott Logic",
+      "icons": [
+        {
+          "src": "https://www.scottlogic.com/sites/default/files/scott-logic-favicon.jpg"
+        }
+      ]
+    },
+    {
       "appId": "IntentAppAId",
       "name": "IntentAppA",
       "title": "Intent App A",
       "description": "Part of the FDC3 1.2 Conformance Tests",
       "type": "web",
       "details": {
-        "url": "http://localhost:3100/index.html"
+        "url": "http://localhost:3001/v1.2/intent-a"
       },
       "hostManifests": {
         "sail": {
           "inject-api": "1.2",
-          "searchable": false
+          "searchable": false,
+          "forceNewWindow": true
         }
       },
       "version": "1.0.0",
@@ -99,12 +101,13 @@
       "description": "Part of the FDC3 1.2 Conformance Tests",
       "type": "web",
       "details": {
-        "url": "http://localhost:3101/index.html"
+        "url": "http://localhost:3001/v1.2/intent-b"
       },
       "hostManifests": {
         "sail": {
           "inject-api": "1.2",
-          "searchable": false
+          "searchable": false,
+          "forceNewWindow": true
         }
       },
       "version": "1.0.0",
@@ -141,12 +144,13 @@
       "description": "Part of the FDC3 1.2 Conformance Tests",
       "type": "web",
       "details": {
-        "url": "http://localhost:3102/index.html"
+        "url": "http://localhost:3001/v1.2/intent-c"
       },
       "hostManifests": {
         "sail": {
           "inject-api": "1.2",
-          "searchable": false
+          "searchable": false,
+          "forceNewWindow": true
         }
       },
       "version": "1.0.0",
@@ -172,14 +176,17 @@
     {
       "appId": "MockAppId",
       "name": "MockApp",
+      "title": "Mock App",
+      "type": "web",
       "description": "Testing spec conformance",
       "details": {
-        "url": "http://localhost:3001/index.html"
+        "url": "http://localhost:3001/v1.2/general"
       },
       "hostManifests": {
         "sail": {
           "inject-api": "1.2",
-          "searchable": false
+          "searchable": false,
+          "forceNewWindow": true
         }
       },
       "version": "1.0.0",

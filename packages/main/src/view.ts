@@ -250,7 +250,6 @@ export class View {
   }
 
   isSystemView = (): boolean => {
-    console.log('isSystemView', this.type);
     return this.type === 'system';
   };
 

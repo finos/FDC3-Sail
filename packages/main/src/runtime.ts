@@ -223,7 +223,7 @@ export class Runtime {
             data: null,
           };
         }
-        console.log('message response', name, r);
+        console.log('message response', name, r, args.eventId);
 
         if (event.ports && args.eventId) {
           event.ports[0].postMessage({
@@ -399,20 +399,15 @@ export class Runtime {
     return result;
   }
 
-  createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise(() => {
-      new Workspace({
-        onInit: (workspace: Workspace) => {
-          return new Promise((resolve, reject) => {
-            try {
-              const view = workspace.createView(url, config);
-              resolve(view);
-            } catch (err) {
-              reject(err);
-            }
+  async createView(url?: string, config?: ViewConfig): Promise<View | void> {
+    new Workspace({
+      onInit: (workspace: Workspace) => {
+        return new Promise(() => {
+          workspace.createView(url, config).then((view) => {
+            return view;
           });
-        },
-      });
+        });
+      },
     });
   }
 

@@ -23,7 +23,7 @@ export const open = async (message: RuntimeMessage) => {
       .url;
     const manifest = getSailManifest(directoryEntry);
 
-    let newView: View | undefined;
+    let newView: View | void;
 
     //if manifest is set to force a new window, then launch a new workspace
     if (manifest.forceNewWindow && manifest.forceNewWindow === true) {
@@ -37,7 +37,8 @@ export const open = async (message: RuntimeMessage) => {
         runtime.getWorkspace(message.source) ||
         (sourceView && sourceView.parent);
       newView =
-        work && work.createView(start_url, { directoryData: directoryEntry });
+        work &&
+        (await work.createView(start_url, { directoryData: directoryEntry }));
     }
 
     //set provided context

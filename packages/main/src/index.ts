@@ -5,46 +5,40 @@ import { Runtime } from './runtime';
 
 let runtime: Runtime | null = null;
 
-export const createWindow = (): Promise<BrowserWindow> => {
-  return new Promise((resolve, reject) => {
-    const runtime = getRuntime();
-    let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
+export const createWindow = async (): Promise<BrowserWindow | void> => {
+  const runtime = getRuntime();
+  let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
 
-    const focusOrRestore = (window: BrowserWindow) => {
-      if (window && window.isMinimized()) {
-        window.restore();
-      }
-      if (window) {
-        window.focus();
-      }
-    };
+  const focusOrRestore = (window: BrowserWindow) => {
+    if (window && window.isMinimized()) {
+      window.restore();
+    }
+    if (window) {
+      window.focus();
+    }
+  };
 
-    if (window === undefined) {
-      runtime.createView().then(
-        (view) => {
-          if (view.parent && view.parent.window) {
-            window = view.parent.window;
-          }
-          if (window) {
-            focusOrRestore(window);
-            resolve(window);
-          } else {
-            reject('Window could not be created or restored');
-          }
-        },
-        (err) => {
-          reject(err);
-        },
-      );
-    } else {
+  if (window === undefined) {
+    const view = await runtime.createView();
+    if (view) {
+      if (view.parent && view.parent.window) {
+        window = view.parent.window;
+      }
       if (window) {
         focusOrRestore(window);
-        resolve(window);
+        return window;
       } else {
-        reject('Window could not be created or restored');
+        throw new Error('Window could not be created or restored');
       }
     }
-  });
+  } else {
+    if (window) {
+      focusOrRestore(window);
+      return window;
+    } else {
+      throw new Error('Window could not be created or restored');
+    }
+  }
 };
 
 /**
