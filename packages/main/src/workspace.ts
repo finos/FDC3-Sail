@@ -66,9 +66,7 @@ export class Workspace {
       });
     }
 
-    console.log('main window content DEV = ', import.meta.env.DEV);
-
-    const MAIN_WINDOW_CONTENT =
+    const TOP_NAVIGATION_CONTENT =
       import.meta.env.DEV &&
       import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL !== undefined
         ? import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL
@@ -79,8 +77,8 @@ export class Workspace {
           ).toString();
 
     // and load the index.html of the app.
-    if (this.window && MAIN_WINDOW_CONTENT) {
-      this.window.loadURL(MAIN_WINDOW_CONTENT).then(() => {
+    if (this.window && TOP_NAVIGATION_CONTENT) {
+      this.window.loadURL(TOP_NAVIGATION_CONTENT).then(() => {
         if (this.window) {
           this.window.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
             id: this.id,
