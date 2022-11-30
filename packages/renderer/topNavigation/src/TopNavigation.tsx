@@ -1,10 +1,9 @@
 import './TopNavigation.css';
 import React, { SyntheticEvent } from 'react';
 import { IconButton, Tabs, Tab, Stack } from '@mui/material';
-// import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
-// import AddIcon from '@mui/icons-material/Add';
+
 import {
   HiveOutlined,
   CloseOutlined,
@@ -35,13 +34,15 @@ const newTab = () => {
   window.sail.tabs.new();
 };
 
-const openChannelPicker = (event: SyntheticEvent) => {
-  const pickerButtonHeight = 40;
-  const native: MouseEvent = event.nativeEvent as MouseEvent;
-  window.sail.menu.openChannelPicker(
-    native.clientX,
-    native.clientY + pickerButtonHeight,
-  );
+const openChannelPicker = (event: MouseEvent) => {
+  const viewInnerWidth = event.view?.innerWidth;
+
+  const xPos = viewInnerWidth ? viewInnerWidth - 40 : event.clientX;
+  const yPos = 47;
+
+  console.log('openChannelPicker', event);
+
+  window.sail.menu.openChannelPicker(xPos, yPos);
 };
 
 // const hideResults = () => {
@@ -273,18 +274,22 @@ export default class TopNavigation extends React.Component<
     return (
       <ThemeProvider theme={darkTheme}>
         <div className="window-draggable"></div>
-        <div className="frameContainer">
+        <div>
           <Stack
             direction={'row'}
             alignContent={'center'}
             alignItems="center"
-            className="h-12 bg-gray-800 rounded-lg pl-24 content-center"
+            className="h-12 bg-[#383838] pl-24 content-center"
           >
             <div className="verticalLineGrey"></div>
 
-            <img alt="FDC3 Sail" src="sail_logo.png" className="h-9 mr-6" />
+            <img
+              alt="FDC3 Sail"
+              src="sail_logo.png"
+              className="h-9 mr-6 self-center"
+            />
 
-            <div className="h-full pt-4">
+            <div>
               <IconButton aria-label="home" className="h-6 w-6">
                 <HomeOutlined className="text-xs" />
               </IconButton>
@@ -302,7 +307,8 @@ export default class TopNavigation extends React.Component<
             >
               {this.state.tabs.map((tab: FrameTab) => (
                 <Tab
-                  style={{ paddingTop: '0px' }}
+                  className="tabStyle"
+                  style={{ minHeight: '50px' }}
                   label={tab.tabName}
                   value={tab.tabId}
                   id={tab.tabId}

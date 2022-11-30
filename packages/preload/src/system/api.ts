@@ -256,7 +256,6 @@ const dropTab = (frameTarget: boolean) => {
 };
 
 const openChannelPicker = (mouseX: number, mouseY: number) => {
-  console.log('preload - channel picker click', id);
   ipcRenderer.send(RUNTIME_TOPICS.OPEN_CHANNEL_PICKER, {
     source: id,
     data: {
