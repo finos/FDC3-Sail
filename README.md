@@ -132,7 +132,7 @@ Other useful commands:
 
 ## Mailing List
 
-To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [electron-fdc3+subscribe@lists.finos.org](mailto:electron-fdc3+subscribe@lists.finos.org).
+To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
 
 
 ## Contributing
