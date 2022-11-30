@@ -272,18 +272,13 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
         //set pending intent for the view..
         if (view && pending) {
-          console.log(
-            '!!!! raiseIntent - setPending intent',
-            intent,
-            message.data.context,
-          );
           view.setPendingIntent(
             intent,
             (message.data && message.data.context) || undefined,
             message.source,
           );
         }
-        console.log('***** return raise intent');
+
         return {
           source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
@@ -387,8 +382,10 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
       //if it is a window, post a message directly to it
       //if it is a directory entry resolve the destination for the intent and launch it
       //dedupe window and directory items
-      if (r[0].type === 'window' && r[0].details.instanceId) {
-        const view = runtime.getView(r[0].details.instanceId);
+      const item = r[0];
+      const details = item.details;
+      if (item.type === 'window' && details.instanceId) {
+        const view = runtime.getView(details.instanceId);
         if (view) {
           if (view.fdc3Version === '1.2') {
             view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
@@ -408,21 +405,20 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
         } else {
           throw new Error(ResolveError.NoAppsFound);
         }
-      } else if (r[0].type === 'directory' && r[0].details.directoryData) {
+      } else if (r[0].type === 'directory' && details.directoryData) {
         const start_url = (
-          r[0].details.directoryData.details as DirectoryAppLaunchDetailsWeb
+          details.directoryData.details as DirectoryAppLaunchDetailsWeb
         ).url;
         const pending = true;
+        const runtime = getRuntime();
 
-        //let win = window.open(start_url,"_blank");
-        const workspace = getRuntime().createWorkspace();
-
-        const view = await workspace.createView(start_url, {
-          directoryData: r[0].details.directoryData,
+        const view = await runtime.createView(start_url, {
+          directoryData: details.directoryData,
         });
         //view.directoryData = r[0].details.directoryData;
         //set pending intent for the view..
-        const intent = message.data && message.data.intent;
+        const intentKeys = details.directoryData?.interop?.intents?.listensFor;
+        const intent = intentKeys ? Object.keys(intentKeys)[0] : null;
         if (pending && intent) {
           view.setPendingIntent(
             intent,
