@@ -35,13 +35,15 @@ const newTab = () => {
   window.sail.tabs.new();
 };
 
-const openChannelPicker = (event: SyntheticEvent) => {
-  const pickerButtonHeight = 40;
-  const native: MouseEvent = event.nativeEvent as MouseEvent;
-  window.sail.menu.openChannelPicker(
-    native.clientX,
-    native.clientY + pickerButtonHeight,
-  );
+const openChannelPicker = (event: MouseEvent) => {
+  const viewInnerWidth = event.view?.innerWidth;
+
+  const xPos = viewInnerWidth ? viewInnerWidth - 50 : event.clientX;
+  const yPos = 55;
+
+  console.log('openChannelPicker', event);
+
+  window.sail.menu.openChannelPicker(xPos, yPos);
 };
 
 // const hideResults = () => {
