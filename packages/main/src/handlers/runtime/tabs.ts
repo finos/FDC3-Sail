@@ -32,7 +32,7 @@ export const newTab = async (message: RuntimeMessage) => {
   //bring selected browserview to front
   const workspace = runtime.getWorkspace(message.source);
   if (workspace) {
-    workspace.createView();
+    await workspace.createView();
   }
   return;
 };

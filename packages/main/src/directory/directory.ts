@@ -98,14 +98,14 @@ export class Directory {
    * For FDC3 1.2, retreives by the name of the app
    */
   retrieveByName(name: string): DirectoryApp[] {
-    return this.retrieve((app) => app.name == name);
+    return this.retrieve((app) => app.name === name);
   }
 
   /**
    * For FDC3 2, retrieves by appId
    */
   retrieveByAppId(appId: string): DirectoryApp[] {
-    return this.retrieve((app) => app.appId == appId);
+    return this.retrieve((app) => app.appId === appId);
   }
 
   retrieveByContextType(contextType: string): DirectoryApp[] {

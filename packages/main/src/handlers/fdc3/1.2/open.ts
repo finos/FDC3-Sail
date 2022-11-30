@@ -31,17 +31,15 @@ const resolveTargetAppToName = (target: TargetApp): string | undefined => {
 };
 
 export const open = async (message: RuntimeMessage) => {
-  console.log('open', message);
   const runtime = getRuntime();
-  const name =
-    message.data && message.data.name
-      ? message.data.name
-      : message.data && message.data.target
-      ? resolveTargetAppToName(message.data.target)
-      : '';
+  const name = message?.data?.name
+    ? message.data.name
+    : message?.data?.target
+    ? resolveTargetAppToName(message.data.target)
+    : '';
 
   const allResults: DirectoryApp[] =
-    name != ''
+    name !== ''
       ? runtime.getDirectory().retrieveByName(name)
       : runtime.getDirectory().retrieveAll();
 
@@ -51,13 +49,14 @@ export const open = async (message: RuntimeMessage) => {
       .url;
     const manifest = getSailManifest(directoryEntry);
 
-    let newView: View | undefined;
+    let newView: View | void;
 
     //if manifest is set to force a new window, then launch a new workspace
     if (manifest.forceNewWindow && manifest.forceNewWindow === true) {
       newView = await runtime.createView(start_url, {
         directoryData: directoryEntry,
       });
+      console.log('@@@@@@@@@@@@@ open - created new window', newView);
     } else {
       //else get target workspace
       const sourceView = runtime.getView(message.source);
@@ -65,13 +64,16 @@ export const open = async (message: RuntimeMessage) => {
         runtime.getWorkspace(message.source) ||
         (sourceView && sourceView.parent);
       newView =
-        work && work.createView(start_url, { directoryData: directoryEntry });
+        work &&
+        (await work.createView(start_url, { directoryData: directoryEntry }));
+      console.log('@@@@@@@@@@@@@ open - created new tab', newView);
     }
 
     //set provided context
     if (newView && message.data.context) {
       newView.setPendingContext(message.data.context, message.source);
     }
+    console.log('****************returning open!!!');
     return;
   }
   throw new Error(OpenError.AppNotFound);

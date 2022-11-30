@@ -36,7 +36,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const runtime = getRuntime();
     if (runtime) {
       const win = runtime.createWorkspace();
-      resolvedView = win.createView(
+      resolvedView = await win.createView(
         (data.details as DirectoryAppLaunchDetailsWeb).url,
         {
           directoryData: data as DirectoryApp,
@@ -44,7 +44,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
       );
 
       //set pending intent and context
-      resolvedView.setPendingIntent(
+      resolvedView?.setPendingIntent(
         message.data.intent,
         message.data.context,
         message.data.id,
@@ -380,14 +380,12 @@ export const raiseIntent = async (message: RuntimeMessage) => {
         const start_url = directoryDetails.url;
         const pending = true;
 
-        const workspace = getRuntime().createWorkspace();
-
-        const view = workspace.createView(start_url, {
+        const view = await getRuntime().createView(start_url, {
           directoryData: directoryData,
         });
         //view.directoryData = r[0].details.directoryData;
         //set pending intent for the view..
-        if (pending) {
+        if (view && pending) {
           view.setPendingIntent(
             intent,
             (message.data && message.data.context) || undefined,
@@ -526,16 +524,13 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
         ).url;
         const pending = true;
 
-        //let win = window.open(start_url,"_blank");
-        const workspace = getRuntime().createWorkspace();
-
-        const view = workspace.createView(start_url, {
+        const view = await getRuntime().createView(start_url, {
           directoryData: r[0].details.directoryData,
         });
         //view.directoryData = r[0].details.directoryData;
         //set pending intent for the view..
         const intent = message.data && message.data.intent;
-        if (pending && intent) {
+        if (view && pending && intent) {
           view.setPendingIntent(
             intent,
             (message.data && message.data.context) || undefined,

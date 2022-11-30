@@ -277,12 +277,15 @@ export const createAPI = (): DesktopAgent => {
       id: id,
       type: type,
       displayMetadata: displayMetadata,
-      broadcast: (context: Context) => {
-        sendMessage('broadcast', { context: context, channel: channel.id });
+      broadcast: async (context: Context) => {
+        return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, {
+          context: context,
+          channel: channel.id,
+        });
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage('getCurrentContext', {
+          sendMessage(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, {
             channel: channel.id,
             contextType: contextType,
           }).then(
@@ -317,7 +320,7 @@ export const createAPI = (): DesktopAgent => {
           channel: channel.id,
           contextType: thisContextType,
         });
-        return new FDC3Listener('context', listenerId);
+        return new FDC3Listener(FDC3_1_2_TOPICS.CONTEXT, listenerId);
       },
     };
 
