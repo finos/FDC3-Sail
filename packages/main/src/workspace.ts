@@ -652,15 +652,15 @@ export class Workspace {
     });
   }
 
-  createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise(() => {
+  /*createView(url?: string, config?: ViewConfig): Promise<View> {
+    return new Promise((resolve) => {
       const conf = config || {};
       conf.workspace = this;
-      conf.onReady = (view) => {
-        return new Promise((resolve, reject) => {
+      conf.onReady = async (view) => {
+      
           console.log('view ready');
           this.views.push(view);
-
+          
           if (this.window) {
             console.log('adding tab', view.id, view.getTitle());
 
@@ -674,21 +674,11 @@ export class Workspace {
             // this.window.addBrowserView(view.content);
             console.log('createView - join view to channel', url, this.channel);
             if (this.channel) {
-              this.joinViewToChannel(this.channel, view).then(
-                () => {
-                  resolve(view);
-                },
-                (err: Error) => {
-                  reject(err);
-                },
-              );
-            } else {
-              resolve(view);
-            }
-          } else {
-            reject('No window exists');
-          }
-        });
+              this.joinViewToChannel(this.channel, view);
+            } 
+          return;
+
+        }
       };
 
       const view = new View(url, conf, this, conf.version);
@@ -696,8 +686,54 @@ export class Workspace {
       //add to view collection
       if (this.window) {
         this.window.addBrowserView(view.content);
-      }
+      } 
+      resolve(view);
+      
     });
+  }*/
+
+  createView(url?: string, config?: ViewConfig): View {
+    const conf = config || {};
+    conf.workspace = this;
+    conf.onReady = (view) => {
+      console.log('view ready');
+      this.views.push(view);
+      return new Promise((resolve, reject) => {
+        if (this.window) {
+          console.log('adding tab', view.id, view.getTitle());
+
+          this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
+            viewId: view.id,
+            title: view.getTitle(),
+          });
+
+          this.setSelectedTab(view.id);
+
+          // this.window.addBrowserView(view.content);
+          console.log('createView - join view to channel', url, this.channel);
+          if (this.channel) {
+            this.joinViewToChannel(this.channel, view).then(
+              () => {
+                resolve();
+              },
+              (err: Error) => {
+                reject(err);
+              },
+            );
+          }
+        } else {
+          reject('No window exists');
+        }
+      });
+    };
+
+    const view = new View(url, conf, this, conf.version);
+
+    //add to view collection
+    if (this.window) {
+      this.window.addBrowserView(view.content);
+    }
+    return view;
   }
 
   getViews(): Array<View> {

@@ -265,13 +265,18 @@ export const raiseIntent = async (message: RuntimeMessage) => {
           .details as DirectoryAppLaunchDetailsWeb;
         const start_url = directoryDetails.url;
         const pending = true;
-
-        const view = await getRuntime().createView(start_url, {
+        const runtime = getRuntime();
+        const view = await runtime.createView(start_url, {
           directoryData: directoryData,
         });
 
         //set pending intent for the view..
         if (view && pending) {
+          console.log(
+            '!!!! raiseIntent - setPending intent',
+            intent,
+            message.data.context,
+          );
           view.setPendingIntent(
             intent,
             (message.data && message.data.context) || undefined,

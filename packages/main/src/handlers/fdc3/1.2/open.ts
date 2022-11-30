@@ -56,17 +56,19 @@ export const open = async (message: RuntimeMessage) => {
       newView = await runtime.createView(start_url, {
         directoryData: directoryEntry,
       });
-      console.log('@@@@@@@@@@@@@ open - created new window', newView);
+      console.log('@@@@@@@@@@@@@ open - created new window', newView.id);
     } else {
       //else get target workspace
       const sourceView = runtime.getView(message.source);
       const work =
         runtime.getWorkspace(message.source) ||
         (sourceView && sourceView.parent);
-      newView =
-        work &&
-        (await work.createView(start_url, { directoryData: directoryEntry }));
-      console.log('@@@@@@@@@@@@@ open - created new tab', newView);
+      if (work) {
+        newView = await work.createView(start_url, {
+          directoryData: directoryEntry,
+        });
+        console.log('@@@@@@@@@@@@@ open - created new tab', newView.id);
+      }
     }
 
     //set provided context

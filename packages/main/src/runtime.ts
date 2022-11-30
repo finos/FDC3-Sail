@@ -399,15 +399,34 @@ export class Runtime {
     return result;
   }
 
-  async createView(url?: string, config?: ViewConfig): Promise<View | void> {
+  /* createView(url?: string, config?: ViewConfig): Promise<View | void> {
+    return new Promise((resolve) => {
     new Workspace({
       onInit: (workspace: Workspace) => {
-        return new Promise(() => {
+        return new Promise((resolve) => {
           workspace.createView(url, config).then((view) => {
-            return view;
+            resolve(view);
           });
         });
       },
+    });
+  });
+  }*/
+
+  createView(url?: string, config?: ViewConfig): Promise<View> {
+    return new Promise((resolve, reject) => {
+      new Workspace({
+        onInit: (workspace: Workspace) => {
+          return new Promise(() => {
+            try {
+              const view = workspace.createView(url, config);
+              resolve(view);
+            } catch (err) {
+              reject(err);
+            }
+          });
+        },
+      });
     });
   }
 
