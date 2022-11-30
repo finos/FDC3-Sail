@@ -13,7 +13,6 @@ const PACKAGE_ROOT = __dirname;
 
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
 
-// const LOCAL_V2 = './v2/apps/appd-records.v2.json';
 const LOCAL_V2 = join(PACKAGE_ROOT, '/v2/apps/appd-records.v2.json');
 const LOCAL_V1 = join(PACKAGE_ROOT, '/v1/apps/appd-records.v1.json');
 
@@ -24,7 +23,7 @@ test('Test Remote Directory Load in FDC3 2.0 Format', async () => {
 
 test('Test Local App Load in FDC3 2.0 Format', async () => {
   const results = await fdc3_2_0_AppDirectoryLoader(LOCAL_V2);
-  expect(results.length).toEqual(1);
+  expect(results.length).toEqual(2);
   expect(results[0].appId).toEqual('my-application');
 });
 
@@ -40,7 +39,7 @@ test('Test Returned Intents', async () => {
     [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
   );
   await directory.reload();
-  expect(directory.retrieveAll().length).toEqual(2);
+  expect(directory.retrieveAll().length).toEqual(3);
 
   // retrieve by intent only
   const matchedApps: DirectoryApp[] =
@@ -59,7 +58,7 @@ test('Test Returned Intents', async () => {
     'ViewChart',
     'fdc3.instrument',
   );
-  expect(matchedApps2.length).toEqual(1);
+  expect(matchedApps2.length).toEqual(2);
   expect(matchedApps2[0].appId).toEqual('my-application');
 
   const listensFor2 = matchedApps2[0]?.interop?.intents?.listensFor as {
@@ -77,7 +76,7 @@ test('Full Text Search', async () => {
   );
 
   await directory.reload();
-  expect(directory.retrieveAll().length).toEqual(2);
+  expect(directory.retrieveAll().length).toEqual(3);
 
   expect(directory.retrieveByQuery('Sasquatch').length).toEqual(0);
   expect(directory.retrieveByQuery('NewsAPI')[0].appId).toEqual('News-Demo');
@@ -127,4 +126,10 @@ test('Ensure Manifests Set Correctly', async () => {
   );
   expect(sailManifest2['inject-api']).toEqual('2.0');
   expect(sailManifest2.searchable).toEqual(true);
+
+  // test 2.0 defaulting
+  const sailManifest2_2 = getSailManifest(
+    directory.retrieveByAppId('my-nonsearchable-application')[0],
+  );
+  expect(sailManifest2_2.searchable).toEqual(false);
 });
