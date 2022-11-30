@@ -85,7 +85,8 @@ export class View {
       //parse the directoryData
       const sailManifest = getSailManifest(this.directoryData);
 
-      this.fdc3Version = (sailManifest['inject-api'] as FDC3_VERSIONS) || '2.0';
+      this.fdc3Version = (sailManifest.injectApi as FDC3_VERSIONS) || '2.0';
+      this.framesAPI = sailManifest.framesApi;
     }
     const runtime = getRuntime();
 
@@ -110,6 +111,7 @@ export class View {
         contextIsolation: true,
         webSecurity: true,
         nodeIntegration: true,
+        nodeIntegrationInSubFrames: this.framesAPI,
       },
     });
     //set bgcolor so view doesn't bleed through to hidden tabs
@@ -205,6 +207,8 @@ export class View {
   title?: string;
 
   fdc3Version: '2.0' | '1.2' = '2.0';
+
+  framesAPI = false;
 
   private type: 'system' | 'app' = 'app';
 

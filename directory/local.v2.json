@@ -11,7 +11,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable": false
         },
         "finsemble": {
@@ -82,7 +82,7 @@
       ],
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         },
         "finsemble": {
           "window": {
@@ -147,7 +147,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable": false
         },
         "finsemble": {
@@ -232,7 +232,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable": false
         },
         "finsemble": {
@@ -317,7 +317,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable": false
         },
         "finsemble": {
@@ -393,7 +393,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable": false
         },
         "finsemble": {
@@ -610,7 +610,8 @@
       ],
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0",
+          "framesApi": true
         }
       },
       "supportEmail": "support@symphony.com",
@@ -650,7 +651,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         }
       }
     },
@@ -688,7 +689,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -714,7 +715,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -751,7 +752,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -788,7 +789,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -831,7 +832,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -868,7 +869,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "2.0"
+          "injectApi": "2.0"
         }
       }
     },
@@ -894,7 +895,7 @@
       "interop": {},
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "forceNewWindow": true
         }
       }

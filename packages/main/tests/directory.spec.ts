@@ -118,13 +118,13 @@ test('Ensure Manifests Set Correctly', async () => {
   const sailManifest1 = getSailManifest(
     directory.retrieveByAppId('News-Demo')[0],
   );
-  expect(sailManifest1['inject-api']).toEqual('1.2');
+  expect(sailManifest1.injectApi).toEqual('1.2');
   expect(sailManifest1.searchable).toEqual(true);
 
   // test 2.0 defaulting
   const sailManifest2 = getSailManifest(
     directory.retrieveByAppId('my-application')[0],
   );
-  expect(sailManifest2['inject-api']).toEqual('2.0');
+  expect(sailManifest2.injectApi).toEqual('2.0');
   expect(sailManifest2.searchable).toEqual(true);
 });

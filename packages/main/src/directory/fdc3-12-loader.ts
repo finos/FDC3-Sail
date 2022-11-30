@@ -22,9 +22,10 @@ export type DirectoryIntentV1 = schemas['IntentV1'];
 export type AllApplicationsResponseV1 = schemas['ApplicationSearchResponseV1'];
 
 const DEFAULT_1_2_MANIFEST: DirectoryAppSailManifest = {
-  'inject-api': '1.2',
+  injectApi: '1.2',
   searchable: true,
   forceNewWindow: false,
+  framesApi: false,
 };
 
 const convertToDirectoryList = (data: AllApplicationsResponseV1) =>

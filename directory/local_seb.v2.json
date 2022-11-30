@@ -79,7 +79,7 @@
           }
         },
         "sail": {
-          "inject-api": "1.2",
+          "injectApi": "1.2",
           "searchable2": false,
           "searchable": false
         },
@@ -123,7 +123,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         }
       }
     },
@@ -231,7 +231,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         }
       }
     },
@@ -258,7 +258,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         }
       }
     },
@@ -295,7 +295,7 @@
       },
       "hostManifests": {
         "sail": {
-          "inject-api": "1.2"
+          "injectApi": "1.2"
         }
       }
     }
