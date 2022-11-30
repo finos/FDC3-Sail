@@ -1,10 +1,9 @@
 import './TopNavigation.css';
 import React, { SyntheticEvent } from 'react';
 import { IconButton, Tabs, Tab, Stack } from '@mui/material';
-// import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
-// import AddIcon from '@mui/icons-material/Add';
+
 import {
   HiveOutlined,
   CloseOutlined,
@@ -38,8 +37,8 @@ const newTab = () => {
 const openChannelPicker = (event: MouseEvent) => {
   const viewInnerWidth = event.view?.innerWidth;
 
-  const xPos = viewInnerWidth ? viewInnerWidth - 50 : event.clientX;
-  const yPos = 55;
+  const xPos = viewInnerWidth ? viewInnerWidth - 40 : event.clientX;
+  const yPos = 47;
 
   console.log('openChannelPicker', event);
 
@@ -275,12 +274,12 @@ export default class TopNavigation extends React.Component<
     return (
       <ThemeProvider theme={darkTheme}>
         <div className="window-draggable"></div>
-        <div className="frameContainer">
+        <div>
           <Stack
             direction={'row'}
             alignContent={'center'}
             alignItems="center"
-            className="h-12 bg-gray-800 rounded-lg pl-24 content-center"
+            className="h-12 bg-gray-800 pl-24 content-center"
           >
             <div className="verticalLineGrey"></div>
 
