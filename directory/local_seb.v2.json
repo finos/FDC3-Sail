@@ -80,7 +80,6 @@
         },
         "sail": {
           "injectApi": "1.2",
-          "searchable2": false,
           "searchable": false
         },
         "Web App Manifest": "https://example.com/fdc3-workbench.json"
