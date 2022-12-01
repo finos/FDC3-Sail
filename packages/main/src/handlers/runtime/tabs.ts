@@ -114,11 +114,12 @@ export const dropTab = async (message: RuntimeMessage) => {
 
 export const closeTab = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
-  //bring selected browserview to front
   const workspace = runtime.getWorkspace(message.source);
+  //remove tab from its workspace
   if (workspace) {
     workspace.closeTab(message.data.tabId);
   }
+
   return;
 };
 

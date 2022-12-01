@@ -217,137 +217,91 @@ export class Workspace {
     }
   }
 
-  /**
-   * close a tab
-   * @param tabId
-   */
-
-  closeTab(tabId: string) {
-    const runtime = getRuntime();
-    if (runtime) {
-      const view = runtime.getView(tabId);
-      const newSelection: boolean = tabId === this.selectedTab;
-      let selectedIndex = -1;
-      //remove the view from the workspace
-      this.views = this.views.filter((v, i) => {
-        if (v.id === this.selectedTab) {
-          selectedIndex = i;
-        }
-        return v.id !== tabId;
-      });
-
-      //are there more tabs?
-      //if not, close the workspace
-      console.log('close tab views ', this.views.length);
-      if (this.views.length === 0) {
-        this.close();
-      } else if (newSelection) {
-        //if the removed tashift the selected tab to the left
-        selectedIndex--;
-        //select the next tab if the closed tab was selected
-        if (selectedIndex > -1) {
-          //if we're down to 1 tab, force selected index to 0
-          console.log(
-            'selectedIndex ',
-            selectedIndex,
-            'views length ',
-            this.views.length,
-          );
-          selectedIndex = this.views.length === 0 ? 0 : selectedIndex;
-          selectedIndex =
-            this.views.length === selectedIndex
-              ? selectedIndex - 1
-              : selectedIndex;
-          console.log('selectedIndex ', selectedIndex);
-          const selectedView = this.views[selectedIndex];
-          if (selectedView) {
-            this.setSelectedTab(selectedView.id);
-          }
-        }
-
-        //close the view, this removes from workspace and cleans up
-        if (view) {
-          view.close();
-        }
-      }
-    }
-  }
-
   removeTab(tabId: string, suppressFocus?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       console.log('removeTab');
       try {
-        //to do : clear all handlers and workspace bindings
-        const runtime = getRuntime();
-        if (runtime) {
-          let selectedIndex = -1;
-          //if we're removing the currently selected tab, then we'll have to make a new selection
-          const newSelection: boolean = tabId === this.selectedTab;
-          //remove the view from the workspace
-          console.log('removing tab.  current # of views', this.views.length);
+        let selectedIndex = -1;
+        //if we're removing the currently selected tab, then we'll have to make a new selection
+        const newSelection: boolean = tabId === this.selectedTab;
+        //remove the view from the workspace
+        console.log('removing tab.  current # of views', this.views.length);
 
-          this.views = this.views.filter((v, i) => {
-            if (v.id === tabId) {
-              selectedIndex = i;
-              //remove view parent
-              delete v.parent;
-              if (this.window) {
-                this.window.removeBrowserView(v.content);
-              }
-            }
-            return v.id !== tabId;
-          });
-
-          console.log('removing tab.  current # of views', this.views.length);
-          //are there more tabs?
-          //if not, close the workspace
-          if (this.views.length === 0) {
-            this.close();
-            resolve();
-          } else if (newSelection) {
-            //if the removed tab was selected, shift the selected tab to the left
-            selectedIndex--;
-
-            if (selectedIndex > -1) {
-              //if we're down to 1 tab, force selected index to 0
-              console.log(
-                'selectedIndex ',
-                selectedIndex,
-                'views length ',
-                this.views.length,
-              );
-              selectedIndex = this.views.length === 1 ? 0 : selectedIndex;
-
-              const selectedView = this.views[selectedIndex];
-              if (selectedView) {
-                console.log('remove tab - selectedView = ', selectedView.id);
-                this.setSelectedTab(selectedView.id, suppressFocus);
-                if (this.window) {
-                  this.window.webContents.send('WORK:selectTab', {
-                    viewId: selectedView.id,
-                  });
-                }
-                resolve();
-              } else {
-                console.log('remove tab - no selectedView');
-                resolve();
-              }
-            }
-          } else if (this.selectedTab) {
-            //just reselect the already selected tab
-            this.setSelectedTab(this.selectedTab);
+        this.views = this.views.filter((v, i) => {
+          if (v.id === tabId) {
+            selectedIndex = i;
+            //remove view parent
+            delete v.parent;
             if (this.window) {
-              this.window.webContents.send(TOPICS.SELECT_TAB, {
-                viewId: this.selectedTab,
-              });
+              this.window.removeBrowserView(v.content);
             }
-            resolve();
           }
+          return v.id !== tabId;
+        });
+
+        console.log('removing tab.  current # of views', this.views.length);
+        //are there more tabs?
+        //if not, close the workspace
+        if (this.views.length === 0) {
+          this.close();
+          resolve();
+        } else if (newSelection) {
+          //if the removed tab was selected, shift the selected tab to the left
+          selectedIndex--;
+
+          if (selectedIndex > -1) {
+            //if we're down to 1 tab, force selected index to 0
+            console.log(
+              'selectedIndex ',
+              selectedIndex,
+              'views length ',
+              this.views.length,
+            );
+            selectedIndex = this.views.length === 1 ? 0 : selectedIndex;
+
+            const selectedView = this.views[selectedIndex];
+            if (selectedView) {
+              console.log('remove tab - selectedView = ', selectedView.id);
+              this.setSelectedTab(selectedView.id, suppressFocus);
+              if (this.window) {
+                this.window.webContents.send('WORK:selectTab', {
+                  viewId: selectedView.id,
+                });
+              }
+              resolve();
+            } else {
+              console.log('remove tab - no selectedView');
+              resolve();
+            }
+          }
+        } else if (this.selectedTab) {
+          //just reselect the already selected tab
+          this.setSelectedTab(this.selectedTab);
+          if (this.window) {
+            this.window.webContents.send(TOPICS.SELECT_TAB, {
+              viewId: this.selectedTab,
+            });
+          }
+          resolve();
         }
       } catch (err) {
         reject(err);
       }
     });
+  }
+
+  /**
+   * close a tab
+   * @param tabId
+   */
+  closeTab(tabId: string) {
+    const runtime = getRuntime();
+    this.removeTab(tabId);
+    const view = runtime.getView(tabId);
+    //close the view, this removes from workspace and cleans up
+    if (view) {
+      view.close();
+    }
   }
 
   joinViewToChannel(
@@ -651,46 +605,6 @@ export class Workspace {
       }
     });
   }
-
-  /*createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise((resolve) => {
-      const conf = config || {};
-      conf.workspace = this;
-      conf.onReady = async (view) => {
-      
-          console.log('view ready');
-          this.views.push(view);
-          
-          if (this.window) {
-            console.log('adding tab', view.id, view.getTitle());
-
-            this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
-              viewId: view.id,
-              title: view.getTitle(),
-            });
-
-            this.setSelectedTab(view.id);
-
-            // this.window.addBrowserView(view.content);
-            console.log('createView - join view to channel', url, this.channel);
-            if (this.channel) {
-              this.joinViewToChannel(this.channel, view);
-            } 
-          return;
-
-        }
-      };
-
-      const view = new View(url, conf, this, conf.version);
-
-      //add to view collection
-      if (this.window) {
-        this.window.addBrowserView(view.content);
-      } 
-      resolve(view);
-      
-    });
-  }*/
 
   createView(url?: string, config?: ViewConfig): View {
     const conf = config || {};
