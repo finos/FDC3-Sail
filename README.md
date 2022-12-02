@@ -150,7 +150,7 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 ## License
 
-Copyright 2022 Nick Kolba
+Copyright 2022 FINOS
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
