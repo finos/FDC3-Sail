@@ -56,7 +56,6 @@ export const open = async (message: RuntimeMessage) => {
       newView = await runtime.createView(start_url, {
         directoryData: directoryEntry,
       });
-      console.log('@@@@@@@@@@@@@ open - created new window', newView);
     } else {
       //else get target workspace
       const sourceView = runtime.getView(message.source);
@@ -66,14 +65,13 @@ export const open = async (message: RuntimeMessage) => {
       newView =
         work &&
         (await work.createView(start_url, { directoryData: directoryEntry }));
-      console.log('@@@@@@@@@@@@@ open - created new tab', newView);
     }
 
     //set provided context
     if (newView && message.data.context) {
       newView.setPendingContext(message.data.context, message.source);
     }
-    console.log('****************returning open!!!');
+
     return;
   }
   throw new Error(OpenError.AppNotFound);

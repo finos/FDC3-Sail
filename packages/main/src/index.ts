@@ -1,44 +1,60 @@
 import { app, BrowserWindow } from 'electron';
 import './security-restrictions';
-//import { restoreOrCreateWindow } from '/@/mainWindow';
 import { Runtime } from './runtime';
 
 let runtime: Runtime | null = null;
 
-export const createWindow = async (): Promise<BrowserWindow | void> => {
-  const runtime = getRuntime();
-  let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
+export const createWindow = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const runtime = getRuntime();
+    let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
 
-  const focusOrRestore = (window: BrowserWindow) => {
-    if (window && window.isMinimized()) {
-      window.restore();
-    }
-    if (window) {
-      window.focus();
-    }
-  };
-
-  if (window === undefined) {
-    const view = await runtime.createView();
-    if (view) {
-      if (view.parent && view.parent.window) {
-        window = view.parent.window;
+    const focusOrRestore = (window: BrowserWindow) => {
+      if (window && window.isMinimized()) {
+        window.restore();
       }
       if (window) {
+        window.focus();
+      }
+    };
+
+    if (window === undefined) {
+      runtime
+        .createView(undefined, {
+          onReady: () => {
+            //wait until the actual view is ready to resolve
+            return new Promise(() => {
+              console.log('!*!*!*!*!* initial view ready');
+              resolve();
+            });
+          },
+        })
+        .then(
+          (view) => {
+            if (view.parent && view.parent.window) {
+              window = view.parent.window;
+            }
+            if (window) {
+              focusOrRestore(window);
+              console.log('!*!*!*!*!* initial view created');
+              // resolve();
+            } else {
+              reject('Window could not be created or restored');
+            }
+          },
+          (err) => {
+            reject(err);
+          },
+        );
+    } else {
+      if (window) {
         focusOrRestore(window);
-        return window;
+        resolve();
       } else {
-        throw new Error('Window could not be created or restored');
+        reject('Window could not be created or restored');
       }
     }
-  } else {
-    if (window) {
-      focusOrRestore(window);
-      return window;
-    } else {
-      throw new Error('Window could not be created or restored');
-    }
-  }
+  });
 };
 
 /**
@@ -84,7 +100,7 @@ app.on('window-all-closed', () => {
 /**
  * @see https://www.electronjs.org/docs/v14-x-y/api/app#event-activate-macos Event: 'activate'
  */
-app.on('activate', () => {
+app.on('activate', async () => {
   console.log('activated');
   if (runtime) {
     runtime.clean();
@@ -92,7 +108,9 @@ app.on('activate', () => {
   }
   runtime = new Runtime();
   runtime.startup();
-  createWindow();
+
+  await createWindow();
+  return;
 });
 
 /**
@@ -100,12 +118,14 @@ app.on('activate', () => {
  */
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
     console.log('index - create runtime');
     runtime = new Runtime();
     runtime.startup();
     console.log('index - createWindow');
-    createWindow();
+    await createWindow();
+    console.log('index - window created');
+    return;
   })
   .catch((e) => console.error('Failed create window:', e));
 

@@ -1,4 +1,4 @@
-import { FDC3App } from '/@/handlers/fdc3/1.2/types/FDC3Data';
+import { FDC3App } from './FDC3Data';
 import { Context, TargetApp } from 'fdc3-1.2';
 import { RuntimeMessage } from '../../../runtimeMessage';
 
@@ -7,6 +7,7 @@ export interface FDC3Message extends RuntimeMessage {
   intent?: string;
   selected?: FDC3App;
   context?: Context;
+  data: FDC3MessageData;
 }
 
 export interface FDC3MessageData {

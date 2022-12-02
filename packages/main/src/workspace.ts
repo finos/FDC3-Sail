@@ -652,52 +652,55 @@ export class Workspace {
     });
   }
 
-  createView(url?: string, config?: ViewConfig): Promise<View> {
-    return new Promise(() => {
-      const conf = config || {};
-      conf.workspace = this;
-      conf.onReady = (view) => {
-        return new Promise((resolve, reject) => {
-          console.log('view ready');
-          this.views.push(view);
+  createView(url?: string, config?: ViewConfig): View {
+    const conf = config || {};
+    conf.workspace = this;
+    const customReady = conf.onReady;
+    conf.onReady = (view) => {
+      console.log('view ready');
+      this.views.push(view);
 
-          if (this.window) {
-            console.log('adding tab', view.id, view.getTitle());
-
-            this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
-              viewId: view.id,
-              title: view.getTitle(),
-            });
-
-            this.setSelectedTab(view.id);
-
-            // this.window.addBrowserView(view.content);
-            console.log('createView - join view to channel', url, this.channel);
-            if (this.channel) {
-              this.joinViewToChannel(this.channel, view).then(
-                () => {
-                  resolve(view);
-                },
-                (err: Error) => {
-                  reject(err);
-                },
-              );
-            } else {
-              resolve(view);
-            }
-          } else {
-            reject('No window exists');
+      return new Promise((resolve, reject) => {
+        if (this.window) {
+          if (customReady) {
+            customReady.call(this, view);
           }
-        });
-      };
+          console.log('adding tab', view.id, view.getTitle());
 
-      const view = new View(url, conf, this, conf.version);
+          this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
+            viewId: view.id,
+            title: view.getTitle(),
+          });
 
-      //add to view collection
-      if (this.window) {
-        this.window.addBrowserView(view.content);
-      }
-    });
+          this.setSelectedTab(view.id);
+
+          // this.window.addBrowserView(view.content);
+          console.log('createView - join view to channel', url, this.channel);
+          if (this.channel) {
+            this.joinViewToChannel(this.channel, view).then(
+              () => {
+                resolve();
+              },
+              (err: Error) => {
+                reject(err);
+              },
+            );
+          } else {
+            resolve();
+          }
+        } else {
+          reject('No window exists');
+        }
+      });
+    };
+
+    const view = new View(url, conf, this, conf.version);
+
+    //add to view collection
+    if (this.window) {
+      this.window.addBrowserView(view.content);
+    }
+    return view;
   }
 
   getViews(): Array<View> {
