@@ -68,7 +68,7 @@ export enum FDC3EventEnum {
 }
 
 /*export {
-    FDC3Event,
-    FDC3EventDetail,
-    FDC3EventEnum
- };*/
+   FDC3Event,
+   FDC3EventDetail,
+   FDC3EventEnum
+};*/
