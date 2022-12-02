@@ -21,7 +21,7 @@ import {
   FDC3Message,
   FDC3MessageData,
   FDC3Response,
-} from '/@main/types/FDC3Message';
+} from '/@main/handlers/fdc3/1.2/types/FDC3Message';
 import { FDC3Event, FDC3EventEnum } from '/@main/types/FDC3Event';
 
 /** generate pseudo-random ids for handlers created on the client */
