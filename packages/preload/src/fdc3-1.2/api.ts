@@ -1,6 +1,10 @@
 import { ipcRenderer } from 'electron';
 import { fdc3Event } from '../lib/lib';
-
+import {
+  FDC3Message,
+  FDC3MessageData,
+  FDC3Response,
+} from '/@main/handlers/fdc3/1.2/types/FDC3Message';
 import {
   DesktopAgent,
   Listener,
@@ -17,11 +21,6 @@ import {
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
-import {
-  FDC3Message,
-  FDC3MessageData,
-  FDC3Response,
-} from '/@main/handlers/fdc3/1.2/types/FDC3Message';
 import { FDC3Event, FDC3EventEnum } from '/@main/types/FDC3Event';
 
 /** generate pseudo-random ids for handlers created on the client */
