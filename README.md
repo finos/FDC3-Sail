@@ -45,7 +45,7 @@ The following libraries are used:
 - [React] for UI rendering
 - [Vitest] and [React Testing Library] for testing
 - [Playwright] for test automation
-- [TypeScript]
+- [TypeScript] for type safety
 - [ESLint] for linting
 - [Prettier] for code formatting
 - [nano-staged] and [simple-git-hooks] for code commits
