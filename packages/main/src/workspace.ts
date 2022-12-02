@@ -657,11 +657,16 @@ export class Workspace {
   createView(url?: string, config?: ViewConfig): View {
     const conf = config || {};
     conf.workspace = this;
+    const customReady = conf.onReady;
     conf.onReady = (view) => {
       console.log('view ready');
       this.views.push(view);
+
       return new Promise((resolve, reject) => {
         if (this.window) {
+          if (customReady) {
+            customReady.call(this, view);
+          }
           console.log('adding tab', view.id, view.getTitle());
 
           this.window.webContents.send(RUNTIME_TOPICS.ADD_TAB, {
@@ -682,6 +687,8 @@ export class Workspace {
                 reject(err);
               },
             );
+          } else {
+            resolve();
           }
         } else {
           reject('No window exists');

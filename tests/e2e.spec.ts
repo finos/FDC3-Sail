@@ -6,7 +6,7 @@ import { afterAll, beforeAll, expect, test } from 'vitest';
 let electronApp: ElectronApplication;
 
 beforeAll(async () => {
-  electronApp = await electron.launch({ args: ['.'] });
+  electronApp = await electron.launch({ args: ['index.ts'] });
 });
 
 afterAll(async () => {
