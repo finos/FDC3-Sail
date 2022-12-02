@@ -2,7 +2,15 @@ import { FDC3App } from './FDC3Data';
 import { Context, AppIdentifier } from '@finos/fdc3';
 
 export interface FDC3Message {
+  topic: string;
+  source: string;
+  name?: string;
+  intent?: string;
   data: FDC3MessageData;
+  tabId?: number;
+  selected?: FDC3App;
+  context?: Context;
+  error?: string;
 }
 
 export interface FDC3MessageData {
