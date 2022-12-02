@@ -283,11 +283,11 @@ export default class TopNavigation extends React.Component<
           >
             <div className="verticalLineGrey"></div>
 
-            <img
+            {/* <img
               alt="FDC3 Sail"
               src="sail_logo.png"
               className="h-9 mr-6 self-center"
-            />
+            /> */}
 
             <div>
               <IconButton aria-label="home" className="h-6 w-6">

@@ -20,7 +20,7 @@
 }
 
 .verticalLineBlack {
-  border-left: 2px solid #000;
+  border-left: 1px solid #000;
   height: 100%;
   margin-left: 20px;
 }
