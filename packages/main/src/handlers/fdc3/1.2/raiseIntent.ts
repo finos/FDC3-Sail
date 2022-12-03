@@ -166,6 +166,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const results: Array<FDC3App> = [];
   const intent = message.data?.intent;
   let intentTarget: string | undefined; //the id of the app the intent gets routed to (if unambigious)
+  const intentContext = message.data?.context?.type || '';
 
   if (!intent) {
     throw new Error(ResolveError.NoAppsFound);
@@ -187,31 +188,70 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   if (intentListeners) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listener) => {
+      let addView = true;
+      //look up the details of the window and directory metadata in the "connected" store
+      const view = listener.viewId
+        ? runtime.getView(listener.viewId)
+        : undefined;
+
+      //skip if can't be resolved to a view
+      if (!view) {
+        addView = false;
+      }
+
       ///ignore listeners from the view that raised the intent
-      if (listener.viewId && listener.viewId !== message.source) {
-        //look up the details of the window and directory metadata in the "connected" store
-        const view = runtime.getView(listener.viewId);
-        //de-dupe
+      if (listener.viewId && listener.viewId === message.source) {
+        addView = false;
+      }
+      //ensure we are not sending the intent back to the source
+      if (listener.viewId && listener.viewId === message.source) {
+        addView = false;
+      }
+      //de-dupe
+      if (
+        view &&
+        results.find((item) => {
+          return item.details.instanceId === view.id;
+        })
+      ) {
+        addView = false;
+      }
+
+      //match on context, if provided
+      if (
+        intentContext &&
+        view &&
+        view.directoryData?.interop?.intents?.listensFor &&
+        view.directoryData?.interop?.intents?.listensFor[intent]
+      ) {
+        let hasContext = false;
+        const viewIntent =
+          view.directoryData.interop.intents.listensFor[intent];
+
         if (
-          view &&
-          !results.find((item) => {
-            return item.details.instanceId === view.id;
-          })
+          viewIntent.contexts &&
+          viewIntent.contexts.indexOf(intentContext) > -1
         ) {
-          results.push({
-            type: 'window',
-            details: {
-              instanceId: view.id,
-              directoryData: view.directoryData,
-            },
-          });
+          hasContext = true;
         }
+
+        if (!hasContext) {
+          addView = false;
+        }
+      }
+
+      if (view && addView) {
+        results.push({
+          type: 'window',
+          details: {
+            instanceId: view.id,
+            directoryData: view.directoryData,
+          },
+        });
       }
     });
   }
   //pull intent handlers from the directory
-  const intentContext = message.data?.context?.type || '';
-
   const data: Array<DirectoryApp> = runtime
     .getDirectory()
     .retrieveByIntentAndContextType(intent, intentContext);
