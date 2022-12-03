@@ -49,7 +49,7 @@ const openChannelPicker = (event: MouseEvent) => {
 //   document.dispatchEvent(new CustomEvent(RUNTIME_TOPICS.HIDE_RESULTS_WINDOW));
 // };
 
-interface FrameTab {
+interface NavigationTab {
   tabId: string;
   tabName: string;
 }
@@ -58,7 +58,7 @@ export default class TopNavigation extends React.Component<
   {},
   {
     anchorEl: HTMLElement | null;
-    tabs: Array<FrameTab>;
+    tabs: Array<NavigationTab>;
     selectedTab: string;
     channelColor: string;
   }
@@ -87,7 +87,7 @@ export default class TopNavigation extends React.Component<
     window.sail.tabs.close(tabId);
 
     this.setState({
-      tabs: this.state.tabs.filter((tab: FrameTab) => {
+      tabs: this.state.tabs.filter((tab: NavigationTab) => {
         return tab.tabId !== tabId;
       }),
     });
@@ -221,9 +221,9 @@ export default class TopNavigation extends React.Component<
         //rewrite the tablist
         //find the selected tab, and pop it out of the list
 
-        let dropTab: FrameTab | undefined = undefined;
+        let dropTab: NavigationTab | undefined = undefined;
         let targetIndex = 0;
-        const newTabList: Array<FrameTab> = [];
+        const newTabList: Array<NavigationTab> = [];
 
         this.state.tabs.forEach((tab, i) => {
           if (tab.tabId !== tabId) {
@@ -305,7 +305,7 @@ export default class TopNavigation extends React.Component<
               variant="scrollable"
               scrollButtons="auto"
             >
-              {this.state.tabs.map((tab: FrameTab) => (
+              {this.state.tabs.map((tab: NavigationTab) => (
                 <Tab
                   className="tabStyle"
                   style={{ minHeight: '50px' }}
