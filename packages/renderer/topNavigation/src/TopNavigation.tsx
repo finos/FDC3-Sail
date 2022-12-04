@@ -40,8 +40,6 @@ const openChannelPicker = (event: MouseEvent) => {
   const xPos = viewInnerWidth ? viewInnerWidth - 40 : event.clientX;
   const yPos = 47;
 
-  console.log('openChannelPicker', event);
-
   window.sail.menu.openChannelPicker(xPos, yPos);
 };
 
@@ -74,7 +72,7 @@ export default class TopNavigation extends React.Component<
   }
 
   handleTabChange(newTabId: string) {
-    console.log('tab selected', newTabId);
+    console.log('handleTabChange', newTabId);
     if (newTabId === 'newTab') {
       newTab();
     } else {
@@ -86,7 +84,10 @@ export default class TopNavigation extends React.Component<
   closeTab(tabId: string) {
     window.sail.tabs.close(tabId);
 
+    console.log('closeTab', tabId, this.state.tabs);
+
     this.setState({
+      selectedTab: this.state.tabs[0].tabId,
       tabs: this.state.tabs.filter((tab: NavigationTab) => {
         return tab.tabId !== tabId;
       }),
@@ -102,35 +103,19 @@ export default class TopNavigation extends React.Component<
     }
   }
 
-  handleNewTab(tabName: string, tabId: string) {
-    this.setState({
-      tabs: [...this.state.tabs, { tabId: tabId, tabName: tabName }],
-      selectedTab: tabId,
-    });
-  }
-
   componentDidMount() {
     document.addEventListener(RUNTIME_TOPICS.ADD_TAB, ((event: CustomEvent) => {
-      console.log('Add Tab called', event.detail);
       const tabId = event.detail.viewId;
       const tabName = event.detail.title;
-      this.handleNewTab(tabName, tabId);
-
-      const content = document.createElement('div');
-      content.id = `content_${tabId}`;
-      content.className = 'content';
-      const contentContainer = document.getElementById('contentContainer');
-      if (contentContainer) {
-        contentContainer.appendChild(content);
-        //select the new Tab?
-        //selectTab(tabId);
-      }
+      this.setState({
+        tabs: [...this.state.tabs, { tabId: tabId, tabName: tabName }],
+        selectedTab: tabId,
+      });
     }) as EventListener);
 
     document.addEventListener(RUNTIME_TOPICS.REMOVE_TAB, ((
       event: CustomEvent,
     ) => {
-      console.log('Remove Tab called', event.detail);
       const tabId = event.detail.tabId;
       this.setState({
         tabs: this.state.tabs.filter((tab) => {
@@ -159,8 +144,6 @@ export default class TopNavigation extends React.Component<
   }
 
   render() {
-    const open = Boolean(this.state.anchorEl);
-
     // const debounce = (callback: any, wait: number) => {
     //   let timeoutId: number | undefined = undefined;
     //   return (...args: any[]) => {
@@ -283,19 +266,6 @@ export default class TopNavigation extends React.Component<
           >
             <div className="verticalLineGrey"></div>
 
-            {/* <img
-              alt="FDC3 Sail"
-              src="sail_logo.png"
-              className="h-9 mr-6 self-center"
-            /> */}
-
-            <div>
-              <IconButton aria-label="home" className="h-6 w-6">
-                <HomeOutlined className="text-xs" />
-              </IconButton>
-            </div>
-            <div className="verticalLineBlack"></div>
-
             <Tabs
               className="w-full h-full"
               value={this.state.selectedTab}
@@ -313,28 +283,36 @@ export default class TopNavigation extends React.Component<
                   value={tab.tabId}
                   id={tab.tabId}
                   key={tab.tabId}
-                  iconPosition="end"
+                  iconPosition={
+                    tab.tabName === 'App Directory' ? 'start' : 'end'
+                  }
                   onDrop={drop}
                   onDragLeave={leaveTab}
                   onDragOver={allowDrop}
                   onDragEnd={dragEnd}
-                  draggable="true"
+                  draggable={tab.tabName !== 'App Directory'}
                   onDragStart={() => {
                     drag(tab.tabId);
                   }}
                   icon={
-                    <div>
-                      <OpenInNew
-                        onClick={() => {
-                          this.tearOut(tab.tabId);
-                        }}
-                      />
-                      <CloseOutlined
-                        onClick={() => {
-                          this.closeTab(tab.tabId);
-                        }}
-                      />
-                    </div>
+                    tab.tabName === 'App Directory' ? (
+                      <div>
+                        <HomeOutlined className="text-xs text-white" />
+                      </div>
+                    ) : (
+                      <div>
+                        <OpenInNew
+                          onClick={() => {
+                            this.tearOut(tab.tabId);
+                          }}
+                        />
+                        <CloseOutlined
+                          onClick={() => {
+                            this.closeTab(tab.tabId);
+                          }}
+                        />
+                      </div>
+                    )
                   }
                 />
               ))}
@@ -352,9 +330,6 @@ export default class TopNavigation extends React.Component<
             </IconButton>
             <IconButton
               id="menuButton"
-              aria-controls={open ? 'more' : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
               onClick={devToolsClick}
               style={{ backgroundColor: 'transparent' }}
             >
