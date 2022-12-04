@@ -188,7 +188,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
   if (!intent) {
     //return {error:ResolveError.NoAppsFound};
-    throw ResolveError.NoAppsFound;
+    throw new Error(ResolveError.NoAppsFound);
   }
 
   //only support string targets for now...
@@ -368,7 +368,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   } else {
     //show message indicating no handler for the intent...
     // return {error:ResolveError.NoAppsFound};
-    throw ResolveError.NoAppsFound;
+    throw new Error(ResolveError.NoAppsFound);
   }
 };
 
@@ -386,6 +386,11 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     message.data?.context && message.data?.context?.type
       ? message.data.context.type
       : '';
+
+  //throw errror if no context
+  if (context === '') {
+    throw new Error(ResolveError.NoAppsFound);
+  }
   /**
    * To Do: Support additional AppMetadata searching (other than name)
    */
@@ -468,7 +473,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
           return { source: message.source, version: '1.2' };
         } else {
           //return {error:ResolveError.NoAppsFound};
-          throw ResolveError.NoAppsFound;
+          throw new Error(ResolveError.NoAppsFound);
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
         const start_url = (
@@ -523,6 +528,6 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
   } else {
     //show message indicating no handler for the intent...
     //return {error:ResolveError.NoAppsFound};
-    throw ResolveError.NoAppsFound;
+    throw new Error(ResolveError.NoAppsFound);
   }
 };

@@ -399,8 +399,7 @@ export const createAPI = (): DesktopAgent => {
             }
           },
           (error) => {
-            console.log('***** got intent error ', error);
-            reject(new Error(error));
+            reject(error);
           },
         );
 
