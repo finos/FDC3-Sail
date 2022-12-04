@@ -22,6 +22,9 @@ import { FDC3Event, FDC3EventEnum } from '/@main/types/FDC3Event';
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
+import { ResolveError } from 'fdc3-1.2';
+
+const INTENT_TIMEOUT = 30000;
 
 /** generate pseudo-random ids for handlers created on the client */
 const guid = (): string => {
@@ -117,6 +120,14 @@ export const connect = () => {
     );
   });
 
+  ipcRenderer.on(FDC3_1_2_TOPICS.RESOLVE_INTENT, (event, args) => {
+    console.log('ipcrenderer event', event.type);
+    document.dispatchEvent(
+      new CustomEvent(FDC3_1_2_TOPICS.RESOLVE_INTENT, {
+        detail: { data: args.data, source: args.source },
+      }),
+    );
+  });
   /**
    * listen for channel state update
    * to do: do we need this?
@@ -347,15 +358,56 @@ export const createAPI = (): DesktopAgent => {
       return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, { context: context });
     },
 
-    raiseIntent: async (
+    raiseIntent: (
       intent: string,
       context: Context,
       app?: TargetApp,
     ): Promise<IntentResolution> => {
-      return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
-        intent: stripNS(intent),
-        context: context,
-        target: app,
+      return new Promise((resolve, reject) => {
+        let intentTimeout = -1;
+        //listen for resolve intent
+        document.addEventListener(
+          FDC3_1_2_TOPICS.RESOLVE_INTENT,
+          (event: Event) => {
+            const cEvent = event as CustomEvent;
+            console.log('***** intent resolution received', cEvent.detail);
+            if (intentTimeout) {
+              window.clearTimeout(intentTimeout);
+            }
+
+            resolve({
+              version: '1.2',
+              source: cEvent.detail?.source || { name: 'unknown' },
+            });
+          },
+          { once: true },
+        );
+
+        sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
+          intent: stripNS(intent),
+          context: context,
+          target: app,
+        }).then(
+          (result) => {
+            if (result) {
+              console.log('***** got intent result ', result);
+              if (result.error) {
+                reject(new Error(result.error));
+              } else {
+                resolve(result as IntentResolution);
+              }
+            }
+          },
+          (error) => {
+            console.log('***** got intent error ', error);
+            reject(new Error(error));
+          },
+        );
+
+        //timeout the intent resolution
+        intentTimeout = window.setTimeout(() => {
+          reject(new Error(ResolveError.ResolverTimeout));
+        }, INTENT_TIMEOUT);
       });
     },
 

@@ -16,6 +16,7 @@ import {
 
 export const resolveIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
+  let view: View | undefined;
 
   //TODO: autojoin the new app to the channel which the 'open' call is sourced from
 
@@ -26,7 +27,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const runtime = getRuntime();
     if (runtime) {
       const win = runtime.createWorkspace();
-      const view = await win.createView(
+      view = await win.createView(
         (data.details as DirectoryAppLaunchDetailsWeb).url,
         {
           directoryData: data as DirectoryApp,
@@ -41,7 +42,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
       );
     }
   } else {
-    const view = runtime.getView(message.data.selected?.instanceId);
+    view = runtime.getView(message.data.selected?.instanceId);
     //send new intent
     if (view && view.parent) {
       if (view.fdc3Version === '1.2') {
@@ -60,9 +61,26 @@ export const resolveIntent = async (message: RuntimeMessage) => {
       }
     }
   }
-  //close the resolver
+  //send the resolution to the source
   const resolver = runtime.getResolver();
+
+  //close the resolver
+
   if (resolver) {
+    const sourceView = runtime.getView(resolver?.source);
+    if (sourceView) {
+      const topic =
+        sourceView.fdc3Version === '1.2'
+          ? FDC3_1_2_TOPICS.RESOLVE_INTENT
+          : FDC3_2_0_TOPICS.RESOLVE_INTENT;
+      sourceView.content.webContents.send(topic, {
+        source: {
+          name: view?.directoryData?.name,
+          appId: view?.directoryData?.appId,
+        },
+        version: sourceView.fdc3Version,
+      });
+    }
     resolver.close();
   }
 };
@@ -169,7 +187,8 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const intentContext = message.data?.context?.type || '';
 
   if (!intent) {
-    throw new Error(ResolveError.NoAppsFound);
+    //return {error:ResolveError.NoAppsFound};
+    throw ResolveError.NoAppsFound;
   }
 
   //only support string targets for now...
@@ -258,10 +277,16 @@ export const raiseIntent = async (message: RuntimeMessage) => {
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
-      results.push({
-        type: 'directory',
-        details: { directoryData: entry },
-      });
+      let addResult = true;
+      if (target && entry.name !== target) {
+        addResult = false;
+      }
+      if (addResult) {
+        results.push({
+          type: 'directory',
+          details: { directoryData: entry },
+        });
+      }
     });
   }
 
@@ -318,7 +343,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
             message.source,
           );
         }
-        console.log('***** return raise intent');
+
         return {
           source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
@@ -342,7 +367,8 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
-    throw new Error(ResolveError.NoAppsFound);
+    // return {error:ResolveError.NoAppsFound};
+    throw ResolveError.NoAppsFound;
   }
 };
 
@@ -441,7 +467,8 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
 
           return { source: message.source, version: '1.2' };
         } else {
-          throw new Error(ResolveError.NoAppsFound);
+          //return {error:ResolveError.NoAppsFound};
+          throw ResolveError.NoAppsFound;
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
         const start_url = (
@@ -495,6 +522,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
-    throw new Error(ResolveError.NoAppsFound);
+    //return {error:ResolveError.NoAppsFound};
+    throw ResolveError.NoAppsFound;
   }
 };

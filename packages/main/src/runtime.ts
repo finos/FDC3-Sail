@@ -210,33 +210,23 @@ export class Runtime {
   ) {
     const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
       console.log('handle message', name, args);
+
+      let error: string | undefined = undefined;
+      let data: unknown;
       try {
-        let error: string | undefined = undefined;
-        let data: unknown;
-        try {
-          data = await handler.call(undefined, args);
-        } catch (err) {
-          error = (err as string) || 'unknown';
-          data = null;
-        }
-        console.log('message response', data, error);
-
-        if (event.ports && args.eventId) {
-          event.ports[0].postMessage({
-            topic: args.eventId,
-            data: data,
-            error: error,
-          });
-        }
+        data = await handler.call(undefined, args);
       } catch (err) {
-        console.log('handler error', err, 'args', args);
+        error = (err as string) || 'unknown';
+        data = null;
+      }
+      console.log('message response', data, error);
 
-        if (event.ports && args.eventId) {
-          event.ports[0].postMessage({
-            topic: args.eventId,
-            error: err,
-          });
-        }
+      if (event.ports && args.eventId) {
+        event.ports[0].postMessage({
+          topic: args.eventId,
+          data: data,
+          error: error,
+        });
       }
     };
 

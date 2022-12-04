@@ -59,6 +59,12 @@ export class Workspace {
       },
     });
 
+    this.window.on('close', () => {
+      this.views.forEach((view) => {
+        view.close();
+      });
+    });
+
     if (config && config.x && config.y) {
       this.window.setBounds({
         x: config.x,
