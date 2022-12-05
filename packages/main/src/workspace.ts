@@ -59,6 +59,12 @@ export class Workspace {
       },
     });
 
+    this.window.on('close', () => {
+      this.views.forEach((view) => {
+        view.close();
+      });
+    });
+
     if (config && config.x && config.y) {
       this.window.setBounds({
         x: config.x,
@@ -235,7 +241,10 @@ export class Workspace {
         }
         return v.id !== tabId;
       });
-
+      //close the view, this removes from the runtime collection and cleans up
+      if (view) {
+        view.close();
+      }
       //are there more tabs?
       //if not, close the workspace
       console.log('close tab views ', this.views.length);
@@ -263,11 +272,6 @@ export class Workspace {
           if (selectedView) {
             this.setSelectedTab(selectedView.id);
           }
-        }
-
-        //close the view, this removes from workspace and cleans up
-        if (view) {
-          view.close();
         }
       }
     }

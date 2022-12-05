@@ -82,6 +82,9 @@ export const broadcast = async (message: RuntimeMessage) => {
 
   if (channel !== 'default') {
     //is the app on a channel?
+    if (!contexts.has(channel)) {
+      contexts.set(channel, []);
+    }
     // update the channel state
     const channelContext = contexts.get(channel);
     const context = message.data && message.data.context;

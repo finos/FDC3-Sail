@@ -16,6 +16,7 @@ import {
 
 export const resolveIntent = async (message: RuntimeMessage) => {
   const runtime = getRuntime();
+  let view: View | undefined;
 
   //TODO: autojoin the new app to the channel which the 'open' call is sourced from
 
@@ -26,7 +27,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
     const runtime = getRuntime();
     if (runtime) {
       const win = runtime.createWorkspace();
-      const view = await win.createView(
+      view = await win.createView(
         (data.details as DirectoryAppLaunchDetailsWeb).url,
         {
           directoryData: data as DirectoryApp,
@@ -41,7 +42,7 @@ export const resolveIntent = async (message: RuntimeMessage) => {
       );
     }
   } else {
-    const view = runtime.getView(message.data.selected?.instanceId);
+    view = runtime.getView(message.data.selected?.instanceId);
     //send new intent
     if (view && view.parent) {
       if (view.fdc3Version === '1.2') {
@@ -60,9 +61,26 @@ export const resolveIntent = async (message: RuntimeMessage) => {
       }
     }
   }
-  //close the resolver
+  //send the resolution to the source
   const resolver = runtime.getResolver();
+
+  //close the resolver
+
   if (resolver) {
+    const sourceView = runtime.getView(resolver?.source);
+    if (sourceView) {
+      const topic =
+        sourceView.fdc3Version === '1.2'
+          ? FDC3_1_2_TOPICS.RESOLVE_INTENT
+          : FDC3_2_0_TOPICS.RESOLVE_INTENT;
+      sourceView.content.webContents.send(topic, {
+        source: {
+          name: view?.directoryData?.name,
+          appId: view?.directoryData?.appId,
+        },
+        version: sourceView.fdc3Version,
+      });
+    }
     resolver.close();
   }
 };
@@ -166,8 +184,10 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   const results: Array<FDC3App> = [];
   const intent = message.data?.intent;
   let intentTarget: string | undefined; //the id of the app the intent gets routed to (if unambigious)
+  const intentContext = message.data?.context?.type || '';
 
   if (!intent) {
+    //return {error:ResolveError.NoAppsFound};
     throw new Error(ResolveError.NoAppsFound);
   }
 
@@ -187,41 +207,86 @@ export const raiseIntent = async (message: RuntimeMessage) => {
   if (intentListeners) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listener) => {
+      let addView = true;
+      //look up the details of the window and directory metadata in the "connected" store
+      const view = listener.viewId
+        ? runtime.getView(listener.viewId)
+        : undefined;
+
+      //skip if can't be resolved to a view
+      if (!view) {
+        addView = false;
+      }
+
       ///ignore listeners from the view that raised the intent
-      if (listener.viewId && listener.viewId !== message.source) {
-        //look up the details of the window and directory metadata in the "connected" store
-        const view = runtime.getView(listener.viewId);
-        //de-dupe
+      if (listener.viewId && listener.viewId === message.source) {
+        addView = false;
+      }
+      //ensure we are not sending the intent back to the source
+      if (listener.viewId && listener.viewId === message.source) {
+        addView = false;
+      }
+      //de-dupe
+      if (
+        view &&
+        results.find((item) => {
+          return item.details.instanceId === view.id;
+        })
+      ) {
+        addView = false;
+      }
+
+      //match on context, if provided
+      if (
+        intentContext &&
+        view &&
+        view.directoryData?.interop?.intents?.listensFor &&
+        view.directoryData?.interop?.intents?.listensFor[intent]
+      ) {
+        let hasContext = false;
+        const viewIntent =
+          view.directoryData.interop.intents.listensFor[intent];
+
         if (
-          view &&
-          !results.find((item) => {
-            return item.details.instanceId === view.id;
-          })
+          viewIntent.contexts &&
+          viewIntent.contexts.indexOf(intentContext) > -1
         ) {
-          results.push({
-            type: 'window',
-            details: {
-              instanceId: view.id,
-              directoryData: view.directoryData,
-            },
-          });
+          hasContext = true;
         }
+
+        if (!hasContext) {
+          addView = false;
+        }
+      }
+
+      if (view && addView) {
+        results.push({
+          type: 'window',
+          details: {
+            instanceId: view.id,
+            directoryData: view.directoryData,
+          },
+        });
       }
     });
   }
   //pull intent handlers from the directory
-  const intentContext = message.data?.context?.type || '';
-
   const data: Array<DirectoryApp> = runtime
     .getDirectory()
     .retrieveByIntentAndContextType(intent, intentContext);
 
   if (data) {
     data.forEach((entry: DirectoryApp) => {
-      results.push({
-        type: 'directory',
-        details: { directoryData: entry },
-      });
+      let addResult = true;
+      if (target && entry.name !== target) {
+        addResult = false;
+      }
+      if (addResult) {
+        results.push({
+          type: 'directory',
+          details: { directoryData: entry },
+        });
+      }
     });
   }
 
@@ -278,7 +343,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
             message.source,
           );
         }
-        console.log('***** return raise intent');
+
         return {
           source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
@@ -302,6 +367,7 @@ export const raiseIntent = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
+    // return {error:ResolveError.NoAppsFound};
     throw new Error(ResolveError.NoAppsFound);
   }
 };
@@ -320,6 +386,11 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     message.data?.context && message.data?.context?.type
       ? message.data.context.type
       : '';
+
+  //throw errror if no context
+  if (context === '') {
+    throw new Error(ResolveError.NoAppsFound);
+  }
   /**
    * To Do: Support additional AppMetadata searching (other than name)
    */
@@ -401,6 +472,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
 
           return { source: message.source, version: '1.2' };
         } else {
+          //return {error:ResolveError.NoAppsFound};
           throw new Error(ResolveError.NoAppsFound);
         }
       } else if (r[0].type === 'directory' && r[0].details.directoryData) {
@@ -455,6 +527,7 @@ export const raiseIntentForContext = async (message: RuntimeMessage) => {
     }
   } else {
     //show message indicating no handler for the intent...
+    //return {error:ResolveError.NoAppsFound};
     throw new Error(ResolveError.NoAppsFound);
   }
 };
