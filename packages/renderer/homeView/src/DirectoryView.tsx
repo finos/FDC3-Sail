@@ -63,17 +63,15 @@ function DirectoryView() {
               className="flex flex-col"
             >
               {app.screenshots!!.length > 0 ? (
-                app.screenshots!!.map((image) => (
-                  <CardMedia
-                    component="img"
-                    image={image.src}
-                    className="h-40 p-4"
-                    sx={{
-                      backgroundColor: '#F7E9F2',
-                    }}
-                    key={app.appId}
-                  ></CardMedia>
-                ))
+                <CardMedia
+                  component="img"
+                  image={app.screenshots!![0].src}
+                  className="h-40 p-4"
+                  sx={{
+                    backgroundColor: '#F7E9F2',
+                  }}
+                  key={app.appId}
+                ></CardMedia>
               ) : (
                 <CardHeader
                   sx={{
