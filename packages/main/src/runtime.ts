@@ -215,14 +215,11 @@ export class Runtime {
       let error: string | undefined = undefined;
       let data: unknown;
       try {
-        let error: string | undefined = undefined;
-        let data: unknown;
-        try {
-          data = await handler.call(undefined, args);
-        } catch (err) {
-          error = (err as string) || 'unknown';
-          data = null;
-        }
+        data = await handler.call(undefined, args);
+      } catch (err) {
+        error = (err as string) || 'unknown';
+        data = null;
+      }
 
       if (event.ports && args.eventId) {
         event.ports[0].postMessage({
