@@ -59,7 +59,7 @@ export class Runtime {
 
   //listener: RuntimeListener;
 
-  startup() {
+  async startup() {
     //clear all previous Handlers
     ipcMain.removeAllListeners();
 
@@ -76,16 +76,17 @@ export class Runtime {
       //    contextListeners.set(chan.id, new Map());
       contexts.set(chan.id, []);
     });
-    this.initDirectory();
+    await this.initDirectory();
+    return;
   }
 
-  initDirectory() {
+  async initDirectory() {
     const urls = utils.getDirectoryUrl().split(',');
     this.directory = new Directory(urls, [
       fdc3_2_0_AppDirectoryLoader,
       fdc3_1_2_AppDirectoryLoader,
     ]);
-    this.directory.reload();
+    await this.directory.reload();
   }
 
   getDirectory(): Directory {

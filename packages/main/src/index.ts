@@ -121,7 +121,7 @@ app
   .then(async () => {
     console.log('index - create runtime');
     runtime = new Runtime();
-    runtime.startup();
+    await runtime.startup();
     console.log('index - createWindow');
     await createWindow();
     console.log('index - window created');
