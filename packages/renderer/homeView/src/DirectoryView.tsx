@@ -59,14 +59,14 @@ function DirectoryView() {
         {apps.map((app: DirectoryApp) => (
           <Grid item xs={4} key={app.appId}>
             <Card
-              sx={{ maxWidth: 370, minHeight: 320 }}
+              sx={{ maxWidth: 370, minHeight: 390 }}
               className="flex flex-col"
             >
               {app.screenshots!!.length > 0 ? (
                 <CardMedia
                   component="img"
                   image={app.screenshots!![0].src}
-                  className="h-40 p-4"
+                  className="h-40"
                   sx={{
                     backgroundColor: '#F7E9F2',
                   }}
@@ -86,20 +86,26 @@ function DirectoryView() {
                 }}
                 className="h-full flex-grow"
               >
-                <Typography
-                  gutterBottom
-                  component="div"
-                  className="flex text-white"
-                >
-                  {app.icons && app.icons.length > 0 && (
-                    <img
-                      src={app.icons[0].src}
-                      className="h-6 mr-3"
-                      alt={`${app.name} - icon`}
-                    ></img>
-                  )}
-                  {app.title}
-                </Typography>
+                <div className="flex w-full pb-2">
+                  <Typography className="flex text-white flex-grow self-center">
+                    {app.title}
+                  </Typography>
+                  <div className="bg-white py-1 w-16 flex justify-center">
+                    <Typography
+                      gutterBottom
+                      component="div"
+                      className="flex text-white"
+                    >
+                      {app.icons && app.icons.length > 0 && (
+                        <img
+                          src={app.icons[0].src}
+                          className="h-6"
+                          alt={`${app.name} - icon`}
+                        ></img>
+                      )}
+                    </Typography>
+                  </div>
+                </div>
                 <Typography variant="body2" className="text-gray-400">
                   {app.description}
                 </Typography>
