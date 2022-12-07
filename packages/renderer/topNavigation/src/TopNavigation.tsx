@@ -302,16 +302,22 @@ export default class TopNavigation extends React.Component<
                   icon={
                     tab.tabName === 'App Directory' ? (
                       <div>
-                        <HomeOutlined className="text-xs text-white" />
+                        <HomeOutlined
+                          fontSize="small"
+                          className="text-xs text-white"
+                        />
                       </div>
                     ) : (
                       <div>
                         <OpenInNew
+                          fontSize="inherit"
+                          className="mr-2"
                           onClick={() => {
                             this.tearOut(tab.tabId);
                           }}
                         />
                         <CloseOutlined
+                          fontSize="inherit"
                           onClick={() => {
                             this.closeTab(tab.tabId);
                           }}
