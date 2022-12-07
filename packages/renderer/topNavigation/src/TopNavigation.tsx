@@ -6,6 +6,7 @@ import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 
 import {
   HiveOutlined,
+  LayersOutlined,
   CloseOutlined,
   OpenInNew,
   MoreVert,
@@ -330,7 +331,7 @@ export default class TopNavigation extends React.Component<
               onClick={openChannelPicker}
               title="select channel"
             >
-              <HiveOutlined />
+              <LayersOutlined />
             </IconButton>
             <IconButton
               id="menuButton"
