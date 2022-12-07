@@ -59,7 +59,7 @@ function DirectoryView() {
         {apps.map((app: DirectoryApp) => (
           <Grid item xs={4} key={app.appId}>
             <Card
-              sx={{ maxWidth: 370, minHeight: 390 }}
+              sx={{ maxWidth: 370, minHeight: 410 }}
               className="flex flex-col"
             >
               {app.screenshots!!.length > 0 ? (
@@ -83,6 +83,8 @@ function DirectoryView() {
               <CardContent
                 sx={{
                   backgroundColor: '#323232',
+                  paddingRight: '0px',
+                  paddingBottom: '0px',
                 }}
                 className="h-full flex-grow"
               >
@@ -106,7 +108,13 @@ function DirectoryView() {
                     </Typography>
                   </div>
                 </div>
-                <Typography variant="body2" className="text-gray-400">
+                <Typography
+                  sx={{
+                    paddingRight: '8px',
+                  }}
+                  variant="body2"
+                  className="text-gray-400"
+                >
                   {app.description}
                 </Typography>
               </CardContent>
@@ -116,13 +124,13 @@ function DirectoryView() {
                 }}
               >
                 <Button
+                  variant="contained"
                   onClick={() => {
                     if (app.name) {
                       openApp(app.name);
                     }
                   }}
                   size="small"
-                  sx={{ color: '#fff' }}
                 >
                   Open
                 </Button>

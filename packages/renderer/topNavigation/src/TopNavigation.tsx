@@ -27,6 +27,9 @@ const darkTheme = createTheme({
     primary: {
       main: '#fff',
     },
+    secondary: {
+      main: '#21D7FF',
+    },
   },
 });
 
@@ -268,6 +271,7 @@ export default class TopNavigation extends React.Component<
 
             <Tabs
               className="w-full h-full"
+              indicatorColor="secondary"
               value={this.state.selectedTab}
               onChange={(event, newTabId) => {
                 this.handleTabChange(newTabId);
