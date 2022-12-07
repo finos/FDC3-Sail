@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 body {
+    background-image: url('content_view_bg.jpg');
     background-color: #000;
     overflow-y: hidden;
 }

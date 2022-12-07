@@ -129,7 +129,7 @@ export class View {
     }
     if (url === (VIEW_DEFAULT as string)) {
       this.type = 'system';
-      this.title = 'Workspace';
+      this.title = 'App Directory';
     }
 
     if (url) {

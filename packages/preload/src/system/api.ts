@@ -21,7 +21,6 @@ const eventQ: Array<() => void> = [];
  * listen for start event - assigning id for the instance
  */
 ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, (event, args) => {
-  console.log(event.type);
   id = args.id;
   intent = args.intent;
   context = args.context;

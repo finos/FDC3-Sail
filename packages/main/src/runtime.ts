@@ -220,7 +220,6 @@ export class Runtime {
         error = (err as string) || 'unknown';
         data = null;
       }
-      console.log('message response', data, error);
 
       if (event.ports && args.eventId) {
         event.ports[0].postMessage({

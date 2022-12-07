@@ -77,7 +77,6 @@ export class Workspace {
       import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL !== undefined
         ? import.meta.env.VITE_DEV_SERVER_TOPNAVIGATION_URL
         : new URL(
-            // '../renderer/dist/index.html',
             '../renderer/dist/topNavigation.html',
             'file://' + __dirname,
           ).toString();
@@ -528,14 +527,12 @@ export class Workspace {
             ).toString();
 
       if (CHANNEL_PICKER_CONTENT) {
-        console.log('chnnel picker', CHANNEL_PICKER_CONTENT);
         this.channelWindow.loadURL(CHANNEL_PICKER_CONTENT as string).then(
           () => {
             if (this.channelWindow) {
               this.channelWindow.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
                 workspaceId: this.id,
               });
-              console.log('channel window created', this.id);
               resolve();
             }
           },

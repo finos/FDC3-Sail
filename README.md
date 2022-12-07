@@ -45,7 +45,7 @@ The following libraries are used:
 - [React] for UI rendering
 - [Vitest] and [React Testing Library] for testing
 - [Playwright] for test automation
-- [TypeScript]
+- [TypeScript] for type safety
 - [ESLint] for linting
 - [Prettier] for code formatting
 - [nano-staged] and [simple-git-hooks] for code commits
@@ -65,11 +65,10 @@ The following libraries are used:
 [ESLint]: https://eslint.org/
 [nano-staged]: https://github.com/usmanyunusov/nano-staged
 [simple-git-hooks]: https://github.com/toplenboren/simple-git-hooks
-[fastify]: https://www.fastify.io/
 
 ## Structure
 
-- `directory/`   - the app directory implementation, built with fastify
+- `directory/`   - for local app directories
 - `packages/main` - the main Electron application, has access to Node
 - `packages/preload` - preload scripts for web renderers.  Bridges the frontend ui to the main process through events and apis
 - `packages/renderer` - the parts of the desktop agent UI built with [React], isolated from main app, and shown in a window on the desktop
@@ -151,7 +150,7 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 ## License
 
-Copyright 2022 Nick Kolba
+Copyright 2022 FINOS
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
