@@ -353,11 +353,7 @@ export class Workspace {
     });
   }
 
-  joinViewToChannel(
-    channel: string,
-    view: View,
-    restoreOnly?: boolean,
-  ): Promise<void> {
+  joinViewToChannel(channel: string, view: View): Promise<void> {
     return new Promise((resolve, reject) => {
       const runtime = getRuntime();
       try {
@@ -387,41 +383,39 @@ export class Workspace {
                   channelContext.length > 0 ? channelContext[0] : null;
                 let contextSent = false;
 
-                if (ctx && (restoreOnly === undefined || !restoreOnly)) {
-                  // send to individual listenerIds
+                // send to individual listenerIds
 
-                  view.listeners.forEach((l) => {
-                    //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
-                    if (!l.intent) {
-                      if (
-                        (!l.channel ||
-                          l.channel === 'default' ||
-                          (l.channel && l.channel === channel)) &&
-                        (!l.contextType ||
-                          (l.contextType && l.contextType === ctx.type))
-                      ) {
-                        const contextTopic =
-                          view.fdc3Version === '1.2'
-                            ? FDC3_1_2_TOPICS.CONTEXT
-                            : FDC3_2_0_TOPICS.CONTEXT;
-                        view.content.webContents.send(contextTopic, {
-                          topic: 'context',
-                          listenerIds: [l.listenerId],
-                          data: { context: ctx, listenerId: l.listenerId },
-                          source: view.id,
-                        });
-                        contextSent = true;
-                      }
+                view.listeners.forEach((l) => {
+                  //if this is not an intent listener, and not set for a specific channel, and not set for a non-matching context type  - send the context to the listener
+                  if (!l.intent) {
+                    if (
+                      (!l.channel ||
+                        l.channel === 'default' ||
+                        (l.channel && l.channel === channel)) &&
+                      (!l.contextType ||
+                        (l.contextType && l.contextType === ctx.type))
+                    ) {
+                      const contextTopic =
+                        view.fdc3Version === '1.2'
+                          ? FDC3_1_2_TOPICS.CONTEXT
+                          : FDC3_2_0_TOPICS.CONTEXT;
+                      view.content.webContents.send(contextTopic, {
+                        topic: 'context',
+                        listenerIds: [l.listenerId],
+                        data: { context: ctx, listenerId: l.listenerId },
+                        source: view.id,
+                      });
+                      contextSent = true;
                     }
-                  });
-                  if (!contextSent) {
-                    //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
-                    console.log(
-                      'setPendingContext',
-                      channelContext && channelContext[0],
-                    );
-                    view.setPendingContext(channelContext && channelContext[0]);
                   }
+                });
+                if (!contextSent) {
+                  //note: the source for this context is the view itself - since this was the result of being joined to the channel (not context being broadcast from another view)
+                  console.log(
+                    'setPendingContext',
+                    channelContext && channelContext[0],
+                  );
+                  view.setPendingContext(channelContext && channelContext[0]);
                 }
               }
             }

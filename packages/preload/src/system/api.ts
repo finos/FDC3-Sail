@@ -57,7 +57,7 @@ const resolveIntent = (data: {
       id: id,
       data: {
         intent: data.selectedIntent || intent,
-        selected: data.selected && data.selected.details,
+        selected: data.selected,
         context: context,
         source: source,
       },

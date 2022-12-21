@@ -1,3 +1,101 @@
+import { ipcRenderer } from 'electron';
+import { ContextHandler } from '@finos/fdc3';
+import {
+  FDC3Message,
+  FDC3MessageData,
+  FDC3Response,
+} from '/@main/types/FDC3Message';
+
+//send messages to main, handle responses, queue messages if not connected yet
+
+//queue of pending events - accumulate until the background is ready
+
+export type QueueItem = {
+  data: FDC3MessageData;
+  topic: string;
+  resolve: (x: unknown) => void;
+  reject: (x: string) => void;
+};
+
+export interface ListenerItem {
+  id?: string;
+  handler?: ContextHandler;
+  contextType?: string;
+}
+
+export const processQueueItem = (qi: QueueItem, instanceId: string) => {
+  const { port1, port2 } = new MessageChannel();
+
+  port1.onmessage = (event: MessageEvent<FDC3Response>) => {
+    //is there a returnlistener registered for the event?
+    const response: FDC3Response = event.data;
+    console.log('send message - returned ', response);
+    if (response.error) {
+      qi.reject(response.error);
+    } else {
+      qi.resolve(response.data);
+    }
+  };
+
+  const eventId = `${qi.topic}_${guid()}`;
+
+  const msg: FDC3Message = {
+    topic: qi.topic,
+    data: qi.data,
+    eventId: eventId,
+    source: instanceId,
+  };
+
+  ipcRenderer.postMessage(qi.topic, msg, [port2]);
+  console.log('sent message to main', msg);
+};
+
+export const sendMessage = (
+  topic: string,
+  data: FDC3MessageData,
+  instanceId: string,
+  eventQ: Array<QueueItem>,
+): Promise<any> => {
+  console.log('Beginning send message:', topic, data);
+  //set up a return listener and assign as eventId
+  return new Promise((resolve, reject) => {
+    const queueItem: QueueItem = {
+      data: data,
+      topic: topic,
+      resolve: resolve,
+      reject: reject,
+    };
+
+    if (instanceId) {
+      processQueueItem(queueItem, instanceId);
+    } else {
+      eventQ.push(queueItem);
+      console.log('queued message', topic, data);
+    }
+  });
+};
+
+/** generate pseudo-random ids for handlers created on the client */
+export const guid = (): string => {
+  const gen = (n?: number): string => {
+    const rando = (): string => {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    };
+    let r = '';
+    let i = 0;
+    n = n ? n : 1;
+    while (i < n) {
+      r += rando();
+      i++;
+    }
+    return r;
+  };
+
+  return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`;
+};
+
 /**
  * generates a CustomEvent for FDC3 eventing in the DOM
  * @param type
@@ -44,63 +142,4 @@ export enum TARGETS {
   SEARCH_RESULTS = 'searchResults',
   INTENT_RESOLVER = 'intentResolver',
   CHANNEL_PICKER = 'channelPicker',
-}
-
-export enum TOPICS {
-  OPEN_TOOLS_MENU = 'FRAME:openToolsMenu',
-  FRAME_READY = 'FRAME:ready',
-  SEARCH = 'WORK:search',
-  WORKSPACE_INIT = 'WORK:Init',
-  WORKSPACE_START = 'WORK:Start',
-  WINDOW_START = 'WIN:start',
-  WINDOW_SHOW = 'WIN:show',
-  ADD_TAB = 'WORK:addTab',
-  NEW_TAB = 'WORK:newTab',
-  NEW_TAB_CLICK = 'UI:newTab',
-  OPEN_CHANNEL_PICKER_CLICK = 'UI:openChannelPicker',
-  SELECT_TAB = 'WORK:selectTab', //tab state changes from event in the main process (i.e. change of focus from new view or intent resolution)
-  TAB_SELECTED = 'WORK:tabSelected', //tab is selected by user action in the UI
-  CLOSE_TAB = 'WORK:closeTab',
-  TAB_DRAG_START = 'WORK:tabDragStart',
-  TAB_DRAG_END = 'WORK:tabDragEnd',
-  TEAR_OUT_TAB = 'WORK:tearOutTab',
-  DROP_TAB = 'WORK:dropTab',
-  REMOVE_TAB = 'WORK:removeTab', //prune tab without closing the view (when moving tab from one window to another)
-  JOIN_CHANNEL = 'WORK:joinChannel',
-  LEAVE_CHANNEL = 'WORK:leaveChannel',
-  JOIN_WORKSPACE_TO_CHANNEL = 'FDC3:joinWorkspaceToChannel',
-  CONFIRM_JOIN = 'FDC3:confirmJoin',
-  PICK_CHANNEL = 'RES:pickChannel',
-  CHANNEL_SELECTED = 'WORK:channelSelected',
-  FETCH_FROM_DIRECTORY = 'WIN:fetchFromDirectory',
-  FRAME_DEV_TOOLS = 'WORK:openFrameDevTools',
-  TAB_DEV_TOOLS = 'WORK:openTabDevTools',
-  RES_LOAD_RESULTS = 'RES:loadResults',
-  RESULT_SELECTED = 'RES:resultSelected',
-  RES_PICK_CHANNEL = 'RES:pickChannel',
-  RES_RESOLVE_INTENT = 'RES:resolveIntent',
-  RES_LOAD_INTENT_RESULTS = 'RES:loadIntentResults',
-  HIDE_WINDOW = 'WORK:hideWindow',
-  HIDE_RESULTS_WINDOW = 'UI:hideResultsWindow',
-  FDC3_START = 'FDC3:start',
-  FDC3_INITIATE = 'FDC3:initiate',
-  FDC3_SET_CURRENT_CHANEL = 'FDC3:setCurrentChannel',
-  FDC3_GET_OR_CREATE_CHANNEL = 'FDC3:getOrCreateChannel',
-  FDC3_ADD_CONTEXT_LISTENER = 'FDC3:addContextListener',
-  FDC3_INTENT = 'FDC3:intent',
-  FDC3_CONTEXT = 'FDC3:context',
-  FDC3_BROADCAST = 'FDC3:broadcast',
-  FDC3_OPEN = 'FDC3:open',
-  FDC3_DROP_CONTEXT_LISTENER = 'FDC3:dropContextListener',
-  FDC3_GET_CURRENT_CONTEXT = 'FDC3:getCurrentContext',
-  FDC3_GET_SYSTEM_CHANNELS = 'FDC3:getSystemChannels',
-  FDC3_LEAVE_CURRENT_CHANNEL = 'FDC3:leaveCurrentChannel',
-  FDC3_ADD_INTENT_LISTENER = 'FDC3:addIntentListener',
-  FDC3_JOIN_CHANNEL = 'FDC3:joinChannel',
-  FDC3_FIND_INTENT = 'FDC3:findIntent',
-  FDC3_FIND_INTENTS_BY_CONTEXT = 'FDC3:findIntentsByContext',
-  FDC3_GET_CURRENT_CHANNEL = 'FDC3:getCurrentChannel',
-  FDC3_GET_APP_INSTANCE = 'FDC3:getAppInstance',
-  FDC3_RAISE_INTENT = 'FDC3:raiseIntent',
-  FDC3_RAISE_INTENT_FOR_CONTEXT = 'FDC3:raiseIntentForContext',
 }

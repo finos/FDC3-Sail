@@ -1,10 +1,13 @@
 import { ipcRenderer } from 'electron';
-import { fdc3Event } from '../lib/lib';
 import {
-  FDC3Message,
-  FDC3MessageData,
-  FDC3Response,
-} from '/@main/handlers/fdc3/1.2/types/FDC3Message';
+  fdc3Event,
+  sendMessage,
+  QueueItem,
+  processQueueItem,
+  guid,
+} from '../lib/lib';
+import { TargetIdentifier } from '/@main/types/FDC3Message';
+
 import {
   DesktopAgent,
   Listener,
@@ -23,28 +26,24 @@ import { ChannelData } from '/@main/types/Channel';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 import { ResolveError } from 'fdc3-1.2';
+import { AppMetadata } from '../../../main/src/handlers/fdc3/1.2/types/AppMetadata';
 
 const INTENT_TIMEOUT = 30000;
 
-/** generate pseudo-random ids for handlers created on the client */
-const guid = (): string => {
-  const gen = (n?: number): string => {
-    const rando = (): string => {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
+//convert a TargetApp type to TargetIdentifier
+const convertTarget = (target: TargetApp): TargetIdentifier => {
+  //is target just a string?  if so - treat it as name
+  if (typeof target === 'string') {
+    return { key: target, name: target };
+  } else {
+    const targetObj: AppMetadata = target as AppMetadata;
+    return {
+      key: targetObj.name,
+      name: targetObj.name,
+      appId: targetObj.appId,
+      appMetadata: targetObj,
     };
-    let r = '';
-    let i = 0;
-    n = n ? n : 1;
-    while (i < n) {
-      r += rando();
-      i++;
-    }
-    return r;
-  };
-
-  return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`;
+  }
 };
 
 //backwards compatability support for fdc3 namespaced intents
@@ -57,15 +56,6 @@ const stripNS = (intent: string): string => {
 
 //flag to indicate the background script is ready for fdc3!
 let instanceId = '';
-
-//queue of pending events - accumulate until the background is ready
-
-type QueueItem = {
-  data: FDC3MessageData;
-  topic: string;
-  resolve: (x: unknown) => void;
-  reject: (x: string) => void;
-};
 
 const eventQ: Array<QueueItem> = [];
 
@@ -150,71 +140,18 @@ ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
         document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
         //send any queued messages
         eventQ.forEach((msg) => {
-          processQueueItem(msg);
+          processQueueItem(msg, instanceId);
         });
       });
     } else {
       document.dispatchEvent(new CustomEvent('fdc3Ready', {}));
       //send any queued messages
       eventQ.forEach((msg) => {
-        processQueueItem(msg);
+        processQueueItem(msg, instanceId);
       });
     }
   }
 });
-
-//send messages to main, handle responses, queue messages if not connected yet
-
-const processQueueItem = (qi: QueueItem) => {
-  const { port1, port2 } = new MessageChannel();
-
-  port1.onmessage = (event: MessageEvent<FDC3Response>) => {
-    //is there a returnlistener registered for the event?
-    const response: FDC3Response = event.data;
-    console.log('send message - returned ', response);
-    if (response.error) {
-      qi.reject(response.error);
-    } else {
-      qi.resolve(response.data);
-    }
-  };
-
-  const eventId = `${qi.topic}_${guid()}`;
-
-  const msg: FDC3Message = {
-    topic: qi.topic,
-    data: qi.data,
-    eventId: eventId,
-    source: instanceId,
-  };
-
-  ipcRenderer.postMessage(qi.topic, msg, [port2]);
-  console.log('sent message to main', msg);
-};
-
-const sendMessage = (topic: string, data: FDC3MessageData): Promise<any> => {
-  console.log('Beginning send message:', topic, data);
-  //set up a return listener and assign as eventId
-  return new Promise((resolve, reject) => {
-    const queueItem: QueueItem = {
-      data: data,
-      topic: topic,
-      resolve: resolve,
-      reject: reject,
-    };
-
-    if (instanceId) {
-      processQueueItem(queueItem);
-    } else {
-      eventQ.push(queueItem);
-      console.log('queued message', topic, data);
-    }
-  });
-};
-
-/**
- * This file is injected into each Chrome tab by the Content script to make the FDC3 API available as a global
- */
 
 export const createAPI = (): DesktopAgent => {
   /**
@@ -238,15 +175,20 @@ export const createAPI = (): DesktopAgent => {
         if (this.type === 'context') {
           _contextListeners.delete(this.id);
 
-          sendMessage(FDC3EventEnum.DropContextListener, {
-            id: this.id,
-          });
+          sendMessage(
+            FDC3EventEnum.DropContextListener,
+            {
+              listenerId: this.id,
+            },
+            instanceId,
+            eventQ,
+          );
         } else if (this.type === 'intent' && this.intent) {
           const listeners = _intentListeners.get(this.intent);
           if (listeners) {
             listeners.delete(this.id);
           }
-          //notify the background script
+
           document.dispatchEvent(
             fdc3Event(FDC3EventEnum.DropIntentListener, {
               id: this.id,
@@ -289,17 +231,27 @@ export const createAPI = (): DesktopAgent => {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: async (context: Context) => {
-        return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, {
-          context: context,
-          channel: channel.id,
-        });
+        return await sendMessage(
+          FDC3_1_2_TOPICS.BROADCAST,
+          {
+            context: context,
+            channel: channel.id,
+          },
+          instanceId,
+          eventQ,
+        );
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, {
-            channel: channel.id,
-            contextType: contextType,
-          }).then(
+          sendMessage(
+            FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT,
+            {
+              channel: channel.id,
+              contextType: contextType,
+            },
+            instanceId,
+            eventQ,
+          ).then(
             (r) => {
               const result: Context = r as Context;
               resolve(result);
@@ -326,11 +278,16 @@ export const createAPI = (): DesktopAgent => {
           createListenerItem(listenerId, thisListener, thisContextType),
         );
 
-        sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
-          id: listenerId,
-          channel: channel.id,
-          contextType: thisContextType,
-        });
+        sendMessage(
+          FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER,
+          {
+            listenerId: listenerId,
+            channel: channel.id,
+            contextType: thisContextType,
+          },
+          instanceId,
+          eventQ,
+        );
         return new FDC3Listener(FDC3_1_2_TOPICS.CONTEXT, listenerId);
       },
     };
@@ -347,15 +304,25 @@ export const createAPI = (): DesktopAgent => {
     },
 
     open: async (app: TargetApp, context?: Context) => {
-      return await sendMessage(FDC3_1_2_TOPICS.OPEN, {
-        target: app,
-        context: context,
-      });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.OPEN,
+        {
+          target: convertTarget(app),
+          context: context,
+        },
+        instanceId,
+        eventQ,
+      );
     },
 
     broadcast: async (context: Context) => {
       //void
-      return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, { context: context });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.BROADCAST,
+        { context: context },
+        instanceId,
+        eventQ,
+      );
     },
 
     raiseIntent: (
@@ -383,11 +350,16 @@ export const createAPI = (): DesktopAgent => {
           { once: true },
         );
 
-        sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
-          intent: stripNS(intent),
-          context: context,
-          target: app,
-        }).then(
+        sendMessage(
+          FDC3_1_2_TOPICS.RAISE_INTENT,
+          {
+            intent: stripNS(intent),
+            context: context,
+            target: app ? convertTarget(app) : undefined,
+          },
+          instanceId,
+          eventQ,
+        ).then(
           (result) => {
             if (result) {
               console.log('***** got intent result ', result);
@@ -411,10 +383,15 @@ export const createAPI = (): DesktopAgent => {
     },
 
     raiseIntentForContext: async (context: Context, app?: TargetApp) => {
-      return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
-        context: context,
-        target: app,
-      });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.RAISE_INTENT_FOR_CONTEXT,
+        {
+          context: context,
+          target: app ? convertTarget(app) : undefined,
+        },
+        instanceId,
+        eventQ,
+      );
     },
 
     addContextListener: (
@@ -433,10 +410,15 @@ export const createAPI = (): DesktopAgent => {
         createListenerItem(listenerId, thisListener, thisContextType),
       );
 
-      sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
-        id: listenerId,
-        contextType: thisContextType,
-      });
+      sendMessage(
+        FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER,
+        {
+          listenerId: listenerId,
+          contextType: thisContextType,
+        },
+        instanceId,
+        eventQ,
+      );
 
       return new FDC3Listener('context', listenerId);
     },
@@ -451,10 +433,15 @@ export const createAPI = (): DesktopAgent => {
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
 
-        sendMessage(FDC3_1_2_TOPICS.ADD_INTENT_LISTENER, {
-          id: listenerId,
-          intent: intent,
-        });
+        sendMessage(
+          FDC3_1_2_TOPICS.ADD_INTENT_LISTENER,
+          {
+            listenerId: listenerId,
+            intent: intent,
+          },
+          instanceId,
+          eventQ,
+        );
       }
       return new FDC3Listener('intent', listenerId, intent);
     },
@@ -463,24 +450,36 @@ export const createAPI = (): DesktopAgent => {
       intent: string,
       context: Context,
     ): Promise<AppIntent> => {
-      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENT, {
-        intent: intent,
-        context: context,
-      });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.FIND_INTENT,
+        {
+          intent: intent,
+          context: context,
+        },
+        instanceId,
+        eventQ,
+      );
     },
 
     findIntentsByContext: async (
       context: Context,
     ): Promise<Array<AppIntent>> => {
-      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENTS_BY_CONTEXT, {
-        context: context,
-      });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.FIND_INTENTS_BY_CONTEXT,
+        {
+          context: context,
+        },
+        instanceId,
+        eventQ,
+      );
     },
 
     getSystemChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
         FDC3_1_2_TOPICS.GET_SYSTEM_CHANNELS,
         {},
+        instanceId,
+        eventQ,
       );
       console.log('result', r);
       const channels = r.map((c: ChannelData) => {
@@ -497,6 +496,8 @@ export const createAPI = (): DesktopAgent => {
       const result: ChannelData = await sendMessage(
         FDC3_1_2_TOPICS.GET_OR_CREATE_CHANNEL,
         { channelId: channelId },
+        instanceId,
+        eventQ,
       );
       return createChannelObject(
         result.id,
@@ -506,19 +507,31 @@ export const createAPI = (): DesktopAgent => {
     },
 
     joinChannel: async (channel: string) => {
-      return await sendMessage(FDC3_1_2_TOPICS.JOIN_CHANNEL, {
-        channel: channel,
-      });
+      return await sendMessage(
+        FDC3_1_2_TOPICS.JOIN_CHANNEL,
+        {
+          channel: channel,
+        },
+        instanceId,
+        eventQ,
+      );
     },
 
     leaveCurrentChannel: async () => {
-      return await sendMessage(FDC3_1_2_TOPICS.LEAVE_CURRENT_CHANNEL, {});
+      return await sendMessage(
+        FDC3_1_2_TOPICS.LEAVE_CURRENT_CHANNEL,
+        {},
+        instanceId,
+        eventQ,
+      );
     },
 
     getCurrentChannel: async () => {
       const result: ChannelData = await sendMessage(
         FDC3_1_2_TOPICS.GET_CURRENT_CHANNEL,
         {},
+        instanceId,
+        eventQ,
       );
 
       return result == null

@@ -1,84 +1,18 @@
 import { getRuntime } from '/@/index';
-import { RuntimeMessage } from '/@/handlers/runtimeMessage';
+import { FDC3Message, BroadcastData } from '/@/types/FDC3Message';
 import { View } from '/@/view';
 import { FDC3Listener } from '/@/types/FDC3Listener';
 import { FDC3_1_2_TOPICS } from './topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
 
-interface ViewListener {
-  view: View;
-  listenerId: string;
-}
-
-export const broadcast = async (message: RuntimeMessage) => {
+export const broadcast = async (message: FDC3Message) => {
   const runtime = getRuntime();
   const contexts = runtime.getContexts();
   const source = message.source ? runtime.getView(message.source) : null;
-
-  //if there is an instanceId provided on the message - this is the instance target of the broadcast
-  //meaning this is a point-to-point com between two instances
-  //if the target listener is registered for the source instance, then dispatch the context
-  //else, add to the pending queue for instances
-  const targetId: string | undefined =
-    (message.data && message.data.instanceId) || undefined;
-  if (targetId) {
-    console.log(
-      `broadcast message = '${JSON.stringify(
-        message,
-      )}' target = '${targetId}' source = '${message.source}'`,
-    );
-    let setPending = false;
-    const target = runtime.getView(targetId);
-    const viewListeners: Array<ViewListener> = [];
-    if (target) {
-      target.listeners.forEach((l: FDC3Listener) => {
-        if (!l.intent) {
-          if (
-            !l.contextType ||
-            (l.contextType &&
-              l.contextType === message.data &&
-              message.data.context &&
-              message.data.context.type)
-          ) {
-            viewListeners.push({
-              view: target,
-              listenerId: l.listenerId,
-            });
-          }
-        }
-      });
-      if (viewListeners.length > 0) {
-        viewListeners.forEach((viewL: ViewListener) => {
-          const data = {
-            listenerId: viewL.listenerId,
-            eventId: message.data && message.data.eventId,
-            ts: message.data && message.data.ts,
-            context: message.data && message.data.context,
-          };
-          viewL.view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
-            topic: 'context',
-            listenerId: viewL.listenerId,
-            data: data,
-            source: message.source,
-          });
-        });
-      } else {
-        setPending = true;
-      }
-    }
-    const pendingContext = message.data && message.data.context;
-    if (setPending && pendingContext && target) {
-      target.setPendingContext(pendingContext);
-    }
-    //if we have a target, we aren't going to go to other channnels - so resolve
-    return;
-  }
+  const data: BroadcastData = message.data as BroadcastData;
 
   //use channel on message first - if one is specified
-  const channel =
-    (message.data && message.data.channel) ||
-    (source && source.channel) ||
-    'default';
+  const channel = data.channel || (source && source.channel) || 'default';
 
   if (channel !== 'default') {
     //is the app on a channel?
@@ -87,7 +21,7 @@ export const broadcast = async (message: RuntimeMessage) => {
     }
     // update the channel state
     const channelContext = contexts.get(channel);
-    const context = message.data && message.data.context;
+    const context = data.context;
     if (channelContext && context) {
       channelContext.unshift(context);
     }
@@ -112,8 +46,7 @@ export const broadcast = async (message: RuntimeMessage) => {
             'broadcast - matched channel, contextType ',
             l.contextType,
           );
-          const contextType =
-            message.data && message.data.context && message.data.context.type;
+          const contextType = data.context.type;
           if (l.contextType && contextType) {
             console.log('contextType match', l.contextType === contextType);
             if (
@@ -130,29 +63,21 @@ export const broadcast = async (message: RuntimeMessage) => {
       });
       //if there are listeners found, broadcast the context to the view (with all listenerIds)
       if (viewListeners.length > 0) {
-        if (v.fdc3Version === '2.0') {
-          v.content.webContents.send(FDC3_2_0_TOPICS.CONTEXT, {
-            topic: 'context',
-            listenerIds: viewListeners,
-            data: {
-              eventId: message.data && message.data.eventId,
-              ts: message.data && message.data.ts,
-              context: message.data && message.data.context,
-            },
-            source: message.source,
-          });
-        } else {
-          v.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
-            topic: 'context',
-            listenerIds: viewListeners,
-            data: {
-              eventId: message.data && message.data.eventId,
-              ts: message.data && message.data.ts,
-              context: message.data && message.data.context,
-            },
-            source: message.source,
-          });
-        }
+        const topic =
+          v.fdc3Version === '2.0'
+            ? FDC3_2_0_TOPICS.CONTEXT
+            : FDC3_1_2_TOPICS.CONTEXT;
+
+        v.content.webContents.send(topic, {
+          topic: topic,
+          listenerIds: viewListeners,
+          data: {
+            eventId: message.eventId,
+            ts: message.ts,
+            context: data.context,
+          },
+          source: message.source,
+        });
       }
     });
   }

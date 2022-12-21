@@ -1,42 +1,30 @@
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
-import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { TargetApp, AppMetadata, OpenError } from 'fdc3-1.2';
+import { OpenError } from 'fdc3-1.2';
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 import { getSailManifest } from '/@/directory/directory';
+import { FDC3Message, OpenData, TargetIdentifier } from '/@/types/FDC3Message';
 
 /**
  *
  * @param target
  * Given a TargetApp input, return the app Name or undefined
  */
-const resolveTargetAppToName = (target: TargetApp): string | undefined => {
-  if (!target) {
-    return undefined;
+const resolveTargetAppToName = (target: TargetIdentifier): string => {
+  if (target.name) {
+    return target.name;
   }
-  let name = undefined;
-  //is target typeof string?  if so, it is just going to be an app name
-  if (typeof target === 'string') {
-    name = target;
-  } else {
-    const app: AppMetadata = target as AppMetadata;
-    if (app && app.name) {
-      name = app.name;
-    }
-  }
-  return name;
+  return target.key;
 };
 
-export const open = async (message: RuntimeMessage) => {
+export const open = async (message: FDC3Message) => {
   const runtime = getRuntime();
-  const name = message?.data?.name
-    ? message.data.name
-    : message?.data?.target
-    ? resolveTargetAppToName(message.data.target)
-    : '';
+  const data: OpenData = message.data as OpenData;
+
+  const name = resolveTargetAppToName(data.target);
 
   const allResults: DirectoryApp[] =
     name !== ''
@@ -68,8 +56,8 @@ export const open = async (message: RuntimeMessage) => {
     }
 
     //set provided context
-    if (newView && message.data.context) {
-      newView.setPendingContext(message.data.context, message.source);
+    if (newView && data.context) {
+      newView.setPendingContext(data.context, message.source);
     }
 
     return;

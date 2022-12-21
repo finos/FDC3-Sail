@@ -87,11 +87,7 @@ export const joinUserChannel = async (message: RuntimeMessage) => {
   const channel = message.data && message.data.channel;
   const view = runtime.getView(message.source);
   if (channel && view) {
-    await view.parent?.joinViewToChannel(
-      channel,
-      view,
-      (message.data && message.data.restoreOnly) || undefined,
-    );
+    await view.parent?.joinViewToChannel(channel, view);
     return true;
   }
 };

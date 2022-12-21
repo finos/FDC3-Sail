@@ -258,7 +258,6 @@ export class View {
   };
 
   getTitle(): string {
-    console.log('****getTItle', this.title);
     return this.title
       ? this.title
       : this.directoryData && this.directoryData.title

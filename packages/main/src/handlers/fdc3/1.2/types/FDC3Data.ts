@@ -7,6 +7,7 @@ import { DirectoryApp } from '/@/directory/directory';
 export interface FDC3App {
   type: string;
   details: FDC3AppDetail;
+  intent?: string; //optional intent associated with the app
 }
 
 /**
