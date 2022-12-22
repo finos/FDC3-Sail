@@ -1,9 +1,12 @@
 import { ipcRenderer } from 'electron';
-import { ContextHandler } from '@finos/fdc3';
+import { ContextHandler, AppIdentifier } from '@finos/fdc3';
+import { TargetApp, AppMetadata } from 'fdc3-1.2';
+
 import {
   FDC3Message,
   FDC3MessageData,
   FDC3Response,
+  TargetIdentifier,
 } from '/@main/types/FDC3Message';
 
 //send messages to main, handle responses, queue messages if not connected yet
@@ -48,6 +51,32 @@ export const processQueueItem = (qi: QueueItem, instanceId: string) => {
 
   ipcRenderer.postMessage(qi.topic, msg, [port2]);
   console.log('sent message to main', msg);
+};
+
+//convert a AppIdentifier or TargetApp type to TargetIdentifier
+export const convertTarget = (
+  target: TargetApp | AppIdentifier,
+): TargetIdentifier | undefined => {
+  //is target just a string?  if so - treat it as name
+  if (typeof target === 'string') {
+    return { key: target, name: target };
+  } else if ((target as AppMetadata)?.name) {
+    const targetObj: AppMetadata = target as AppMetadata;
+    return {
+      key: targetObj.name,
+      name: targetObj.name,
+      appId: targetObj.appId,
+      appMetadata: targetObj,
+    };
+  } else if ((target as AppIdentifier)?.appId) {
+    const appIdentifier: AppIdentifier = target as AppIdentifier;
+    return {
+      key: appIdentifier.appId,
+      appId: appIdentifier.appId,
+      appIdentifier: appIdentifier,
+    };
+  }
+  return undefined;
 };
 
 export const sendMessage = (

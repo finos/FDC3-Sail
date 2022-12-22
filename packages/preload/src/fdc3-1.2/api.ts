@@ -6,8 +6,8 @@ import {
   processQueueItem,
   guid,
   ListenerItem,
+  convertTarget,
 } from '../lib/lib';
-import { TargetIdentifier } from '/@main/types/FDC3Message';
 
 import {
   DesktopAgent,
@@ -27,25 +27,8 @@ import { ChannelData } from '/@main/types/Channel';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 import { ResolveError } from 'fdc3-1.2';
-import { AppMetadata } from '../../../main/src/handlers/fdc3/1.2/types/AppMetadata';
 
 const INTENT_TIMEOUT = 30000;
-
-//convert a TargetApp type to TargetIdentifier
-const convertTarget = (target: TargetApp): TargetIdentifier => {
-  //is target just a string?  if so - treat it as name
-  if (typeof target === 'string') {
-    return { key: target, name: target };
-  } else {
-    const targetObj: AppMetadata = target as AppMetadata;
-    return {
-      key: targetObj.name,
-      name: targetObj.name,
-      appId: targetObj.appId,
-      appMetadata: targetObj,
-    };
-  }
-};
 
 //backwards compatability support for fdc3 namespaced intents
 const stripNS = (intent: string): string => {

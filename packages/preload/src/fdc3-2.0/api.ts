@@ -5,11 +5,13 @@ import {
   QueueItem,
   guid,
   ListenerItem,
+  convertTarget,
 } from '../lib/lib';
-import { DesktopAgent, Listener } from '@finos/fdc3';
 import {
   AppIntent,
   Context,
+  DesktopAgent,
+  Listener,
   DisplayMetadata,
   ContextHandler,
   Channel,
@@ -289,7 +291,7 @@ export const createAPI = (): DesktopAgent => {
     await sendMessage(
       FDC3_2_0_TOPICS.OPEN,
       {
-        appIdentifier: appArg as AppIdentifier,
+        target: convertTarget(appArg as AppIdentifier),
         context: contextArg,
       },
       instanceId,
@@ -316,15 +318,17 @@ export const createAPI = (): DesktopAgent => {
     context: Context,
     appIdentity?: unknown,
   ): Promise<IntentResolution> {
+    const identity: AppIdentifier =
+      typeof appIdentity === 'string'
+        ? ({ appId: appIdentity } as AppIdentifier)
+        : (appIdentity as AppIdentifier);
+
     return await sendMessage(
       FDC3_2_0_TOPICS.RAISE_INTENT,
       {
-        intent: stripNS(intent),
+        intent: intent,
         context: context,
-        target:
-          typeof appIdentity === 'string'
-            ? ({ appId: appIdentity } as AppIdentifier)
-            : (appIdentity as AppIdentifier),
+        target: convertTarget(identity),
       },
       instanceId,
       eventQ,
@@ -343,14 +347,16 @@ export const createAPI = (): DesktopAgent => {
     context: Context,
     appIdentity?: unknown,
   ): Promise<IntentResolution> {
+    const identity: AppIdentifier =
+      typeof appIdentity === 'string'
+        ? ({ appId: appIdentity } as AppIdentifier)
+        : (appIdentity as AppIdentifier);
+
     return await sendMessage(
       FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
       {
         context: context,
-        target:
-          typeof appIdentity === 'string'
-            ? ({ appId: appIdentity } as AppIdentifier)
-            : (appIdentity as AppIdentifier),
+        target: convertTarget(identity),
       },
       instanceId,
       eventQ,
@@ -445,7 +451,7 @@ export const createAPI = (): DesktopAgent => {
         sendMessage(
           FDC3_2_0_TOPICS.ADD_INTENT_LISTENER,
           {
-            id: listenerId,
+            listenerId: listenerId,
             intent: stripNS(intent),
           },
           instanceId,
@@ -529,7 +535,7 @@ export const createAPI = (): DesktopAgent => {
     getOrCreateChannel: async (channelId: string) => {
       const result: ChannelData = await sendMessage(
         FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL,
-        { channelId: channelId },
+        { channel: channelId },
         instanceId,
         eventQ,
       );

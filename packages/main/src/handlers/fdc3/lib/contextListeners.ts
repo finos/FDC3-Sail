@@ -1,5 +1,6 @@
 import { getRuntime } from '/@/index';
-import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from '../1.2/topics';
+import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import { Pending } from '/@/types/Pending';
 import {
   FDC3Message,
@@ -51,8 +52,12 @@ export const addContextListener = async (message: FDC3Message) => {
           data.contextType === undefined ||
           pending?.context?.type === data.contextType
         ) {
-          view.content.webContents.send(FDC3_1_2_TOPICS.CONTEXT, {
-            topic: 'context',
+          const topic =
+            view.fdc3Version === '1.2'
+              ? FDC3_1_2_TOPICS.CONTEXT
+              : FDC3_2_0_TOPICS.CONTEXT;
+          view.content.webContents.send(topic, {
+            topic: topic,
             listenerId: data.listenerId,
             data: {
               context: pending.context,

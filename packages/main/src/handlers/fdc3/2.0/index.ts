@@ -14,23 +14,19 @@ import {
 import {
   dropContextListener,
   addContextListener,
-} from '/@/handlers/fdc3/1.2/contextListeners';
+} from '/@/handlers/fdc3/lib/contextListeners';
 import { broadcast } from '/@/handlers/fdc3/1.2/broadcast';
 import { open } from './open';
 import {
   dropIntentListener,
   addIntentListener,
-} from '/@/handlers/fdc3/2.0/intentListeners';
+} from '/@/handlers/fdc3/lib/intentListeners';
 import {
   findIntent,
   findIntentsByContext,
 } from '/@/handlers/fdc3/1.2/findIntent';
-
-import {
-  raiseIntent,
-  raiseIntentForContext,
-  resolveIntent,
-} from './raiseIntent';
+import { resolveIntent } from '../lib/raiseIntent';
+import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);

@@ -1,5 +1,8 @@
 import { Runtime } from '/@/runtime';
-import { dropContextListener, addContextListener } from './contextListeners';
+import {
+  dropContextListener,
+  addContextListener,
+} from '../lib/contextListeners';
 import { broadcast } from './broadcast';
 import { open } from './open';
 import { FDC3_1_2_TOPICS } from './topics';
@@ -11,13 +14,10 @@ import {
   joinChannel,
   getCurrentChannel,
 } from './channels';
-import { dropIntentListener, addIntentListener } from './intentListeners';
+import { dropIntentListener, addIntentListener } from '../lib/intentListeners';
 import { findIntent, findIntentsByContext } from './findIntent';
-import {
-  resolveIntent,
-  raiseIntent,
-  raiseIntentForContext,
-} from './raiseIntent';
+import { resolveIntent } from '../lib/raiseIntent';
+import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(
