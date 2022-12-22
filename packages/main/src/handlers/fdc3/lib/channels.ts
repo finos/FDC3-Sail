@@ -5,7 +5,7 @@ import {
   ChannelMessageData,
 } from '/@/types/FDC3Message';
 import { ChannelData } from '/@/types/Channel';
-import { Context, ChannelError } from 'fdc3-1.2';
+import { Context, ChannelError } from '@finos/fdc3';
 import { systemChannels } from './systemChannels';
 
 export const getSystemChannels = async () => {

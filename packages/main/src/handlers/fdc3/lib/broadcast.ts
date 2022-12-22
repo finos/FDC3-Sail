@@ -2,7 +2,7 @@ import { getRuntime } from '/@/index';
 import { FDC3Message, BroadcastData } from '/@/types/FDC3Message';
 import { View } from '/@/view';
 import { FDC3Listener } from '/@/types/FDC3Listener';
-import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_1_2_TOPICS } from '../1.2/topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
 
 export const broadcast = async (message: FDC3Message) => {

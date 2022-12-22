@@ -3,7 +3,7 @@ import {
   dropContextListener,
   addContextListener,
 } from '../lib/contextListeners';
-import { broadcast } from './broadcast';
+import { broadcast } from '../lib/broadcast';
 import { open } from './open';
 import { FDC3_1_2_TOPICS } from './topics';
 import {
@@ -13,9 +13,9 @@ import {
   leaveCurrentChannel,
   joinChannel,
   getCurrentChannel,
-} from './channels';
+} from '../lib/channels';
 import { dropIntentListener, addIntentListener } from '../lib/intentListeners';
-import { findIntent, findIntentsByContext } from './findIntent';
+import { findIntent, findIntentsByContext } from '../lib/findIntent';
 import { resolveIntent } from '../lib/raiseIntent';
 import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 

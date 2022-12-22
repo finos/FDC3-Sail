@@ -3,19 +3,18 @@ import { FDC3_2_0_TOPICS } from './topics';
 import {
   getCurrentContext,
   getOrCreateChannel,
-  getUserChannels,
   getSystemChannels,
   leaveCurrentChannel,
-  joinUserChannel,
+  joinChannel,
   getCurrentChannel,
-} from './channels';
+} from '../lib/channels';
 
 //1.2...
 import {
   dropContextListener,
   addContextListener,
 } from '/@/handlers/fdc3/lib/contextListeners';
-import { broadcast } from '/@/handlers/fdc3/1.2/broadcast';
+import { broadcast } from '/@/handlers/fdc3/lib/broadcast';
 import { open } from './open';
 import {
   dropIntentListener,
@@ -24,21 +23,21 @@ import {
 import {
   findIntent,
   findIntentsByContext,
-} from '/@/handlers/fdc3/1.2/findIntent';
+} from '/@/handlers/fdc3/lib/findIntent';
 import { resolveIntent } from '../lib/raiseIntent';
 import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);
   runtime.addHandler(FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL, getOrCreateChannel);
-  runtime.addHandler(FDC3_2_0_TOPICS.GET_USER_CHANNELS, getUserChannels);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_USER_CHANNELS, getSystemChannels);
   runtime.addHandler(FDC3_2_0_TOPICS.GET_SYSTEM_CHANNELS, getSystemChannels);
   runtime.addHandler(
     FDC3_2_0_TOPICS.LEAVE_CURRENT_CHANNEL,
     leaveCurrentChannel,
   );
-  runtime.addHandler(FDC3_2_0_TOPICS.JOIN_USER_CHANNEL, joinUserChannel);
-  runtime.addHandler(FDC3_2_0_TOPICS.JOIN_CHANNEL, joinUserChannel);
+  runtime.addHandler(FDC3_2_0_TOPICS.JOIN_USER_CHANNEL, joinChannel);
+  runtime.addHandler(FDC3_2_0_TOPICS.JOIN_CHANNEL, joinChannel);
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL, getCurrentChannel);
 
   //1.2
