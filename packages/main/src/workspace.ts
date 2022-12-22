@@ -393,7 +393,7 @@ export class Workspace {
                         l.channel === 'default' ||
                         (l.channel && l.channel === channel)) &&
                       (!l.contextType ||
-                        (l.contextType && l.contextType === ctx.type))
+                        (l.contextType && ctx && l.contextType === ctx.type))
                     ) {
                       const contextTopic =
                         view.fdc3Version === '1.2'

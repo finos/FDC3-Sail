@@ -165,7 +165,7 @@ export const createAPI = (): DesktopAgent => {
           sendMessage(
             FDC3EventEnum.DropContextListener,
             {
-              id: this.id,
+              listenerId: this.id,
             },
             instanceId,
             eventQ,
