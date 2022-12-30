@@ -15,8 +15,8 @@ import { Directory } from './directory/directory';
 import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
-import { ChannelData } from './types/Channel';
 import { setRuntimeSecurityRestrictions } from './security-restrictions';
+import { ChannelData, PrivateChannelData } from './types/Channel';
 import {
   SessionState,
   ViewState,
