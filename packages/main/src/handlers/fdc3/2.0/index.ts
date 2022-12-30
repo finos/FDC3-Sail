@@ -8,7 +8,6 @@ import {
   joinChannel,
   getCurrentChannel,
 } from '../lib/channels';
-
 //1.2...
 import {
   dropContextListener,
@@ -26,6 +25,7 @@ import {
 } from '/@/handlers/fdc3/lib/findIntent';
 import { resolveIntent } from '../lib/raiseIntent';
 import { raiseIntent, raiseIntentForContext } from './raiseIntent';
+import { createPrivateChannel } from './channels';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);
@@ -39,6 +39,10 @@ export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.JOIN_USER_CHANNEL, joinChannel);
   runtime.addHandler(FDC3_2_0_TOPICS.JOIN_CHANNEL, joinChannel);
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL, getCurrentChannel);
+  runtime.addHandler(
+    FDC3_2_0_TOPICS.CREATE_PRIVATE_CHANNEL,
+    createPrivateChannel,
+  );
 
   //1.2
   runtime.addHandler(

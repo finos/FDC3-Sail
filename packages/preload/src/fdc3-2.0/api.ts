@@ -2,10 +2,14 @@ import { ipcRenderer } from 'electron';
 import {
   fdc3Event,
   sendMessage,
-  QueueItem,
   guid,
   ListenerItem,
+  ContextTypeListenerItem,
+  VoidListenerItem,
   convertTarget,
+  setInstanceId,
+  getEventQ,
+  INTENT_TIMEOUT,
 } from '../lib/lib';
 import {
   AppIntent,
@@ -20,25 +24,14 @@ import {
   IntentResolution,
   AppIdentifier,
   AppMetadata,
+  ResolveError,
+  IntentResult,
 } from '@finos/fdc3';
 import { ChannelData } from '/@main/types/FDC3Data';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { SAIL_TOPICS } from '/@main/handlers/runtime/topics';
-
-//flag to indicate the background script is ready for fdc3!
-let instanceId = '';
-
-//queue of pending events - accumulate until the background is ready
-const eventQ: Array<QueueItem> = [];
-
-//backwards compatability support for fdc3 namespaced intents
-const stripNS = (intent: string): string => {
-  if (intent.startsWith('fdc3.')) {
-    intent = intent.substring(5);
-  }
-  return intent;
-};
+import { IntentResultData } from '/@main/types/FDC3Message';
 
 const callIntentListener = (intent: string, context?: Context | undefined) => {
   if (intent) {
@@ -74,6 +67,15 @@ const _contextListeners: Map<string, ListenerItem> = new Map();
 
 //map of intents holding map of listeners for each intent
 const _intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
+
+//map of listeners for when a contextListener is added to a private channel
+const _addContextListeners: Map<string, ContextTypeListenerItem> = new Map();
+
+//map of listeners for unsubscribing on a private channel
+const _unsubscribeListeners: Map<string, ContextTypeListenerItem> = new Map();
+
+//map of listeners for disconnecting on a private channel
+const _disconnectListeners: Map<string, VoidListenerItem> = new Map();
 
 export const connect = () => {
   /**
@@ -119,12 +121,12 @@ export const connect = () => {
 
 //handshake with main and get instanceId assigned
 ipcRenderer.on(SAIL_TOPICS.START, async (event, args) => {
-  console.log('api FDC3 start', args);
+  console.log('api FDC3 start', args.id);
   if (args.id) {
-    instanceId = args.id;
+    setInstanceId(args.id);
     //send any queued messages
-    eventQ.forEach((msg) => {
-      sendMessage(msg.topic, msg.data, instanceId, eventQ);
+    getEventQ().forEach((msg) => {
+      sendMessage(msg.topic, msg.data);
     });
     if (!document.body) {
       document.addEventListener('DOMContentLoaded', () => {
@@ -138,70 +140,207 @@ ipcRenderer.on(SAIL_TOPICS.START, async (event, args) => {
   }
 });
 
+const createListenerItem = (
+  id: string,
+  handler: ContextHandler,
+  contextType?: string,
+): ListenerItem => {
+  const listener: ListenerItem = {};
+  listener.id = id;
+  listener.handler = handler;
+  listener.contextType = contextType;
+
+  return listener;
+};
+
+const createContextTypeListenerItem = (
+  id: string,
+  handler: (contextType: string) => void,
+  contextType?: string,
+): ContextTypeListenerItem => {
+  const listener: ContextTypeListenerItem = {};
+  listener.id = id;
+  listener.handler = handler;
+  listener.contextType = contextType;
+
+  return listener;
+};
+
+const createVoidListenerItem = (
+  id: string,
+  handler: () => void,
+  contextType?: string,
+): VoidListenerItem => {
+  const listener: VoidListenerItem = {};
+  listener.id = id;
+  listener.handler = handler;
+  listener.contextType = contextType;
+
+  return listener;
+};
+
+class ContextListener implements Listener {
+  private id: string;
+
+  constructor(listenerId: string) {
+    this.id = listenerId;
+
+    this.unsubscribe = () => {
+      _contextListeners.delete(this.id);
+
+      sendMessage(FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER, {
+        listenerId: this.id,
+      });
+    };
+  }
+
+  unsubscribe: () => void;
+}
+
+class IntentListener implements Listener {
+  private id: string;
+
+  intent = '';
+
+  constructor(listenerId: string, intent: string) {
+    this.id = listenerId;
+    this.intent = intent;
+
+    this.unsubscribe = () => {
+      const listeners = _intentListeners.get(this.intent);
+      if (listeners) {
+        listeners.delete(this.id);
+      }
+
+      sendMessage(FDC3_2_0_TOPICS.DROP_INTENT_LISTENER, {
+        listenerId: this.id,
+        intent: intent,
+      });
+    };
+  }
+
+  unsubscribe: () => void;
+}
+
+class AddContextListener implements Listener {
+  private id: string;
+
+  constructor(listenerId: string) {
+    this.id = listenerId;
+
+    this.unsubscribe = () => {
+      _addContextListeners.delete(this.id);
+
+      sendMessage(FDC3_2_0_TOPICS.DROP_ONADDCONTEXT_LISTENER, {
+        listenerId: this.id,
+      });
+    };
+  }
+
+  unsubscribe: () => void;
+}
+
+class UnsubscribeListener implements Listener {
+  private id: string;
+
+  constructor(listenerId: string) {
+    this.id = listenerId;
+
+    this.unsubscribe = () => {
+      _unsubscribeListeners.delete(this.id);
+
+      sendMessage(FDC3_2_0_TOPICS.DROP_ONUNSUBSCRIBE_LISTENER, {
+        listenerId: this.id,
+      });
+    };
+  }
+
+  unsubscribe: () => void;
+}
+
+class DisconnectListener implements Listener {
+  private id: string;
+
+  constructor(listenerId: string) {
+    this.id = listenerId;
+
+    this.unsubscribe = () => {
+      _disconnectListeners.delete(this.id);
+
+      sendMessage(FDC3_2_0_TOPICS.DROP_ONDISCONNECT_LISTENER, {
+        listenerId: this.id,
+      });
+    };
+  }
+
+  unsubscribe: () => void;
+}
+
 /**
  * This file is injected into each Chrome tab by the Content script to make the FDC3 API available as a global
  */
 
 export const createAPI = (): DesktopAgent => {
-  /**
-   *  the Listener class
-   */
-  class FDC3Listener implements Listener {
-    private id: string;
+  const createPrivateChannelObject = (id: string): PrivateChannel => {
+    const privateChannel: Channel = createChannelObject(id, 'private', {});
 
-    type: string;
+    return {
+      ...privateChannel,
+      ...{
+        onAddContextListener: (
+          handler: (contextType?: string) => void,
+        ): Listener => {
+          const listenerId: string = guid();
 
-    intent: string | null = null;
-
-    constructor(type: string, listenerId: string, intent?: string) {
-      this.id = listenerId;
-      this.type = type;
-      if (type === 'intent' && intent) {
-        this.intent = intent;
-      }
-
-      this.unsubscribe = () => {
-        if (this.type === 'context') {
-          _contextListeners.delete(this.id);
-
-          sendMessage(
-            FDC3EventEnum.DropContextListener,
-            {
-              listenerId: this.id,
-            },
-            instanceId,
-            eventQ,
+          _addContextListeners.set(
+            listenerId,
+            createContextTypeListenerItem(listenerId, handler),
           );
-        } else if (this.type === 'intent' && this.intent) {
-          const listeners = _intentListeners.get(this.intent);
-          if (listeners) {
-            listeners.delete(this.id);
-          }
-          //notify the background script
-          document.dispatchEvent(
-            fdc3Event(FDC3EventEnum.DropIntentListener, {
-              id: this.id,
-              intent: this.intent,
-            }),
+
+          sendMessage(FDC3_2_0_TOPICS.ADD_ONADDCONTEXT_LISTENER, {
+            listenerId: listenerId,
+            channel: id,
+          });
+          return new AddContextListener(listenerId);
+        },
+
+        onDisconnect: (handler: () => void) => {
+          const listenerId: string = guid();
+
+          _disconnectListeners.set(
+            listenerId,
+            createVoidListenerItem(listenerId, handler),
           );
-        }
-      };
-    }
 
-    unsubscribe: () => void;
-  }
+          sendMessage(FDC3_2_0_TOPICS.ADD_ONDISCONNECT_LISTENER, {
+            listenerId: listenerId,
+            channel: id,
+          });
+          return new DisconnectListener(listenerId);
+        },
 
-  const createListenerItem = (
-    id: string,
-    handler: ContextHandler,
-    contextType?: string,
-  ): ListenerItem => {
-    const listener: ListenerItem = {};
-    listener.id = id;
-    listener.handler = handler;
-    listener.contextType = contextType;
+        onUnsubscribe: (handler: (contextType?: string) => void): Listener => {
+          const listenerId: string = guid();
 
-    return listener;
+          _unsubscribeListeners.set(
+            listenerId,
+            createContextTypeListenerItem(listenerId, handler),
+          );
+
+          sendMessage(FDC3_2_0_TOPICS.ADD_ONUNSUBSCRIBE_LISTENER, {
+            listenerId: listenerId,
+            channel: id,
+          });
+          return new UnsubscribeListener(listenerId);
+        },
+
+        disconnect: (): void => {
+          sendMessage(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_DISCONNECT, {
+            channel: id,
+          });
+        },
+      },
+    } as PrivateChannel;
   };
 
   const createChannelObject = (
@@ -214,25 +353,15 @@ export const createAPI = (): DesktopAgent => {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: async (context: Context): Promise<void> => {
-        sendMessage(
-          'broadcast',
-          { context: context, channel: channel.id },
-          instanceId,
-          eventQ,
-        );
+        sendMessage('broadcast', { context: context, channel: channel.id });
         return;
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage(
-            'getCurrentContext',
-            {
-              channel: channel.id,
-              contextType: contextType,
-            },
-            instanceId,
-            eventQ,
-          ).then(
+          sendMessage(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, {
+            channel: channel.id,
+            contextType: contextType,
+          }).then(
             (r) => {
               const result: Context = r as Context;
               resolve(result);
@@ -259,17 +388,12 @@ export const createAPI = (): DesktopAgent => {
           createListenerItem(listenerId, thisListener, thisContextType),
         );
 
-        sendMessage(
-          FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER,
-          {
-            listenerId: listenerId,
-            channel: channel.id,
-            contextType: thisContextType,
-          },
-          instanceId,
-          eventQ,
-        );
-        return new FDC3Listener('context', listenerId);
+        sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
+          listenerId: listenerId,
+          channel: channel.id,
+          contextType: thisContextType,
+        });
+        return new ContextListener(listenerId);
       },
     };
 
@@ -288,15 +412,10 @@ export const createAPI = (): DesktopAgent => {
     appArg: unknown,
     contextArg?: Context | undefined,
   ): Promise<AppIdentifier> {
-    await sendMessage(
-      FDC3_2_0_TOPICS.OPEN,
-      {
-        target: convertTarget(appArg as AppIdentifier),
-        context: contextArg,
-      },
-      instanceId,
-      eventQ,
-    );
+    await sendMessage(FDC3_2_0_TOPICS.OPEN, {
+      target: convertTarget(appArg as AppIdentifier),
+      context: contextArg,
+    });
 
     return new Promise((resolve) => {
       resolve(appArg as AppIdentifier);
@@ -318,21 +437,91 @@ export const createAPI = (): DesktopAgent => {
     context: Context,
     appIdentity?: unknown,
   ): Promise<IntentResolution> {
-    const identity: AppIdentifier =
-      typeof appIdentity === 'string'
-        ? ({ appId: appIdentity } as AppIdentifier)
-        : (appIdentity as AppIdentifier);
+    return new Promise((resolve, reject) => {
+      console.log('***** raise intent ', intent);
+      let intentTimeout = -1;
+      //listen for resolve intent
+      document.addEventListener(
+        FDC3_2_0_TOPICS.RESOLVE_INTENT,
+        (event: Event) => {
+          const cEvent = event as CustomEvent;
+          console.log('***** intent resolution received', cEvent.detail);
+          if (intentTimeout) {
+            window.clearTimeout(intentTimeout);
+          }
 
-    return await sendMessage(
-      FDC3_2_0_TOPICS.RAISE_INTENT,
-      {
+          resolve({
+            version: '2.0',
+            source: (cEvent.detail?.source as AppIdentifier) || {
+              appId: 'unknown',
+            },
+            intent: cEvent.detail?.intent,
+            getResult: () => {
+              return new Promise(() => {
+                console.log('in getResult');
+              });
+            },
+          });
+        },
+        { once: true },
+      );
+
+      if (typeof appIdentity === 'string') {
+        appIdentity = { appId: appIdentity };
+      }
+
+      sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
         intent: intent,
         context: context,
-        target: convertTarget(identity),
-      },
-      instanceId,
-      eventQ,
-    );
+        target: appIdentity
+          ? convertTarget(appIdentity as AppIdentifier)
+          : undefined,
+      }).then(
+        (result) => {
+          if (result) {
+            if (result.error) {
+              reject(new Error(result.error));
+            } else {
+              const getResultMsg: IntentResultData = {
+                resultId: result.resultId,
+              };
+              resolve({
+                version: '2.0',
+                source: (result.source as AppIdentifier) || {
+                  appId: 'unknown',
+                },
+                intent: result.intent,
+                getResult: () => {
+                  return new Promise((resolve, reject) => {
+                    sendMessage(
+                      FDC3_2_0_TOPICS.GET_INTENT_RESULT,
+                      getResultMsg,
+                    ).then(
+                      (intentResult) => {
+                        console.log('got intent result', intentResult);
+                        const iResult: IntentResult = { type: 'empty' };
+                        resolve(iResult);
+                      },
+                      (err) => {
+                        reject(err);
+                      },
+                    );
+                  });
+                },
+              });
+            }
+          }
+        },
+        (error) => {
+          reject(error);
+        },
+      );
+
+      //timeout the intent resolution
+      intentTimeout = window.setTimeout(() => {
+        reject(new Error(ResolveError.ResolverTimeout));
+      }, INTENT_TIMEOUT);
+    });
   }
 
   function raiseIntentForContext(
@@ -352,15 +541,10 @@ export const createAPI = (): DesktopAgent => {
         ? ({ appId: appIdentity } as AppIdentifier)
         : (appIdentity as AppIdentifier);
 
-    return await sendMessage(
-      FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
-      {
-        context: context,
-        target: convertTarget(identity),
-      },
-      instanceId,
-      eventQ,
-    );
+    return await sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
+      context: context,
+      target: convertTarget(identity),
+    });
   }
 
   const desktopAgent: DesktopAgent = {
@@ -396,12 +580,7 @@ export const createAPI = (): DesktopAgent => {
 
     broadcast: async (context: Context) => {
       //void
-      return await sendMessage(
-        FDC3_2_0_TOPICS.BROADCAST,
-        { context: context },
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.BROADCAST, { context: context });
     },
 
     raiseIntent: raiseIntent,
@@ -423,17 +602,12 @@ export const createAPI = (): DesktopAgent => {
         createListenerItem(listenerId, thisListener, thisContextType),
       );
 
-      sendMessage(
-        FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER,
-        {
-          listenerId: listenerId,
-          contextType: thisContextType,
-        },
-        instanceId,
-        eventQ,
-      );
+      sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
+        listenerId: listenerId,
+        contextType: thisContextType,
+      });
 
-      return new FDC3Listener('context', listenerId);
+      return new ContextListener(listenerId);
     },
 
     addIntentListener: async (
@@ -448,55 +622,38 @@ export const createAPI = (): DesktopAgent => {
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
 
-        sendMessage(
-          FDC3_2_0_TOPICS.ADD_INTENT_LISTENER,
-          {
-            listenerId: listenerId,
-            intent: stripNS(intent),
-          },
-          instanceId,
-          eventQ,
-        );
+        sendMessage(FDC3_2_0_TOPICS.ADD_INTENT_LISTENER, {
+          listenerId: listenerId,
+          intent: intent,
+        });
       }
-      return new FDC3Listener('intent', listenerId, intent);
+      return new IntentListener(listenerId, intent);
     },
 
     findIntent: async (
       intent: string,
       context: Context,
     ): Promise<AppIntent> => {
-      return await sendMessage(
-        FDC3_2_0_TOPICS.FIND_INTENT,
-        {
-          intent: intent,
-          context: context,
-        },
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.FIND_INTENT, {
+        intent: intent,
+        context: context,
+      });
     },
 
     findIntentsByContext: async (
       context: Context,
     ): Promise<Array<AppIntent>> => {
-      return await sendMessage(
-        FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT,
-        {
-          context: context,
-        },
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT, {
+        context: context,
+      });
     },
 
     getSystemChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
         FDC3_2_0_TOPICS.GET_SYSTEM_CHANNELS,
         {},
-        instanceId,
-        eventQ,
       );
-      console.log('result', r);
+
       const channels = r.map((c: ChannelData) => {
         return createChannelObject(
           c.id,
@@ -511,8 +668,6 @@ export const createAPI = (): DesktopAgent => {
       const r: Array<ChannelData> = await sendMessage(
         FDC3_2_0_TOPICS.GET_USER_CHANNELS,
         {},
-        instanceId,
-        eventQ,
       );
       console.log('result', r);
       const channels = r.map((c: ChannelData) => {
@@ -526,18 +681,17 @@ export const createAPI = (): DesktopAgent => {
     },
 
     createPrivateChannel: async (): Promise<PrivateChannel> => {
-      const channelId = guid();
-      return createChannelObject(channelId, 'private', {
-        name: channelId,
-      }) as PrivateChannel;
+      const result: ChannelData = await sendMessage(
+        FDC3_2_0_TOPICS.CREATE_PRIVATE_CHANNEL,
+        {},
+      );
+      return createPrivateChannelObject(result.id);
     },
 
     getOrCreateChannel: async (channelId: string) => {
       const result: ChannelData = await sendMessage(
         FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL,
         { channel: channelId },
-        instanceId,
-        eventQ,
       );
       return createChannelObject(
         result.id,
@@ -547,42 +701,25 @@ export const createAPI = (): DesktopAgent => {
     },
 
     joinUserChannel: async (channel: string) => {
-      return await sendMessage(
-        FDC3_2_0_TOPICS.JOIN_USER_CHANNEL,
-        {
-          channel: channel,
-        },
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.JOIN_USER_CHANNEL, {
+        channel: channel,
+      });
     },
 
     joinChannel: async (channel: string) => {
-      return await sendMessage(
-        FDC3_2_0_TOPICS.JOIN_CHANNEL,
-        {
-          channel: channel,
-        },
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.JOIN_CHANNEL, {
+        channel: channel,
+      });
     },
 
     leaveCurrentChannel: async () => {
-      return await sendMessage(
-        FDC3_2_0_TOPICS.LEAVE_CURRENT_CHANNEL,
-        {},
-        instanceId,
-        eventQ,
-      );
+      return await sendMessage(FDC3_2_0_TOPICS.LEAVE_CURRENT_CHANNEL, {});
     },
 
     getCurrentChannel: async () => {
       const result: ChannelData = await sendMessage(
         FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL,
         {},
-        instanceId,
-        eventQ,
       );
 
       return createChannelObject(

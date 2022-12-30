@@ -232,18 +232,22 @@ export class View {
     }
   }
 
-  setPendingIntent(intent: string, context?: Context, source?: string): void {
-    console.log('************* view - setting pending intent', intent, context);
+  setPendingIntent(
+    intent: string,
+    context?: Context,
+    source?: string,
+    resultId?: string,
+  ): void {
     this.pendingIntents.push(
       new Pending(this.id, source || this.id, {
         intent: intent,
         context: context,
+        resultId: resultId,
       }),
     );
   }
 
   getPendingIntents(): Array<Pending> {
-    console.log('************* view - get pending intent', this.pendingIntents);
     return this.pendingIntents;
   }
 

@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { TARGETS } from '/@main/constants';
-import { userChannels } from '/@main/handlers/fdc3/userChannels';
+import { systemChannels as userChannels } from '/@main/handlers/fdc3/lib/systemChannels';
 import { Context } from '@finos/fdc3';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';

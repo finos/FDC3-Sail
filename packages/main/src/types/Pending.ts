@@ -34,6 +34,11 @@ export class Pending {
   channel?: string | null;
 
   /**
+   * nonce for intent result
+   */
+  resultId?: string | null;
+
+  /**
    *
    * @param viewId
    * @param init
@@ -45,6 +50,7 @@ export class Pending {
     this.context = init.context ? init.context : null;
     this.intent = init.intent ? init.intent : null;
     this.channel = init.channel ? init.channel : null;
+    this.resultId = init.resultId ? init.resultId : null;
   }
 }
 
@@ -52,4 +58,5 @@ export interface PendingInitObject {
   context?: Context;
   intent?: string;
   channel?: string;
+  resultId?: string;
 }

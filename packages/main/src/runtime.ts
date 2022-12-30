@@ -1,13 +1,13 @@
 import { FDC3Listener } from './types/FDC3Listener';
 import { Context, AppIdentifier } from '@finos/fdc3';
 import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
-import { channels } from './system-channels';
+import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { View } from './view';
 import { Workspace } from './workspace';
 import { ViewConfig } from './types/ViewConfig';
 import { WorkspaceConfig } from '/@/types/WorkspaceConfig';
 import { ipcMain, IpcMainEvent } from 'electron';
-import utils from './utils';
+import utils, { guid } from './utils';
 import { IntentResolver } from './IntentResolver';
 import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
@@ -16,7 +16,7 @@ import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { fdc3_1_2_AppDirectoryLoader } from './directory/fdc3-12-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
-import { ChannelData } from './types/Channel';
+import { ChannelData, PrivateChannelData } from './types/Channel';
 import {
   SessionState,
   ViewState,
@@ -40,7 +40,12 @@ const views: Map<string, View> = new Map();
 const workspaces: Map<string, Workspace> = new Map();
 
 //collection of app channel ids
-let app_channels: Array<ChannelData> = [];
+const appChannels: Map<string, ChannelData> = new Map();
+
+const privateChannels: Map<string, PrivateChannelData> = new Map();
+
+//collection of pending intent results
+const intentResults: Map<string, ChannelData | Context | null> = new Map();
 
 /**
  * map of all intent resolver dialogs
@@ -68,7 +73,7 @@ export class Runtime {
     //create context state
     //initialize the active channels
     //need to map channel membership to tabs, listeners to apps, and contexts to channels
-    channels.forEach((chan) => {
+    systemChannels.forEach((chan) => {
       //    contextListeners.set(chan.id, new Map());
       contexts.set(chan.id, []);
     });
@@ -173,9 +178,13 @@ export class Runtime {
     });
 
     //combine the user / system channels and app channels
-    const allChannels = [...channels, ...app_channels];
+    const allChannels = systemChannels;
+    //mixin the appChannels
+    appChannels.forEach((channel) => {
+      allChannels.push(channel);
+    });
 
-    allChannels.forEach((channel) => {
+    allChannels.forEach((channel: ChannelData) => {
       const channelContext = contexts.get(channel.id) || [];
 
       channelStates.push({
@@ -212,12 +221,14 @@ export class Runtime {
       let data: unknown;
       try {
         data = await handler.call(undefined, args);
+        console.log('@@@@@@@@@@@@@ got handler data', data);
       } catch (err) {
         error = (err as string) || 'unknown';
         data = null;
       }
 
       if (event.ports && args.eventId) {
+        console.log('@@@@@@@@@@@@@ handler result', data, error);
         event.ports[0].postMessage({
           topic: args.eventId,
           data: data,
@@ -427,16 +438,54 @@ export class Runtime {
     resolver = undefined;
   }
 
-  getAppChannels(): Array<ChannelData> {
-    return app_channels;
+  getAppChannel(id: string): ChannelData | undefined {
+    return appChannels.get(id);
   }
 
   setAppChannel(channel: ChannelData) {
-    app_channels.push(channel);
+    appChannels.set(channel.id, channel);
   }
 
   dropAppChannel(channelId: string) {
-    app_channels = app_channels.filter((channel) => channel.id !== channelId);
+    appChannels.delete(channelId);
+  }
+
+  setPrivateChannel(channel: PrivateChannelData) {
+    privateChannels.set(channel.id, channel);
+  }
+
+  getPrivateChannel(id: string): PrivateChannelData | undefined {
+    return privateChannels.get(id);
+  }
+
+  dropPrivateChannel(channelId: string) {
+    privateChannels.delete(channelId);
+  }
+
+  //creates new entry in intentResults collection and returns the generated id
+  initIntentResult(): string {
+    const id = guid();
+    intentResults.set(id, null);
+    return id;
+  }
+
+  //one time sets the result (no op if the result is not null)
+  setIntentResult(id: string, result: ChannelData | Context) {
+    const entry = intentResults.get(id);
+    if (entry === null) {
+      intentResults.set(id, result);
+    }
+  }
+
+  //one time returns the result, then deletes the entry if not null
+  getIntentResult(id: string): Context | ChannelData | null {
+    const result = intentResults.get(id);
+    if (result === undefined || result === null) {
+      return null;
+    } else {
+      intentResults.delete(id);
+      return result;
+    }
   }
 
   //cleanup state of the runtime
