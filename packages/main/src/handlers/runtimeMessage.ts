@@ -3,4 +3,5 @@ export interface RuntimeMessage {
   source: string;
   eventId: string;
   data: any;
+  ts: number;
 }

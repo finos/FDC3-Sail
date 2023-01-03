@@ -233,6 +233,7 @@ export class View {
   }
 
   setPendingIntent(intent: string, context?: Context, source?: string): void {
+    console.log('************* view - setting pending intent', intent, context);
     this.pendingIntents.push(
       new Pending(this.id, source || this.id, {
         intent: intent,
@@ -242,6 +243,7 @@ export class View {
   }
 
   getPendingIntents(): Array<Pending> {
+    console.log('************* view - get pending intent', this.pendingIntents);
     return this.pendingIntents;
   }
 
@@ -258,7 +260,6 @@ export class View {
   };
 
   getTitle(): string {
-    console.log('****getTItle', this.title);
     return this.title
       ? this.title
       : this.directoryData && this.directoryData.title

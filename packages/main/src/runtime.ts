@@ -1,10 +1,6 @@
 import { FDC3Listener } from './types/FDC3Listener';
 import { Context, AppIdentifier } from '@finos/fdc3';
-import {
-  FDC3App,
-  IntentInstance,
-  ResolverDetail,
-} from '/@/handlers/fdc3/1.2/types/FDC3Data';
+import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
 import { channels } from './system-channels';
 import { View } from './view';
 import { Workspace } from './workspace';

@@ -1,69 +1,73 @@
 import { getRuntime } from '/@/index';
-import { RuntimeMessage } from '/@/handlers/runtimeMessage';
+import {
+  FDC3Message,
+  CurrentContextData,
+  ChannelMessageData,
+} from '/@/types/FDC3Message';
 import { ChannelData } from '/@/types/Channel';
-import { Context, ChannelError } from 'fdc3-1.2';
+import { Context, ChannelError } from '@finos/fdc3';
 import { systemChannels } from './systemChannels';
 
 export const getSystemChannels = async () => {
   return systemChannels;
 };
 
-export const getCurrentChannel = async (message: RuntimeMessage) => {
+export const getCurrentChannel = async (message: FDC3Message) => {
   const runtime = getRuntime();
 
   const view = runtime.getView(message.source);
   return view?.channel ? getChannelMeta(view.channel) : null;
 };
 
-export const getCurrentContext = async (message: RuntimeMessage) => {
+export const getCurrentContext = async (message: FDC3Message) => {
   const runtime = getRuntime();
+  const data: CurrentContextData = message.data as CurrentContextData;
 
-  const channel = (message.data && message.data.channel) || undefined;
-  const type = (message.data && message.data.contextType) || undefined;
+  const channel = data.channel;
+  const type = data.contextType;
   let ctx: Context | null = null;
-  if (channel) {
-    const contexts = runtime.getContexts();
-    const channelContext = contexts.get(channel);
-    if (type) {
-      if (channelContext) {
-        ctx =
-          channelContext.find((c) => {
-            return c.type === type;
-          }) || null;
-      }
-    } else {
-      ctx = channelContext && channelContext[0] ? channelContext[0] : ctx;
+
+  const contexts = runtime.getContexts();
+  const channelContext = contexts.get(channel);
+  if (type) {
+    if (channelContext) {
+      ctx =
+        channelContext.find((c) => {
+          return c.type === type;
+        }) || null;
     }
+  } else {
+    ctx = channelContext && channelContext[0] ? channelContext[0] : ctx;
   }
+
   return ctx;
 };
 
-export const getOrCreateChannel = async (message: RuntimeMessage) => {
+export const getOrCreateChannel = async (message: FDC3Message) => {
   const runtime = getRuntime();
-  const id = (message.data && message.data.channelId) || 'default';
+  const data: ChannelMessageData = message.data as ChannelMessageData;
+  const id = data.channel;
   //reject with error is reserved 'default' term
   if (id === 'default') {
     throw new Error(ChannelError.CreationFailed);
-  } else {
-    let channel: ChannelData | null = getChannelMeta(id);
+  }
+  let channel: ChannelData | null = getChannelMeta(id);
 
-    //if not found... create as an app channel
-    if (!channel) {
-      channel = { id: id, type: 'app' };
-      //add an entry for the context listeners
-      //contextListeners.set(id, new Map());
-      runtime.getContexts().set(id, []);
-      runtime.setAppChannel(channel);
-    }
-    if (channel) {
-      return channel;
-    } else {
-      return;
-    }
+  //if not found... create as an app channel
+  if (!channel) {
+    channel = { id: id, type: 'app' };
+    //add an entry for the context listeners
+    runtime.getContexts().set(id, []);
+    runtime.setAppChannel(channel);
+  }
+  if (channel) {
+    return channel;
+  } else {
+    return;
   }
 };
 
-export const leaveCurrentChannel = async (message: RuntimeMessage) => {
+export const leaveCurrentChannel = async (message: FDC3Message) => {
   const runtime = getRuntime();
   //'default' means we have left all channels
   const view = runtime.getView(message.source);
@@ -75,16 +79,13 @@ export const leaveCurrentChannel = async (message: RuntimeMessage) => {
   }
 };
 
-export const joinChannel = async (message: RuntimeMessage) => {
+export const joinChannel = async (message: FDC3Message) => {
   const runtime = getRuntime();
-  const channel = message.data && message.data.channel;
+  const data: ChannelMessageData = message.data as ChannelMessageData;
+  const channel = data.channel;
   const view = runtime.getView(message.source);
-  if (channel && view) {
-    await view.parent?.joinViewToChannel(
-      channel,
-      view,
-      (message.data && message.data.restoreOnly) || undefined,
-    );
+  if (channel && view && view.parent) {
+    await view.parent.joinViewToChannel(channel, view);
     return true;
   }
 };
