@@ -52,6 +52,7 @@ export const addIntentListener = async (message: FDC3Message) => {
               data: {
                 intent: pIntent.intent,
                 context: pIntent.context,
+                resultId: pIntent.resultId,
               },
               source: pIntent.source,
             });
@@ -66,3 +67,14 @@ export const addIntentListener = async (message: FDC3Message) => {
     return;
   }
 };
+/*
+export const intentListenerCalled = async (message: FDC3Message) => {
+  const runtime = getRuntime();
+  const data: ListenerMessageData = message.data as ListenerMessageData;
+  //get the listener
+  
+  //is there a pending intent for the listener?
+
+  //if so, then resolve it and remove the pending intent
+};
+*/

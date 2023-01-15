@@ -18,4 +18,5 @@ export const FDC3_1_2_TOPICS = {
   RAISE_INTENT: 'FDC3_1.2:raiseIntent',
   RAISE_INTENT_FOR_CONTEXT: 'FDC3_1.2:raiseIntentForContext',
   RESOLVE_INTENT: 'FDC3_1.2:resolveIntent',
+  INTENT_LISTENER_CALLED: 'FDC3_1_2:intentListenerCalled',
 };

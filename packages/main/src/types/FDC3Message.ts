@@ -142,7 +142,7 @@ export interface ResolveIntentData {
 */
 export interface IntentResultData {
   resultId: string;
-  result?: Context | ChannelData | null;
+  result?: ChannelData | Context | null;
 }
 
 /*

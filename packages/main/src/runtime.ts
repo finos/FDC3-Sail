@@ -17,6 +17,7 @@ import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
 import { setRuntimeSecurityRestrictions } from './security-restrictions';
 import { ChannelData, PrivateChannelData } from './types/Channel';
+import { IntentTransfer, ContextTransfer } from '/@/types/TransferInstance';
 import {
   SessionState,
   ViewState,
@@ -46,6 +47,9 @@ const privateChannels: Map<string, PrivateChannelData> = new Map();
 
 //collection of pending intent results
 const intentResults: Map<string, ChannelData | Context | null> = new Map();
+
+const intentTransfers: Map<string, IntentTransfer> = new Map();
+const contextTransfers: Map<string, ContextTransfer> = new Map();
 
 /**
  * map of all intent resolver dialogs
@@ -219,14 +223,12 @@ export class Runtime {
       let data: unknown;
       try {
         data = await handler.call(undefined, args);
-        console.log('@@@@@@@@@@@@@ got handler data', data);
       } catch (err) {
         error = (err as string) || 'unknown';
         data = null;
       }
 
       if (event.ports && args.eventId) {
-        console.log('@@@@@@@@@@@@@ handler result', data, error);
         event.ports[0].postMessage({
           topic: args.eventId,
           data: data,
@@ -468,7 +470,8 @@ export class Runtime {
   }
 
   //one time sets the result (no op if the result is not null)
-  setIntentResult(id: string, result: ChannelData | Context) {
+  setIntentResult(id: string, result: ChannelData | Context | null) {
+    console.log('************** set intent result', id, result);
     const entry = intentResults.get(id);
     if (entry === null) {
       intentResults.set(id, result);
@@ -484,6 +487,24 @@ export class Runtime {
       intentResults.delete(id);
       return result;
     }
+  }
+
+  createIntentTransfer(
+    source: string,
+    intent: string,
+    context?: Context,
+  ): IntentTransfer {
+    const id = guid();
+    const transfer = new IntentTransfer(id, source, intent, context);
+    intentTransfers.set(id, transfer);
+    return transfer;
+  }
+
+  createContextTransfer(source: string, context: Context): ContextTransfer {
+    const id = guid();
+    const transfer = new ContextTransfer(id, source, context);
+    contextTransfers.set(id, transfer);
+    return transfer;
   }
 
   //cleanup state of the runtime

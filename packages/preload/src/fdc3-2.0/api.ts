@@ -4,6 +4,7 @@ import {
   sendMessage,
   guid,
   ListenerItem,
+  IntentListenerItem,
   ContextTypeListenerItem,
   VoidListenerItem,
   convertTarget,
@@ -27,27 +28,68 @@ import {
   ResolveError,
   IntentResult,
 } from '@finos/fdc3';
-import { ChannelData } from '/@main/types/FDC3Data';
+import { ChannelData } from '/@main/types/Channel';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 import { IntentResultData } from '/@main/types/FDC3Message';
 
-const callIntentListener = (intent: string, context?: Context | undefined) => {
+const toChannelData = (channel: Channel): ChannelData | null => {
+  if (channel) {
+    return {
+      type: channel.type,
+      id: channel.id,
+      displayMetadata: channel.displayMetadata,
+    };
+  } else {
+    return null;
+  }
+};
+
+const callIntentListener = async (
+  intent: string,
+  resultId: string,
+  context?: Context | undefined,
+) => {
   if (intent) {
     const listeners = _intentListeners.get(intent);
     const result = null;
     if (listeners) {
-      listeners.forEach((l) => {
+      const items = listeners.values();
+      for (let i = 0; i < listeners.size; i++) {
+        const l: IntentListenerItem = items.next().value;
+        if (l.handler && context) {
+          const result = await l.handler.call(document, context);
+          //if it's a channel, convert to channeldata type before sending
+          const channelData = toChannelData(result as Channel);
+          const contextData = result as Context;
+          let resultData: ChannelData | Context | null | undefined;
+          if (channelData) {
+            resultData = channelData;
+          } else if (contextData) {
+            resultData = contextData;
+          } else if (result) {
+            resultData = null;
+          }
+          //  const messageData : IntentResultData = {resultId: resultId, result: resultData };
+          sendMessage(FDC3_2_0_TOPICS.SET_INTENT_RESULT, {
+            result: resultData,
+            resultId: resultId,
+          });
+        }
+      }
+      /* listeners.forEach((l) => {
         if (l.handler && context) {
           l.handler.call(document, context);
         }
-      });
+      });*/
     }
     //emit return event
     document.dispatchEvent(
       fdc3Event(FDC3EventEnum.IntentComplete, { data: result }),
     );
+
+    return;
   }
 };
 
@@ -66,7 +108,10 @@ const callContextListener = (listenerId: string, context: Context) => {
 const _contextListeners: Map<string, ListenerItem> = new Map();
 
 //map of intents holding map of listeners for each intent
-const _intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
+const _intentListeners: Map<
+  string,
+  Map<string, IntentListenerItem>
+> = new Map();
 
 //map of listeners for when a contextListener is added to a private channel
 const _addContextListeners: Map<string, ContextTypeListenerItem> = new Map();
@@ -104,19 +149,13 @@ export const connect = () => {
    * listen for incoming intents
    */
   ipcRenderer.on(FDC3_2_0_TOPICS.INTENT, (event, args) => {
-    callIntentListener(args.data.intent, args.data.context as Context);
+    console.log('************** intent', args.data);
+    callIntentListener(
+      args.data.intent,
+      args.data.resultId,
+      args.data.context as Context,
+    );
   });
-
-  /**
-   * listen for channel state update
-   * to do: do we need this?
-   */
-  /*ipcRenderer.on(RUNT.SET_CURRENT_CHANEL, (event, args) => {
-    console.log('ipcrenderer event', event.type);
-    if (args.data.channel) {
-      //  currentChannel = args.data.channel;
-    }
-  });*/
 };
 
 //handshake with main and get instanceId assigned

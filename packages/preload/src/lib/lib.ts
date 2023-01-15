@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { ContextHandler, AppIdentifier } from '@finos/fdc3';
+import { ContextHandler, IntentHandler, AppIdentifier } from '@finos/fdc3';
 import { TargetApp, AppMetadata } from 'fdc3-1.2';
 
 import {
@@ -42,6 +42,13 @@ export type QueueItem = {
 export interface ListenerItem {
   id?: string;
   handler?: ContextHandler;
+  contextType?: string;
+}
+
+//listener for async intent handlers (2.0)
+export interface IntentListenerItem {
+  id?: string;
+  handler?: IntentHandler;
   contextType?: string;
 }
 

@@ -24,7 +24,12 @@ import {
   findIntentsByContext,
 } from '/@/handlers/fdc3/lib/findIntent';
 import { resolveIntent } from '../lib/raiseIntent';
-import { raiseIntent, raiseIntentForContext } from './raiseIntent';
+import {
+  raiseIntent,
+  raiseIntentForContext,
+  getIntentResult,
+  setIntentResult,
+} from './raiseIntent';
 import { createPrivateChannel } from './channels';
 
 export const register = (runtime: Runtime) => {
@@ -61,6 +66,8 @@ export const register = (runtime: Runtime) => {
   );
   runtime.addHandler(FDC3_2_0_TOPICS.RAISE_INTENT, raiseIntent);
   runtime.addHandler(FDC3_2_0_TOPICS.RESOLVE_INTENT, resolveIntent);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_INTENT_RESULT, getIntentResult);
+  runtime.addHandler(FDC3_2_0_TOPICS.SET_INTENT_RESULT, setIntentResult);
   runtime.addHandler(
     FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
     raiseIntentForContext,
