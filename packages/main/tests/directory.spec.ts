@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest';
 import { fdc3_2_0_AppDirectoryLoader } from '../src/directory/fdc3-20-loader';
-import { fdc3_1_2_AppDirectoryLoader } from '../src/directory/fdc3-12-loader';
 import {
   Directory,
   DirectoryApp,
@@ -14,7 +13,7 @@ const PACKAGE_ROOT = __dirname;
 const REMOTE_V2 = 'https://directory.fdc3.finos.org/v2/apps';
 
 const LOCAL_V2 = join(PACKAGE_ROOT, '/v2/apps/appd-records.v2.json');
-const LOCAL_V1 = join(PACKAGE_ROOT, '/v1/apps/appd-records.v1.json');
+const LOCAL_V2_VIEW_NEWS = join(PACKAGE_ROOT, '/v2/apps/view-news.json');
 
 test('Test Remote Directory Load in FDC3 2.0 Format', async () => {
   const results = await fdc3_2_0_AppDirectoryLoader(REMOTE_V2);
@@ -27,16 +26,10 @@ test('Test Local App Load in FDC3 2.0 Format', async () => {
   expect(results[0].appId).toEqual('my-application');
 });
 
-test('Test Local App Load in FDC3 1.2 Format', async () => {
-  const results = await fdc3_1_2_AppDirectoryLoader(LOCAL_V1);
-  expect(results.length).toEqual(1);
-  expect(results[0].appId).toEqual('News-Demo');
-});
-
 test('Test Returned Intents', async () => {
   const directory = new Directory(
-    [LOCAL_V2, LOCAL_V1],
-    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+    [LOCAL_V2, LOCAL_V2_VIEW_NEWS],
+    [fdc3_2_0_AppDirectoryLoader],
   );
   await directory.reload();
   expect(directory.retrieveAll().length).toEqual(3);
@@ -71,8 +64,8 @@ test('Test Returned Intents', async () => {
 
 test('Full Text Search', async () => {
   const directory = new Directory(
-    [LOCAL_V2, LOCAL_V1],
-    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+    [LOCAL_V2, LOCAL_V2_VIEW_NEWS],
+    [fdc3_2_0_AppDirectoryLoader],
   );
 
   await directory.reload();
@@ -87,8 +80,8 @@ test('Full Text Search', async () => {
 
 test('Retrieve just intent data', async () => {
   const directory = new Directory(
-    [LOCAL_V2, LOCAL_V1],
-    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+    [LOCAL_V2, LOCAL_V2_VIEW_NEWS],
+    [fdc3_2_0_AppDirectoryLoader],
   );
 
   await directory.reload();
@@ -108,8 +101,8 @@ test('Retrieve just intent data', async () => {
 
 test('Ensure Manifests Set Correctly', async () => {
   const directory = new Directory(
-    [LOCAL_V2, LOCAL_V1],
-    [fdc3_2_0_AppDirectoryLoader, fdc3_1_2_AppDirectoryLoader],
+    [LOCAL_V2, LOCAL_V2_VIEW_NEWS],
+    [fdc3_2_0_AppDirectoryLoader],
   );
   await directory.reload();
 

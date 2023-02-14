@@ -57,7 +57,7 @@ export function loadLocally(u: string) {
 export const fdc3_2_0_AppDirectoryLoader: Loader = (u: string) => {
   let converter;
 
-  if (u.endsWith('/v2/apps') || u.includes('.v2.json')) {
+  if (u.endsWith('/v2/apps') || u.includes('.json')) {
     // whole directory
     converter = convertToDirectoryList;
   } else {

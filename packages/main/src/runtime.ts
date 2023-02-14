@@ -13,7 +13,6 @@ import { RuntimeMessage } from './handlers/runtimeMessage';
 import { register as registerRuntimeHandlers } from './handlers/runtime/index';
 import { Directory } from './directory/directory';
 import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
-import { fdc3_1_2_AppDirectoryLoader } from './directory/fdc3-12-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
 import { ChannelData } from './types/Channel';
@@ -78,10 +77,7 @@ export class Runtime {
 
   async initDirectory() {
     const urls = utils.getDirectoryUrl().split(',');
-    this.directory = new Directory(urls, [
-      fdc3_2_0_AppDirectoryLoader,
-      fdc3_1_2_AppDirectoryLoader,
-    ]);
+    this.directory = new Directory(urls, [fdc3_2_0_AppDirectoryLoader]);
     await this.directory.reload();
   }
 
