@@ -33,18 +33,14 @@ Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at
 
 If you haven't already, check out their demo here: https://youtu.be/5VJzftderO0
 
-## Electron Implementation
+## About This Implementation
 
-The Electron implementation is built from the [Vite Electron Builder Boilerplate]
-
-The UI for the desktop agent is built using React MUI.
-
-All remotely hosted content is run in BrowserView following electron security best practices.
-
-
-## Libraries
+ - FDC3-Sail is an Electron application built from the [Vite Electron Builder Boilerplate]
+ - The UI for the desktop agent is built using React MUI.
+ - All remotely hosted content is run in BrowserView following electron security best practices.
 
 The following libraries are used:
+
 - [Electron] cross-platform desktop framework
 - [electron-builder] for packaging, distribution and auto-updates
 - [Vite] for building, running and hot-reloading
@@ -72,7 +68,7 @@ The following libraries are used:
 [nano-staged]: https://github.com/usmanyunusov/nano-staged
 [simple-git-hooks]: https://github.com/toplenboren/simple-git-hooks
 
-## Structure
+### Structure
 
 - `directory/`   - for local app directories
 - `packages/main` - the main Electron application, has access to Node
@@ -85,7 +81,7 @@ The following libraries are used:
     - `sessionView` - UI for the sessionView window
     - `topNavigation` - UI for the Top Navigation that includes the Tabs, channel picker button, and Dev Tools Menu.
 
-## Getting Started (Using the FINOS App Directory)
+## Getting Started
 
 ~~~
 npm install
