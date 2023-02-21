@@ -27,6 +27,12 @@ This project provides a fully open source implementation of the [FDC3](https://f
 
 If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
 
+## Sail at OSFF!
+
+Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at the Open Source In Finance Forum (OSFF) in New York in December 2022.  They showed how you could git-clone FDC3-Sail, run it and play with all the apps in the FINOS App Directory.   They also showed how to build apps and share context data.  
+
+If you haven't already, check out their demo here: https://youtu.be/5VJzftderO0
+
 ## Electron Implementation
 
 The Electron implementation is built from the [Vite Electron Builder Boilerplate]
