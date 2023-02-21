@@ -1,5 +1,6 @@
 ## For 3/4 May 2023 Hackathon in NYC
 
+- Getting Started Short Video (5 min) for Webinar
 - First pass of FDC3 2.0 functionality (all existing FDC3 1.2 behaviour ported to 2.0)
 - Refactoring
 - Improved layout stuff (find an alternative to Golden Layout)
