@@ -85,16 +85,6 @@ The following libraries are used:
     - `sessionView` - UI for the sessionView window
     - `topNavigation` - UI for the Top Navigation that includes the Tabs, channel picker button, and Dev Tools Menu.
 
-## App Directory Setup
-
-Modify the local directory entries here:
-
-- `directory/src/data`
-
-The local appD will run at `localhost:8080` by default.
-
-By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change the local settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and change the production setting by modifying the value for `productionDirectory` in `packages/main/src/utils.ts`.
-
 ## Getting Started (Using the FINOS App Directory)
 
 ~~~
@@ -113,7 +103,6 @@ npm install
 ~~~
 
 2. Create your own local App directory manifest .e.g. `local.v2.json` in the `/directory` folder
-
 
 3. Set the environment variable to use this directory: 
 
@@ -139,6 +128,9 @@ Other useful commands:
 
 To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
 
+## Roadmap
+
+[View the FDC3-Sail Roadmap](Roadmap.md)
 
 ## Contributing
 
