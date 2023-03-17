@@ -126,7 +126,7 @@ To join the Electron FDC3 Desktop Agent & App Directory mailing list please emai
 
 ## Roadmap
 
-[View the FDC3-Sail Roadmap](Roadmap.md)
+[BMO Hackathon Milestone](https://github.com/finos/FDC3-Sail/milestone/1)
 
 ## Contributing
 
