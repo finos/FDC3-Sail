@@ -27,18 +27,20 @@ This project provides a fully open source implementation of the [FDC3](https://f
 
 If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
 
-## Electron Implementation
+## Sail at OSFF!
 
-The Electron implementation is built from the [Vite Electron Builder Boilerplate]
+Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at the Open Source In Finance Forum (OSFF) in New York in December 2022.  They showed how you could git-clone FDC3-Sail, run it and play with all the apps in the FINOS App Directory.   They also showed how to build apps and share context data.  
 
-The UI for the desktop agent is built using React MUI.
+If you haven't already, check out their demo here: https://youtu.be/5VJzftderO0
 
-All remotely hosted content is run in BrowserView following electron security best practices.
+## About This Implementation
 
-
-## Libraries
+ - FDC3-Sail is an Electron application built from the [Vite Electron Builder Boilerplate]
+ - The UI for the desktop agent is built using React MUI.
+ - All remotely hosted content is run in BrowserView following electron security best practices.
 
 The following libraries are used:
+
 - [Electron] cross-platform desktop framework
 - [electron-builder] for packaging, distribution and auto-updates
 - [Vite] for building, running and hot-reloading
@@ -66,7 +68,7 @@ The following libraries are used:
 [nano-staged]: https://github.com/usmanyunusov/nano-staged
 [simple-git-hooks]: https://github.com/toplenboren/simple-git-hooks
 
-## Structure
+### Structure
 
 - `directory/`   - for local app directories
 - `packages/main` - the main Electron application, has access to Node
@@ -79,17 +81,7 @@ The following libraries are used:
     - `sessionView` - UI for the sessionView window
     - `topNavigation` - UI for the Top Navigation that includes the Tabs, channel picker button, and Dev Tools Menu.
 
-## App Directory Setup
-
-Modify the local directory entries here:
-
-- `directory/src/data`
-
-The local appD will run at `localhost:8080` by default.
-
-By default, the Desktop Agent points to the local directory in development and to the `https://appd.kolbito.com` directory in production.  You can change the local settings in `scripts/watch.js` by modifying the entries for `VITE_DEV_DIRECTORY_URL` and change the production setting by modifying the value for `productionDirectory` in `packages/main/src/utils.ts`.
-
-## Getting Started (Using the FINOS App Directory)
+## Getting Started
 
 ~~~
 npm install
@@ -107,7 +99,6 @@ npm install
 ~~~
 
 2. Create your own local App directory manifest .e.g. `local.v2.json` in the `/directory` folder
-
 
 3. Set the environment variable to use this directory: 
 
@@ -133,6 +124,9 @@ Other useful commands:
 
 To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
 
+## Roadmap
+
+[BMO Hackathon Milestone](https://github.com/finos/FDC3-Sail/milestone/1)
 
 ## Contributing
 
