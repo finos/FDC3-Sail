@@ -16,6 +16,7 @@ import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
 import { ChannelData } from './types/Channel';
+import { setRuntimeSecurityRestrictions } from './security-restrictions';
 import {
   SessionState,
   ViewState,
@@ -72,6 +73,7 @@ export class Runtime {
       contexts.set(chan.id, []);
     });
     await this.initDirectory();
+    setRuntimeSecurityRestrictions(this);
     return;
   }
 
