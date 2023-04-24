@@ -20,6 +20,7 @@ export type DirectoryAppSailManifest = {
   searchable: boolean;
   forceNewWindow: boolean;
   framesApi: boolean;
+  allowedOrigins: Array<string>;
 };
 
 /**
