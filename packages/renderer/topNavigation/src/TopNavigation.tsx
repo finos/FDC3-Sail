@@ -260,93 +260,97 @@ export default class TopNavigation extends React.Component<
 
     return (
       <ThemeProvider theme={darkTheme}>
-        <div className="window-draggable"></div>
-        <div>
-          <Stack
-            direction={'row'}
-            alignContent={'center'}
-            alignItems="center"
-            className="h-12 bg-[#383838] pl-24 content-center"
-          >
-            <div className="verticalLineGrey"></div>
+        <div className="window-draggable">
+          <div>
+            <Stack
+              direction={'row'}
+              alignContent={'center'}
+              alignItems="center"
+              className="h-12 bg-[#383838] pl-24 content-center"
+            >
+              <div className="verticalLineGrey"></div>
 
-            <Tabs
-              className="w-full h-full"
-              indicatorColor="secondary"
-              value={this.state.selectedTab}
-              onChange={(event, newTabId) => {
-                this.handleTabChange(newTabId);
-              }}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              {this.state.tabs.map((tab: NavigationTab) => (
-                <Tab
-                  className="tabStyle"
-                  style={{ minHeight: '50px' }}
-                  label={tab.tabName}
-                  value={tab.tabId}
-                  id={tab.tabId}
-                  key={tab.tabId}
-                  iconPosition={
-                    tab.tabName === 'App Directory' ? 'start' : 'end'
-                  }
-                  onDrop={drop}
-                  onDragLeave={leaveTab}
-                  onDragOver={allowDrop}
-                  onDragEnd={dragEnd}
-                  draggable={tab.tabName !== 'App Directory'}
-                  onDragStart={() => {
-                    drag(tab.tabId);
-                  }}
-                  icon={
-                    tab.tabName === 'App Directory' ? (
-                      <div>
-                        <HomeOutlined
-                          fontSize="small"
-                          className="text-xs text-white"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <OpenInNew
-                          fontSize="inherit"
-                          className="mr-2"
-                          onClick={() => {
-                            this.tearOut(tab.tabId);
-                          }}
-                        />
-                        <CloseOutlined
-                          fontSize="inherit"
-                          onClick={() => {
-                            this.closeTab(tab.tabId);
-                          }}
-                        />
-                      </div>
-                    )
-                  }
-                />
-              ))}
-            </Tabs>
-            <IconButton
-              size="small"
-              id="channelPicker"
-              sx={{
-                background: this.state.channelColor,
-              }}
-              onClick={openChannelPicker}
-              title="select channel"
-            >
-              <LayersOutlined />
-            </IconButton>
-            <IconButton
-              id="menuButton"
-              onClick={devToolsClick}
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <MoreVert />
-            </IconButton>
-          </Stack>
+              <Tabs
+                className="w-full h-full"
+                indicatorColor="secondary"
+                value={this.state.selectedTab}
+                onChange={(event, newTabId) => {
+                  this.handleTabChange(newTabId);
+                }}
+                variant="scrollable"
+                scrollButtons="auto"
+              >
+                {this.state.tabs.map((tab: NavigationTab) => (
+                  <Tab
+                    className="tabStyle"
+                    style={{ minHeight: '50px' }}
+                    label={tab.tabName}
+                    value={tab.tabId}
+                    id={tab.tabId}
+                    key={tab.tabId}
+                    iconPosition={
+                      tab.tabName === 'App Directory' ? 'start' : 'end'
+                    }
+                    onDrop={drop}
+                    onDragLeave={leaveTab}
+                    onDragOver={allowDrop}
+                    onDragEnd={dragEnd}
+                    draggable={tab.tabName !== 'App Directory'}
+                    onDragStart={() => {
+                      drag(tab.tabId);
+                    }}
+                    icon={
+                      tab.tabName === 'App Directory' ? (
+                        <div>
+                          <HomeOutlined
+                            fontSize="small"
+                            className="text-xs text-white"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <OpenInNew
+                            fontSize="inherit"
+                            className="mr-2"
+                            onClick={() => {
+                              this.tearOut(tab.tabId);
+                            }}
+                          />
+                          <CloseOutlined
+                            fontSize="inherit"
+                            onClick={() => {
+                              this.closeTab(tab.tabId);
+                            }}
+                          />
+                        </div>
+                      )
+                    }
+                  />
+                ))}
+              </Tabs>
+
+              <IconButton
+                size="small"
+                id="channelPicker"
+                className="toolbar-button"
+                sx={{
+                  background: this.state.channelColor,
+                }}
+                onClick={openChannelPicker}
+                title="select channel"
+              >
+                <LayersOutlined />
+              </IconButton>
+              <IconButton
+                id="menuButton"
+                className="toolbar-button"
+                onClick={devToolsClick}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <MoreVert />
+              </IconButton>
+            </Stack>
+          </div>
         </div>
       </ThemeProvider>
     );
