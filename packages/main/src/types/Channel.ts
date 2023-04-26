@@ -9,7 +9,7 @@ import { FDC3Listener } from '/@/types/FDC3Listener';
 export interface ChannelData {
   id: string;
   type: 'user' | 'app' | 'private' | 'system';
-  //owner: string | null; //the id of the view which owns the App or Private channel - 'null' if a user/system channel
+  owner: string | null; //the id of the view which owns the App or Private channel - 'null' if a user/system channel
   displayMetadata?: ChannelMetadata;
 }
 
