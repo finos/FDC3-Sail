@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { RUNTIME_TOPICS } from '../../main/src/handlers/runtime/topics';
+import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 import {
   PostAdd,
   HiveOutlined,

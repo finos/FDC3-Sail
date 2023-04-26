@@ -1,5 +1,4 @@
 import { app, BrowserWindow } from 'electron';
-import './security-restrictions';
 import { Runtime } from './runtime';
 
 let runtime: Runtime | null = null;
@@ -108,7 +107,6 @@ app.on('activate', async () => {
   }
   runtime = new Runtime();
   runtime.startup();
-
   await createWindow();
   return;
 });

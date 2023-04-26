@@ -21,6 +21,7 @@ import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 import { getSailManifest } from '/@/directory/directory';
 import { FDC3_VERSIONS } from '/@/types/Versions';
+import { shell } from 'electron';
 
 const FDC3_1_2_PRELOAD = join(
   __dirname,
@@ -116,6 +117,23 @@ export class View {
     });
     //set bgcolor so view doesn't bleed through to hidden tabs
     this.content.setBackgroundColor('#fff');
+
+    this.content.webContents.setWindowOpenHandler((details) => {
+      const origin = new URL(details.url).origin;
+      const sailManifest = this.directoryData
+        ? getSailManifest(this.directoryData)
+        : null;
+      const allowed =
+        sailManifest && sailManifest.allowedOrigins
+          ? sailManifest.allowedOrigins
+          : [];
+      if (allowed.indexOf(origin) > -1) {
+        return { action: 'allow' };
+      } else {
+        shell.openExternal(details.url);
+        return { action: 'deny' };
+      }
+    });
 
     this.content.webContents.on('ipc-message', (event, channel) => {
       if (channel === SAIL_TOPICS.INITIATE && !this.initiated) {
