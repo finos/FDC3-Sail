@@ -2,9 +2,14 @@
  * shared functions and constants
  */
 
-import { channels } from './system-channels';
+import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { ChannelData } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
+import { randomUUID } from 'crypto';
+
+export const guid = () => {
+  return randomUUID();
+};
 
 const DEFAULT_DIRECTORY = 'https://directory.fdc3.finos.org/v2/apps';
 
@@ -16,7 +21,7 @@ const getDirectoryUrl = (): string => {
 };
 
 const getSystemChannels = (): Array<ChannelData> => {
-  return channels;
+  return systemChannels;
 };
 
 /**

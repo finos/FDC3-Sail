@@ -30,6 +30,7 @@ export interface ResolverDetail {
 
 /**
  * cross version representation of channel data
+ * todo: rationalize with ChannelData interface in Channel.ts
  */
 export interface ChannelData {
   id: string;

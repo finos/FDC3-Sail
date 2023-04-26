@@ -45,6 +45,7 @@ export const getCurrentContext = async (message: FDC3Message) => {
 
 export const getOrCreateChannel = async (message: FDC3Message) => {
   const runtime = getRuntime();
+
   const data: ChannelMessageData = message.data as ChannelMessageData;
   const id = data.channel;
   //reject with error is reserved 'default' term
@@ -55,7 +56,7 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
 
   //if not found... create as an app channel
   if (!channel) {
-    channel = { id: id, type: 'app' };
+    channel = { id: id, type: 'app', owner: message.source };
     //add an entry for the context listeners
     runtime.getContexts().set(id, []);
     runtime.setAppChannel(channel);
@@ -100,16 +101,19 @@ const getChannelMeta = (id: string): ChannelData | null => {
   });
 
   if (sc) {
-    channel = { id: id, type: 'system', displayMetadata: sc.displayMetadata };
+    channel = {
+      id: id,
+      type: 'system',
+      displayMetadata: sc.displayMetadata,
+      owner: null,
+    };
   }
-  //is it already an app channel?
+  //is it an app channel?
   if (!channel) {
     const runtime = getRuntime();
-    const ac = runtime.getAppChannels().find((c) => {
-      return c.id === id;
-    });
+    const ac = runtime.getAppChannel(id);
     if (ac) {
-      channel = { id: id, type: 'app' };
+      channel = { id: id, type: 'app', owner: ac.owner };
     }
   }
   return channel;

@@ -22,6 +22,8 @@ import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 import { getSailManifest } from '/@/directory/directory';
 import { FDC3_VERSIONS } from '/@/types/Versions';
 import { shell } from 'electron';
+import { FDC3_TOPICS } from '/@/handlers/fdc3/lib/topics';
+import { TargetIdentifier } from './types/FDC3Message';
 
 const FDC3_1_2_PRELOAD = join(
   __dirname,
@@ -200,6 +202,15 @@ export class View {
     }
   }
 
+  resolveTransfer(transferId: string, target: TargetIdentifier) {
+    //send a message to view content to resolve the transfer
+    //'source' on the message will be the target of the transfer
+    this.content.webContents.send(FDC3_TOPICS.RESOLVE_TRANSFER, {
+      source: target,
+      transferId: transferId,
+    });
+  }
+
   id: string;
 
   content: BrowserView;
@@ -250,18 +261,22 @@ export class View {
     }
   }
 
-  setPendingIntent(intent: string, context?: Context, source?: string): void {
-    console.log('************* view - setting pending intent', intent, context);
+  setPendingIntent(
+    intent: string,
+    context?: Context,
+    source?: string,
+    resultId?: string,
+  ): void {
     this.pendingIntents.push(
       new Pending(this.id, source || this.id, {
         intent: intent,
         context: context,
+        resultId: resultId,
       }),
     );
   }
 
   getPendingIntents(): Array<Pending> {
-    console.log('************* view - get pending intent', this.pendingIntents);
     return this.pendingIntents;
   }
 

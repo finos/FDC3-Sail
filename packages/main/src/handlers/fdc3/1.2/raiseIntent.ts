@@ -5,6 +5,7 @@ import { FDC3App, FDC3AppDetail } from '/@/types/FDC3Data';
 import { FDC3_1_2_TOPICS } from './topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import { buildIntentInstanceTree, sortApps } from '../lib/raiseIntent';
+//import { IntentTransfer } from '/@/types/TransferInstance';
 import {
   FDC3Message,
   RaiseIntentData,
@@ -17,11 +18,14 @@ import {
 
 export const raiseIntent = async (message: FDC3Message) => {
   const runtime = getRuntime();
+
   const results: Array<FDC3App> = [];
   const data: RaiseIntentData = message.data as RaiseIntentData;
   const intent = data.intent;
   let intentTarget: string | undefined; //the id of the app the intent gets routed to (if unambigious)
   const intentContext = data.context?.type || '';
+
+  //const intentTransfer = runtime.createIntentTransfer(message.source, intent, data.context);
 
   if (!intent) {
     //return {error:ResolveError.NoAppsFound};

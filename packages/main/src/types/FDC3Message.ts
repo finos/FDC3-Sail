@@ -2,6 +2,7 @@ import { FDC3App } from './FDC3Data';
 import { Context, AppIdentifier } from '@finos/fdc3';
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { AppMetadata } from 'fdc3-1.2';
+import { ChannelData } from './Channel';
 
 export interface FDC3Message extends RuntimeMessage {
   topic: string;
@@ -23,6 +24,7 @@ export type FDC3MessageData =
   | RaiseIntentData
   | RaiseIntentContextData
   | ResolveIntentData
+  | IntentResultData
   | EmptyMessage;
 
 export interface EmptyMessage {
@@ -77,6 +79,14 @@ export interface ListenerMessageData {
 }
 
 /*
+  describes data for identifiying a listener scoped to a channel
+*/
+export interface ChannelListenerData {
+  listenerId: string;
+  channel: string;
+}
+
+/*
   descibes data for the find intent API
 */
 export interface FindIntentData {
@@ -125,6 +135,14 @@ export interface ResolveIntentData {
   selected: FDC3App;
   intent: string;
   context?: Context | undefined;
+}
+
+/*
+  data for retrieving/setting an intent result
+*/
+export interface IntentResultData {
+  resultId: string;
+  result?: ChannelData | Context | null;
 }
 
 /*

@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { ContextHandler, AppIdentifier } from '@finos/fdc3';
+import { ContextHandler, IntentHandler, AppIdentifier } from '@finos/fdc3';
 import { TargetApp, AppMetadata } from 'fdc3-1.2';
 
 import {
@@ -8,6 +8,24 @@ import {
   FDC3Response,
   TargetIdentifier,
 } from '/@main/types/FDC3Message';
+
+//flag to indicate the background script is ready for fdc3!
+let instanceId = '';
+
+//queue of pending events - accumulate until the background is ready
+const eventQ: Array<QueueItem> = [];
+
+export const getInstanceId = () => {
+  return instanceId;
+};
+
+export const setInstanceId = (id: string) => {
+  instanceId = id;
+};
+
+export const getEventQ = () => {
+  return eventQ;
+};
 
 //send messages to main, handle responses, queue messages if not connected yet
 
@@ -20,13 +38,35 @@ export type QueueItem = {
   reject: (x: string) => void;
 };
 
+//listener that takes standard ContextHandler type
 export interface ListenerItem {
   id?: string;
   handler?: ContextHandler;
   contextType?: string;
 }
 
-export const processQueueItem = (qi: QueueItem, instanceId: string) => {
+//listener for async intent handlers (2.0)
+export interface IntentListenerItem {
+  id?: string;
+  handler?: IntentHandler;
+  contextType?: string;
+}
+
+//listener that takes handler with ContextType arg only
+export interface ContextTypeListenerItem {
+  id?: string;
+  handler?: (contextType: string) => void;
+  contextType?: string;
+}
+
+//listenet with handler that has no args
+export interface VoidListenerItem {
+  id?: string;
+  handler?: () => void;
+  contextType?: string;
+}
+
+export const processQueueItem = (qi: QueueItem) => {
   const { port1, port2 } = new MessageChannel();
 
   port1.onmessage = (event: MessageEvent<FDC3Response>) => {
@@ -36,6 +76,7 @@ export const processQueueItem = (qi: QueueItem, instanceId: string) => {
     if (response.error) {
       qi.reject(response.error);
     } else {
+      console.log('******** Q Item resolve', qi.topic, qi);
       qi.resolve(response.data);
     }
   };
@@ -82,8 +123,6 @@ export const convertTarget = (
 export const sendMessage = (
   topic: string,
   data: FDC3MessageData,
-  instanceId: string,
-  eventQ: Array<QueueItem>,
 ): Promise<any> => {
   console.log('Beginning send message:', topic, data);
   //set up a return listener and assign as eventId
@@ -96,7 +135,7 @@ export const sendMessage = (
     };
 
     if (instanceId) {
-      processQueueItem(queueItem, instanceId);
+      processQueueItem(queueItem);
     } else {
       eventQ.push(queueItem);
       console.log('queued message', topic, data);
@@ -172,3 +211,5 @@ export enum TARGETS {
   INTENT_RESOLVER = 'intentResolver',
   CHANNEL_PICKER = 'channelPicker',
 }
+
+export const INTENT_TIMEOUT = 30000;
