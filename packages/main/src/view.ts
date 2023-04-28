@@ -166,9 +166,7 @@ export class View {
         });
       });
 
-      //listen for navigation
-      //to do: ensure directory entry and new location match up!
-      this.content.webContents.on('did-navigate', () => {
+      const handleStart = () => {
         this.content.webContents.once('did-finish-load', () => {
           this.content.webContents.send(RUNTIME_TOPICS.WINDOW_START, {
             id: this.id,
@@ -176,7 +174,13 @@ export class View {
           });
           console.log('FDC3 start - navigate', this.id);
         });
-      });
+      };
+
+      //listen for navigation
+      this.content.webContents.on('did-navigate', handleStart);
+
+      //listen for frame navigation
+      this.content.webContents.on('did-frame-navigate', handleStart);
     }
   }
 
