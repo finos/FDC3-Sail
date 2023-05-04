@@ -536,10 +536,9 @@ export const createAPI = (): DesktopAgent => {
                       FDC3_2_0_TOPICS.GET_INTENT_RESULT,
                       getResultMsg,
                     ).then(
-                      (intentResult) => {
+                      (intentResult: IntentResult) => {
                         console.log('got intent result', intentResult);
-                        const iResult: IntentResult = { type: 'empty' };
-                        resolve(iResult);
+                        resolve(intentResult);
                       },
                       (err) => {
                         reject(err);

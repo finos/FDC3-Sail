@@ -46,7 +46,14 @@ const appChannels: Map<string, ChannelData> = new Map();
 const privateChannels: Map<string, PrivateChannelData> = new Map();
 
 //collection of pending intent results
-const intentResults: Map<string, ChannelData | Context | null> = new Map();
+const intentResults: Map<
+  string,
+  Promise<ChannelData | Context | null>
+> = new Map();
+const intentResultResolvers: Map<
+  string,
+  (value: ChannelData | Context | null) => void
+> = new Map();
 
 const intentTransfers: Map<string, IntentTransfer> = new Map();
 const contextTransfers: Map<string, ContextTransfer> = new Map();
@@ -465,7 +472,14 @@ export class Runtime {
   //creates new entry in intentResults collection and returns the generated id
   initIntentResult(): string {
     const id = guid();
-    intentResults.set(id, null);
+    intentResults.set(
+      id,
+      new Promise((resolve) => {
+        console.log('************** initIntentResult saves the Promise', id);
+        // The result is a Promise that will be resolved when the result is saved in 'setIntentResult' method
+        intentResultResolvers.set(id, resolve);
+      }),
+    );
     return id;
   }
 
@@ -474,13 +488,21 @@ export class Runtime {
     console.log('************** set intent result', id, result);
     const entry = intentResults.get(id);
     if (entry === null) {
-      intentResults.set(id, result);
+      intentResults.set(id, Promise.resolve(result));
+    } else {
+      // We resolved the promise saved in intentResults by calling the resolve method
+      const resolver = intentResultResolvers.get(id);
+      if (resolver) {
+        console.log('************** setIntentResult resolves the Promise', id);
+        resolver(result);
+        intentResultResolvers.delete(id);
+      }
     }
   }
 
   //one time returns the result, then deletes the entry if not null
-  getIntentResult(id: string): Context | ChannelData | null {
-    const result = intentResults.get(id);
+  async getIntentResult(id: string): Promise<Context | ChannelData | null> {
+    const result = await intentResults.get(id);
     if (result === undefined || result === null) {
       return null;
     } else {
