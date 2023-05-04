@@ -1,4 +1,4 @@
-import { ResolveError, AppIdentifier, ResultError } from '@finos/fdc3';
+import { ResolveError, AppIdentifier } from '@finos/fdc3';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import {
@@ -198,7 +198,7 @@ export const getIntentResult = async (message: FDC3Message) => {
   const messageData: IntentResultData = message.data as IntentResultData;
   const result = runtime.getIntentResult(messageData.resultId);
   console.log('**************** gotintent result', result);
-  return ResultError;
+  return result;
 };
 
 export const setIntentResult = async (message: FDC3Message) => {
