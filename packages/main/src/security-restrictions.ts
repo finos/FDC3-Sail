@@ -32,18 +32,6 @@ const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<
     : [],
 );
 
-const ALLOWED_EXTERNAL_ORIGINS = new Set<string>([]);
-/**
- * List of origins that you allow open IN BROWSER.
- * Navigation to origins below is possible only if the link opens in a new window
- *
- * @example
- * <a
- *   target="_blank"
- *   href="https://github.com/"
- * >
- */
-
 export const setRuntimeSecurityRestrictions = (runtime: Runtime) => {
   if (runtime.directory) {
     runtime.directory.apps.forEach((app) => {
@@ -72,6 +60,9 @@ export const setRuntimeSecurityRestrictions = (runtime: Runtime) => {
       // Prevent navigation
       event.preventDefault();
 
+      // Open in default browser
+      shell.openExternal(url).catch(console.error);
+
       if (import.meta.env.DEV) {
         console.warn('Blocked navigating to an unallowed origin:', origin);
       }
@@ -98,31 +89,6 @@ export const setRuntimeSecurityRestrictions = (runtime: Runtime) => {
         }
       },
     );
-
-    /**
-     * Hyperlinks to allowed sites open in the default browser.
-     *
-     * The creation of new `webContents` is a common attack vector. Attackers attempt to convince the app to create new windows,
-     * frames, or other renderer processes with more privileges than they had before; or with pages opened that they couldn't open before.
-     * You should deny any unexpected window creation.
-     *
-     * @see https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
-     * @see https://www.electronjs.org/docs/latest/tutorial/security#15-do-not-use-openexternal-with-untrusted-content
-     */
-    contents.setWindowOpenHandler(({ url }) => {
-      const { origin } = new URL(url);
-
-      // '@ts-expect-error' Type checking is performed in runtime
-      if (ALLOWED_EXTERNAL_ORIGINS.has(origin)) {
-        // Open default browser
-        shell.openExternal(url).catch(console.error);
-      } else if (import.meta.env.DEV) {
-        console.warn('Blocked the opening of an unallowed origin:', origin);
-      }
-
-      // Prevent creating new window in application
-      return { action: 'deny' };
-    });
 
     /**
      * Verify webview options before creation
