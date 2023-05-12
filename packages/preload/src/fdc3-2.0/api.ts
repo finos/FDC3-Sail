@@ -31,7 +31,7 @@ import {
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { SAIL_TOPICS } from '/@main/handlers/runtime/topics';
+import { SAIL_TOPICS, RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { IntentResultData } from '/@main/types/FDC3Message';
 
 const toChannelData = (channel: Channel): ChannelData | null => {
@@ -159,7 +159,7 @@ export const connect = () => {
 };
 
 //handshake with main and get instanceId assigned
-ipcRenderer.on(SAIL_TOPICS.START, async (event, args) => {
+ipcRenderer.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
   console.log('api FDC3 start', args.id);
   if (args.id) {
     setInstanceId(args.id);
