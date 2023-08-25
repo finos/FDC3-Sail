@@ -760,11 +760,13 @@ export const createAPI = (): DesktopAgent => {
         {},
       );
 
-      return createChannelObject(
-        result.id,
-        result.type as 'user' | 'app' | 'private',
-        result.displayMetadata || { name: result.id },
-      );
+      return result == null
+        ? null
+        : createChannelObject(
+            result.id,
+            result.type as 'user' | 'app' | 'private',
+            result.displayMetadata || { name: result.id },
+          );
     },
   };
 
