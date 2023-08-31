@@ -2,10 +2,13 @@ import { ipcRenderer } from 'electron';
 import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { TARGETS } from '/@main/constants';
 import { systemChannels as userChannels } from '/@main/handlers/fdc3/lib/systemChannels';
-import { Context } from '@finos/fdc3';
+import { Context as Context1_2 } from '@finos/fdc3-1.2';
+import { Context as Context2_0 } from '@finos/fdc3-1.2';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
 import { FDC3_VERSIONS } from '/@main/types/Versions';
+
+type Context = Context1_2 | Context2_0
 
 let id: string | undefined = undefined;
 let intent: string | undefined = undefined;

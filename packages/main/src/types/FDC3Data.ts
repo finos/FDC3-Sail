@@ -1,5 +1,5 @@
-import { Context, DisplayMetadata, IntentMetadata } from 'fdc3-1.2';
 import { DirectoryApp } from '../directory/directory';
+import { Context, DisplayMetadata, IntentMetadata } from './FDC3Message';
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
  */

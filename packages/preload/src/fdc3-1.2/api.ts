@@ -22,6 +22,7 @@ import {
   Channel,
   ImplementationMetadata,
   IntentResolution,
+  ResolveError,
 } from 'fdc3-1.2';
 
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
@@ -29,7 +30,6 @@ import { ChannelData } from '/@main/types/Channel';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics"
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
-import { ResolveError } from 'fdc3-1.2';
 
 //map of context listeners by id
 const _contextListeners: Map<string, ListenerItem> = new Map();

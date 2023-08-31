@@ -27,7 +27,7 @@ import {
   AppMetadata,
   ResolveError,
   IntentResult,
-} from '@finos/fdc3';
+} from 'fdc3-2.0';
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';

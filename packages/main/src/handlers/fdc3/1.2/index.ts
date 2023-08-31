@@ -4,7 +4,7 @@ import {
   addContextListener,
 } from '../lib/contextListeners';
 import { broadcast } from '../lib/broadcast';
-import { open } from './open';
+import { open } from '../lib/open';
 //import { FDC3_1_2_TOPICS } from './topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import {
@@ -17,8 +17,8 @@ import {
 } from '../lib/channels';
 import { dropIntentListener, addIntentListener } from '../lib/intentListeners';
 import { findIntent, findIntentsByContext } from '../lib/findIntent';
-import { resolveIntent } from '../lib/raiseIntent';
-import { raiseIntent, raiseIntentForContext } from './raiseIntent';
+import { resolveIntent } from '../lib/resolveIntent';
+import { raiseIntent, raiseIntentForContext } from '../lib/raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(

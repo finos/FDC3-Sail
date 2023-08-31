@@ -1,5 +1,5 @@
 import { FDC3Listener } from './types/FDC3Listener';
-import { Context, AppIdentifier } from '@finos/fdc3';
+//import { Context, AppIdentifier } from '@finos/fdc3-2.0';
 import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
 import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { View } from './view';
@@ -24,6 +24,7 @@ import {
   WorkspaceState,
   ChannelState,
 } from '/@/types/SessionState';
+import { Context } from './types/FDC3Message';
 
 // map of all running contexts keyed by channel
 const contexts: Map<string, Array<Context>> = new Map([['default', []]]);
@@ -332,25 +333,25 @@ export class Runtime {
     return result;
   }
 
-  getIntentListenersByAppId(
-    intent: string,
-    id: AppIdentifier,
-  ): Map<string, FDC3Listener> {
-    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+  // getIntentListenersByAppId(
+  //   intent: string,
+  //   id: SailAppIdentifier,
+  // ): Map<string, FDC3Listener> {
+  //   const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
 
-    this.getViews().forEach((view) => {
-      //if a appIdentifier target is provided, filter
-      //to do - instance targeting
-      if (view.directoryData && view.directoryData.appId === id.appId) {
-        view.listeners.forEach((l) => {
-          if (l.intent && l.intent === intent) {
-            result.set(l.listenerId, l);
-          }
-        });
-      }
-    });
-    return result;
-  }
+  //   this.getViews().forEach((view) => {
+  //     //if a appIdentifier target is provided, filter
+  //     //to do - instance targeting
+  //     if (view.directoryData && view.directoryData.appId === id.appId) {
+  //       view.listeners.forEach((l) => {
+  //         if (l.intent && l.intent === intent) {
+  //           result.set(l.listenerId, l);
+  //         }
+  //       });
+  //     }
+  //   });
+  //   return result;
+  // }
 
   getIntentListeners(intent: string): Map<string, FDC3Listener> {
     const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);

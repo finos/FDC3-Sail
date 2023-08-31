@@ -3,10 +3,11 @@ import {
   FDC3Message,
   CurrentContextData,
   ChannelMessageData,
+  Context,
 } from '/@/types/FDC3Message';
 import { ChannelData } from '/@/types/Channel';
-import { Context, ChannelError } from '@finos/fdc3';
 import { systemChannels } from './systemChannels';
+import { CreationFailed } from '/@/types/FDC3Errors';
 
 export const getSystemChannels = async () => {
   return systemChannels;
@@ -50,7 +51,7 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
   const id = data.channel;
   //reject with error is reserved 'default' term
   if (id === 'default') {
-    throw new Error(ChannelError.CreationFailed);
+    throw new Error(CreationFailed);
   }
   let channel: ChannelData | null = getChannelMeta(id);
 

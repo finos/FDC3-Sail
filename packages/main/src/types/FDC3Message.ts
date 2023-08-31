@@ -1,8 +1,13 @@
 import { FDC3App } from './FDC3Data';
-import { Context, AppIdentifier } from '@finos/fdc3';
+
+import { Context as Context2_0, Icon, Image, IntentMetadata as IntentMetadata2_0, DisplayMetadata as DisplayMetadata2_0 } from 'fdc3-2.0';
+
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { AppMetadata } from 'fdc3-1.2';
 import { ChannelData } from './Channel';
+import { DirectoryApp, DirectoryIntent } from '../directory/directory';
+
+// Context is the same in 1.2 and 2.0
+export type Context = Context2_0
 
 export interface FDC3Message extends RuntimeMessage {
   topic: string;
@@ -145,6 +150,32 @@ export interface IntentResultData {
   result?: ChannelData | Context | null;
 }
 
+/**
+ * This provides the superset of metadata from 1.2 and 2.0
+ * Any future version of FDC3 introducing new metadata should just add it here.
+ */
+export type SailAppMetadata = {
+  name?: string,
+  appId?: string,
+  version?: string,
+  title?: string,
+  tooltip?: string
+  description?: string,
+  icons?: Icon[],
+  screenshots?: Image[]
+}
+
+// same in 2.0 and 1.2
+export type IntentMetadata = IntentMetadata2_0
+
+// same in 2.0 and 1.2
+export type DisplayMetadata = DisplayMetadata2_0
+
+export interface SailAppIntent {
+  intent: IntentMetadata;
+  apps: DirectoryApp[];
+}
+
 /*
     abstraction over 1.2 TargetApp and 2.0 AppIdentifier
 */
@@ -152,8 +183,8 @@ export interface TargetIdentifier {
   key: string; //either name or appId
   name?: string;
   appId?: string;
-  appMetadata?: AppMetadata;
-  appIdentifier?: AppIdentifier;
+  instanceId?: string;
+  appMetadata?: SailAppMetadata;
 }
 
 export interface FDC3Response {
