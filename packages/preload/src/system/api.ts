@@ -47,10 +47,8 @@ const resolveIntent = (data: {
 }) => {
   //get the view's fdc3 version to determine which event to raise
 
-  const topic =
-    fdc3Version === '2.0'
-      ? FDC3_2_0_TOPICS.RESOLVE_INTENT
-      : FDC3_1_2_TOPICS.RESOLVE_INTENT;
+  const topic = FDC3_2_0_TOPICS.RESOLVE_INTENT
+
   //no op if intent is not defined
   if (data.selectedIntent || intent) {
     ipcRenderer.send(topic, {

@@ -5,7 +5,8 @@ import {
 } from '../lib/contextListeners';
 import { broadcast } from '../lib/broadcast';
 import { open } from './open';
-import { FDC3_1_2_TOPICS } from './topics';
+//import { FDC3_1_2_TOPICS } from './topics';
+import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import {
   getCurrentContext,
   getOrCreateChannel,
@@ -21,32 +22,32 @@ import { raiseIntent, raiseIntentForContext } from './raiseIntent';
 
 export const register = (runtime: Runtime) => {
   runtime.addHandler(
-    FDC3_1_2_TOPICS.DROP_CONTEXT_LISTENER,
+    FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER,
     dropContextListener,
   );
-  runtime.addHandler(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, addContextListener);
-  runtime.addHandler(FDC3_1_2_TOPICS.BROADCAST, broadcast);
-  runtime.addHandler(FDC3_1_2_TOPICS.OPEN, open);
-  runtime.addHandler(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);
-  runtime.addHandler(FDC3_1_2_TOPICS.GET_OR_CREATE_CHANNEL, getOrCreateChannel);
-  runtime.addHandler(FDC3_1_2_TOPICS.GET_SYSTEM_CHANNELS, getSystemChannels);
+  runtime.addHandler(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, addContextListener);
+  runtime.addHandler(FDC3_2_0_TOPICS.BROADCAST, broadcast);
+  runtime.addHandler(FDC3_2_0_TOPICS.OPEN, open);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL, getOrCreateChannel);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_USER_CHANNELS, getSystemChannels);
   runtime.addHandler(
-    FDC3_1_2_TOPICS.LEAVE_CURRENT_CHANNEL,
+    FDC3_2_0_TOPICS.LEAVE_CURRENT_CHANNEL,
     leaveCurrentChannel,
   );
-  runtime.addHandler(FDC3_1_2_TOPICS.JOIN_CHANNEL, joinChannel);
-  runtime.addHandler(FDC3_1_2_TOPICS.GET_CURRENT_CHANNEL, getCurrentChannel);
-  runtime.addHandler(FDC3_1_2_TOPICS.ADD_INTENT_LISTENER, addIntentListener);
-  runtime.addHandler(FDC3_1_2_TOPICS.DROP_INTENT_LISTENER, dropIntentListener);
-  runtime.addHandler(FDC3_1_2_TOPICS.FIND_INTENT, findIntent);
+  runtime.addHandler(FDC3_2_0_TOPICS.JOIN_CHANNEL, joinChannel);
+  runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL, getCurrentChannel);
+  runtime.addHandler(FDC3_2_0_TOPICS.ADD_INTENT_LISTENER, addIntentListener);
+  runtime.addHandler(FDC3_2_0_TOPICS.DROP_INTENT_LISTENER, dropIntentListener);
+  runtime.addHandler(FDC3_2_0_TOPICS.FIND_INTENT, findIntent);
   runtime.addHandler(
-    FDC3_1_2_TOPICS.FIND_INTENTS_BY_CONTEXT,
+    FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT,
     findIntentsByContext,
   );
-  runtime.addHandler(FDC3_1_2_TOPICS.RAISE_INTENT, raiseIntent);
+  runtime.addHandler(FDC3_2_0_TOPICS.RAISE_INTENT, raiseIntent);
   runtime.addHandler(
-    FDC3_1_2_TOPICS.RAISE_INTENT_FOR_CONTEXT,
+    FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
     raiseIntentForContext,
   );
-  runtime.addHandler(FDC3_1_2_TOPICS.RESOLVE_INTENT, resolveIntent);
+  runtime.addHandler(FDC3_2_0_TOPICS.RESOLVE_INTENT, resolveIntent);
 };

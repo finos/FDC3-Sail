@@ -26,7 +26,8 @@ import {
 
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { ChannelData } from '/@main/types/Channel';
-import { FDC3_1_2_TOPICS } from '/@main/handlers/fdc3/1.2/topics';
+import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics"
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 import { ResolveError } from 'fdc3-1.2';
 
@@ -69,7 +70,7 @@ export const connect = () => {
   /**
    * listen for incomming contexts
    */
-  ipcRenderer.on(FDC3_1_2_TOPICS.CONTEXT, async (event, args) => {
+  ipcRenderer.on(FDC3_TOPICS.CONTEXT, async (event, args) => {
     console.log('ipcrenderer event', event.type, args);
     //check for handlers at the content script layer (automatic handlers) - if not, dispatch to the API layer...
     //   let contextSent = false;
@@ -94,14 +95,14 @@ export const connect = () => {
   /**
    * listen for incoming intents
    */
-  ipcRenderer.on(FDC3_1_2_TOPICS.INTENT, (event, args) => {
+  ipcRenderer.on(FDC3_TOPICS.INTENT, (event, args) => {
     callIntentListener(args.data.intent, args.data.context as Context);
   });
 
-  ipcRenderer.on(FDC3_1_2_TOPICS.RESOLVE_INTENT, (event, args) => {
+  ipcRenderer.on(FDC3_2_0_TOPICS.RESOLVE_INTENT, (event, args) => {
     console.log('ipcrenderer event', event.type);
     document.dispatchEvent(
-      new CustomEvent(FDC3_1_2_TOPICS.RESOLVE_INTENT, {
+      new CustomEvent(FDC3_2_0_TOPICS.RESOLVE_INTENT, {
         detail: { data: args.data, source: args.source },
       }),
     );
@@ -163,7 +164,7 @@ export const createAPI = (): DesktopAgent => {
         if (this.type === 'context') {
           _contextListeners.delete(this.id);
 
-          sendMessage(FDC3_1_2_TOPICS.DROP_CONTEXT_LISTENER, {
+          sendMessage(FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER, {
             listenerId: this.id,
           });
         } else if (this.type === 'intent' && this.intent) {
@@ -172,7 +173,7 @@ export const createAPI = (): DesktopAgent => {
             listeners.delete(this.id);
           }
 
-          sendMessage(FDC3_1_2_TOPICS.DROP_INTENT_LISTENER, {
+          sendMessage(FDC3_2_0_TOPICS.DROP_INTENT_LISTENER, {
             listenerId: this.id,
             intent: intent,
           });
@@ -212,14 +213,14 @@ export const createAPI = (): DesktopAgent => {
       type: type,
       displayMetadata: displayMetadata,
       broadcast: async (context: Context) => {
-        return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, {
+        return await sendMessage(FDC3_2_0_TOPICS.BROADCAST, {
           context: context,
           channel: channel.id,
         });
       },
       getCurrentContext: (contextType?: string) => {
         return new Promise((resolve, reject) => {
-          sendMessage(FDC3_1_2_TOPICS.GET_CURRENT_CONTEXT, {
+          sendMessage(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, {
             channel: channel.id,
             contextType: contextType,
           }).then(
@@ -249,12 +250,12 @@ export const createAPI = (): DesktopAgent => {
           createListenerItem(listenerId, thisListener, thisContextType),
         );
 
-        sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
+        sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
           listenerId: listenerId,
           channel: channel.id,
           contextType: thisContextType,
         });
-        return new FDC3Listener(FDC3_1_2_TOPICS.CONTEXT, listenerId);
+        return new FDC3Listener(FDC3_TOPICS.CONTEXT, listenerId);
       },
     };
 
@@ -270,7 +271,7 @@ export const createAPI = (): DesktopAgent => {
     },
 
     open: async (app: TargetApp, context?: Context) => {
-      return await sendMessage(FDC3_1_2_TOPICS.OPEN, {
+      return await sendMessage(FDC3_2_0_TOPICS.OPEN, {
         target: convertTarget(app),
         context: context,
       });
@@ -278,7 +279,7 @@ export const createAPI = (): DesktopAgent => {
 
     broadcast: async (context: Context) => {
       //void
-      return await sendMessage(FDC3_1_2_TOPICS.BROADCAST, { context: context });
+      return await sendMessage(FDC3_2_0_TOPICS.BROADCAST, { context: context });
     },
 
     raiseIntent: (
@@ -290,7 +291,7 @@ export const createAPI = (): DesktopAgent => {
         let intentTimeout = -1;
         //listen for resolve intent
         document.addEventListener(
-          FDC3_1_2_TOPICS.RESOLVE_INTENT,
+          FDC3_2_0_TOPICS.RESOLVE_INTENT,
           (event: Event) => {
             const cEvent = event as CustomEvent;
             console.log('***** intent resolution received', cEvent.detail);
@@ -306,7 +307,7 @@ export const createAPI = (): DesktopAgent => {
           { once: true },
         );
 
-        sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT, {
+        sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
           intent: intent,
           context: context,
           target: app ? convertTarget(app) : undefined,
@@ -334,7 +335,7 @@ export const createAPI = (): DesktopAgent => {
     },
 
     raiseIntentForContext: async (context: Context, app?: TargetApp) => {
-      return await sendMessage(FDC3_1_2_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
+      return await sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT, {
         context: context,
         target: app ? convertTarget(app) : undefined,
       });
@@ -356,7 +357,7 @@ export const createAPI = (): DesktopAgent => {
         createListenerItem(listenerId, thisListener, thisContextType),
       );
 
-      sendMessage(FDC3_1_2_TOPICS.ADD_CONTEXT_LISTENER, {
+      sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
         listenerId: listenerId,
         contextType: thisContextType,
       });
@@ -374,7 +375,7 @@ export const createAPI = (): DesktopAgent => {
       if (listeners) {
         listeners.set(listenerId, createListenerItem(listenerId, listener));
 
-        sendMessage(FDC3_1_2_TOPICS.ADD_INTENT_LISTENER, {
+        sendMessage(FDC3_2_0_TOPICS.ADD_INTENT_LISTENER, {
           listenerId: listenerId,
           intent: intent,
         });
@@ -386,7 +387,7 @@ export const createAPI = (): DesktopAgent => {
       intent: string,
       context: Context,
     ): Promise<AppIntent> => {
-      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENT, {
+      return await sendMessage(FDC3_2_0_TOPICS.FIND_INTENT, {
         intent: intent,
         context: context,
       });
@@ -395,14 +396,14 @@ export const createAPI = (): DesktopAgent => {
     findIntentsByContext: async (
       context: Context,
     ): Promise<Array<AppIntent>> => {
-      return await sendMessage(FDC3_1_2_TOPICS.FIND_INTENTS_BY_CONTEXT, {
+      return await sendMessage(FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT, {
         context: context,
       });
     },
 
     getSystemChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
-        FDC3_1_2_TOPICS.GET_SYSTEM_CHANNELS,
+        FDC3_2_0_TOPICS.GET_USER_CHANNELS,
         {},
       );
       console.log('result', r);
@@ -418,7 +419,7 @@ export const createAPI = (): DesktopAgent => {
 
     getOrCreateChannel: async (channelId: string) => {
       const result: ChannelData = await sendMessage(
-        FDC3_1_2_TOPICS.GET_OR_CREATE_CHANNEL,
+        FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL,
         { channel: channelId },
       );
       return createChannelObject(
@@ -429,18 +430,18 @@ export const createAPI = (): DesktopAgent => {
     },
 
     joinChannel: async (channel: string) => {
-      return await sendMessage(FDC3_1_2_TOPICS.JOIN_CHANNEL, {
+      return await sendMessage(FDC3_2_0_TOPICS.JOIN_CHANNEL, {
         channel: channel,
       });
     },
 
     leaveCurrentChannel: async () => {
-      return await sendMessage(FDC3_1_2_TOPICS.LEAVE_CURRENT_CHANNEL, {});
+      return await sendMessage(FDC3_2_0_TOPICS.LEAVE_CURRENT_CHANNEL, {});
     },
 
     getCurrentChannel: async () => {
       const result: ChannelData = await sendMessage(
-        FDC3_1_2_TOPICS.GET_CURRENT_CHANNEL,
+        FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL,
         {},
       );
 
@@ -454,7 +455,7 @@ export const createAPI = (): DesktopAgent => {
     },
   };
 
-  /* document.addEventListener(FDC3_1_2_TOPICS.CONTEXT, ((event: FDC3Event) => {
+  /* document.addEventListener(FDC3_2_0_TOPICS.CONTEXT, ((event: FDC3Event) => {
     console.log('Context', JSON.stringify(_contextListeners));
     const listeners = _contextListeners;
     if (
@@ -471,7 +472,7 @@ export const createAPI = (): DesktopAgent => {
     }
   }) as EventListener);
 
-  document.addEventListener(FDC3_1_2_TOPICS.INTENT, ((event: FDC3Event) => {
+  document.addEventListener(FDC3_2_0_TOPICS.INTENT, ((event: FDC3Event) => {
     const intent = event.detail.data && event.detail.data.intent;
     const context = event.detail.data && event.detail.data.context;
     if (intent) {

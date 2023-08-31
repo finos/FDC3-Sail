@@ -2,8 +2,7 @@ import { ResolveError } from 'fdc3-1.2';
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import { FDC3App, FDC3AppDetail } from '/@/types/FDC3Data';
-import { FDC3_1_2_TOPICS } from './topics';
-import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import { FDC3_TOPICS } from '../topics';
 import { buildIntentInstanceTree, sortApps } from '../lib/raiseIntent';
 //import { IntentTransfer } from '/@/types/TransferInstance';
 import {
@@ -135,26 +134,18 @@ export const raiseIntent = async (message: FDC3Message) => {
         intentTarget = appDetails?.instanceId;
         const view = runtime.getView(intentTarget);
         if (view) {
-          if (view.fdc3Version === '1.2') {
-            view.content.webContents.send(FDC3_1_2_TOPICS.INTENT, {
-              topic: 'intent',
-              data: message.data,
-              source: message.source,
-            });
-          } else {
-            view.content.webContents.send(FDC3_2_0_TOPICS.INTENT, {
-              topic: 'intent',
-              data: message.data,
-              source: message.source,
-            });
-          }
+          view.content.webContents.send(FDC3_TOPICS.INTENT, {
+            topic: 'intent',
+            data: message.data,
+            source: message.source,
+          });
 
           return {
             source: {
               name: view.directoryData?.name,
               appId: view.directoryData?.appId,
             },
-            version: '1.2',
+            version: view.fdc3Version,
           };
         }
       } else if (theApp.type === 'directory' && appDetails.directoryData) {
@@ -257,7 +248,11 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
             title: title,
             directoryData: view.directoryData,
           };
-          r.push({ type: 'window', details: details, intent: intent });
+          r.push({ 
+            type: 'window', 
+            details: details, 
+            intent: intent 
+          });
         }
       });
     });
@@ -299,10 +294,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic =
-              view.fdc3Version === '1.2'
-                ? FDC3_1_2_TOPICS.CONTEXT
-                : FDC3_2_0_TOPICS.CONTEXT;
+            const topic = FDC3_TOPICS.CONTEXT
             view.content.webContents.send(topic, {
               topic: 'context',
               data: {
@@ -346,11 +338,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic =
-              view.fdc3Version === '1.2'
-                ? FDC3_1_2_TOPICS.INTENT
-                : FDC3_2_0_TOPICS.INTENT;
-
+            const topic = FDC3_TOPICS.INTENT
             view.content.webContents.send(topic, {
               topic: 'intent',
               data: {

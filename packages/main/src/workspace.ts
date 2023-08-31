@@ -23,8 +23,7 @@ import {
 } from './constants';
 import { randomUUID } from 'crypto';
 import { RUNTIME_TOPICS } from '/@/handlers/runtime/topics';
-import { FDC3_1_2_TOPICS } from '/@/handlers/fdc3/1.2/topics';
-import { FDC3_2_0_TOPICS } from '/@/handlers/fdc3/2.0/topics';
+import { FDC3_TOPICS } from './handlers/fdc3/topics';
 
 const SYSTEM_PRELOAD = join(__dirname, '../../preload/dist/system/index.cjs');
 
@@ -395,10 +394,7 @@ export class Workspace {
                       (!l.contextType ||
                         (l.contextType && ctx && l.contextType === ctx.type))
                     ) {
-                      const contextTopic =
-                        view.fdc3Version === '1.2'
-                          ? FDC3_1_2_TOPICS.CONTEXT
-                          : FDC3_2_0_TOPICS.CONTEXT;
+                      const contextTopic = FDC3_TOPICS.CONTEXT;
                       view.content.webContents.send(contextTopic, {
                         topic: 'context',
                         listenerIds: [l.listenerId],

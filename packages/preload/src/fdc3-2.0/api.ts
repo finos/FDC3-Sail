@@ -31,6 +31,7 @@ import {
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { SAIL_TOPICS, RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { IntentResultData } from '/@main/types/FDC3Message';
 
@@ -40,6 +41,7 @@ const toChannelData = (channel: Channel): ChannelData | null => {
       type: channel.type,
       id: channel.id,
       displayMetadata: channel.displayMetadata,
+      owner: null
     };
   } else {
     return null;
@@ -126,7 +128,7 @@ export const connect = () => {
   /**
    * listen for incomming contexts
    */
-  ipcRenderer.on(FDC3_2_0_TOPICS.CONTEXT, async (event, args) => {
+  ipcRenderer.on(FDC3_TOPICS.CONTEXT, async (event, args) => {
     console.log('ipcrenderer event', event.type, args);
     //check for handlers at the content script layer (automatic handlers) - if not, dispatch to the API layer...
     //   let contextSent = false;
@@ -148,7 +150,7 @@ export const connect = () => {
   /**
    * listen for incoming intents
    */
-  ipcRenderer.on(FDC3_2_0_TOPICS.INTENT, (event, args) => {
+  ipcRenderer.on(FDC3_TOPICS.INTENT, (event, args) => {
     console.log('************** intent', args.data);
     callIntentListener(
       args.data.intent,
@@ -461,16 +463,6 @@ export const createAPI = (): DesktopAgent => {
     });
   }
 
-  function raiseIntent(
-    intent: string,
-    context: Context,
-    app?: AppIdentifier | undefined,
-  ): Promise<IntentResolution>;
-  function raiseIntent(
-    intent: string,
-    context: Context,
-    name?: string,
-  ): Promise<IntentResolution>;
   async function raiseIntent(
     intent: string,
     context: Context,
@@ -496,8 +488,9 @@ export const createAPI = (): DesktopAgent => {
             },
             intent: cEvent.detail?.intent,
             getResult: () => {
-              return new Promise(() => {
+              return new Promise<IntentResult>((resolve, reject) => {
                 console.log('in getResult');
+                resolve(null as any as IntentResult);
               });
             },
           });
@@ -688,7 +681,7 @@ export const createAPI = (): DesktopAgent => {
 
     getSystemChannels: async (): Promise<Array<Channel>> => {
       const r: Array<ChannelData> = await sendMessage(
-        FDC3_2_0_TOPICS.GET_SYSTEM_CHANNELS,
+        FDC3_2_0_TOPICS.GET_USER_CHANNELS,
         {},
       );
 
@@ -761,12 +754,12 @@ export const createAPI = (): DesktopAgent => {
       );
 
       return result == null
-        ? null
-        : createChannelObject(
-            result.id,
-            result.type as 'user' | 'app' | 'private',
-            result.displayMetadata || { name: result.id },
-          );
+      ? null :
+      createChannelObject(
+        result.id,
+        result.type as 'user' | 'app' | 'private',
+        result.displayMetadata || { name: result.id },
+      );
     },
   };
 

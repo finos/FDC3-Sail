@@ -22,7 +22,7 @@ import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 import { getSailManifest } from '/@/directory/directory';
 import { FDC3_VERSIONS } from '/@/types/Versions';
 import { shell } from 'electron';
-import { FDC3_TOPICS } from '/@/handlers/fdc3/lib/topics';
+import { FDC3_TOPICS } from './handlers/fdc3/topics';
 import { TargetIdentifier } from './types/FDC3Message';
 
 const FDC3_1_2_PRELOAD = join(
