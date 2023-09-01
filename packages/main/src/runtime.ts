@@ -1,6 +1,6 @@
 import { FDC3Listener } from './types/FDC3Listener';
 //import { Context, AppIdentifier } from '@finos/fdc3-2.0';
-import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
+import { ChannelData, FDC3App, IntentInstance, PrivateChannelData, ResolverDetail } from '/@/types/FDC3Data';
 import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -16,7 +16,6 @@ import { fdc3_2_0_AppDirectoryLoader } from './directory/fdc3-20-loader';
 import { register as registerFDC3_2_0_Handlers } from './handlers/fdc3/2.0/index';
 import { register as registerFDC3_1_2_Handlers } from './handlers/fdc3/1.2/index';
 import { setRuntimeSecurityRestrictions } from './security-restrictions';
-import { ChannelData, PrivateChannelData } from './types/Channel';
 import { IntentTransfer, ContextTransfer } from '/@/types/TransferInstance';
 import {
   SessionState,

@@ -1,4 +1,5 @@
 import { DirectoryApp } from '../directory/directory';
+import { FDC3Listener } from './FDC3Listener';
 import { Context, DisplayMetadata, IntentMetadata } from './FDC3Message';
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
@@ -37,6 +38,12 @@ export interface ChannelData {
   type: 'system' | 'user' | 'app' | 'private';
   displayMetadata?: ChannelMetadata;
 }
+
+export interface PrivateChannelData extends ChannelData {
+  unsubscribeListeners: Map<string, FDC3Listener>;
+  disconnectListeners: Map<string, FDC3Listener>;
+}
+
 
 export class ChannelMetadata implements DisplayMetadata {
   /**
