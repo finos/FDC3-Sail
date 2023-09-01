@@ -30,4 +30,5 @@ export const FDC3_2_0_TOPICS = {
   GET_INTENT_RESULT: 'FDC3_2.0:getIntentResult',
   SET_INTENT_RESULT: 'FDC3_2.0:setIntentResult',
   INTENT_LISTENER_CALLED: 'FDC3_2.0:intentListenerCalled',
+  GET_APP_METADATA: 'FDC3_2.0:getAppMetadata'
 };

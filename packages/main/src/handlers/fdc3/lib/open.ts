@@ -51,9 +51,7 @@ export const open = async (message: FDC3Message) => {
     allResults = runtime.getDirectory().retrieveByName(targetIdentifier.name);
   } else if (targetIdentifier.appId) {
     allResults = runtime.getDirectory().retrieveByAppId(targetIdentifier.appId);
-  } else if (targetIdentifier.key) {
-    allResults = runtime.getDirectory().retrieveByAppId(targetIdentifier.key);
-  }
+  } 
 
   if (allResults.length > 0) {
     // this deals with the case of multiple apps having the same name, appId etc.

@@ -1,12 +1,13 @@
-import { DesktopAgent, IntentResolution, TargetApp } from "fdc3-1.2";
+import { DesktopAgent, IntentResolution, TargetApp, AppMetadata } from "fdc3-1.2";
 import { SendMessage } from "../message";
-import { Context } from "/@main/types/FDC3Message";
+import { Context, SailAppIntent } from "/@main/types/FDC3Message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget, guid } from "../lib/lib";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
 import { FDC3Listener, SailContextHandler, contextListeners, createListenerItem, intentListeners } from "./listeners";
 import { createChannelObject } from "./channel";
 import { ChannelData } from "/@main/types/FDC3Data";
+import { DirectoryApp } from "/@main/directory/directory";
 
 
 export function createDesktopAgentInstance(sendMessage: SendMessage, version: string) : DesktopAgent{
@@ -21,7 +22,6 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async open(app: TargetApp, context?: Context) {
-            console.log("open called")
             return await sendMessage(FDC3_2_0_TOPICS.OPEN, {
                 target: convertTarget(app),
                 context: context,
@@ -131,10 +131,27 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async findIntent(intent: string, context: Context) {
-            return await sendMessage(FDC3_2_0_TOPICS.FIND_INTENT, {
+            const sai : SailAppIntent = await sendMessage(FDC3_2_0_TOPICS.FIND_INTENT, {
                 intent: intent,
                 context: context,
             });
+
+            const apps: AppMetadata[] = sai.apps.map(m => {
+                return {
+                    name: m.name ?? m.appId ?? "unknown",
+                    version: m.version,
+                    title: m.title,
+                    tooltip: m.tooltip,
+                    description: m.description,
+                    icons: m.icons?.map(i => i.src ?? "undefined"),
+                    images: m.screenshots?.map(s => s.src ?? "undefined")
+                }
+            })
+
+            return {
+                intent: sai.intent,
+                apps
+            }
         },
 
         async findIntentsByContext(context: Context) {

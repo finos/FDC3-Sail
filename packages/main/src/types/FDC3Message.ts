@@ -34,6 +34,7 @@ export type FDC3MessageData =
   | RaiseIntentContextData
   | ResolveIntentData
   | IntentResultData
+  | AppIdData
   | EmptyMessage;
 
 export interface EmptyMessage {
@@ -154,6 +155,10 @@ export interface IntentResultData {
   result?: ChannelData | Context | null;
 }
 
+export interface AppIdData {
+  app: SailTargetIdentifier
+}
+
 // same in 2.0 and 1.2
 export type IntentMetadata = IntentMetadata2_0;
 
@@ -169,7 +174,6 @@ export interface SailAppIntent {
     abstraction over 1.2 TargetApp and 2.0 AppIdentifier
 */
 export interface SailTargetIdentifier {
-  key: string; //either name or appId
   name?: string;
   appId?: string;
   instanceId?: string;

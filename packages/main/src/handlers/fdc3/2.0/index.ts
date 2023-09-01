@@ -1,3 +1,5 @@
+import { getAppMetadata } from '../lib/metadata';
+import { FDC3_2_0_TOPICS } from './topics';
 import { Runtime } from '/@/runtime';
 // import { FDC3_2_0_TOPICS } from './topics';
 // import {
@@ -32,7 +34,11 @@ import { Runtime } from '/@/runtime';
 // } from './raiseIntent';
 // import { createPrivateChannel } from './channels';
 
-export const register = (runtime: Runtime) => {};
+export const register = (runtime: Runtime) => {
+
+        runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_METADATA, getAppMetadata);
+
+};
 
 // export const register = (runtime: Runtime) => {
 //   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);

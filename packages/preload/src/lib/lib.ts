@@ -74,25 +74,13 @@ export const convertTarget = (target: any): SailTargetIdentifier | undefined => 
   if (!target) {
     return undefined;
   } else if (typeof target === 'string') {
-    return { key: target, name: target };
-
-    // RM : Commented out since this doesn't happen according to signatures.
-    //  else if ((target as AppMetadata)?.name) {
-    //   const targetObj: AppMetadata = target as AppMetadata;
-    //   return {
-    //     key: targetObj.name,
-    //     name: targetObj.name,
-    //     appId: targetObj.appId,
-    //     appMetadata: targetObj,
-    //   };
+    return { name: target };
   } else if (target.appId) {
     return {
-      key: target.appId,
       appId: target.appId,
     };
   } else if (target.name) {
     return {
-      key: target.name,
       name: target.name
     }
   } else {
