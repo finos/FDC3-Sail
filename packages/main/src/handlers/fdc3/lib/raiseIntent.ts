@@ -8,12 +8,14 @@ import {
   FDC3Message,
   RaiseIntentData,
   RaiseIntentContextData,
+  SailTargetIdentifier,
 } from '/@/types/FDC3Message';
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 import { NoAppsFound } from '/@/types/FDC3Errors';
+import { FDC3Listener } from '/@/types/FDC3Listener';
 
 export const raiseIntent = async (message: FDC3Message) => {
   const runtime = getRuntime();
@@ -30,14 +32,21 @@ export const raiseIntent = async (message: FDC3Message) => {
     throw new Error(NoAppsFound);
   }
 
+
+
   //only support string targets for now...
-  const target: string | undefined = data.target?.key;
+  const target = data.target as SailTargetIdentifier | undefined;
+  let intentListeners : Map<string, FDC3Listener> = new Map();
 
-  const intentListeners = target
-    ? runtime.getIntentListenersByAppName(intent, target)
-    : runtime.getIntentListeners(intent);
+  if (target?.appId) {
+    intentListeners = runtime.getIntentListenersByAppId(intent, target.appId);
+  } else if (target?.name) {
+    intentListeners = runtime.getIntentListenersByAppName(intent, target.name);
+  } else {
+    intentListeners = runtime.getIntentListeners(intent);
+  }
 
-  if (intentListeners) {
+  if (intentListeners.size>0) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listener) => {
       let addView = true;
@@ -110,9 +119,9 @@ export const raiseIntent = async (message: FDC3Message) => {
 
   directoryData.forEach((entry: DirectoryApp) => {
     let addResult = true;
-    if (target && entry.name !== target) {
+    if ((target && entry.name !== target.name) && (target && entry.appId !== target.appId) ){
       addResult = false;
-    }
+    } 
     if (addResult) {
       results.push({
         type: 'directory',

@@ -8,3 +8,9 @@ export const NoAppsFound = ResolveError.NoAppsFound;
 
 // this is the same in 1.2 and 2.0
 export const CreationFailed = ChannelError.CreationFailed;
+
+// this is the same in 1.2 and 2.0
+export const ErrorOnLaunch = OpenError.ErrorOnLaunch;
+
+// this is the same in 1.2 and 2.0
+export const ResolverTimeout = ResolveError.ResolverTimeout;

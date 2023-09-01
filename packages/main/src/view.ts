@@ -22,7 +22,7 @@ import { getSailManifest } from '/@/directory/directory';
 import { FDC3_VERSIONS } from '/@/types/Versions';
 import { shell } from 'electron';
 import { FDC3_TOPICS } from './handlers/fdc3/topics';
-import { TargetIdentifier } from './types/FDC3Message';
+import { Context, SailTargetIdentifier } from './types/FDC3Message';
 
 const FDC3_1_2_PRELOAD = join(
   __dirname,
@@ -201,7 +201,7 @@ export class View {
     }
   }
 
-  resolveTransfer(transferId: string, target: TargetIdentifier) {
+  resolveTransfer(transferId: string, target: SailTargetIdentifier) {
     //send a message to view content to resolve the transfer
     //'source' on the message will be the target of the transfer
     this.content.webContents.send(FDC3_TOPICS.RESOLVE_TRANSFER, {

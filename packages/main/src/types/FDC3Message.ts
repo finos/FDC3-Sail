@@ -2,14 +2,12 @@ import { FDC3App } from './FDC3Data';
 
 import {
   Context as Context2_0,
-  Icon,
-  Image,
   IntentMetadata as IntentMetadata2_0,
   DisplayMetadata as DisplayMetadata2_0,
 } from 'fdc3-2.0';
 
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { ChannelData } from './Channel';
+import { ChannelData } from './FDC3Data';
 import { DirectoryApp } from '../directory/directory';
 
 // Context is the same in 1.2 and 2.0

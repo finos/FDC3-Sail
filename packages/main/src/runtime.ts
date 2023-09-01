@@ -333,25 +333,25 @@ export class Runtime {
     return result;
   }
 
-  // getIntentListenersByAppId(
-  //   intent: string,
-  //   id: SailAppIdentifier,
-  // ): Map<string, FDC3Listener> {
-  //   const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+  getIntentListenersByAppId(
+    intent: string,
+    appId: string,
+  ): Map<string, FDC3Listener> {
+    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
 
-  //   this.getViews().forEach((view) => {
-  //     //if a appIdentifier target is provided, filter
-  //     //to do - instance targeting
-  //     if (view.directoryData && view.directoryData.appId === id.appId) {
-  //       view.listeners.forEach((l) => {
-  //         if (l.intent && l.intent === intent) {
-  //           result.set(l.listenerId, l);
-  //         }
-  //       });
-  //     }
-  //   });
-  //   return result;
-  // }
+    this.getViews().forEach((view) => {
+      //if a appIdentifier target is provided, filter
+      //to do - instance targeting
+      if (view.directoryData && view.directoryData.appId === appId) {
+        view.listeners.forEach((l) => {
+          if (l.intent && l.intent === intent) {
+            result.set(l.listenerId, l);
+          }
+        });
+      }
+    });
+    return result;
+  }
 
   getIntentListeners(intent: string): Map<string, FDC3Listener> {
     const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
