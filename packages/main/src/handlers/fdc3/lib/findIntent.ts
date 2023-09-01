@@ -6,7 +6,7 @@ import {
   FindIntentContextData,
   SailAppIntent,
 } from '/@/types/FDC3Message';
-import { NoAppsFound } from '/@/types/FDC3Errors'; 
+import { NoAppsFound } from '/@/types/FDC3Errors';
 
 // function convertApp(a: DirectoryApp): SailAppMetadata {
 //   return {
@@ -55,7 +55,7 @@ export const findIntentsByContext = async (message: FDC3Message) => {
       .retrieveAllIntentsByContext(context.type);
 
     const result: SailAppIntent[] = Object.keys(matchingIntents).map((k) => {
-      const apps : DirectoryApp[] = matchingIntents[k].map((o) => o.app);
+      const apps: DirectoryApp[] = matchingIntents[k].map((o) => o.app);
 
       return {
         intent: {

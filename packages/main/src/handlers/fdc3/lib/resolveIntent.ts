@@ -43,7 +43,6 @@ export const resolveIntent = async (message: FDC3Message) => {
       });
 
       view.parent.setSelectedTab(view.id);
-      
     }
   }
   //send the resolution to the source
@@ -54,8 +53,8 @@ export const resolveIntent = async (message: FDC3Message) => {
   if (resolver) {
     const sourceView = runtime.getView(resolver?.source);
     if (sourceView) {
-      const topic = FDC3_2_0_TOPICS.RESOLVE_INTENT
-        
+      const topic = FDC3_2_0_TOPICS.RESOLVE_INTENT;
+
       sourceView.content.webContents.send(topic, {
         source: {
           name: view?.directoryData?.name,

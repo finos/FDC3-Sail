@@ -28,7 +28,7 @@ import {
 import { FDC3EventEnum } from '/@main/types/FDC3Event';
 import { ChannelData } from '/@main/types/Channel';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics"
+import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 
 //map of context listeners by id

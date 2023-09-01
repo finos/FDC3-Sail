@@ -41,7 +41,7 @@ const toChannelData = (channel: Channel): ChannelData | null => {
       type: channel.type,
       id: channel.id,
       displayMetadata: channel.displayMetadata,
-      owner: null
+      owner: null,
     };
   } else {
     return null;
@@ -488,9 +488,12 @@ export const createAPI = (): DesktopAgent => {
             },
             intent: cEvent.detail?.intent,
             getResult: () => {
-              return new Promise<IntentResult>((resolve, reject) => {
+              return new Promise<IntentResult>((resolve, _reject) => {
                 console.log('in getResult');
-                resolve(null as any as IntentResult);
+                const ir: IntentResult = {
+                  type: 'bobbins',
+                };
+                resolve(ir);
               });
             },
           });
@@ -754,12 +757,12 @@ export const createAPI = (): DesktopAgent => {
       );
 
       return result == null
-      ? null :
-      createChannelObject(
-        result.id,
-        result.type as 'user' | 'app' | 'private',
-        result.displayMetadata || { name: result.id },
-      );
+        ? null
+        : createChannelObject(
+            result.id,
+            result.type as 'user' | 'app' | 'private',
+            result.displayMetadata || { name: result.id },
+          );
     },
   };
 

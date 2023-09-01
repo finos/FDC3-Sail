@@ -62,7 +62,7 @@ export const broadcast = async (message: FDC3Message) => {
       });
       //if there are listeners found, broadcast the context to the view (with all listenerIds)
       if (viewListeners.length > 0) {
-        const topic = FDC3_TOPICS.CONTEXT
+        const topic = FDC3_TOPICS.CONTEXT;
 
         v.content.webContents.send(topic, {
           topic: topic,

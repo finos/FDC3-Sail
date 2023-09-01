@@ -32,7 +32,7 @@ import { Runtime } from '/@/runtime';
 // } from './raiseIntent';
 // import { createPrivateChannel } from './channels';
 
-export const register = (runtime: Runtime) => {}
+export const register = (runtime: Runtime) => {};
 
 // export const register = (runtime: Runtime) => {
 //   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CONTEXT, getCurrentContext);

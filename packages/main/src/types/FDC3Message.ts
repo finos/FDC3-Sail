@@ -1,13 +1,19 @@
 import { FDC3App } from './FDC3Data';
 
-import { Context as Context2_0, Icon, Image, IntentMetadata as IntentMetadata2_0, DisplayMetadata as DisplayMetadata2_0 } from 'fdc3-2.0';
+import {
+  Context as Context2_0,
+  Icon,
+  Image,
+  IntentMetadata as IntentMetadata2_0,
+  DisplayMetadata as DisplayMetadata2_0,
+} from 'fdc3-2.0';
 
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { ChannelData } from './Channel';
-import { DirectoryApp, DirectoryIntent } from '../directory/directory';
+import { DirectoryApp } from '../directory/directory';
 
 // Context is the same in 1.2 and 2.0
-export type Context = Context2_0
+export type Context = Context2_0;
 
 export interface FDC3Message extends RuntimeMessage {
   topic: string;
@@ -112,7 +118,7 @@ export interface FindIntentContextData {
   describe data for the open API
 */
 export interface OpenData {
-  target: TargetIdentifier;
+  target: SailTargetIdentifier;
   context?: Context | undefined;
 }
 
@@ -122,7 +128,7 @@ export interface OpenData {
 export interface RaiseIntentData {
   intent: string;
   context?: Context | undefined;
-  target?: TargetIdentifier | undefined;
+  target?: SailTargetIdentifier | undefined;
 }
 
 /*
@@ -130,7 +136,7 @@ export interface RaiseIntentData {
 */
 export interface RaiseIntentContextData {
   context: Context;
-  target?: TargetIdentifier | undefined;
+  target?: SailTargetIdentifier | undefined;
 }
 
 /*
@@ -150,26 +156,11 @@ export interface IntentResultData {
   result?: ChannelData | Context | null;
 }
 
-/**
- * This provides the superset of metadata from 1.2 and 2.0
- * Any future version of FDC3 introducing new metadata should just add it here.
- */
-export type SailAppMetadata = {
-  name?: string,
-  appId?: string,
-  version?: string,
-  title?: string,
-  tooltip?: string
-  description?: string,
-  icons?: Icon[],
-  screenshots?: Image[]
-}
+// same in 2.0 and 1.2
+export type IntentMetadata = IntentMetadata2_0;
 
 // same in 2.0 and 1.2
-export type IntentMetadata = IntentMetadata2_0
-
-// same in 2.0 and 1.2
-export type DisplayMetadata = DisplayMetadata2_0
+export type DisplayMetadata = DisplayMetadata2_0;
 
 export interface SailAppIntent {
   intent: IntentMetadata;
@@ -179,16 +170,16 @@ export interface SailAppIntent {
 /*
     abstraction over 1.2 TargetApp and 2.0 AppIdentifier
 */
-export interface TargetIdentifier {
+export interface SailTargetIdentifier {
   key: string; //either name or appId
   name?: string;
   appId?: string;
   instanceId?: string;
-  appMetadata?: SailAppMetadata;
+  appMetadata?: DirectoryApp;
 }
 
 export interface FDC3Response {
   error?: string;
-  data: any;
+  data: object;
   topic: string;
 }

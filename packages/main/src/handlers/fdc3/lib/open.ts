@@ -45,7 +45,7 @@ export const open = async (message: FDC3Message) => {
   const data: OpenData = message.data as OpenData;
   const targetIdentifier = data.target;
 
-  let allResults : DirectoryApp[] = [];
+  let allResults: DirectoryApp[] = [];
 
   if (targetIdentifier.name) {
     allResults = runtime.getDirectory().retrieveByName(targetIdentifier.name);

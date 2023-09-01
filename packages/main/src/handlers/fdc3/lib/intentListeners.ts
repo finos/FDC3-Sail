@@ -42,7 +42,7 @@ export const addIntentListener = async (message: FDC3Message) => {
         if (n - pIntent.ts < pendingTimeout && pIntent.intent === intent) {
           //refactor with other instances of this logic
           if (view && view.content) {
-            const topic =FDC3_TOPICS.INTENT
+            const topic = FDC3_TOPICS.INTENT;
             view.content.webContents.send(topic, {
               topic: topic,
               data: {

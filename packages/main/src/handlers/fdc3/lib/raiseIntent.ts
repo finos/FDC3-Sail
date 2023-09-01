@@ -247,10 +247,10 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
             title: title,
             directoryData: view.directoryData,
           };
-          r.push({ 
-            type: 'window', 
-            details: details, 
-            intent: intent 
+          r.push({
+            type: 'window',
+            details: details,
+            intent: intent,
           });
         }
       });
@@ -293,7 +293,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic = FDC3_TOPICS.CONTEXT
+            const topic = FDC3_TOPICS.CONTEXT;
             view.content.webContents.send(topic, {
               topic: 'context',
               data: {
@@ -337,7 +337,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic = FDC3_TOPICS.INTENT
+            const topic = FDC3_TOPICS.INTENT;
             view.content.webContents.send(topic, {
               topic: 'intent',
               data: {
