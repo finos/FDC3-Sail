@@ -1,6 +1,6 @@
 import { FDC3Listener } from './types/FDC3Listener';
 //import { Context, AppIdentifier } from '@finos/fdc3-2.0';
-import { ChannelData, FDC3App, IntentInstance, PrivateChannelData, ResolverDetail } from '/@/types/FDC3Data';
+import { SailChannelData, FDC3App, IntentInstance, SailPrivateChannelData, ResolverDetail } from '/@/types/FDC3Data';
 import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -41,18 +41,18 @@ const views: Map<string, View> = new Map();
 const workspaces: Map<string, Workspace> = new Map();
 
 //collection of app channel ids
-const appChannels: Map<string, ChannelData> = new Map();
+const appChannels: Map<string, SailChannelData> = new Map();
 
-const privateChannels: Map<string, PrivateChannelData> = new Map();
+const privateChannels: Map<string, SailPrivateChannelData> = new Map();
 
 //collection of pending intent results
 const intentResults: Map<
   string,
-  Promise<ChannelData | Context | null>
+  Promise<SailChannelData | Context | null>
 > = new Map();
 const intentResultResolvers: Map<
   string,
-  (value: ChannelData | Context | null) => void
+  (value: SailChannelData | Context | null) => void
 > = new Map();
 
 const intentTransfers: Map<string, IntentTransfer> = new Map();
@@ -193,7 +193,7 @@ export class Runtime {
       allChannels.push(channel);
     });
 
-    allChannels.forEach((channel: ChannelData) => {
+    allChannels.forEach((channel: SailChannelData) => {
       const channelContext = contexts.get(channel.id) || [];
 
       channelStates.push({
@@ -445,11 +445,11 @@ export class Runtime {
     resolver = undefined;
   }
 
-  getAppChannel(id: string): ChannelData | undefined {
+  getAppChannel(id: string): SailChannelData | undefined {
     return appChannels.get(id);
   }
 
-  setAppChannel(channel: ChannelData) {
+  setAppChannel(channel: SailChannelData) {
     appChannels.set(channel.id, channel);
   }
 
@@ -457,11 +457,11 @@ export class Runtime {
     appChannels.delete(channelId);
   }
 
-  setPrivateChannel(channel: PrivateChannelData) {
+  setPrivateChannel(channel: SailPrivateChannelData) {
     privateChannels.set(channel.id, channel);
   }
 
-  getPrivateChannel(id: string): PrivateChannelData | undefined {
+  getPrivateChannel(id: string): SailPrivateChannelData | undefined {
     return privateChannels.get(id);
   }
 
@@ -484,7 +484,7 @@ export class Runtime {
   }
 
   //one time sets the result (no op if the result is not null)
-  setIntentResult(id: string, result: ChannelData | Context | null) {
+  setIntentResult(id: string, result: SailChannelData | Context | null) {
     console.log('************** set intent result', id, result);
     const entry = intentResults.get(id);
     if (entry === null) {
@@ -501,7 +501,7 @@ export class Runtime {
   }
 
   //one time returns the result, then deletes the entry if not null
-  async getIntentResult(id: string): Promise<Context | ChannelData | null> {
+  async getIntentResult(id: string): Promise<Context | SailChannelData | null> {
     const result = await intentResults.get(id);
     if (result === undefined || result === null) {
       return null;

@@ -5,9 +5,9 @@ import {
   ChannelMessageData,
   Context,
 } from '/@/types/FDC3Message';
-import { ChannelData } from '/@/types/Channel';
 import { systemChannels } from './systemChannels';
 import { CreationFailed } from '/@/types/FDC3Errors';
+import { SailChannelData } from '/@/types/FDC3Data';
 
 export const getSystemChannels = async () => {
   return systemChannels;
@@ -53,7 +53,7 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
   if (id === 'default') {
     throw new Error(CreationFailed);
   }
-  let channel: ChannelData | null = getChannelMeta(id);
+  let channel: SailChannelData | null = getChannelMeta(id);
 
   //if not found... create as an app channel
   if (!channel) {
@@ -93,22 +93,18 @@ export const joinChannel = async (message: FDC3Message) => {
 };
 
 //generate / get full channel object from an id - returns null if channel id is not a system channel or a registered app channel
-const getChannelMeta = (id: string): ChannelData | null => {
-  let channel: ChannelData | null = null;
+const getChannelMeta = (id: string): SailChannelData | null => {
+  let channel: SailChannelData | null = null;
   //is it a system channel?
-  const sChannels: Array<ChannelData> = systemChannels;
+  const sChannels: Array<SailChannelData> = systemChannels;
   const sc = sChannels.find((c) => {
     return c.id === id;
   });
 
   if (sc) {
-    channel = {
-      id: id,
-      type: 'system',
-      displayMetadata: sc.displayMetadata,
-      owner: null,
-    };
+    return sc;
   }
+
   //is it an app channel?
   if (!channel) {
     const runtime = getRuntime();

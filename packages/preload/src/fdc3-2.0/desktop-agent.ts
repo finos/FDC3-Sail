@@ -1,13 +1,13 @@
-import { AppIdentifier, AppIntent, AppMetadata, Channel, DesktopAgent, Icon, Image, IntentResolution } from "fdc3-2.0";
+import { AppIdentifier, AppIntent, AppMetadata, DesktopAgent, Icon, Image, IntentResolution } from "fdc3-2.0";
 import { SendMessage } from "../message";
 import { DesktopAgent as DesktopAgent1_2 } from "fdc3-1.2";
 import { Context, SailAppIntent } from "/@main/types/FDC3Message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget } from "../lib/lib";
-import { ChannelData } from "/@main/types/FDC3Data";
 import { createChannelObject, createPrivateChannelObject } from "./channel";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
 import { SailContextHandler } from "../fdc3-1.2/listeners";
+import { SailChannelData } from "/@main/types/FDC3Data";
 
 function convertAppIntent(sai: SailAppIntent) : AppIntent {
     const apps: AppMetadata[] = sai.apps.map(m => {
@@ -34,6 +34,23 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
 
     const addIntentListener1_2 = base.addIntentListener;
     const addContextListener1_2 = base.addContextListener;
+
+    const getUserChannels2_0 = async () => {
+        const r: Array<SailChannelData> = await sendMessage(
+            FDC3_2_0_TOPICS.GET_USER_CHANNELS,
+            {},
+        );
+        console.log('result', r);
+        const channels = r.map((c: SailChannelData) => {
+            return createChannelObject(
+                sendMessage,
+                c.id,
+                'user',
+                c.displayMetadata || { name: c.id },
+            );
+        });
+        return channels;
+    }
 
     return {
         ...base,
@@ -67,28 +84,15 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async getUserChannels() {
-            const r: Array<ChannelData> = await sendMessage(
-                FDC3_2_0_TOPICS.GET_USER_CHANNELS,
-                {},
-            );
-            console.log('result', r);
-            const channels = r.map((c: ChannelData) => {
-                return createChannelObject(
-                    sendMessage,
-                    c.id,
-                    'user',
-                    c.displayMetadata || { name: c.id },
-                );
-            });
-            return channels;
+            return getUserChannels2_0();
         },
 
         async getSystemChannels() {
-            return this.getUserChannels()
+            return getUserChannels2_0()
         },
 
         async getOrCreateChannel(channelId: string) {
-            const result: ChannelData = await sendMessage(
+            const result: SailChannelData = await sendMessage(
                 FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL,
                 { channel: channelId },
             );
@@ -102,7 +106,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async createPrivateChannel() {
-            const result: ChannelData = await sendMessage(
+            const result: SailChannelData = await sendMessage(
                 FDC3_2_0_TOPICS.CREATE_PRIVATE_CHANNEL,
                 {},
             );
@@ -115,13 +119,13 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async joinUserChannel(channel: string) {
-            return await sendMessage(FDC3_2_0_TOPICS.JOIN_USER_CHANNEL, {
+            return await sendMessage(FDC3_2_0_TOPICS.JOIN_CHANNEL, {
                 channel: channel,
             });
         },
 
         async getCurrentChannel() {
-            const result: ChannelData = await sendMessage(
+            const result: SailChannelData = await sendMessage(
                 FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL,
                 {},
             );

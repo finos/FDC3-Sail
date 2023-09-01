@@ -1,4 +1,4 @@
-import { FDC3App } from './FDC3Data';
+import { FDC3App, SailChannelData } from './FDC3Data';
 
 import {
   Context as Context2_0,
@@ -7,7 +7,6 @@ import {
 } from 'fdc3-2.0';
 
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { ChannelData } from './FDC3Data';
 import { DirectoryApp } from '../directory/directory';
 
 // Context is the same in 1.2 and 2.0
@@ -152,7 +151,7 @@ export interface ResolveIntentData {
 */
 export interface IntentResultData {
   resultId: string;
-  result?: ChannelData | Context | null;
+  result?: SailChannelData | Context | null;
 }
 
 export interface AppIdData {

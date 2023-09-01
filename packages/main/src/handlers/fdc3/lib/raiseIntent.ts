@@ -225,7 +225,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
   /**
    * To Do: Support additional AppMetadata searching (other than name)
    */
-  const target = data.target?.key || null;
+  const target = data.target?.appId ?? data.target?.name ?? null;
 
   const intentListeners = runtime.getIntentListenersByContext(contextType);
 

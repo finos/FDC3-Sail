@@ -31,36 +31,21 @@ export interface ResolverDetail {
 
 /**
  * cross version representation of channel data
- * todo: rationalize with ChannelData interface in Channel.ts
  */
-export interface ChannelData {
+export interface SailChannelData {
   id: string;
-  type: 'system' | 'user' | 'app' | 'private';
-  displayMetadata?: ChannelMetadata;
+  type: 'user' | 'app' | 'private';
+  owner?: string;
+  displayMetadata?: SailDisplayMetadata;
 }
 
-export interface PrivateChannelData extends ChannelData {
+export interface SailPrivateChannelData extends SailChannelData {
   unsubscribeListeners: Map<string, FDC3Listener>;
   disconnectListeners: Map<string, FDC3Listener>;
 }
 
 
-export class ChannelMetadata implements DisplayMetadata {
-  /**
-   * A user-readable name for this channel, e.g: `"Red"`
-   */
-  name?: string;
-
-  /**
-   * The color that should be associated within this channel when displaying this channel in a UI, e.g: `0xFF0000`.
-   */
-  color?: string;
-
-  /**
-   * A URL of an image that can be used to display this channel
-   */
-  glyph?: string;
-
+export interface SailDisplayMetadata extends DisplayMetadata {
   /**
    * alternate / secondary color to use in conjunction with 'color' when creating UIs
    */

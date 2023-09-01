@@ -3,7 +3,7 @@
  */
 
 import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
-import { ChannelData } from './types/FDC3Data';
+import { SailChannelData } from './types/FDC3Data';
 import { FDC3EventDetail } from './types/FDC3Event';
 import { randomUUID } from 'crypto';
 
@@ -20,7 +20,7 @@ const getDirectoryUrl = (): string => {
   return dir;
 };
 
-const getSystemChannels = (): Array<ChannelData> => {
+const getSystemChannels = (): Array<SailChannelData> => {
   return systemChannels;
 };
 
