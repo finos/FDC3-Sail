@@ -32,8 +32,6 @@ function convertAppIntent(sai: SailAppIntent) : AppIntent {
 
 export function createDesktopAgentInstance(sendMessage: SendMessage, version: string, base: DesktopAgent1_2, appMetadata: AppMetadata): DesktopAgent {
 
-    const getOrCreateChannel1_2 = base.getOrCreateChannel;
-    const raiseIntentForContext1_2 = base.raiseIntentForContext;
     const addIntentListener1_2 = base.addIntentListener;
     const addContextListener1_2 = base.addContextListener;
 
@@ -89,6 +87,20 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             return this.getUserChannels()
         },
 
+        async getOrCreateChannel(channelId: string) {
+            const result: ChannelData = await sendMessage(
+                FDC3_2_0_TOPICS.GET_OR_CREATE_CHANNEL,
+                { channel: channelId },
+            );
+
+            return createChannelObject(
+                sendMessage,
+                result.id,
+                result.type,
+                result.displayMetadata || { name: result.id },
+            );
+        },
+
         async createPrivateChannel() {
             const result: ChannelData = await sendMessage(
                 FDC3_2_0_TOPICS.CREATE_PRIVATE_CHANNEL,
@@ -122,11 +134,6 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                     result.type,
                     result.displayMetadata || { name: result.id },
                 );
-        },
-
-        async getOrCreateChannel(channelId) {
-            // very slight narrowing of type, otherwise identical
-            return getOrCreateChannel1_2(channelId) as unknown as Channel
         },
 
         async getAppMetadata(app: AppIdentifier) {

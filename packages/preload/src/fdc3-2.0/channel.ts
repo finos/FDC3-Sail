@@ -1,14 +1,15 @@
-import { Channel as Channel1_2, PrivateChannel } from 'fdc3-2.0';
-import { Channel as Channel2_0 } from 'fdc3-2.0';
+import { Channel as Channel2_0, PrivateChannel } from 'fdc3-2.0';
 import { createChannelObject as createChannelObject1_2 } from '../fdc3-1.2/channel';
 
 import { Context, DisplayMetadata } from '/@main/types/FDC3Message';
 import { guid } from '../lib/lib';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3Listener, SailContextHandler, contextListeners, createListenerItem } from '../fdc3-1.2/listeners';
+import { FDC3Listener, SailContextHandler, SailListener, contextListeners, createListenerItem } from '../fdc3-1.2/listeners';
 import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { CreationFailed } from '/@main/types/FDC3Errors';
+import { AddContextListener, DisconnectListener, UnsubscribeListener, addContextListeners, createContextTypeListenerItem, createVoidListenerItem, disconnectListeners, unsubscribeListeners } from './listeners';
+
 
 /**
  * This overrides the one from the 1.2 implementation as the addContextListener returns a promise in this version 
@@ -73,12 +74,10 @@ export const createPrivateChannelObject = (sendMessage: SendMessage, id: string)
   return {
     ...privateChannel,
 
-    onAddContextListener: (
-      handler: (contextType?: string) => void,
-    ): FDC3Listener => {
+    onAddContextListener(handler: (contextType?: string) => void) {
       const listenerId: string = guid();
 
-      _addContextListeners.set(
+      addContextListeners.set(
         listenerId,
         createContextTypeListenerItem(listenerId, handler),
       );
@@ -87,13 +86,14 @@ export const createPrivateChannelObject = (sendMessage: SendMessage, id: string)
         listenerId: listenerId,
         channel: id,
       });
-      return new AddContextListener(listenerId);
+
+      return new AddContextListener(sendMessage, listenerId);
     },
 
-    onDisconnect: (handler: () => void) => {
+    onDisconnect(handler: () => void)  {
       const listenerId: string = guid();
 
-      _disconnectListeners.set(
+      disconnectListeners.set(
         listenerId,
         createVoidListenerItem(listenerId, handler),
       );
@@ -102,13 +102,13 @@ export const createPrivateChannelObject = (sendMessage: SendMessage, id: string)
         listenerId: listenerId,
         channel: id,
       });
-      return new DisconnectListener(listenerId);
+      return new DisconnectListener(sendMessage, listenerId);
     },
 
-    onUnsubscribe: (handler: (contextType?: string) => void): Listener => {
+    onUnsubscribe(handler: (contextType?: string) => void) {
       const listenerId: string = guid();
 
-      _unsubscribeListeners.set(
+      unsubscribeListeners.set(
         listenerId,
         createContextTypeListenerItem(listenerId, handler),
       );
@@ -117,7 +117,7 @@ export const createPrivateChannelObject = (sendMessage: SendMessage, id: string)
         listenerId: listenerId,
         channel: id,
       });
-      return new UnsubscribeListener(listenerId);
+      return new UnsubscribeListener(sendMessage, listenerId);
     },
 
     disconnect: (): void => {
