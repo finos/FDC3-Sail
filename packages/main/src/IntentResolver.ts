@@ -2,7 +2,7 @@ import { View } from './view';
 import { getRuntime } from './index';
 import { BrowserWindow } from 'electron';
 import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
-import { Context } from '@finos/fdc3';
+import { Context } from './types/FDC3Message';
 import { join } from 'path';
 import { Workspace } from './workspace';
 import { randomUUID } from 'crypto';

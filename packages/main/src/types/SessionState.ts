@@ -1,6 +1,6 @@
 import { FDC3_VERSIONS } from './Versions';
-import { ChannelData } from './Channel';
-import { Context } from '@finos/fdc3';
+import { SailChannelData } from './FDC3Data';
+import { Context } from './FDC3Message';
 import { DirectoryApp } from '../directory/directory';
 
 export interface ViewState {
@@ -20,7 +20,7 @@ export interface WorkspaceState {
 }
 
 export interface ChannelState {
-  channel: ChannelData;
+  channel: SailChannelData;
   contexts: Array<Context>;
 }
 

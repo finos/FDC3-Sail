@@ -1,5 +1,5 @@
 import { FDC3Message, ChannelListenerData } from '/@/types/FDC3Message';
-import { PrivateChannelData } from '/@/types/Channel';
+import { SailPrivateChannelData } from '/@/types/FDC3Data';
 import { randomUUID } from 'crypto';
 import { getRuntime } from '../../../index';
 import { FDC3Listener } from '/@/types/FDC3Listener';
@@ -7,7 +7,7 @@ import { FDC3Listener } from '/@/types/FDC3Listener';
 export const createPrivateChannel = async (message: FDC3Message) => {
   const id = randomUUID();
 
-  const channel: PrivateChannelData = {
+  const channel: SailPrivateChannelData = {
     id: id,
     owner: message.source,
     type: 'private',
