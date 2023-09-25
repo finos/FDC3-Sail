@@ -45,9 +45,7 @@ export const openApp = async (
       instanceId: newView!!.id,
       appMetadata: app
     };  
-  } else {
-    return undefined;
-  }
+  } 
 };
 
 export const open = async (message: FDC3Message) => {

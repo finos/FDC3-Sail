@@ -26,6 +26,7 @@ export type FDC3MessageData =
   | CurrentContextData
   | ChannelMessageData
   | ListenerMessageData
+  | FindInstancesData
   | FindIntentData
   | FindIntentContextData
   | OpenData
@@ -93,6 +94,10 @@ export interface ListenerMessageData {
 export interface ChannelListenerData {
   listenerId: string;
   channel: string;
+}
+
+export interface FindInstancesData {
+  app: SailTargetIdentifier;
 }
 
 /*

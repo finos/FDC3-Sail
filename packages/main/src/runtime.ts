@@ -332,6 +332,28 @@ export class Runtime {
     return result;
   }
 
+  getIntentListenersByAppIdAndInstanceId(
+    intent: string,
+    appId: string,
+    instanceId: string
+  ): Map<string, FDC3Listener> {
+    
+    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+
+    this.getViews().forEach((view) => {
+      //if a appIdentifier target is provided, filter
+      if ((view.directoryData && view.directoryData.appId === appId)
+       && (view.id == instanceId)) {
+        view.listeners.forEach((l) => {
+          if (l.intent && l.intent === intent) {
+            result.set(l.listenerId, l);
+          }
+        });
+      }
+    });
+    return result;
+  }  
+
   getIntentListenersByAppId(
     intent: string,
     appId: string,
@@ -340,7 +362,6 @@ export class Runtime {
 
     this.getViews().forEach((view) => {
       //if a appIdentifier target is provided, filter
-      //to do - instance targeting
       if (view.directoryData && view.directoryData.appId === appId) {
         view.listeners.forEach((l) => {
           if (l.intent && l.intent === intent) {

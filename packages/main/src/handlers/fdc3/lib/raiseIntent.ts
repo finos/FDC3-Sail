@@ -32,13 +32,12 @@ export const raiseIntent = async (message: FDC3Message) => {
     throw new Error(NoAppsFound);
   }
 
-
-
-  //only support string targets for now...
   const target = data.target as SailTargetIdentifier | undefined;
   let intentListeners : Map<string, FDC3Listener> = new Map();
 
-  if (target?.appId) {
+  if (target?.appId && target?.instanceId) {
+    intentListeners = runtime.getIntentListenersByAppIdAndInstanceId(intent, target.appId, target.instanceId);
+  } else if (target?.appId) {
     intentListeners = runtime.getIntentListenersByAppId(intent, target.appId);
   } else if (target?.name) {
     intentListeners = runtime.getIntentListenersByAppName(intent, target.name);
@@ -112,23 +111,26 @@ export const raiseIntent = async (message: FDC3Message) => {
       }
     });
   }
-  //pull intent handlers from the directory
-  const directoryData: Array<DirectoryApp> = runtime
-    .getDirectory()
-    .retrieveByIntentAndContextType(intent, intentContext);
 
-  directoryData.forEach((entry: DirectoryApp) => {
-    let addResult = true;
-    if ((target && entry.name !== target.name) && (target && entry.appId !== target.appId) ){
-      addResult = false;
-    } 
-    if (addResult) {
-      results.push({
-        type: 'directory',
-        details: { directoryData: entry },
-      });
-    }
-  });
+  if (target?.instanceId == null) {
+  //pull intent handlers from the directory
+    const directoryData: Array<DirectoryApp> = runtime
+      .getDirectory()
+      .retrieveByIntentAndContextType(intent, intentContext);
+
+    directoryData.forEach((entry: DirectoryApp) => {
+      let addResult = true;
+      if ((target && entry.name !== target.name) && (target && entry.appId !== target.appId) ){
+        addResult = false;
+      } 
+      if (addResult) {
+        results.push({
+          type: 'directory',
+          details: { directoryData: entry },
+        });
+      }
+    });
+  }
 
   if (results.length > 0) {
     if (results.length === 1) {

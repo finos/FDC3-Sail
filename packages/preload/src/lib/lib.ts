@@ -75,6 +75,11 @@ export const convertTarget = (target: any): SailTargetIdentifier | undefined => 
     return undefined;
   } else if (typeof target === 'string') {
     return { name: target };
+  } else if (target.appId && target.instanceId) {
+    return {
+      appId: target.appId,
+      instanceId: target.instanceId
+    }
   } else if (target.appId) {
     return {
       appId: target.appId,

@@ -22,6 +22,7 @@ export const FDC3_2_0_TOPICS = {
   PRIVATE_CHANNEL_ONDISCONNECT: 'FDC3_2.0:privateChannelOnDisconnect',
   PRIVATE_CHANNEL_DISCONNECT: 'FDC3_2.0:privateChannelDisconnect',
   PRIVATE_CHANNEL_ONUNSUBSCRIBE: 'FDC3_2.0:privateChannelOnUnsubscribe',
+  FIND_INSTANCES: 'FDC3_2.0:findInstances',
   FIND_INTENT: 'FDC3_2.0:findIntent',
   FIND_INTENTS_BY_CONTEXT: 'FDC3_2.0:findIntentsByContext',
   RAISE_INTENT: 'FDC3_2.0:raiseIntent',

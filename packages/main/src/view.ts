@@ -79,6 +79,9 @@ export class View {
     if (config) {
       this.directoryData = config.directoryData;
       this.title = config.title;
+      this.config = config;
+    } else {
+      this.config = null;
     }
 
     if (fdc3Version) {
@@ -215,6 +218,8 @@ export class View {
   content: BrowserView;
 
   channel: string | null = null;
+
+  config: ViewConfig | null;
 
   /**
    * contexts that the view is listening to

@@ -34,10 +34,11 @@ import { Runtime } from '/@/runtime';
 // } from './raiseIntent';
 // import { createPrivateChannel } from './channels';
 
+import {findInstances } from './findInstances'
+
 export const register = (runtime: Runtime) => {
-
         runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_METADATA, getAppMetadata);
-
+        runtime.addHandler(FDC3_2_0_TOPICS.FIND_INSTANCES, findInstances);
 };
 
 // export const register = (runtime: Runtime) => {

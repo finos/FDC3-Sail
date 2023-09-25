@@ -1,7 +1,7 @@
 import { AppIdentifier, AppIntent, AppMetadata, DesktopAgent, Icon, Image, IntentResolution } from "fdc3-2.0";
 import { SendMessage } from "../message";
 import { DesktopAgent as DesktopAgent1_2 } from "fdc3-1.2";
-import { Context, SailAppIntent } from "/@main/types/FDC3Message";
+import { Context, SailAppIntent, SailTargetIdentifier } from "/@main/types/FDC3Message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget } from "../lib/lib";
 import { createChannelObject, createPrivateChannelObject } from "./channel";
@@ -80,8 +80,14 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async findInstances(app: AppIdentifier) {
-            return sendMessage(FDC3_2_0_TOPICS.FIND_INSTANCES, {})
-            const result: Array<AppIdentifier> = [app];
+            const data = await sendMessage(FDC3_2_0_TOPICS.FIND_INSTANCES, { app }) as SailTargetIdentifier[];
+            const result : AppIdentifier[] = data.map(e => {
+                return {
+                    appId: e.appId!!,
+                    instanceId: e.instanceId
+                }
+            })
+
             return result;
         },
 
