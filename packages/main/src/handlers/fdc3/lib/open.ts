@@ -5,14 +5,14 @@ import {
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 import { getSailManifest } from '/@/directory/directory';
-import { Context, FDC3Message, OpenData } from '/@/types/FDC3Message';
+import { Context, FDC3Message, OpenData, SailTargetIdentifier } from '/@/types/FDC3Message';
 import { AppNotFound } from '/@/types/FDC3Errors';
 
 export const openApp = async (
   app: DirectoryApp,
   source: string,
   context?: Context,
-) => {
+) : Promise<SailTargetIdentifier | void > => {
   const runtime = getRuntime();
   const start_url = (app.details as DirectoryAppLaunchDetailsWeb).url;
   const manifest = getSailManifest(app);
@@ -30,14 +30,24 @@ export const openApp = async (
     const work =
       runtime.getWorkspace(source) || (sourceView && sourceView.parent);
     newView =
-      work && (await work.createView(start_url, { directoryData: app }));
+      work && (work.createView(start_url, { directoryData: app }));
   }
 
   //set provided context
   if (newView && context) {
     newView.setPendingContext(context, source);
   }
-  return;
+ 
+  if (newView) {
+    return {
+      name: app.name,
+      appId: app.appId,
+      instanceId: newView!!.id,
+      appMetadata: app
+    };  
+  } else {
+    return undefined;
+  }
 };
 
 export const open = async (message: FDC3Message) => {

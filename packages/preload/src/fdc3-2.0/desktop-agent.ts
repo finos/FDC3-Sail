@@ -71,14 +71,16 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             return sendMessage(FDC3_2_0_TOPICS.OPEN, {
                 target: convertTarget(app),
                 context: context,
-            }).then(_ => {
+            }).then(details => {
                 return {
-                    appId: "unknnwn"   // TODO: should return instance info.
+                    appId: details.appId,
+                    instanceId: details.instanceId
                 }
             })
         },
 
         async findInstances(app: AppIdentifier) {
+            return sendMessage(FDC3_2_0_TOPICS.FIND_INSTANCES, {})
             const result: Array<AppIdentifier> = [app];
             return result;
         },
