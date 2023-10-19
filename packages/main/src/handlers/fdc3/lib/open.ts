@@ -6,7 +6,18 @@ import {
 } from '/@/directory/directory';
 import { getSailManifest } from '/@/directory/directory';
 import { Context, FDC3Message, OpenData, SailTargetIdentifier } from '/@/types/FDC3Message';
-import { AppNotFound } from '/@/types/FDC3Errors';
+import { AppNotFound, ErrorOnLaunch } from '/@/types/FDC3Errors';
+import { OpenError } from 'fdc3-2.0';
+
+const NO_LISTENER_TIMEOUT = 20000;  // 20 seconds
+
+function now() {
+  return new Date().getTime();
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export const openApp = async (
   app: DirectoryApp,
@@ -33,18 +44,39 @@ export const openApp = async (
       work && (work.createView(start_url, { directoryData: app }));
   }
 
-  //set provided context
-  if (newView && context) {
-    newView.setPendingContext(context, source);
+  if (!newView) {
+    return
   }
- 
-  if (newView) {
-    return {
-      name: app.name,
-      appId: app.appId,
-      instanceId: newView!!.id,
-      appMetadata: app
-    };  
+
+  const result = {
+    name: app.name,
+    appId: app.appId,
+    instanceId: newView!!.id,
+    appMetadata: app
+  };  
+
+  //set provided context
+  if (context) {
+    await sleep(100);
+    newView.setPendingContext(context, source);
+
+    // make sure the app registers a listener for this context
+    // before completing
+    const startTime = now();
+    while (now() - startTime < NO_LISTENER_TIMEOUT) {
+      const found = newView.listeners
+        .filter(l => l.contextType == context.type);
+
+      if (found.length > 0) {
+        return result;
+      } else {
+        await sleep(100);
+      }
+    }
+
+    throw new Error(OpenError.AppTimeout)
+  } else {
+    return result;
   } 
 };
 

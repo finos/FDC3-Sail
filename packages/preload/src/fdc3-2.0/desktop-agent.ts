@@ -78,9 +78,9 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                 context: context,
             }).then(details => {
                 return {
-                    appId: details.appId,
-                    instanceId: details.instanceId
-                }
+                        appId: details.appId,
+                        instanceId: details.instanceId
+                    }
             })
         },
 
