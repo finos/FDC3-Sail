@@ -30,7 +30,7 @@ function convertAppIntent(sai: SailAppIntent) : AppIntent {
 }
 
 
-export function createDesktopAgentInstance(sendMessage: SendMessage, version: string, base: DesktopAgent1_2, appMetadata: AppMetadata): DesktopAgent {
+export function createDesktopAgentInstance(sendMessage: SendMessage, version: string, base: DesktopAgent1_2): DesktopAgent {
 
     const addIntentListener1_2 = base.addIntentListener;
     const addContextListener1_2 = base.addContextListener;
@@ -56,15 +56,20 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         ...base,
 
         async getInfo() {
-            return {
-                fdc3Version: version,
-                provider: 'fdc3-sail',
-                optionalFeatures: {
-                    "OriginatingAppMetadata": true,
-                    "UserChannelMembershipAPIs": true
-                },
-                appMetadata
-            }
+            return sendMessage(FDC3_2_0_TOPICS.GET_APP_ID, {
+                // no data
+            }).then(details => {
+                console.log("GetInfo returned "+JSON.stringify(details))
+                return {
+                    fdc3Version: version,
+                    provider: 'fdc3-sail',
+                    optionalFeatures: {
+                        "OriginatingAppMetadata": true,
+                        "UserChannelMembershipAPIs": true
+                    },
+                    appMetadata: details.appMetadata
+                }
+            });
         },
 
         open(app: any, context?: Context) {
@@ -152,6 +157,8 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             const result: AppMetadata = await sendMessage(FDC3_2_0_TOPICS.GET_APP_METADATA, {
                 app: app
             });
+
+            console.log("Returned metadata: "+JSON.stringify(result))
 
             return result;
         },

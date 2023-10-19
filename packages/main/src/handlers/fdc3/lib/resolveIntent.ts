@@ -1,11 +1,7 @@
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import { FDC3App, IntentInstance } from '/@/types/FDC3Data';
-import {
-  FDC3Message,
-  IntentMetadata,
-  ResolveIntentData,
-} from '/@/types/FDC3Message';
+import { FDC3Message, IntentMetadata, ResolveIntentData } from '/@/types/FDC3Message';
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,

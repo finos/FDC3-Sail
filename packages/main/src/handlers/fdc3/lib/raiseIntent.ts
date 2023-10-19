@@ -1,6 +1,6 @@
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
-import { FDC3App, FDC3AppDetail } from '/@/types/FDC3Data';
+import { FDC3App, FDC3AppDetail, SailIntentResolution } from '/@/types/FDC3Data';
 import { FDC3_TOPICS } from '../topics';
 import { buildIntentInstanceTree, sortApps } from './resolveIntent';
 //import { IntentTransfer } from '/@/types/TransferInstance';
@@ -17,7 +17,7 @@ import {
 import { NoAppsFound } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
 
-export const raiseIntent = async (message: FDC3Message) => {
+export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentResolution | void> => {
   const runtime = getRuntime();
 
   const results: Array<FDC3App> = [];
@@ -154,8 +154,13 @@ export const raiseIntent = async (message: FDC3Message) => {
             source: {
               name: view.directoryData?.name,
               appId: view.directoryData?.appId,
+              instanceId: view.id
             },
+            intent: data.intent,
             version: view.fdc3Version,
+            async getResult() {
+              /* todo */
+            } 
           };
         }
       } else if (theApp.type === 'directory' && appDetails.directoryData) {
@@ -181,6 +186,10 @@ export const raiseIntent = async (message: FDC3Message) => {
         return {
           source: { name: directoryData.name, appId: directoryData.appId },
           version: '1.2',
+          intent: data.intent,
+          async getResult() {
+
+          }
         };
       }
     } else {

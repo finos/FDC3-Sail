@@ -1,6 +1,6 @@
 import { DirectoryApp } from '../directory/directory';
 import { FDC3Listener } from './FDC3Listener';
-import { Context, DisplayMetadata, IntentMetadata } from './FDC3Message';
+import { Context, DisplayMetadata, IntentMetadata, SailTargetIdentifier } from './FDC3Message';
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
  */
@@ -27,6 +27,16 @@ export interface FDC3AppDetail {
 export interface ResolverDetail {
   intent?: string;
   context?: Context;
+}
+
+/**
+ * Cross-version representation of intent resolution
+ */
+export interface SailIntentResolution {
+    source: SailTargetIdentifier;
+    version: string,
+    intent?: string, 
+    getResult(): Promise<Context | string | void>
 }
 
 /**

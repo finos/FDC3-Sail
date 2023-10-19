@@ -1,4 +1,4 @@
-import { getAppMetadata } from '../lib/metadata';
+import { getAppId, getAppMetadata } from '../lib/metadata';
 import { FDC3_2_0_TOPICS } from './topics';
 import { Runtime } from '/@/runtime';
 // import { FDC3_2_0_TOPICS } from './topics';
@@ -39,6 +39,7 @@ import {findInstances } from './findInstances'
 export const register = (runtime: Runtime) => {
         runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_METADATA, getAppMetadata);
         runtime.addHandler(FDC3_2_0_TOPICS.FIND_INSTANCES, findInstances);
+        runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_ID, getAppId);
 };
 
 // export const register = (runtime: Runtime) => {
