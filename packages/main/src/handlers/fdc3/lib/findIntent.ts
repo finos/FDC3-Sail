@@ -22,11 +22,13 @@ export const findIntent = async (message: FDC3Message) => {
   const data: FindIntentData = message.data as FindIntentData;
   const intent = data.intent;
   const context = data.context;
+  const resultType = data.resultType
 
   const dir = runtime.getDirectory();
-  const result = dir.retrieveByIntentAndContextType(
+  const result = dir.retrieveByIntentContextAndResultType(
     intent,
     context?.type || null,
+    resultType
   );
 
   if (result.length == 0) {

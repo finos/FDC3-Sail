@@ -163,10 +163,11 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             return result;
         },
 
-        async findIntent(intent: string, context: Context) {
+        async findIntent(intent: string, context: Context, resultType: string | undefined) {
             const sai : SailAppIntent = await sendMessage(FDC3_2_0_TOPICS.FIND_INTENT, {
-                intent: intent,
-                context: context,
+                intent,
+                context,
+                resultType
             });
 
             return convertAppIntent(sai);

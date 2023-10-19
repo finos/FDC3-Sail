@@ -1,3 +1,4 @@
+import { channel } from 'diagnostics_channel';
 import { components } from './generated-schema';
 
 /**
@@ -28,6 +29,19 @@ export type DirectoryAppSailManifest = {
  * If it can't do this for any reason, it returns the empty array.
  */
 export type Loader = (url: string) => Promise<DirectoryApp[]>;
+
+/**
+ * Works out the generic channel type from a typed instance
+ */
+function genericResultType(rt: string | undefined) {
+  if (rt == null) {
+    return null;
+  } else if (rt.indexOf("channel<") == 0) {
+    return 'channel';
+  } else {
+    return rt;
+  }
+}
 
 export class Directory {
   loaders: Loader[];
@@ -120,25 +134,30 @@ export class Directory {
     });
   }
 
-  retrieveByIntentAndContextType(
-    intent: string | null = null,
+  retrieveByIntentContextAndResultType(
+    intent: string,
     contextType: string | null = null,
+    resultType: string | null = null
   ): DirectoryApp[] {
     return this.retrieve((d) => {
       const listensFor = d.interop?.intents?.listensFor ?? {};
-      if (intent && contextType) {
-        const theIntent = listensFor[intent] as DirectoryIntent;
-        return theIntent && theIntent.contexts.includes(contextType);
-      } else if (intent != null) {
-        if (!Object.keys(listensFor).includes(intent)) {
+      var theIntent = listensFor[intent] as DirectoryIntent;
+
+      if (theIntent == null) {
+        return false;
+      }
+
+      if (contextType != null) {
+        if (!theIntent.contexts.includes(contextType)) {
           return false;
         }
-      } else if (contextType != null) {
-        return (
-          Object.values(listensFor).filter((v) =>
-            v.contexts.includes(contextType),
-          ).length > 0
-        );
+      }
+
+      if (resultType != null) {
+        if ((theIntent.resultType != resultType) && 
+           (genericResultType(theIntent.resultType) != resultType)) {
+          return false;
+        }
       }
 
       return true;

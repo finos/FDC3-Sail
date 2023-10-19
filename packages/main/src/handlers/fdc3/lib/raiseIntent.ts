@@ -116,7 +116,7 @@ export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentReso
   //pull intent handlers from the directory
     const directoryData: Array<DirectoryApp> = runtime
       .getDirectory()
-      .retrieveByIntentAndContextType(intent, intentContext);
+      .retrieveByIntentContextAndResultType(intent, intentContext, null);
 
     directoryData.forEach((entry: DirectoryApp) => {
       let addResult = true;
