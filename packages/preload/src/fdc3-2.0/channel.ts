@@ -5,7 +5,7 @@ import { Context, DisplayMetadata } from '/@main/types/FDC3Message';
 import { guid } from '../lib/lib';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3Listener, SailContextHandler, SailListener, contextListeners, createListenerItem } from '../fdc3-1.2/listeners';
+import { FDC3Listener, SailContextHandler, SailListener, getContextListeners, createListenerItem } from '../fdc3-1.2/listeners';
 import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { CreationFailed } from '/@main/types/FDC3Errors';
 import { AddContextListener, DisconnectListener, UnsubscribeListener, addContextListeners, createContextTypeListenerItem, createVoidListenerItem, disconnectListeners, unsubscribeListeners } from './listeners';
@@ -50,7 +50,7 @@ export const createChannelObject = (
         const thisContextType = handler ? (contextType as string) : undefined;
         const listenerId: string = guid();
   
-        contextListeners.set(
+        getContextListeners().set(
           listenerId,
           createListenerItem(listenerId, thisListener, thisContextType),
         );

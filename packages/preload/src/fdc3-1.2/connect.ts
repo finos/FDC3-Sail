@@ -1,6 +1,6 @@
 import { fdc3Event } from "../lib/lib";
 import { MessagingSupport } from "../message";
-import { contextListeners, intentListeners } from "./listeners";
+import { getContextListeners, getIntentListeners } from "./listeners";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics";
 import { FDC3EventEnum } from "/@main/types/FDC3Event";
@@ -8,11 +8,16 @@ import { Context } from "/@main/types/FDC3Message";
 
 const callIntentListener = (intent: string, context?: Context | undefined) => {
     if (intent) {
-        const listeners = intentListeners.get(intent);
+        console.log('Intent (Connect)', getIntentListeners());
+        console.log('Context (Connect)', getContextListeners());
+        
+        const listeners = getIntentListeners().get(intent);
+        console.log("Intent listeners for ", intent, listeners);
         const result = null;
         if (listeners) {
             listeners.forEach((l) => {
                 if (l.handler && context) {
+                    console.log("Handling: ", l, intent)
                     l.handler.call(document, context);
                 }
             });
@@ -26,11 +31,13 @@ const callIntentListener = (intent: string, context?: Context | undefined) => {
 };
 
 const callContextListener = (listenerId: string, context: Context) => {
-    console.log('Context', JSON.stringify(contextListeners));
-    const listeners = contextListeners;
+    console.log('Intent (CL)', getIntentListeners());
+    console.log('Context (CL)', getContextListeners());
+    const listeners = getContextListeners();
     if (listeners.has(listenerId)) {
         const listener = listeners.get(listenerId);
         if (listener?.handler && context) {
+            console.log("Handling: ", listener, context)
             listener.handler.call(document, context);
         }
     }

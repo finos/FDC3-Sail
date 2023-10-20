@@ -246,14 +246,12 @@ export class View {
   private type: 'system' | 'app' = 'app';
 
   setPendingContext(context: Context, source?: string): void {
-    console.log('view: set pending context', this.id, context);
     this.pendingContexts.push(
       new Pending(this.id, source || this.id, { context: context }),
     );
   }
 
   getPendingContexts(): Array<Pending> {
-    console.log('view: get pending contexts', this.pendingContexts);
     return this.pendingContexts;
   }
 
@@ -271,6 +269,8 @@ export class View {
     source?: string,
     resultId?: string,
   ): void {
+    console.log('view: set pending intent', this.id, intent, context);
+
     this.pendingIntents.push(
       new Pending(this.id, source || this.id, {
         intent: intent,
@@ -281,6 +281,7 @@ export class View {
   }
 
   getPendingIntents(): Array<Pending> {
+    console.log('view: get '+this.id+' pending intents', this.pendingIntents);
     return this.pendingIntents;
   }
 

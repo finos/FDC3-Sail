@@ -7,14 +7,22 @@ export type SailListener = Listener1_2;
 export type SailContextHandler = ContextHandler1_2
 
 //map of context listeners by id
-export const contextListeners: Map<string, ListenerItem> = new Map();
+const contextListeners: Map<string, ListenerItem> = new Map();
 
 //map of intents holding map of listeners for each intent
-export const intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
+const intentListeners: Map<string, Map<string, ListenerItem>> = new Map();
+
+export function getContextListeners() :  Map<string, ListenerItem> {
+    return contextListeners;
+}
+
+export function getIntentListeners() :  Map<string, Map<string, ListenerItem>> {
+    return intentListeners;
+}
 
 /**
-   *  the Listener class
-   */
+ *  the Listener class
+ */
 export class FDC3Listener implements SailListener {
     private id: string;
 

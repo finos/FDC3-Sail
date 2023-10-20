@@ -4,7 +4,7 @@ import { Context, SailAppIntent } from "/@main/types/FDC3Message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget, guid } from "../lib/lib";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
-import { FDC3Listener, SailContextHandler, contextListeners, createListenerItem, intentListeners } from "./listeners";
+import { FDC3Listener, SailContextHandler, getContextListeners, createListenerItem, getIntentListeners } from "./listeners";
 import { createChannelObject } from "./channel";
 import { SailChannelData } from "/@main/types/FDC3Data";
 import { DirectoryApp } from "/@main/directory/directory";
@@ -99,7 +99,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                 contextType && handler ? (contextType as string) : undefined;
             const listenerId: string = guid();
             console.log('add context listener', listenerId);
-            contextListeners.set(
+            getContextListeners().set(
                 listenerId,
                 createListenerItem(listenerId, thisListener, thisContextType),
             );
@@ -108,17 +108,22 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                 listenerId: listenerId,
                 contextType: thisContextType,
             });
+            console.log('added context listener', listenerId, contextType);
+            console.log('Intent (DAc)', getIntentListeners());
+            console.log('Context (DAc)', getContextListeners());
 
             return new FDC3Listener('context', listenerId, sendMessage);
         },
 
         addIntentListener(intent: string, listener: SailContextHandler) {
             const listenerId: string = guid();
+            console.log('add intent listener', listenerId);
 
-            if (!intentListeners.has(intent)) {
-                intentListeners.set(intent, new Map());
+            if (!getIntentListeners().has(intent)) {
+                getIntentListeners().set(intent, new Map());
             }
-            const listeners = intentListeners.get(intent);
+
+            const listeners = getIntentListeners().get(intent);
             if (listeners) {
                 listeners.set(listenerId, createListenerItem(listenerId, listener));
 
@@ -127,6 +132,11 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                     intent: intent,
                 });
             }
+            console.log('added intent listener', listenerId, getIntentListeners());
+
+            console.log('Intent (DAi)', getIntentListeners());
+            console.log('Context (DAi)', getContextListeners());
+    
             return new FDC3Listener('intent', listenerId, sendMessage, intent);
         },
 
