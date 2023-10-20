@@ -295,6 +295,7 @@ export class Workspace {
               //remove view parent
               delete v.parent;
               if (this.window) {
+                v.content.webContents.close();
                 this.window.removeBrowserView(v.content);
               }
             }

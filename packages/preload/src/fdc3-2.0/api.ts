@@ -759,12 +759,15 @@ export const createAPI = (): DesktopAgent => {
         FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL,
         {},
       );
-
-      return createChannelObject(
-        result.id,
-        result.type as 'user' | 'app' | 'private',
-        result.displayMetadata || { name: result.id },
-      );
+      if (result === null) {
+        return result;
+      } else {
+        return createChannelObject(
+          result.id,
+          result.type as 'user' | 'app' | 'private',
+          result.displayMetadata || { name: result.id },
+        );
+      }
     },
   };
 
