@@ -129,10 +129,9 @@ export class SessionView extends React.Component<
       getState();
     };
 
-    if (window.innerHeight) {
-      document.getElementById('sessionView').style.height = `${
-        window.innerHeight - 150
-      }px`;
+    const view = document.getElementById('sessionView');
+    if (window.innerHeight && view) {
+      view.style.height = `${window.innerHeight - 150}px`;
     }
 
     if (window.fdc3) {
@@ -167,7 +166,7 @@ export class SessionView extends React.Component<
 
   render() {
     const modalStyle = {
-      position: 'absolute' as 'absolute',
+      position: 'absolute' as const,
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
@@ -217,15 +216,21 @@ export class SessionView extends React.Component<
             <StyledTreeItem nodeId="workspaces" label="All Workspaces">
               {this.state.session.workspaces.map(
                 (workspace: WorkspaceState) => (
-                  <StyledTreeItem nodeId={workspace.id} label={workspace.id}>
+                  <StyledTreeItem
+                    nodeId={workspace.id}
+                    key={workspace.id}
+                    label={workspace.id}
+                  >
                     <StyledTreeItem
                       nodeId={`${workspace.id}_views`}
+                      key={workspace.id}
                       label="Views"
                     >
                       {workspace.views.map((viewId: string, i) => (
                         <StyledTreeItem
+                          key={`${workspace.id}_view_${i}`}
                           nodeId={`${workspace.id}_view_${i}`}
-                          label={this.getView(viewId).title}
+                          label={this.getView(viewId)?.title}
                           onClick={() => {
                             this.openModal('view', viewId);
                           }}
@@ -238,11 +243,7 @@ export class SessionView extends React.Component<
             </StyledTreeItem>
           </TreeView>
         </TabPanel>
-        <TabPanel
-          value={this.state.selectedTab}
-          index={1}
-          sx={{ height: '100%' }}
-        >
+        <TabPanel value={this.state.selectedTab} index={1}>
           <TreeView
             aria-label="customized"
             defaultExpanded={['1']}
@@ -260,11 +261,16 @@ export class SessionView extends React.Component<
             <StyledTreeItem nodeId="views" label="All Views">
               {Object.keys(this.state.session.viewsMap).map(
                 (key: string, i: number) => (
-                  <StyledTreeItem nodeId={`view_${i}`} label={key}>
+                  <StyledTreeItem
+                    key={`view_${i}`}
+                    nodeId={`view_${i}`}
+                    label={key}
+                  >
                     {this.state.session.viewsMap[key].map((viewId: string) => (
                       <StyledTreeItem
+                        key={viewId}
                         nodeId={viewId}
-                        label={`${this.getView(viewId).title} (${viewId})`}
+                        label={`${this.getView(viewId)?.title} (${viewId})`}
                         onClick={() => {
                           this.openModal('view', viewId);
                         }}
@@ -278,6 +284,7 @@ export class SessionView extends React.Component<
           <List>
             {this.state.session.views.map((view: ViewState) => (
               <ListItem
+                key={view.id}
                 onClick={() => {
                   this.openModal('view', view.id);
                 }}
@@ -305,6 +312,7 @@ export class SessionView extends React.Component<
             <StyledTreeItem nodeId="channels" label="Channels">
               {this.state.session.channels.map((channelState: ChannelState) => (
                 <StyledTreeItem
+                  key={channelState.channel.id}
                   nodeId={channelState.channel.id}
                   label={channelState.channel.id}
                 >
@@ -314,6 +322,7 @@ export class SessionView extends React.Component<
                   >
                     {channelState.contexts.map((context: Context, i) => (
                       <StyledTreeItem
+                        key={`${channelState.channel.id}_context_${i}`}
                         nodeId={`${channelState.channel.id}_context_${i}`}
                         label={context.type}
                       >

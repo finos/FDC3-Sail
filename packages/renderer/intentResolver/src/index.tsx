@@ -1,11 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {IntentResolver} from './IntentResolver';
+import { createRoot } from 'react-dom/client';
+import { IntentResolver } from './IntentResolver';
 import './index.css';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <IntentResolver />
-  </React.StrictMode>,
-  document.getElementById('intentResults'),
-);
+const node = document.getElementById('intentResults');
+if (node) {
+  const root = createRoot(node);
+  root.render(
+    <React.StrictMode>
+      <IntentResolver />
+    </React.StrictMode>,
+  );
+}
