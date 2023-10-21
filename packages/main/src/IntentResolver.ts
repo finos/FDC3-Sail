@@ -1,7 +1,7 @@
 import { View } from './view';
 import { getRuntime } from './index';
 import { BrowserWindow } from 'electron';
-import { FDC3App, IntentInstance, ResolverDetail } from '/@/types/FDC3Data';
+import { FDC3App, IntentInstance, ResolverDetail, SailIntentResolution } from '/@/types/FDC3Data';
 import { Context } from './types/FDC3Message';
 import { join } from 'path';
 import { Workspace } from './workspace';
@@ -14,6 +14,7 @@ const SYSTEM_PRELOAD = join(__dirname, '../../preload/dist/system/index.cjs');
 const devTools = false;
 
 export class IntentResolver {
+  
   window: BrowserWindow;
 
   view: View | null = null;

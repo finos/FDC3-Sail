@@ -7,7 +7,7 @@ import { INTENT_TIMEOUT, convertTarget } from "../lib/lib";
 import { createChannelObject, createPrivateChannelObject } from "./channel";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
 import { SailContextHandler } from "../fdc3-1.2/listeners";
-import { SailChannelData } from "/@main/types/FDC3Data";
+import { SailChannelData, SailIntentResolution } from "/@main/types/FDC3Data";
 
 function convertAppIntent(sai: SailAppIntent) : AppIntent {
     const apps: AppMetadata[] = sai.apps.map(m => {
@@ -29,6 +29,30 @@ function convertAppIntent(sai: SailAppIntent) : AppIntent {
     }
 }
 
+function setupResolverListener(resolve: (value: IntentResolution) => void, version: string, intent?: string) {
+    let intentTimeout = -1;
+    //listen for resolve intent
+    document.addEventListener(
+        FDC3_2_0_TOPICS.RESOLVE_INTENT,
+        (event: Event) => {
+            const cEvent = event as CustomEvent;
+            console.log('***** intent resolution received', cEvent.detail);
+            if (intentTimeout) {
+                window.clearTimeout(intentTimeout);
+            }
+
+            resolve({
+                version: version,
+                intent: intent!!,
+                source: cEvent.detail?.source || { name: 'unknown' },
+                async getResult() {
+                    // fix me
+                }
+            });
+        },
+        { once: true },
+    );
+}
 
 export function createDesktopAgentInstance(sendMessage: SendMessage, version: string, base: DesktopAgent1_2): DesktopAgent {
 
@@ -187,48 +211,32 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
 
         raiseIntent(intent: string, context: Context, app?: any) {
             return new Promise<IntentResolution>((resolve, reject) => {
-                let intentTimeout = -1;
-                //listen for resolve intent
-                document.addEventListener(
-                    FDC3_2_0_TOPICS.RESOLVE_INTENT,
-                    (event: Event) => {
-                        const cEvent = event as CustomEvent;
-                        console.log('***** intent resolution received', cEvent.detail);
-                        if (intentTimeout) {
-                            window.clearTimeout(intentTimeout);
-                        }
-
-                        resolve({
-                            version: version,
-                            intent: intent,
-                            source: cEvent.detail?.source || { appId: 'unknown' },
-                            getResult() {
-                                return new Promise((resolve, reject) => {
-                                    // return the result here.
-                                })
-                            }
-                        } as IntentResolution);
-                    },
-                    { once: true },
-                );
-
-                console.log("Converting: "+JSON.stringify(app))
                 const target = convertTarget(app);
-                console.log("Target: "+JSON.stringify(target))
 
                 sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
                     intent: intent,
                     context: context,
                     target: target,
+                    fdc3Version: version
                 }).then(
-                    (result) => {
+                    (result : SailIntentResolution) => {
                         console.log('***** got intent result ', result);
-                        if (result) {
-                            if (result.error) {
-                                reject(new Error(result.error));
-                            } else {
-                                resolve(result as IntentResolution);
+                        if (result.openingResolver) {
+                            setupResolverListener(resolve, version, result.intent);
+                        } else {
+                            const out = {
+                                source: {
+                                    appId: result.source?.appId!!,
+                                    instanceId: result.source?.instanceId,
+                                },
+                                intent: result.intent!!,
+                                async getResult() {
+                                    // todo;
+                                },
+                                version: result.version
                             }
+                            console.log("RaiseIntent Returning ", out)
+                            resolve(out);
                         }
                     },
                     (error) => {
@@ -237,7 +245,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                 );
 
                 //timeout the intent resolution
-                intentTimeout = window.setTimeout(() => {
+                window.setTimeout(() => {
                     reject(new Error(ResolverTimeout));
                 }, INTENT_TIMEOUT);
             });

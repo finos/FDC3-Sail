@@ -14,26 +14,17 @@ import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
-import { NoAppsFound } from '/@/types/FDC3Errors';
+import { AppNotFound, NoAppsFound, ResolverUnavailable } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
+import { guid } from '/@/utils';
 
-export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentResolution | void> => {
+function collectRunningIntentResults(message: FDC3Message, results: Array<FDC3App>) {
+  const data = message.data as RaiseIntentData;
   const runtime = getRuntime();
-
-  const results: Array<FDC3App> = [];
-  const data: RaiseIntentData = message.data as RaiseIntentData;
-  const intent = data.intent;
-  let intentTarget: string | undefined; //the id of the app the intent gets routed to (if unambigious)
-  const intentContext = data.context?.type || '';
-
-  //const intentTransfer = runtime.createIntentTransfer(message.source, intent, data.context);
-
-  if (!intent) {
-    throw new Error(NoAppsFound);
-  }
-
+  let intentListeners: Map<string, FDC3Listener> = new Map();
   const target = data.target as SailTargetIdentifier | undefined;
-  let intentListeners : Map<string, FDC3Listener> = new Map();
+  const intent = data.intent;
+  const intentContext = data.context?.type || '';
 
   if (target?.appId && target?.instanceId) {
     intentListeners = runtime.getIntentListenersByAppIdAndInstanceId(intent, target.appId, target.instanceId);
@@ -45,7 +36,7 @@ export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentReso
     intentListeners = runtime.getIntentListeners(intent);
   }
 
-  if (intentListeners.size>0) {
+  if (intentListeners.size > 0) {
     // let keys = Object.keys(intentListeners);
     intentListeners.forEach((listener) => {
       let addView = true;
@@ -111,18 +102,26 @@ export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentReso
       }
     });
   }
+}
+
+function collectDirectoryIntentResults(message: FDC3Message, results: Array<FDC3App>) {
+  const data = message.data as RaiseIntentData;
+  const runtime = getRuntime();
+  const target = data.target as SailTargetIdentifier | undefined;
+  const intent = data.intent;
+  const intentContext = data.context?.type || '';
 
   if (target?.instanceId == null) {
-  //pull intent handlers from the directory
+    //pull intent handlers from the directory
     const directoryData: Array<DirectoryApp> = runtime
       .getDirectory()
       .retrieveByIntentContextAndResultType(intent, intentContext, null);
 
     directoryData.forEach((entry: DirectoryApp) => {
       let addResult = true;
-      if ((target && entry.name !== target.name) && (target && entry.appId !== target.appId) ){
+      if ((target && entry.name !== target.name) && (target && entry.appId !== target.appId)) {
         addResult = false;
-      } 
+      }
       if (addResult) {
         results.push({
           type: 'directory',
@@ -131,86 +130,127 @@ export const raiseIntent = async (message: FDC3Message) : Promise<SailIntentReso
       }
     });
   }
+}
 
-  if (results.length > 0) {
-    if (results.length === 1) {
-      const theApp = results[0];
-      const appDetails = theApp.details;
-      //if there is only one result, use that
-      //if it is an existing view, post a message directly to it
-      //if it is a directory entry resolve the destination for the intent and launch it
-      //dedupe window and directory items
-      if (theApp.type === 'window' && appDetails?.instanceId) {
-        intentTarget = appDetails?.instanceId;
-        const view = runtime.getView(intentTarget);
-        if (view) {
-          view.content.webContents.send(FDC3_TOPICS.INTENT, {
-            topic: 'intent',
-            data: message.data,
-            source: message.source,
-          });
+async function intentHandledByOpenApp(theApp: FDC3App, message: FDC3Message) : Promise<SailIntentResolution> {
+  //if it is an existing view, post a message directly to it
+  const data: RaiseIntentData = message.data as RaiseIntentData;
+  const appDetails = theApp.details;
+  const runtime = getRuntime();
+  const intentTarget = appDetails?.instanceId!!
+  const view = runtime.getView(intentTarget);
+  
+  if (view) {
+    view.content.webContents.send(FDC3_TOPICS.INTENT, {
+      topic: 'intent',
+      data: message.data,
+      source: message.source,
+    });
 
-          return {
-            source: {
-              name: view.directoryData?.name,
-              appId: view.directoryData?.appId,
-              instanceId: view.id
-            },
-            intent: data.intent,
-            version: view.fdc3Version,
-            async getResult() {
-              /* todo */
-            } 
-          };
-        }
-      } else if (theApp.type === 'directory' && appDetails.directoryData) {
-        const directoryData = appDetails.directoryData;
-        const directoryDetails = appDetails.directoryData
-          .details as DirectoryAppLaunchDetailsWeb;
-        const start_url = directoryDetails.url;
-        const pending = true;
+    return {
+      source: {
+        name: view.directoryData?.name,
+        appId: view.directoryData?.appId,
+        instanceId: view.id
+      },
+      intent: data.intent,
+      version: view.fdc3Version,
+      result: guid(),
+      openingResolver: false
+    };
+  } else {
+    // shouldn't occur, would mean runtime is inconsistent
+    throw Error(AppNotFound)
+  }
+}
 
-        const view = await getRuntime().createView(start_url, {
-          directoryData: directoryData,
-        });
+async function intentHandledByAppLaunch(theApp: FDC3App, message: FDC3Message) : Promise<SailIntentResolution> {
+  //if it is a directory entry resolve the destination for the intent and launch it
+  const data: RaiseIntentData = message.data as RaiseIntentData;
+  const appDetails = theApp.details;
+  const directoryData = appDetails.directoryData!!;
+  const directoryDetails = directoryData.details as DirectoryAppLaunchDetailsWeb;
+  const start_url = directoryDetails.url;
+  const intent = data.intent;
 
-        //set pending intent for the view..
-        if (view && pending) {
-          view.setPendingIntent(
-            intent,
-            data.context || undefined,
-            message.source,
-          );
-        }
+  const pending = true;
 
-        return {
-          source: { name: directoryData.name, appId: directoryData.appId },
-          version: '1.2',
-          intent: data.intent,
-          async getResult() {
+  const view = await getRuntime().createView(start_url, {
+    directoryData: directoryData,
+  });
 
-          }
-        };
-      }
-    } else {
-      //launch window with resolver UI
+  //set pending intent for the view..
+  if (view && pending) {
+    view.setPendingIntent(
+      intent,
+      data.context || undefined,
+      message.source,
+    );
+  }
 
-      results.sort(sortApps);
-      const sourceView = getRuntime().getView(message.source);
-      if (sourceView) {
-        getRuntime().openResolver(
-          {
-            intent: intent,
-            context: data.context,
-          },
-          sourceView,
-          results,
-        );
-      }
+  return {
+    source: {
+        name: directoryData.name, 
+        appId: directoryData.appId,
+        instanceId: view.id},
+    version: data.fdc3Version,
+    intent: data.intent,
+    result: guid(),
+    openingResolver: false
+  };
+}
+
+async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Message): Promise<SailIntentResolution> {
+  //launch window with resolver UI
+  const data: RaiseIntentData = message.data as RaiseIntentData;
+  const intent = data.intent;
+  results.sort(sortApps);
+ 
+  const sourceView = getRuntime().getView(message.source);
+
+  if (sourceView) {
+    getRuntime().openResolver(
+      {
+        intent: intent,
+        context: data.context,
+      },
+      sourceView,
+      results,
+    );
+    return {
+      version: data.fdc3Version,
+      intent: data.intent,
+      openingResolver: true,
+      result: guid()
     }
   } else {
-    //show message indicating no handler for the intent...
-    // return {error:ResolveError.NoAppsFound};
+    throw new Error(ResolverUnavailable)
+  }
+
+}
+
+export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResolution> => {
+  const results: Array<FDC3App> = [];
+  const data: RaiseIntentData = message.data as RaiseIntentData;
+  const intent = data.intent;
+
+  if (!intent) {
+    throw new Error(NoAppsFound);
+  }
+
+  collectRunningIntentResults(message, results);
+  collectDirectoryIntentResults(message, results);
+
+  if (results.length === 1) {
+    const theApp = results[0];
+    if (theApp.type === 'window') {
+      return intentHandledByOpenApp(theApp, message);
+    } else {
+      return intentHandledByAppLaunch(theApp, message);
+    } 
+  } else if (results.length > 0) {
+    return intentHandledByResolver(results, message);
+  } else {
     throw new Error(NoAppsFound);
   }
 };

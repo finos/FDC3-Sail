@@ -30,13 +30,14 @@ export interface ResolverDetail {
 }
 
 /**
- * Cross-version representation of intent resolution
+ * Back-end to front-end intent resolution results container.
  */
 export interface SailIntentResolution {
-    source: SailTargetIdentifier;
+    source?: SailTargetIdentifier;
     version: string,
     intent?: string, 
-    getResult(): Promise<Context | string | void>
+    openingResolver: boolean,
+    result: string  // event containing the result
 }
 
 /**

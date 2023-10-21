@@ -6,9 +6,28 @@ import { INTENT_TIMEOUT, convertTarget, guid } from "../lib/lib";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
 import { FDC3Listener, SailContextHandler, getContextListeners, createListenerItem, getIntentListeners } from "./listeners";
 import { createChannelObject } from "./channel";
-import { SailChannelData } from "/@main/types/FDC3Data";
-import { DirectoryApp } from "/@main/directory/directory";
+import { SailChannelData, SailIntentResolution } from "/@main/types/FDC3Data";
 
+function setupResolverListener(resolve: (value: IntentResolution) => void, version: string, intent?: string) {
+    let intentTimeout = -1;
+    //listen for resolve intent
+    document.addEventListener(
+        FDC3_2_0_TOPICS.RESOLVE_INTENT,
+        (event: Event) => {
+            const cEvent = event as CustomEvent;
+            console.log('***** intent resolution received', cEvent.detail);
+            if (intentTimeout) {
+                window.clearTimeout(intentTimeout);
+            }
+
+            resolve({
+                version: version,
+                source: cEvent.detail?.source || { name: 'unknown' },
+            });
+        },
+        { once: true },
+    );
+}
 
 export function createDesktopAgentInstance(sendMessage: SendMessage, version: string) : DesktopAgent{
 
@@ -34,51 +53,33 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
 
         raiseIntent(intent: string, context: Context, app?: any) {
             return new Promise<IntentResolution>((resolve, reject) => {
-                let intentTimeout = -1;
-                //listen for resolve intent
-                document.addEventListener(
-                    FDC3_2_0_TOPICS.RESOLVE_INTENT,
-                    (event: Event) => {
-                        const cEvent = event as CustomEvent;
-                        console.log('***** intent resolution received', cEvent.detail);
-                        if (intentTimeout) {
-                            window.clearTimeout(intentTimeout);
-                        }
-
-                        resolve({
-                            version: version,
-                            source: cEvent.detail?.source || { name: 'unknown' },
-                        } as IntentResolution);
-                    },
-                    { once: true },
-                );
-
-                console.log("Converting: "+JSON.stringify(app))
                 const target = convertTarget(app);
-                console.log("Target: "+JSON.stringify(target))
 
                 sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
                     intent: intent,
                     context: context,
                     target: target,
+                    fdc3Version: version
                 }).then(
-                    (result) => {
+                    (result : SailIntentResolution) => {
                         console.log('***** got intent result ', result);
-                        if (result) {
-                            if (result.error) {
-                                reject(new Error(result.error));
-                            } else {
-                                resolve(result as IntentResolution);
-                            }
+                        if (result.openingResolver) {
+                            setupResolverListener(resolve, version, result.intent);
+                        } else {
+                            resolve({
+                                source: result.source?.name!!,
+                                version: result.version,
+                            });
                         }
                     },
                     (error) => {
+                        console.log('***** rejecting ', error);
                         reject(error);
                     },
                 );
 
                 //timeout the intent resolution
-                intentTimeout = window.setTimeout(() => {
+                window.setTimeout(() => {
                     reject(new Error(ResolverTimeout));
                 }, INTENT_TIMEOUT);
             });

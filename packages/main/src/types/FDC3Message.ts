@@ -133,6 +133,7 @@ export interface OpenData {
 export interface RaiseIntentData {
   intent: string;
   context?: Context | undefined;
+  fdc3Version: string;
   target?: SailTargetIdentifier | undefined;
 }
 

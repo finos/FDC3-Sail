@@ -14,3 +14,6 @@ export const ErrorOnLaunch = OpenError.ErrorOnLaunch;
 
 // this is the same in 1.2 and 2.0
 export const ResolverTimeout = ResolveError.ResolverTimeout;
+
+// this is the same in 1.2 and 2.0
+export const ResolverUnavailable = ResolveError.ResolverUnavailable
