@@ -56,8 +56,7 @@ export const openApp = async (
   };  
 
   //set provided context
-  if (context) {
-    await sleep(100);
+  if (context != undefined) {
     newView.setPendingContext(context, source);
 
     // make sure the app registers a listener for this context
@@ -65,15 +64,17 @@ export const openApp = async (
     const startTime = now();
     while (now() - startTime < NO_LISTENER_TIMEOUT) {
       const found = newView.listeners
-        .filter(l => l.contextType == context.type);
-
+         .filter(l => (l.contextType == context.type) || (l.contextType == null));
+      //console.log("Listeners: "+found.length)
       if (found.length > 0) {
         return result;
       } else {
-        await sleep(100);
+        //console.log("Waiting...")
+        await sleep(2);
       }
     }
-
+    
+    console.log("Giving up")
     throw new Error(OpenError.AppTimeout)
   } else {
     return result;

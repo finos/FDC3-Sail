@@ -246,9 +246,12 @@ export class View {
   private type: 'system' | 'app' = 'app';
 
   setPendingContext(context: Context, source?: string): void {
-    this.pendingContexts.push(
-      new Pending(this.id, source || this.id, { context: context }),
-    );
+    if (context) {
+      console.log("Setting pending context: ", context )
+      this.pendingContexts.push(
+        new Pending(this.id, source || this.id, { context: context }),
+      );
+    }
   }
 
   getPendingContexts(): Array<Pending> {
