@@ -1,7 +1,7 @@
 {
   "extends": [
-    /** @see https://github.com/facebook/create-react-app/tree/main/packages/eslint-config-react-app */
-    "react-app"
+    "eslint:recommended",
+    "plugin:react/recommended"
   ],
   "env": {
     "browser": true,

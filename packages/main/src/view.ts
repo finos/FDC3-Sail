@@ -303,6 +303,7 @@ export class View {
   close() {
     const runtime = getRuntime();
     if (this.parent && this.parent.window) {
+      this.content.webContents.close();
       this.parent.window.removeBrowserView(this.content);
     }
     if (this.content) {

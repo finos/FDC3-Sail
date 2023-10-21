@@ -1,15 +1,18 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import DirectoryView from './DirectoryView';
 import './index.css';
 // import SideNavigation from './SideNavigation';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <div className="flex">
-      {/* <SideNavigation /> */}
-      <div className="rightContainer flex-grow overflow-y-hidden">
-        {/* 
+const node = document.getElementById('homeView');
+if (node) {
+  const root = createRoot(node);
+  root.render(
+    <React.StrictMode>
+      <div className="flex">
+        {/* <SideNavigation /> */}
+        <div className="rightContainer flex-grow overflow-y-hidden">
+          {/* 
         
         // TODO: Implement search bar
 
@@ -17,9 +20,9 @@ ReactDOM.render(
           Search
         </div>
         */}
-        <DirectoryView />
+          <DirectoryView />
+        </div>
       </div>
-    </div>
-  </React.StrictMode>,
-  document.getElementById('homeView'),
-);
+    </React.StrictMode>,
+  );
+}

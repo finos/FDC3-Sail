@@ -26,6 +26,15 @@
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/consistent-type-imports": "off",
     "no-async-promise-executer":"off",
-    "@typescript-eslint/no-promise-executor-return":"off"
+    "@typescript-eslint/no-promise-executor-return":"off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "extendDefaults": true,
+        "types": {
+          "{}": false
+        }
+      }
+    ]
   }
 }

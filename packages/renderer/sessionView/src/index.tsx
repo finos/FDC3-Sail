@@ -1,12 +1,15 @@
 import { SessionView } from './SessionView';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import './index.css';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <SessionView />
-  </React.StrictMode>,
-  document.getElementById('sessionView'),
-);
+const node = document.getElementById('sessionView');
+if (node) {
+  const root = createRoot(node);
+  root.render(
+    <React.StrictMode>
+      <SessionView />
+    </React.StrictMode>,
+  );
+}

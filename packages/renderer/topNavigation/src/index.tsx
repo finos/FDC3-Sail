@@ -1,11 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import TopNavigation from './TopNavigation';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <TopNavigation />
-  </React.StrictMode>,
-  document.getElementById('topNavigation'),
-);
+const node = document.getElementById('topNavigation');
+if (node) {
+  const root = createRoot(node);
+  root.render(
+    <React.StrictMode>
+      <TopNavigation />
+    </React.StrictMode>,
+  );
+}
