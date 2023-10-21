@@ -6,8 +6,7 @@ import {
 } from '/@/directory/directory';
 import { getSailManifest } from '/@/directory/directory';
 import { Context, FDC3Message, OpenData, SailTargetIdentifier } from '/@/types/FDC3Message';
-import { AppNotFound, ErrorOnLaunch } from '/@/types/FDC3Errors';
-import { OpenError } from 'fdc3-2.0';
+import { AppNotFound, AppTimeout } from '/@/types/FDC3Errors';
 
 const NO_LISTENER_TIMEOUT = 20000;  // 20 seconds
 
@@ -74,8 +73,8 @@ export const openApp = async (
       }
     }
     
-    console.log("Giving up")
-    throw new Error(OpenError.AppTimeout)
+    // console.log("Giving up")
+    throw new Error(AppTimeout)
   } else {
     return result;
   } 

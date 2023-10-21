@@ -35,11 +35,13 @@ import { Runtime } from '/@/runtime';
 // import { createPrivateChannel } from './channels';
 
 import {findInstances } from './findInstances'
+import { createPrivateChannel } from './channels';
 
 export const register = (runtime: Runtime) => {
         runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_METADATA, getAppMetadata);
         runtime.addHandler(FDC3_2_0_TOPICS.FIND_INSTANCES, findInstances);
         runtime.addHandler(FDC3_2_0_TOPICS.GET_APP_ID, getAppId);
+        runtime.addHandler(FDC3_2_0_TOPICS.CREATE_PRIVATE_CHANNEL, createPrivateChannel);
 };
 
 // export const register = (runtime: Runtime) => {

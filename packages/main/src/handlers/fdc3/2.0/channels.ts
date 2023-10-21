@@ -15,6 +15,8 @@ export const createPrivateChannel = async (message: FDC3Message) => {
     disconnectListeners: new Map(),
   };
 
+  getRuntime().setPrivateChannel(channel);
+
   return channel;
 };
 
