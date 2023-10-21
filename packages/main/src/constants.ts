@@ -8,6 +8,11 @@ export enum TARGETS {
   CHANNEL_PICKER = 'channelPicker',
 }
 
+export enum OPEN_TARGETS {
+  SAIL_TARGET_PREFIX = 'SAIL_TARGET_',
+  SAIL_TARGET_DEFAULT_BROWSER = 'SAIL_TARGET_DEFAULT_BROWSER',
+}
+
 export enum TOPICS {
   OPEN_TOOLS_MENU = 'FRAME:openToolsMenu',
   FRAME_READY = 'FRAME:ready',
