@@ -1,10 +1,16 @@
 import { Listener as Listener1_2, ContextHandler as ContextHandler1_2 } from 'fdc3-1.2'
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { Context } from '/@main/types/FDC3Message';
+import { ContextMetadata, IntentResult } from 'fdc3-2.0';
+import { SailContextMetadata } from '/@main/types/FDC3Data';
 
 /* Both 1.2 and 2.0 are the same signature */
 export type SailListener = Listener1_2;
-export type SailContextHandler = ContextHandler1_2
+
+/* The 2.0 type is a superset of the 1.2 one. 
+ * This can take either IntentHandler or ContextHandler contents */
+export type SailGenericHandler =  (context: Context, metadata?: SailContextMetadata) => Promise<IntentResult> | void;
 
 //map of context listeners by id
 const contextListeners: Map<string, ListenerItem> = new Map();
@@ -63,19 +69,25 @@ export class FDC3Listener implements SailListener {
 
 export interface ListenerItem {
     id?: string;
-    handler?: SailContextHandler;
+    handler?: SailGenericHandler;
     contextType?: string;
+    resultPromise: Promise<IntentResult>;
 }
 
 export const createListenerItem = (
     id: string,
-    handler: SailContextHandler,
+    handler: SailGenericHandler,
     contextType?: string,
 ): ListenerItem => {
-    const listener: ListenerItem = {};
-    listener.id = id;
-    listener.handler = handler;
-    listener.contextType = contextType;
+    
+    const resultPromise = new Promise<IntentResult>((resolve, reject) => {});
 
+    const listener: ListenerItem = {
+        id,
+        handler,
+        contextType,
+        resultPromise
+    };
+    
     return listener;
 };

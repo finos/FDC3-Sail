@@ -4,7 +4,7 @@ import { Context, SailAppIntent } from "/@main/types/FDC3Message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget, guid } from "../lib/lib";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
-import { FDC3Listener, SailContextHandler, getContextListeners, createListenerItem, getIntentListeners } from "./listeners";
+import { FDC3Listener, SailGenericHandler, getContextListeners, createListenerItem, getIntentListeners } from "./listeners";
 import { createChannelObject } from "./channel";
 import { SailChannelData, SailIntentResolution } from "/@main/types/FDC3Data";
 
@@ -62,7 +62,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                     fdc3Version: version
                 }).then(
                     (result : SailIntentResolution) => {
-                        console.log('***** got intent result ', result);
+                        console.log('***** got intent resolution ', result);
                         if (result.openingResolver) {
                             setupResolverListener(resolve, version, result.intent);
                         } else {
@@ -92,10 +92,10 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             });
         },
 
-        addContextListener(contextType: SailContextHandler | string | null, handler?: SailContextHandler) {
-            const thisListener: SailContextHandler = handler
+        addContextListener(contextType: SailGenericHandler | string | null, handler?: SailGenericHandler) {
+            const thisListener: SailGenericHandler = handler
                 ? handler
-                : (contextType as SailContextHandler);
+                : (contextType as SailGenericHandler);
             const thisContextType: string | undefined =
                 contextType && handler ? (contextType as string) : undefined;
             const listenerId: string = guid();
@@ -116,7 +116,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             return new FDC3Listener('context', listenerId, sendMessage);
         },
 
-        addIntentListener(intent: string, listener: SailContextHandler) {
+        addIntentListener(intent: string, listener: SailGenericHandler) {
             const listenerId: string = guid();
             console.log('add intent listener', listenerId);
 

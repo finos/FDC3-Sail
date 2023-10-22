@@ -1,5 +1,4 @@
-import { AppMetadata, DesktopAgent as DesktopAgent2_0 } from "fdc3-2.0";
-import { DesktopAgent as DesktopAgent1_2 } from "fdc3-1.2";
+import { DesktopAgent as DesktopAgent2_0 } from "fdc3-2.0";
 import { MessagingSupport, SendMessage } from "../message";
 import { createAPI as createAPI1_2 } from "../fdc3-1.2/api";
 import { createDesktopAgentInstance } from "./desktop-agent";

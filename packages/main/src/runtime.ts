@@ -45,15 +45,7 @@ const appChannels: Map<string, SailChannelData> = new Map();
 
 const privateChannels: Map<string, SailPrivateChannelData> = new Map();
 
-//collection of pending intent results
-const intentResults: Map<
-  string,
-  Promise<SailChannelData | Context | null>
-> = new Map();
-const intentResultResolvers: Map<
-  string,
-  (value: SailChannelData | Context | null) => void
-> = new Map();
+const intentResults: Map<string, string> = new Map();
 
 const intentTransfers: Map<string, IntentTransfer> = new Map();
 const contextTransfers: Map<string, ContextTransfer> = new Map();
@@ -490,40 +482,16 @@ export class Runtime {
     privateChannels.delete(channelId);
   }
 
-  //creates new entry in intentResults collection and returns the generated id
-  initIntentResult(): string {
+  // creates new entry in intentResults collection and returns the generated id
+  initIntentResult(source: string): string {
     const id = guid();
-    intentResults.set(
-      id,
-      new Promise((resolve) => {
-        console.log('************** initIntentResult saves the Promise', id);
-        // The result is a Promise that will be resolved when the result is saved in 'setIntentResult' method
-        intentResultResolvers.set(id, resolve);
-      }),
-    );
+    intentResults.set(id, source);
     return id;
   }
 
-  //one time sets the result (no op if the result is not null)
-  setIntentResult(id: string, result: SailChannelData | Context | null) {
-    console.log('************** set intent result', id, result);
-    const entry = intentResults.get(id);
-    if (entry === null) {
-      intentResults.set(id, Promise.resolve(result));
-    } else {
-      // We resolved the promise saved in intentResults by calling the resolve method
-      const resolver = intentResultResolvers.get(id);
-      if (resolver) {
-        console.log('************** setIntentResult resolves the Promise', id);
-        resolver(result);
-        intentResultResolvers.delete(id);
-      }
-    }
-  }
-
   //one time returns the result, then deletes the entry if not null
-  async getIntentResult(id: string): Promise<Context | SailChannelData | null> {
-    const result = await intentResults.get(id);
+  getIntentResult(id: string): string | null {
+    const result = intentResults.get(id);
     if (result === undefined || result === null) {
       return null;
     } else {

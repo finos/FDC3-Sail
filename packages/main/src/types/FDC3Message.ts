@@ -159,6 +159,7 @@ export interface ResolveIntentData {
 */
 export interface IntentResultData {
   resultId: string;
+  type: "channel" | "context";
   result?: SailChannelData | Context | null;
 }
 

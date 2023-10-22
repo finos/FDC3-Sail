@@ -5,7 +5,7 @@ import { Context, DisplayMetadata } from '/@main/types/FDC3Message';
 import { guid } from '../lib/lib';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3Listener, SailContextHandler, SailListener, getContextListeners, createListenerItem } from '../fdc3-1.2/listeners';
+import { FDC3Listener, SailGenericHandler, SailListener, getContextListeners, createListenerItem } from '../fdc3-1.2/listeners';
 import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { CreationFailed } from '/@main/types/FDC3Errors';
 import { AddContextListener, DisconnectListener, UnsubscribeListener, addContextListeners, createContextTypeListenerItem, createVoidListenerItem, disconnectListeners, unsubscribeListeners } from './listeners';
@@ -19,7 +19,7 @@ export const createChannelObject = (
   sendMessage: SendMessage,
   id: string,
   type: string,
-  displayMetadata: DisplayMetadata,
+  displayMetadata?: DisplayMetadata,
 ): Channel2_0 => {
 
   if ((type !== "user") && (type !== "app") && (type !=="private")) {
@@ -41,12 +41,12 @@ export const createChannelObject = (
       },
   
       async addContextListener(
-        contextType: SailContextHandler | string | null,
-        handler?: SailContextHandler,
+        contextType: SailGenericHandler | string | null,
+        handler?: SailGenericHandler,
       ) {
-        const thisListener: SailContextHandler = handler
+        const thisListener: SailGenericHandler = handler
           ? handler
-          : (contextType as SailContextHandler);
+          : (contextType as SailGenericHandler);
         const thisContextType = handler ? (contextType as string) : undefined;
         const listenerId: string = guid();
   

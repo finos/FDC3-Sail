@@ -1,4 +1,4 @@
-import { AppIdentifier, AppIntent, AppMetadata, DesktopAgent, Icon, Image, IntentResolution } from "fdc3-2.0";
+import { AppIdentifier, AppIntent, AppMetadata, DesktopAgent, Icon, Image, IntentResolution, IntentHandler, ContextHandler, Listener } from "fdc3-2.0";
 import { SendMessage } from "../message";
 import { DesktopAgent as DesktopAgent1_2 } from "fdc3-1.2";
 import { Context, SailAppIntent, SailTargetIdentifier } from "/@main/types/FDC3Message";
@@ -6,8 +6,9 @@ import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
 import { INTENT_TIMEOUT, convertTarget } from "../lib/lib";
 import { createChannelObject, createPrivateChannelObject } from "./channel";
 import { ResolverTimeout } from "/@main/types/FDC3Errors";
-import { SailContextHandler } from "../fdc3-1.2/listeners";
+import { SailGenericHandler } from "../fdc3-1.2/listeners";
 import { SailChannelData, SailIntentResolution } from "/@main/types/FDC3Data";
+import { createResultPromise } from "./connect";
 
 function convertAppIntent(sai: SailAppIntent) : AppIntent {
     const apps: AppMetadata[] = sai.apps.map(m => {
@@ -220,19 +221,18 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
                     fdc3Version: version
                 }).then(
                     (result : SailIntentResolution) => {
-                        console.log('***** got intent result ', result);
+                        console.log('***** got intent resolution ', result);
                         if (result.openingResolver) {
                             setupResolverListener(resolve, version, result.intent);
                         } else {
+                            const resultPromise = createResultPromise(result.result);
                             const out = {
                                 source: {
                                     appId: result.source?.appId!!,
                                     instanceId: result.source?.instanceId,
                                 },
                                 intent: result.intent!!,
-                                async getResult() {
-                                    // todo;
-                                },
+                                getResult() { return resultPromise; },
                                 version: result.version
                             }
                             console.log("RaiseIntent Returning ", out)
@@ -258,11 +258,11 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             });
         },
 
-        async addIntentListener(intent: string, context: SailContextHandler) {
-            return addIntentListener1_2(intent, context);
+        async addIntentListener(intent: string, handler: IntentHandler) : Promise<Listener> {
+            return addIntentListener1_2(intent, handler);
         },
     
-        async addContextListener(context: SailContextHandler | string | null, handler?: SailContextHandler) {
+        async addContextListener(context: ContextHandler | string | null, handler?: ContextHandler) : Promise<Listener> {
             return addContextListener1_2(context as any, handler as any);
         }
     };

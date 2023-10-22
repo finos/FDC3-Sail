@@ -2,6 +2,7 @@ import { IntentHandler } from "fdc3-2.0";
 import { ListenerItem, SailListener } from "../fdc3-1.2/listeners";
 import { SendMessage } from "../message";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
+import { createResultPromise } from "./connect";
 
 /**
  * Listeners for Private Channel methods. onDisconnect, onUnsubscribe, onAddContextListener
@@ -76,7 +77,7 @@ export interface ContextTypeListenerItem {
 }
 
 //listener with handler that has no args
-export interface VoidListenerItem {
+export interface VoidListenerItem extends ListenerItem {
     id?: string;
     handler?: () => void;
     contextType?: string;
@@ -113,7 +114,8 @@ export const createVoidListenerItem = (
     const listener: VoidListenerItem = {
         id,
         handler,
-        contextType
+        contextType,
+        resultPromise: createResultPromise(id)
     };
     return listener;
 };

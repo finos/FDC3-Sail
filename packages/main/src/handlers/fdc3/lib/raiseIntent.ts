@@ -3,7 +3,6 @@ import { View } from '/@/view';
 import { FDC3App, FDC3AppDetail, SailIntentResolution } from '/@/types/FDC3Data';
 import { FDC3_TOPICS } from '../topics';
 import { buildIntentInstanceTree, sortApps } from './resolveIntent';
-//import { IntentTransfer } from '/@/types/TransferInstance';
 import {
   FDC3Message,
   RaiseIntentData,
@@ -16,7 +15,6 @@ import {
 } from '/@/directory/directory';
 import { AppNotFound, NoAppsFound, ResolverUnavailable } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
-import { guid } from '/@/utils';
 
 function collectRunningIntentResults(message: FDC3Message, results: Array<FDC3App>) {
   const data = message.data as RaiseIntentData;
@@ -139,12 +137,15 @@ async function intentHandledByOpenApp(theApp: FDC3App, message: FDC3Message) : P
   const runtime = getRuntime();
   const intentTarget = appDetails?.instanceId!!
   const view = runtime.getView(intentTarget);
-  
+
   if (view) {
+    const resultId = runtime.initIntentResult(message.source);
+  
     view.content.webContents.send(FDC3_TOPICS.INTENT, {
       topic: 'intent',
       data: message.data,
       source: message.source,
+      result: resultId
     });
 
     return {
@@ -155,7 +156,7 @@ async function intentHandledByOpenApp(theApp: FDC3App, message: FDC3Message) : P
       },
       intent: data.intent,
       version: view.fdc3Version,
-      result: guid(),
+      result: resultId,
       openingResolver: false
     };
   } else {
@@ -179,12 +180,15 @@ async function intentHandledByAppLaunch(theApp: FDC3App, message: FDC3Message) :
     directoryData: directoryData,
   });
 
+  const resultId = getRuntime().initIntentResult(message.source);
+
   //set pending intent for the view..
   if (view && pending) {
     view.setPendingIntent(
       intent,
       data.context || undefined,
       message.source,
+      resultId
     );
   }
 
@@ -195,7 +199,7 @@ async function intentHandledByAppLaunch(theApp: FDC3App, message: FDC3Message) :
         instanceId: view.id},
     version: data.fdc3Version,
     intent: data.intent,
-    result: guid(),
+    result: resultId,
     openingResolver: false
   };
 }
@@ -221,7 +225,7 @@ async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Mes
       version: data.fdc3Version,
       intent: data.intent,
       openingResolver: true,
-      result: guid()
+      result: getRuntime().initIntentResult(message.source)
     }
   } else {
     throw new Error(ResolverUnavailable)

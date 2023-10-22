@@ -1,3 +1,4 @@
+import { AppIdentifier, ContextMetadata } from 'fdc3-2.0';
 import { DirectoryApp } from '../directory/directory';
 import { FDC3Listener } from './FDC3Listener';
 import { Context, DisplayMetadata, IntentMetadata, SailTargetIdentifier } from './FDC3Message';
@@ -61,4 +62,12 @@ export interface SailDisplayMetadata extends DisplayMetadata {
    * alternate / secondary color to use in conjunction with 'color' when creating UIs
    */
   color2?: string;
+}
+
+/**
+ * This wraps the ContextMetadata used by intent and context handlers.
+ * Only used by 2.0
+ */
+export interface SailContextMetadata extends ContextMetadata {
+  resultId: string
 }
