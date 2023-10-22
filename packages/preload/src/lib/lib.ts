@@ -72,11 +72,10 @@ export const processQueueItem = (qi: QueueItem) => {
   port1.onmessage = (event: MessageEvent<FDC3Response>) => {
     //is there a returnlistener registered for the event?
     const response: FDC3Response = event.data;
-    console.log('send message - returned ', response);
+    //console.log('send message - returned ', response);
     if (response.error) {
       qi.reject(response.error);
     } else {
-      console.log('******** Q Item resolve', qi.topic, qi);
       qi.resolve(response.data);
     }
   };
@@ -91,7 +90,7 @@ export const processQueueItem = (qi: QueueItem) => {
   };
 
   ipcRenderer.postMessage(qi.topic, msg, [port2]);
-  console.log('sent message to main', msg);
+  //console.log('sent message to main', msg);
 };
 
 //convert a AppIdentifier or TargetApp type to TargetIdentifier
@@ -124,7 +123,7 @@ export const sendMessage = (
   topic: string,
   data: FDC3MessageData,
 ): Promise<any> => {
-  console.log('Beginning send message:', topic, data);
+  //console.log('Beginning send message:', topic, data);
   //set up a return listener and assign as eventId
   return new Promise((resolve, reject) => {
     const queueItem: QueueItem = {

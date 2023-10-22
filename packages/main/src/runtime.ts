@@ -224,7 +224,7 @@ export class Runtime {
     once?: boolean,
   ) {
     const theHandler = async (event: IpcMainEvent, args: RuntimeMessage) => {
-      console.log('handle message', name, args);
+      //  console.log('handle message', name, args);
 
       let error: string | undefined = undefined;
       let data: unknown;
