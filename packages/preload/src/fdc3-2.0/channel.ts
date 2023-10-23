@@ -28,7 +28,7 @@ export const createChannelObject = (
     const orig = createChannelObject1_2(sendMessage, id, type, displayMetadata);
     const limitedType :  "user" | "app" | "private" = type;
 
-    const channel: Channel2_0 = {
+    let channel: Channel2_0 = {
       ...orig,
 
       type: limitedType,
@@ -63,16 +63,18 @@ export const createChannelObject = (
         return new FDC3Listener(FDC3_TOPICS.CONTEXT, listenerId, sendMessage);
       },
     };
+
+    if (type =="private") {
+      channel = privateChannelAugmentation(channel, sendMessage, id);
+    }
   
     return channel;
   }
 }
 
-export const createPrivateChannelObject = (sendMessage: SendMessage, id: string): PrivateChannel => {
-  const privateChannel: Channel2_0 = createChannelObject(sendMessage, id, 'private', {});
-
+function privateChannelAugmentation(channel: Channel2_0, sendMessage: SendMessage, id: string) : PrivateChannel {
   return {
-    ...privateChannel,
+    ...channel, 
 
     onAddContextListener(handler: (contextType?: string) => void) {
       const listenerId: string = guid();
@@ -125,6 +127,10 @@ export const createPrivateChannelObject = (sendMessage: SendMessage, id: string)
         channel: id,
       });
     }
+  }
+}
 
-  } as PrivateChannel;
+export const createPrivateChannelObject = (sendMessage: SendMessage, id: string): PrivateChannel => {
+  const privateChannel = createChannelObject(sendMessage, id, 'private', {});
+  return privateChannel as PrivateChannel;
 };

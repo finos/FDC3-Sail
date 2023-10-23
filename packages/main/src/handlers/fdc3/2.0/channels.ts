@@ -13,6 +13,7 @@ export const createPrivateChannel = async (message: FDC3Message) => {
     type: 'private',
     unsubscribeListeners: new Map(),
     disconnectListeners: new Map(),
+    onAddContextListeners: new Map()
   };
 
   getRuntime().setPrivateChannel(channel);
@@ -63,6 +64,14 @@ export const disconnect = async (message: FDC3Message) => {
   if (channel) {
     console.log('in disconnect', channel);
   }
+
+  channel?.disconnectListeners.forEach(dl => {
+    const view = runtime.getView(dl.viewId!!);
+    if (view != null) {
+        console.log()
+
+    }
+  })
   //is it the host view or remote view that is disconnecting?
   //if the host..
   //destroy the private channel
@@ -79,4 +88,11 @@ export const onAddContextListener = async (message: FDC3Message) => {
   if (channel) {
     console.log('in onAddContextListener', channel);
   }
+
+  const listener: FDC3Listener = {
+    listenerId: messageData.listenerId,
+    viewId: message.source,
+    channel: messageData.channel,
+  };
+  channel?.onAddContextListeners.set(messageData.listenerId, listener);
 };

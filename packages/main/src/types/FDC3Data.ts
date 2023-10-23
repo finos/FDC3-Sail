@@ -54,6 +54,7 @@ export interface SailChannelData {
 export interface SailPrivateChannelData extends SailChannelData {
   unsubscribeListeners: Map<string, FDC3Listener>;
   disconnectListeners: Map<string, FDC3Listener>;
+  onAddContextListeners: Map<string, FDC3Listener>;
 }
 
 

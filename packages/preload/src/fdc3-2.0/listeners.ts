@@ -72,7 +72,7 @@ export interface IntentListenerItem {
 //listener that takes handler with ContextType arg only
 export interface ContextTypeListenerItem {
     id?: string;
-    handler?: (contextType: string) => void;
+    handler: (contextType?: string) => void;
     contextType?: string;
 }
 
@@ -95,7 +95,7 @@ export const disconnectListeners: Map<string, ListenerItem> = new Map();
 
 export const createContextTypeListenerItem = (
     id: string,
-    handler: (contextType: string) => void,
+    handler: (contextType?: string) => void,
     contextType?: string,
 ): ContextTypeListenerItem => {
     const listener = {

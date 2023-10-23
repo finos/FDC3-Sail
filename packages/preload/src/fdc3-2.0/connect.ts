@@ -4,6 +4,8 @@ import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics";
 import { createChannelObject } from "./channel";
 import { IntentResultData } from "/@main/types/FDC3Message";
 import { SailChannelData } from "/@main/types/FDC3Data";
+import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
+import { addContextListeners } from "./listeners";
 
 
 const resultPromises: Map<string, (a : IntentResult) => void> = new Map();
@@ -30,6 +32,24 @@ export const connect = (ipc: MessagingSupport, sendMessage : SendMessage) => {
             ir(data);
         }
     });
+
+    ipc.on(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, async (event, a) => {
+        console.log("on add context listener", event, a);
+        const ctli = addContextListeners.get(a.listenerId);
+        if (ctli) {
+            ctli.handler(a.contextType)
+        }
+    })
+
+    ipc.on(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_DISCONNECT, async (event, a) => {
+        console.log("private channnel disconnect", event, a); 
+    })
+
+    ipc.on(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE, async (event, a) => {
+        console.log("private channnel disconnect", event, a);
+    })
+
+
 };
 
 export function createResultPromise(id: string) : Promise<IntentResult> {
