@@ -69,7 +69,7 @@ export const processQueueItem = (qi: QueueItem) => {
 
 //convert a AppIdentifier or TargetApp type to TargetIdentifier
 export const convertTarget = (target: any): SailTargetIdentifier | undefined => {
-
+  console.log("Converting ", target);
   //is target just a string?  if so - treat it as name
   if (!target) {
     return undefined;

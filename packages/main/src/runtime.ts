@@ -330,7 +330,7 @@ export class Runtime {
     instanceId: string
   ): Map<string, FDC3Listener> {
     
-    const result: Map<string, FDC3Listener> = new Map(); //intentListeners.get(intent);
+    const result: Map<string, FDC3Listener> = new Map(); 
 
     this.getViews().forEach((view) => {
       //if a appIdentifier target is provided, filter

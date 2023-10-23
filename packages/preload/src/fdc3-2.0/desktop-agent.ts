@@ -213,6 +213,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         raiseIntent(intent: string, context: Context, app?: any) {
             return new Promise<IntentResolution>((resolve, reject) => {
                 const target = convertTarget(app);
+                console.log("Converted", target);
 
                 sendMessage(FDC3_2_0_TOPICS.RAISE_INTENT, {
                     intent: intent,
