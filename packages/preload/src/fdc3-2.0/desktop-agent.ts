@@ -179,9 +179,15 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
         },
 
         async getAppMetadata(app: AppIdentifier) {
-            const result: AppMetadata = await sendMessage(FDC3_2_0_TOPICS.GET_APP_METADATA, {
+            let result: AppMetadata = await sendMessage(FDC3_2_0_TOPICS.GET_APP_METADATA, {
                 app: app
             });
+
+            if (app.instanceId) {
+                result = { ...result, 
+                    instanceId: app.instanceId
+                }
+            }
 
             console.log("Returned metadata: "+JSON.stringify(result))
 

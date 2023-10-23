@@ -76,6 +76,8 @@ export const openApp = async (
     // console.log("Giving up")
     throw new Error(AppTimeout)
   } else {
+    // for getAppMetadata.
+    await sleep(200);
     return result;
   } 
 };
