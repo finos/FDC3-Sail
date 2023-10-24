@@ -13,7 +13,7 @@ import {
   DirectoryAppLaunchDetailsWeb,
   DirectoryIntent,
 } from '/@/directory/directory';
-import { AppNotFound, NoAppsFound, ResolverUnavailable } from '/@/types/FDC3Errors';
+import { AppNotFound, NoAppsFound, ResolverUnavailable, TargetInstanceUnavailable, TargetAppUnavailable } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
 import { FDC3_TOPICS_CONTEXT, FDC3_TOPICS_INTENT } from '../topics';
 
@@ -296,9 +296,22 @@ export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResol
   const results: Array<FDC3App> = [];
   const data: RaiseIntentData = message.data as RaiseIntentData;
   const intent = data.intent;
+  const target = data.target;
 
   if (!intent) {
     throw new Error(NoAppsFound);
+  }
+
+  if (target?.instanceId) {
+    if (getRuntime().getView(target.instanceId) ==undefined) {
+      throw new Error(TargetInstanceUnavailable);
+    }
+  }
+
+  if (target?.appId) {
+    if (getRuntime().getDirectory().retrieveByAppId(target.appId).length == 0) {
+      throw new Error(TargetAppUnavailable);
+    }
   }
 
   collectRunningIntentResults(message, results);
