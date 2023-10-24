@@ -6,8 +6,8 @@ import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
-import { FDC3_TOPICS } from '../topics';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import { FDC3_TOPICS_INTENT } from '../topics';
 
 export const resolveIntent = async (message: FDC3Message) => {
   const runtime = getRuntime();
@@ -36,7 +36,7 @@ export const resolveIntent = async (message: FDC3Message) => {
     view = runtime.getView(selected.details.instanceId);
     //send new intent
     if (view && view.parent) {
-      view.content.webContents.send(FDC3_TOPICS.INTENT, {
+      view.content.webContents.send(FDC3_TOPICS_INTENT, {
         topic: 'intent',
         data: { intent: data.intent, context: data.context },
         source: message.source,

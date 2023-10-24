@@ -1,6 +1,8 @@
 import { Listener as Listener1_2, ContextHandler as ContextHandler1_2 } from 'fdc3-1.2'
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
+import { FDC3_TOPICS_CONTEXT, FDC3_TOPICS_INTENT, ListenerType } from '/@main/handlers/fdc3/topics';
+
 import { Context } from '/@main/types/FDC3Message';
 import { ContextMetadata, IntentResult } from 'fdc3-2.0';
 import { SailContextMetadata } from '/@main/types/FDC3Data';
@@ -36,21 +38,21 @@ export class FDC3Listener implements SailListener {
 
     intent: string | null = null;
 
-    constructor(type: string, listenerId: string, sendMessage: SendMessage, intent?: string) {
+    constructor(type: ListenerType, listenerId: string, sendMessage: SendMessage, intent?: string) {
         this.id = listenerId;
         this.type = type;
-        if (type === 'intent' && intent) {
+        if (type === FDC3_TOPICS_INTENT && intent) {
             this.intent = intent;
         }
 
         this.unsubscribe = () => {
-            if (this.type === 'context') {
+            if (this.type === FDC3_TOPICS_CONTEXT) {
                 contextListeners.delete(this.id);
 
                 sendMessage(FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER, {
                     listenerId: this.id,
                 });
-            } else if (this.type === 'intent' && this.intent) {
+            } else if (this.type === FDC3_TOPICS_INTENT && this.intent) {
                 const listeners = intentListeners.get(this.intent);
                 if (listeners) {
                     listeners.delete(this.id);

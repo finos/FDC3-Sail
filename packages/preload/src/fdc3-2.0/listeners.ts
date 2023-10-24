@@ -77,10 +77,9 @@ export interface ContextTypeListenerItem {
 }
 
 //listener with handler that has no args
-export interface VoidListenerItem extends ListenerItem {
+export interface VoidListenerItem {
     id?: string;
-    handler?: () => void;
-    contextType?: string;
+    handler: () => void;
 }
 
 
@@ -91,7 +90,7 @@ export const addContextListeners: Map<string, ContextTypeListenerItem> = new Map
 export const unsubscribeListeners: Map<string, ContextTypeListenerItem> = new Map();
 
 //map of listeners for disconnecting on a private channel
-export const disconnectListeners: Map<string, ListenerItem> = new Map();
+export const disconnectListeners: Map<string, VoidListenerItem> = new Map();
 
 export const createContextTypeListenerItem = (
     id: string,
@@ -110,12 +109,10 @@ export const createVoidListenerItem = (
     id: string,
     handler: () => void,
     contextType?: string,
-): ListenerItem => {
+): VoidListenerItem => {
     const listener: VoidListenerItem = {
         id,
         handler,
-        contextType,
-        resultPromise: createResultPromise(id)
     };
     return listener;
 };

@@ -1,7 +1,6 @@
 import { getRuntime } from '/@/index';
 import { View } from '/@/view';
 import { FDC3App, FDC3AppDetail, SailIntentResolution } from '/@/types/FDC3Data';
-import { FDC3_TOPICS } from '../topics';
 import { buildIntentInstanceTree, sortApps } from './resolveIntent';
 import {
   FDC3Message,
@@ -16,6 +15,7 @@ import {
 } from '/@/directory/directory';
 import { AppNotFound, NoAppsFound, ResolverUnavailable } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
+import { FDC3_TOPICS_CONTEXT, FDC3_TOPICS_INTENT } from '../topics';
 
 function collectRunningIntentResults(message: FDC3Message, results: Array<FDC3App>) {
   const data = message.data as RaiseIntentData;
@@ -199,7 +199,7 @@ async function intentHandledByOpenAppHandler(theApp: FDC3App, message: FDC3Messa
   if (view) {
     const resultId = runtime.initIntentResult(message.source);
 
-    view.content.webContents.send(FDC3_TOPICS.INTENT, {
+    view.content.webContents.send(FDC3_TOPICS_INTENT, {
       topic: 'intent',
       data: message.data,
       source: message.source,
@@ -418,7 +418,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic = FDC3_TOPICS.CONTEXT;
+            const topic = FDC3_TOPICS_CONTEXT;
             view.content.webContents.send(topic, {
               topic: 'context',
               data: {
@@ -462,7 +462,7 @@ export const raiseIntentForContext = async (message: FDC3Message) => {
         if (result.type === 'window' && result.details.instanceId) {
           const view = runtime.getView(result.details.instanceId);
           if (view) {
-            const topic = FDC3_TOPICS.INTENT;
+            const topic = FDC3_TOPICS_INTENT;
             view.content.webContents.send(topic, {
               topic: 'intent',
               data: {

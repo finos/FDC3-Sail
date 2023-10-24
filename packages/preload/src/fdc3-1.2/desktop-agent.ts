@@ -113,7 +113,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             console.log('Intent (DAc)', getIntentListeners());
             console.log('Context (DAc)', getContextListeners());
 
-            return new FDC3Listener('context', listenerId, sendMessage);
+            return new FDC3Listener('FDC3:context', listenerId, sendMessage);
         },
 
         addIntentListener(intent: string, listener: SailGenericHandler) {
@@ -138,7 +138,7 @@ export function createDesktopAgentInstance(sendMessage: SendMessage, version: st
             console.log('Intent (DAi)', getIntentListeners());
             console.log('Context (DAi)', getContextListeners());
     
-            return new FDC3Listener('intent', listenerId, sendMessage, intent);
+            return new FDC3Listener('FDC3:intent', listenerId, sendMessage, intent);
         },
 
         async findIntent(intent: string, context: Context) {

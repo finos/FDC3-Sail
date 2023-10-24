@@ -3,11 +3,11 @@ import { fdc3Event } from "../lib/lib";
 import { MessagingSupport, SendMessage } from "../message";
 import { getContextListeners, getIntentListeners } from "./listeners";
 import { FDC3_2_0_TOPICS } from "/@main/handlers/fdc3/2.0/topics";
-import { FDC3_TOPICS } from "/@main/handlers/fdc3/topics";
 import { FDC3EventEnum } from "/@main/types/FDC3Event";
 import { Context, IntentResultData } from "/@main/types/FDC3Message";
 import { Channel } from "fdc3-1.2";
 import { SailChannelData, SailContextMetadata } from "/@main/types/FDC3Data";
+import { FDC3_TOPICS_CONTEXT, FDC3_TOPICS_INTENT, FDC3_TOPICS_RESULT_CREATED } from "/@main/handlers/fdc3/topics";
 
 export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
 
@@ -21,7 +21,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
                 displayMetadata: res.displayMetadata
             } as SailChannelData
         }
-        sendMessage(FDC3_TOPICS.RESULT_CREATED, ird);
+        sendMessage(FDC3_TOPICS_RESULT_CREATED, ird);
     }
 
     function sendContextResult(res: Context, meta: SailContextMetadata) {
@@ -30,7 +30,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
             resultId: meta.resultId,
             result: res
         }
-        sendMessage(FDC3_TOPICS.RESULT_CREATED, ird);
+        sendMessage(FDC3_TOPICS_RESULT_CREATED, ird);
     }
 
     const callIntentListener = (intent: string, meta: SailContextMetadata, context?: Context | undefined, ) => {
@@ -93,7 +93,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
     /**
      * listen for incomming contexts
      */
-    ipc.on(FDC3_TOPICS.CONTEXT, async (event, args) => {
+    ipc.on(FDC3_TOPICS_CONTEXT, async (event, args) => {
         console.log('ipc event', event.type, args);
 
         if (args.data && args.data.context) {
@@ -121,7 +121,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
     /**
      * listen for incoming intents
      */
-    ipc.on(FDC3_TOPICS.INTENT, (event, args) => {
+    ipc.on(FDC3_TOPICS_INTENT, (event, args) => {
         console.log("Somehow, we need to find the resultId in ", event, args)
         const data = args.data as IntentResultData
         const meta : SailContextMetadata = {

@@ -4,8 +4,8 @@ import { guid } from '../lib/lib';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { FDC3Listener, SailGenericHandler, getContextListeners, createListenerItem } from './listeners';
-import { FDC3_TOPICS } from '/@main/handlers/fdc3/topics';
 import { CreationFailed } from '/@main/types/FDC3Errors';
+import { FDC3_TOPICS_CONTEXT } from '/@main/handlers/fdc3/topics';
 
 export const createChannelObject = (
   sendMessage: SendMessage,
@@ -66,7 +66,7 @@ export const createChannelObject = (
         channel: channel.id,
         contextType: thisContextType,
       });
-      return new FDC3Listener(FDC3_TOPICS.CONTEXT, listenerId, sendMessage);
+      return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
     },
   };
 

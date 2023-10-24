@@ -3,6 +3,7 @@ import { SailPrivateChannelData } from '/@/types/FDC3Data';
 import { randomUUID } from 'crypto';
 import { getRuntime } from '../../../index';
 import { FDC3Listener } from '/@/types/FDC3Listener';
+import { FDC3_2_0_TOPICS } from './topics';
 
 export const createPrivateChannel = async (message: FDC3Message) => {
   const id = randomUUID();
@@ -65,13 +66,21 @@ export const disconnect = async (message: FDC3Message) => {
     console.log('in disconnect', channel);
   }
 
-  channel?.disconnectListeners.forEach(dl => {
-    const view = runtime.getView(dl.viewId!!);
-    if (view != null) {
-        console.log()
-
-    }
+  channel?.unsubscribeListeners.forEach(ul => {
+      const viewId = ul.viewId;
+      const notifyView = viewId && runtime.getView(viewId);
+      if (notifyView) {
+        notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE, ul);
+      }
   })
+
+  channel?.disconnectListeners.forEach(dl => {
+    const viewId = dl.viewId;
+    const notifyView = viewId && runtime.getView(viewId);
+    if (notifyView) {
+      notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_DISCONNECT, dl);
+    }
+})
   //is it the host view or remote view that is disconnecting?
   //if the host..
   //destroy the private channel

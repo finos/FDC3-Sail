@@ -1,4 +1,4 @@
-import { FDC3_TOPICS } from "../topics";
+import { FDC3_TOPICS_RESULT_DELIVERY } from "../topics";
 import { getRuntime } from "/@/index";
 import { FDC3Message, IntentResultData } from "/@/types/FDC3Message";
 
@@ -16,7 +16,7 @@ export const resultCreated = async (message: FDC3Message) => {
         // deliver this to the right view
         const view = runtime.getView(viewId);
         if (view) {
-            view.content.webContents.send(FDC3_TOPICS.RESULT_DELIVERY, data);
+            view.content.webContents.send(FDC3_TOPICS_RESULT_DELIVERY, data);
         }
     }
     

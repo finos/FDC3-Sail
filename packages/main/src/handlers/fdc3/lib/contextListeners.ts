@@ -1,5 +1,4 @@
 import { getRuntime } from '/@/index';
-import { FDC3_TOPICS } from '../topics';
 import { Pending } from '/@/types/Pending';
 import {
   FDC3Message,
@@ -7,6 +6,7 @@ import {
   ContextListenerData,
 } from '/@/types/FDC3Message';
 import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import { FDC3_TOPICS_CONTEXT } from '../topics';
 
 export const dropContextListener = async (message: FDC3Message) => {
   const runtime = getRuntime();
@@ -15,7 +15,26 @@ export const dropContextListener = async (message: FDC3Message) => {
   const view = runtime.getView(message.source);
   if (view && id) {
     view.listeners = view.listeners.filter((l) => {
-      return l.listenerId !== id;
+      if (l.listenerId == id) {
+
+        if (l.channel) {
+          // message the channel's unsubscribe listeners
+          const channelObject = runtime.getPrivateChannel(l.channel);
+          if (channelObject) {
+            channelObject.unsubscribeListeners.forEach(oacl => {
+              const viewId = oacl.viewId;
+              const notifyView = viewId && runtime.getView(viewId);
+              if (notifyView) {
+                notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE, oacl);
+              }
+            });
+          }
+        }
+
+        return false;   // drop the listener
+      } else {
+        return true;
+      }
     });
   }
 };
@@ -69,7 +88,7 @@ export const addContextListener = async (message: FDC3Message) => {
           contextType === undefined ||
           pending?.context?.type === contextType
         ) {
-          const topic = FDC3_TOPICS.CONTEXT;
+          const topic = FDC3_TOPICS_CONTEXT;
           view.content.webContents.send(topic, {
             topic: topic,
             listenerId: data.listenerId,
