@@ -35,3 +35,6 @@ export const TargetInstanceUnavailable = ResolveError.TargetInstanceUnavailable;
 
 // only 2.0
 export const TargetAppUnavailable = ResolveError.TargetAppUnavailable;
+
+// only 2.0 
+export const IntentDeliveryFailed = ResolveError.IntentDeliveryFailed;

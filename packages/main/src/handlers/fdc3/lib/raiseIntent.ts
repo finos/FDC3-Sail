@@ -13,9 +13,10 @@ import {
   DirectoryAppLaunchDetailsWeb,
   DirectoryIntent,
 } from '/@/directory/directory';
-import { AppNotFound, NoAppsFound, ResolverUnavailable, TargetInstanceUnavailable, TargetAppUnavailable } from '/@/types/FDC3Errors';
+import { AppNotFound, NoAppsFound, ResolverUnavailable, TargetInstanceUnavailable, TargetAppUnavailable, IntentDeliveryFailed } from '/@/types/FDC3Errors';
 import { FDC3Listener } from '/@/types/FDC3Listener';
 import { FDC3_TOPICS_CONTEXT, FDC3_TOPICS_INTENT } from '../topics';
+import { NO_LISTENER_TIMEOUT, now, sleep } from '/@/utils';
 
 function collectRunningIntentResults(message: FDC3Message, results: Array<FDC3App>) {
   const data = message.data as RaiseIntentData;
@@ -292,6 +293,21 @@ async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Mes
 
 }
 
+function chooseResultHandler(results: FDC3App[], message: FDC3Message) {
+  if (results.length === 1) {
+    const theApp = results[0];
+    if (theApp.type === 'pending') {
+      return intentHandledByOpenAppPending(theApp, message);
+    } else if (theApp.type === 'window') {
+      return intentHandledByOpenAppHandler(theApp, message);
+    } else {
+      return intentHandledByAppLaunch(theApp, message);
+    }
+  } else if (results.length > 0) {
+    return intentHandledByResolver(results, message);
+  } 
+}
+
 export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResolution> => {
   const results: Array<FDC3App> = [];
   const data: RaiseIntentData = message.data as RaiseIntentData;
@@ -317,20 +333,35 @@ export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResol
   collectRunningIntentResults(message, results);
   collectDirectoryIntentResults(message, results);
 
-  if (results.length === 1) {
-    const theApp = results[0];
-    if (theApp.type === 'pending') {
-      return intentHandledByOpenAppPending(theApp, message);
-    } else if (theApp.type === 'window') {
-      return intentHandledByOpenAppHandler(theApp, message);
-    } else {
-      return intentHandledByAppLaunch(theApp, message);
-    }
-  } else if (results.length > 0) {
-    return intentHandledByResolver(results, message);
-  } else {
+  if (results.length == 0) {
     throw new Error(NoAppsFound);
-  }
+  } else {
+    return new Promise<SailIntentResolution>(async (resolve, reject) => {
+      const ir = await chooseResultHandler(results, message);
+  
+      // here, we're going to ensure that the chosen app has an intent handler 
+      // or fail the intent
+      const instanceId = ir?.source?.instanceId;
+      if (instanceId) {
+        const newView = getRuntime().getView(instanceId);
+        if (newView) {
+          const startTime = now();
+          while (now() - startTime < NO_LISTENER_TIMEOUT) {
+            const found = newView.listeners.filter(l => (l.intent == intent));
+            if (found.length > 0) {
+              return ir;
+            } else {
+              await sleep(2);
+            }
+          }
+  
+          reject(new Error(IntentDeliveryFailed))
+        }
+      } else {
+        return ir;
+      }
+    });
+  } 
 };
 
 export const raiseIntentForContext = async (message: FDC3Message) => {

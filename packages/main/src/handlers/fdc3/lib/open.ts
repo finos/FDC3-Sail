@@ -7,9 +7,7 @@ import {
 import { getSailManifest } from '/@/directory/directory';
 import { Context, FDC3Message, OpenData, SailTargetIdentifier } from '/@/types/FDC3Message';
 import { AppNotFound, AppTimeout } from '/@/types/FDC3Errors';
-import { now, sleep } from '/@/utils';
-
-const NO_LISTENER_TIMEOUT = 20000;  // 20 seconds
+import { NO_LISTENER_TIMEOUT, now, sleep } from '/@/utils';
 
 export const openApp = async (
   app: DirectoryApp,

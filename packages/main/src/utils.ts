@@ -60,3 +60,5 @@ export function now() {
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export const NO_LISTENER_TIMEOUT = 20000;  // 20 seconds
