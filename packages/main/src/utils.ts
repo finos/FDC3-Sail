@@ -51,3 +51,12 @@ export default {
   fdc3Event,
   isDataIntent,
 };
+
+
+export function now() {
+  return new Date().getTime();
+}
+
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

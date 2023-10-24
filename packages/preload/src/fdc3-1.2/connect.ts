@@ -33,6 +33,14 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
         sendMessage(FDC3_TOPICS_RESULT_CREATED, ird);
     }
 
+    function sendVoidResult(meta: SailContextMetadata) {
+        const ird : IntentResultData = {
+            type: "void",
+            resultId: meta.resultId,
+        }
+        sendMessage(FDC3_TOPICS_RESULT_CREATED, ird);
+    }
+
     const callIntentListener = (intent: string, meta: SailContextMetadata, context?: Context | undefined, ) => {
         if (intent) {
             console.log('Intent (Connect)', getIntentListeners());
@@ -48,20 +56,22 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
                         const p = l.handler.call(document, context, meta);
                         if (p) {
                             p.then(res => {
+                                console.log("handled, got "+res);
                                 if (res != null) {
                                     switch (res?.type ) {
                                         case 'app':
                                         case 'private':
                                         case 'user':
                                         case 'system':
-                                            sendChannelResult(res as any as Channel, meta);
+                                            return sendChannelResult(res as any as Channel, meta);
                                             break;
                                         default:
-                                            sendContextResult(res as any as Context, meta);
+                                            return sendContextResult(res as any as Context, meta);
                                             break;
                                     }
-
                                 }
+
+                                return sendVoidResult(meta);
                             })
                         }
                     }
@@ -122,7 +132,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
      * listen for incoming intents
      */
     ipc.on(FDC3_TOPICS_INTENT, (event, args) => {
-        console.log("Somehow, we need to find the resultId in ", event, args)
+        console.log("ipc event", event, args)
         const data = args.data as IntentResultData
         const meta : SailContextMetadata = {
             source: {

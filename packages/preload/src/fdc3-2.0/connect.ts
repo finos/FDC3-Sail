@@ -16,6 +16,7 @@ export const connect = (ipc: MessagingSupport, sendMessage : SendMessage) => {
      */
     ipc.on(FDC3_TOPICS_RESULT_DELIVERY, async (event, a) => {
         console.log('ipc event', event.type, a);
+        console.log("RESULT DELIVERY");
         const ird = a as IntentResultData
         const id = ird.resultId;
         const ir = resultPromises.get(id);
@@ -25,8 +26,10 @@ export const connect = (ipc: MessagingSupport, sendMessage : SendMessage) => {
                 // convert to channel
                 const scd = ird.result as SailChannelData
                 data = createChannelObject(sendMessage, scd.id, scd.type, undefined);
-            } else {
+            } else if (a.type == 'context') {
                 data = ird.result as Context;
+            } else {
+                data = undefined;
             }
 
             ir(data);
