@@ -159,7 +159,7 @@ async function intentHandledByOpenAppPending(theApp: FDC3App, message: FDC3Messa
   const runtime = getRuntime();
   const intentTarget = appDetails?.instanceId!!
   const view = runtime.getView(intentTarget);
- 
+
   const resultId = getRuntime().initIntentResult(message.source);
   const intent = data.intent;
 
@@ -293,7 +293,7 @@ async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Mes
 
 }
 
-function chooseResultHandler(results: FDC3App[], message: FDC3Message) {
+function chooseResultHandler(results: FDC3App[], message: FDC3Message): Promise<SailIntentResolution> | undefined {
   if (results.length === 1) {
     const theApp = results[0];
     if (theApp.type === 'pending') {
@@ -305,7 +305,7 @@ function chooseResultHandler(results: FDC3App[], message: FDC3Message) {
     }
   } else if (results.length > 0) {
     return intentHandledByResolver(results, message);
-  } 
+  }
 }
 
 export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResolution> => {
@@ -319,7 +319,7 @@ export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResol
   }
 
   if (target?.instanceId) {
-    if (getRuntime().getView(target.instanceId) ==undefined) {
+    if (getRuntime().getView(target.instanceId) == undefined) {
       throw new Error(TargetInstanceUnavailable);
     }
   }
@@ -338,30 +338,36 @@ export const raiseIntent = async (message: FDC3Message): Promise<SailIntentResol
   } else {
     return new Promise<SailIntentResolution>(async (resolve, reject) => {
       const ir = await chooseResultHandler(results, message);
-  
-      // here, we're going to ensure that the chosen app has an intent handler 
-      // or fail the intent
-      const instanceId = ir?.source?.instanceId;
-      if (instanceId) {
-        const newView = getRuntime().getView(instanceId);
-        if (newView) {
-          const startTime = now();
-          while (now() - startTime < NO_LISTENER_TIMEOUT) {
-            const found = newView.listeners.filter(l => (l.intent == intent));
-            if (found.length > 0) {
-              return ir;
-            } else {
-              await sleep(2);
-            }
-          }
-  
-          reject(new Error(IntentDeliveryFailed))
-        }
+
+      if (ir == undefined) {
+        reject(new Error(IntentDeliveryFailed));
       } else {
-        return ir;
+        // here, we're going to ensure that the chosen app has an intent handler 
+        // or fail the intent
+        const instanceId = ir?.source?.instanceId;
+        if (instanceId) {
+          const newView = getRuntime().getView(instanceId);
+          if (newView) {
+            const startTime = now();
+            while (now() - startTime < NO_LISTENER_TIMEOUT) {
+              const found = newView.listeners.filter(l => (l.intent == intent));
+              if (found.length > 0) {
+                resolve(ir);
+                return;
+              } else {
+                await sleep(2);
+              }
+            }
+
+            reject(new Error(IntentDeliveryFailed));
+          }
+        } else {
+          // no instance id, don't wait
+          resolve(ir);
+        }
       }
     });
-  } 
+  }
 };
 
 export const raiseIntentForContext = async (message: FDC3Message) => {
