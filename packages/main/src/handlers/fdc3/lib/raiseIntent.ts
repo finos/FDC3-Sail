@@ -293,8 +293,18 @@ async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Mes
 
 }
 
+function matchingApp(results: FDC3App[]) {
+  if (results.length == 2) {
+    const r1 = results[0];
+    const r2 = results[1];
+    return r1.details.directoryData?.appId == r2.details.directoryData?.appId;
+  } else {
+    return false;
+  }
+}
+
 function chooseResultHandler(results: FDC3App[], message: FDC3Message): Promise<SailIntentResolution> | undefined {
-  if (results.length === 1) {
+  if ((results.length === 1) || (matchingApp(results))) {
     const theApp = results[0];
     if (theApp.type === 'pending') {
       return intentHandledByOpenAppPending(theApp, message);
