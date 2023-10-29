@@ -66,6 +66,7 @@ export const createChannelObject = (
         channel: channel.id,
         contextType: thisContextType,
       });
+      
       return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
     },
   };

@@ -55,12 +55,13 @@ export const createChannelObject = (
           createListenerItem(listenerId, thisListener, thisContextType),
         );
   
-        await sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
+        return await sendMessage(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
           listenerId: listenerId,
           channel: channel.id,
           contextType: thisContextType,
-        });
-        return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
+        }).then(r => {
+          return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
+        })
       },
     };
 

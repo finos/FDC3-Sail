@@ -39,7 +39,7 @@ export const dropContextListener = async (message: FDC3Message) => {
   }
 };
 
-export const addContextListener = async (message: FDC3Message) => {
+export const addContextListener = async (message: FDC3Message) : Promise<Boolean> => {
   const runtime = getRuntime();
   const source = message.source; //this is the app instance calling addContextListener
   const data: ContextListenerData = message.data as ContextListenerData;
@@ -103,5 +103,9 @@ export const addContextListener = async (message: FDC3Message) => {
         }
       });
     }
+    
+    return true;
+  } else {
+    return false;
   }
 };
