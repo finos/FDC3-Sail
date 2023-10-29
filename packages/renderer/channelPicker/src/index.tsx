@@ -1,11 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
-import {Picker} from './Picker';
+import { Picker } from './Picker';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Picker />
-  </React.StrictMode>,
-  document.getElementById('picker'),
-);
+const node = document.getElementById('picker');
+if (node) {
+  const root = createRoot(node);
+
+  root.render(
+    <React.StrictMode>
+      <Picker />
+    </React.StrictMode>,
+  );
+}

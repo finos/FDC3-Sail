@@ -104,7 +104,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
      * listen for incomming contexts
      */
     ipc.on(FDC3_TOPICS_CONTEXT, async (event, args) => {
-        console.log('ipc event', event.type, args);
+        console.log('ipc event', event, args);
 
         if (args.data && args.data.context) {
             const meta : SailContextMetadata = {
@@ -144,7 +144,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
     });
 
     ipc.on(FDC3_2_0_TOPICS.RESOLVE_INTENT, (event, args) => {
-        console.log('ipc event', event.type);
+        console.log('ipc event', event);
         document.dispatchEvent(
             new CustomEvent(FDC3_2_0_TOPICS.RESOLVE_INTENT, {
                 detail: { data: args.data, source: args.source },

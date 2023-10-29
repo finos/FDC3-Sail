@@ -1,11 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {SearchResults} from './SearchResults';
+import { createRoot } from 'react-dom/client';
+import { SearchResults } from './SearchResults';
 import './index.css';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <SearchResults />
-  </React.StrictMode>,
-  document.getElementById('searchResults'),
-);
+const node = document.getElementById('searchResults');
+if (node) {
+  const root = createRoot(node);
+  root.render(
+    <React.StrictMode>
+      <SearchResults />
+    </React.StrictMode>,
+  );
+}

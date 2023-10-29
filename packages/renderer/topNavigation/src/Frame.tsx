@@ -7,6 +7,7 @@
  */
 import './Frame.css';
 import React, { SyntheticEvent } from 'react';
+import { EventListener } from 'jsdom';
 import {
   TextField,
   InputAdornment,
@@ -33,10 +34,10 @@ import {
 
 let draggedTab: string | null = null;
 
-let tabDragTimeout: number = 0;
+let tabDragTimeout = 0;
 
 //flag to indicate we are dragging and dropping tabs within the tabset - not tearing ouut
-let internalDnD: boolean = false;
+let internalDnD = false;
 
 const darkTheme = createTheme({
   palette: {
@@ -181,7 +182,7 @@ export class Frame extends React.Component<
       return (...args: any[]) => {
         window.clearTimeout(timeoutId);
         timeoutId = window.setTimeout(() => {
-          callback.apply(null, args);
+          callback.call(this, args);
         }, wait);
       };
     };

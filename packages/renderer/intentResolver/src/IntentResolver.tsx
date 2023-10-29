@@ -109,9 +109,9 @@ export class IntentResolver extends React.Component<
     const getHeader = () => {
       console.log('state', JSON.stringify(this.state));
       if (this.state && this.state.intent) {
-        return <h1>Resolve Intent '{this.state.intent}'</h1>;
+        return <h1>Resolve Intent &apos;{this.state.intent}&apos;</h1>;
       } else if (this.state && this.state.context) {
-        return <h1>Resolve Context '{this.state.context.type}'</h1>;
+        return <h1>Resolve Context &apos;{this.state.context.type}&apos;</h1>;
       } else {
         return <h1>Resolve</h1>;
       }
@@ -182,7 +182,7 @@ export class IntentResolver extends React.Component<
           <div key={`item_container_${i}`}>
             <ListItemButton
               key={`item_button_${i}`}
-              onClick={(event) => {
+              onClick={() => {
                 toggleFolder(i);
               }}
             >
