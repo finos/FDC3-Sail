@@ -3,7 +3,6 @@ import { RUNTIME_TOPICS } from '/@main/handlers/runtime/topics';
 import { TARGETS } from '/@main/constants';
 import { systemChannels as userChannels } from '/@main/handlers/fdc3/lib/systemChannels';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3_VERSIONS } from '/@main/types/Versions';
 import { Context } from '/@main/types/FDC3Message';
 
 let id: string | undefined = undefined;
@@ -12,7 +11,6 @@ let context: Context | undefined = undefined;
 let frameReady = false;
 let workspaceId: string | null = null;
 let selectedChannel: string | null = null;
-let fdc3Version: FDC3_VERSIONS | undefined;
 let source: string | undefined = undefined;
 
 const eventQ: Array<() => void> = [];

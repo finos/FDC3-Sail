@@ -5,7 +5,12 @@ import {
   DirectoryAppLaunchDetailsWeb,
 } from '/@/directory/directory';
 import { getSailManifest } from '/@/directory/directory';
-import { Context, FDC3Message, OpenData, SailTargetIdentifier } from '/@/types/FDC3Message';
+import {
+  Context,
+  FDC3Message,
+  OpenData,
+  SailTargetIdentifier,
+} from '/@/types/FDC3Message';
 import { AppNotFound, AppTimeout } from '/@/types/FDC3Errors';
 import { NO_LISTENER_TIMEOUT, now, sleep } from '/@/utils';
 
@@ -13,7 +18,7 @@ export const openApp = async (
   app: DirectoryApp,
   source: string,
   context?: Context,
-) : Promise<SailTargetIdentifier | void > => {
+): Promise<SailTargetIdentifier | void> => {
   const runtime = getRuntime();
   const start_url = (app.details as DirectoryAppLaunchDetailsWeb).url;
   const manifest = getSailManifest(app);
@@ -30,20 +35,19 @@ export const openApp = async (
     const sourceView = runtime.getView(source);
     const work =
       runtime.getWorkspace(source) || (sourceView && sourceView.parent);
-    newView =
-      work && (work.createView(start_url, { directoryData: app }));
+    newView = work && work.createView(start_url, { directoryData: app });
   }
 
   if (!newView) {
-    return
+    return;
   }
 
   const result = {
     name: app.name,
     appId: app.appId,
-    instanceId: newView!!.id,
-    appMetadata: app
-  };  
+    instanceId: newView?.id,
+    appMetadata: app,
+  };
 
   //set provided context
   if (context != undefined) {
@@ -53,8 +57,9 @@ export const openApp = async (
     // before completing
     const startTime = now();
     while (now() - startTime < NO_LISTENER_TIMEOUT) {
-      const found = newView.listeners
-         .filter(l => (l.contextType == context.type) || (l.contextType == null));
+      const found = newView.listeners.filter(
+        (l) => l.contextType == context.type || l.contextType == null,
+      );
       //console.log("Listeners: "+found.length)
       if (found.length > 0) {
         return result;
@@ -63,14 +68,14 @@ export const openApp = async (
         await sleep(2);
       }
     }
-    
+
     // console.log("Giving up")
-    throw new Error(AppTimeout)
+    throw new Error(AppTimeout);
   } else {
     // for getAppMetadata.
     await sleep(200);
     return result;
-  } 
+  }
 };
 
 export const open = async (message: FDC3Message) => {
@@ -84,7 +89,7 @@ export const open = async (message: FDC3Message) => {
     allResults = runtime.getDirectory().retrieveByName(targetIdentifier.name);
   } else if (targetIdentifier.appId) {
     allResults = runtime.getDirectory().retrieveByAppId(targetIdentifier.appId);
-  } 
+  }
 
   if (allResults.length > 0) {
     // this deals with the case of multiple apps having the same name, appId etc.

@@ -65,7 +65,7 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
   } else if (channel.type == 'app') {
     return channel;
   } else {
-      throw new Error(AccessDenied);
+    throw new Error(AccessDenied);
   }
 };
 

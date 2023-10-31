@@ -29,5 +29,5 @@ export const FDC3_2_0_TOPICS = {
   RAISE_INTENT_FOR_CONTEXT: 'FDC3_2.0:raiseIntentForContext',
   INTENT_LISTENER_CALLED: 'FDC3_2.0:intentListenerCalled',
   GET_APP_METADATA: 'FDC3_2.0:getAppMetadata',
-  GET_APP_ID: 'FDC3_2.0:getAppId'
+  GET_APP_ID: 'FDC3_2.0:getAppId',
 };

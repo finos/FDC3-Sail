@@ -1,7 +1,12 @@
-import { AppIdentifier, ContextMetadata } from 'fdc3-2.0';
+import { ContextMetadata } from 'fdc3-2.0';
 import { DirectoryApp } from '../directory/directory';
 import { FDC3Listener } from './FDC3Listener';
-import { Context, DisplayMetadata, IntentMetadata, SailTargetIdentifier } from './FDC3Message';
+import {
+  Context,
+  DisplayMetadata,
+  IntentMetadata,
+  SailTargetIdentifier,
+} from './FDC3Message';
 /**
  * represenation of an FDC3 App - whether it is running (connected) or not (directory only)
  */
@@ -34,11 +39,11 @@ export interface ResolverDetail {
  * Back-end to front-end intent resolution results container.
  */
 export interface SailIntentResolution {
-    source?: SailTargetIdentifier;
-    version: string,
-    intent?: string, 
-    openingResolver: boolean,
-    result: string  // event containing the result
+  source?: SailTargetIdentifier;
+  version: string;
+  intent?: string;
+  openingResolver: boolean;
+  result: string; // event containing the result
 }
 
 /**
@@ -57,7 +62,6 @@ export interface SailPrivateChannelData extends SailChannelData {
   onAddContextListeners: Map<string, FDC3Listener>;
 }
 
-
 export interface SailDisplayMetadata extends DisplayMetadata {
   /**
    * alternate / secondary color to use in conjunction with 'color' when creating UIs
@@ -70,5 +74,5 @@ export interface SailDisplayMetadata extends DisplayMetadata {
  * Only used by 2.0
  */
 export interface SailContextMetadata extends ContextMetadata {
-  resultId: string
+  resultId: string;
 }

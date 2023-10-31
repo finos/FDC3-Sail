@@ -1,6 +1,12 @@
 import { FDC3Listener } from './types/FDC3Listener';
 //import { Context, AppIdentifier } from '@finos/fdc3-2.0';
-import { SailChannelData, FDC3App, IntentInstance, SailPrivateChannelData, ResolverDetail } from '/@/types/FDC3Data';
+import {
+  SailChannelData,
+  FDC3App,
+  IntentInstance,
+  SailPrivateChannelData,
+  ResolverDetail,
+} from '/@/types/FDC3Data';
 import { systemChannels } from '/@/handlers/fdc3/lib/systemChannels';
 import { View } from './view';
 import { Workspace } from './workspace';
@@ -327,15 +333,17 @@ export class Runtime {
   getIntentListenersByAppIdAndInstanceId(
     intent: string,
     appId: string,
-    instanceId: string
+    instanceId: string,
   ): Map<string, FDC3Listener> {
-    
-    const result: Map<string, FDC3Listener> = new Map(); 
+    const result: Map<string, FDC3Listener> = new Map();
 
     this.getViews().forEach((view) => {
       //if a appIdentifier target is provided, filter
-      if ((view.directoryData && view.directoryData.appId === appId)
-       && (view.id == instanceId)) {
+      if (
+        view.directoryData &&
+        view.directoryData.appId === appId &&
+        view.id == instanceId
+      ) {
         view.listeners.forEach((l) => {
           if (l.intent && l.intent === intent) {
             result.set(l.listenerId, l);
@@ -344,7 +352,7 @@ export class Runtime {
       }
     });
     return result;
-  }  
+  }
 
   getIntentListenersByAppId(
     intent: string,

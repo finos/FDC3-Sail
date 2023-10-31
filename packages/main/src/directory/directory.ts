@@ -1,4 +1,3 @@
-import { channel } from 'diagnostics_channel';
 import { components } from './generated-schema';
 
 /**
@@ -36,7 +35,7 @@ export type Loader = (url: string) => Promise<DirectoryApp[]>;
 function genericResultType(rt: string | undefined) {
   if (rt == null) {
     return null;
-  } else if (rt.indexOf("channel<") == 0) {
+  } else if (rt.indexOf('channel<') == 0) {
     return 'channel';
   } else {
     return rt;
@@ -137,11 +136,11 @@ export class Directory {
   retrieveByIntentContextAndResultType(
     intent: string,
     contextType: string | null = null,
-    resultType: string | null = null
+    resultType: string | null = null,
   ): DirectoryApp[] {
     return this.retrieve((d) => {
       const listensFor = d.interop?.intents?.listensFor ?? {};
-      var theIntent = listensFor[intent] as DirectoryIntent;
+      const theIntent = listensFor[intent] as DirectoryIntent;
 
       if (theIntent == null) {
         return false;
@@ -154,8 +153,10 @@ export class Directory {
       }
 
       if (resultType != null) {
-        if ((theIntent.resultType != resultType) && 
-           (genericResultType(theIntent.resultType) != resultType)) {
+        if (
+          theIntent.resultType != resultType &&
+          genericResultType(theIntent.resultType) != resultType
+        ) {
           return false;
         }
       }
