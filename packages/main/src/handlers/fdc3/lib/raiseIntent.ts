@@ -293,7 +293,6 @@ async function intentHandledByResolver(results: Array<FDC3App>, message: FDC3Mes
 
 }
 
-
 function matchingApp(results: FDC3App[]) {
   if (results.length == 2) {
     const r1 = results[0];
