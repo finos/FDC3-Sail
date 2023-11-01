@@ -3,7 +3,12 @@ import { Context, DisplayMetadata } from '/@main/types/FDC3Message';
 import { guid } from '../lib/lib';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
-import { FDC3Listener, SailGenericHandler, getContextListeners, createListenerItem } from './listeners';
+import {
+  FDC3Listener,
+  SailGenericHandler,
+  getContextListeners,
+  createListenerItem,
+} from './listeners';
 import { CreationFailed } from '/@main/types/FDC3Errors';
 import { FDC3_TOPICS_CONTEXT } from '/@main/handlers/fdc3/topics';
 
@@ -13,9 +18,7 @@ export const createChannelObject = (
   type: string,
   displayMetadata?: DisplayMetadata,
 ): Channel1_2 => {
-
   const channel: Channel1_2 = {
-
     id: id,
 
     type: type,
@@ -66,11 +69,10 @@ export const createChannelObject = (
         channel: channel.id,
         contextType: thisContextType,
       });
-      
+
       return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
     },
   };
 
   return channel;
 };
-

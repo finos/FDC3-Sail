@@ -16,22 +16,24 @@ export const dropContextListener = async (message: FDC3Message) => {
   if (view && id) {
     view.listeners = view.listeners.filter((l) => {
       if (l.listenerId == id) {
-
         if (l.channel) {
           // message the channel's unsubscribe listeners
           const channelObject = runtime.getPrivateChannel(l.channel);
           if (channelObject) {
-            channelObject.unsubscribeListeners.forEach(oacl => {
+            channelObject.unsubscribeListeners.forEach((oacl) => {
               const viewId = oacl.viewId;
               const notifyView = viewId && runtime.getView(viewId);
               if (notifyView) {
-                notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE, oacl);
+                notifyView.content.webContents.send(
+                  FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE,
+                  oacl,
+                );
               }
             });
           }
         }
 
-        return false;   // drop the listener
+        return false; // drop the listener
       } else {
         return true;
       }
@@ -39,7 +41,9 @@ export const dropContextListener = async (message: FDC3Message) => {
   }
 };
 
-export const addContextListener = async (message: FDC3Message) : Promise<Boolean> => {
+export const addContextListener = async (
+  message: FDC3Message,
+): Promise<boolean> => {
   const runtime = getRuntime();
   const source = message.source; //this is the app instance calling addContextListener
   const data: ContextListenerData = message.data as ContextListenerData;
@@ -66,14 +70,17 @@ export const addContextListener = async (message: FDC3Message) : Promise<Boolean
     /* notify any onAddContextListeners */
     const channelObject = runtime.getPrivateChannel(channel);
     if (channelObject) {
-      channelObject.onAddContextListeners.forEach(oacl => {
+      channelObject.onAddContextListeners.forEach((oacl) => {
         const viewId = oacl.viewId;
         const notifyView = viewId && runtime.getView(viewId);
         if (notifyView) {
-          notifyView.content.webContents.send(FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER, {
-            ...oacl,
-            contextType
-          });
+          notifyView.content.webContents.send(
+            FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER,
+            {
+              ...oacl,
+              contextType,
+            },
+          );
         }
       });
     }
@@ -103,7 +110,7 @@ export const addContextListener = async (message: FDC3Message) : Promise<Boolean
         }
       });
     }
-    
+
     return true;
   } else {
     return false;

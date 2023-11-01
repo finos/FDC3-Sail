@@ -1,16 +1,14 @@
-import {
-  setInstanceId,
-  getEventQ,
-  processQueueItem,
-} from '../lib/lib';
+import { setInstanceId, getEventQ, processQueueItem } from '../lib/lib';
 
 import { RUNTIME_TOPICS, SAIL_TOPICS } from '/@main/handlers/runtime/topics';
 import { MessagingSupport, SendMessage } from '../message';
 import { createDesktopAgentInstance } from './desktop-agent';
 import { DesktopAgent } from 'fdc3-1.2';
 
-export const createAPI = (sendMessage: SendMessage, ipc: MessagingSupport): DesktopAgent => {
-  
+export const createAPI = (
+  sendMessage: SendMessage,
+  ipc: MessagingSupport,
+): DesktopAgent => {
   //handshake with main and get instanceId assigned
   ipc.on(RUNTIME_TOPICS.WINDOW_START, async (event, args) => {
     console.log('api FDC3 start', args.id);
@@ -37,8 +35,7 @@ export const createAPI = (sendMessage: SendMessage, ipc: MessagingSupport): Desk
   //prevent timing issues from very first load of the preload
   ipc.send(SAIL_TOPICS.INITIATE, {});
 
-  const out = createDesktopAgentInstance(sendMessage, "1.2");
+  const out = createDesktopAgentInstance(sendMessage, '1.2');
 
   return out;
-
 };

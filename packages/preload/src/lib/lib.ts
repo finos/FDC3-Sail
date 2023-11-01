@@ -9,7 +9,6 @@ import {
 import { ErrorOnLaunch } from '/@main/types/FDC3Errors';
 import { SendMessage } from '../message';
 
-
 //flag to indicate the background script is ready for fdc3!
 let instanceId = '';
 
@@ -68,8 +67,10 @@ export const processQueueItem = (qi: QueueItem) => {
 };
 
 //convert a AppIdentifier or TargetApp type to TargetIdentifier
-export const convertTarget = (target: any): SailTargetIdentifier | undefined => {
-  console.log("Converting ", target);
+export const convertTarget = (
+  target: any,
+): SailTargetIdentifier | undefined => {
+  console.log('Converting ', target);
   //is target just a string?  if so - treat it as name
   if (!target) {
     return undefined;
@@ -78,16 +79,16 @@ export const convertTarget = (target: any): SailTargetIdentifier | undefined => 
   } else if (target.appId && target.instanceId) {
     return {
       appId: target.appId,
-      instanceId: target.instanceId
-    }
+      instanceId: target.instanceId,
+    };
   } else if (target.appId) {
     return {
       appId: target.appId,
     };
   } else if (target.name) {
     return {
-      name: target.name
-    }
+      name: target.name,
+    };
   } else {
     return undefined;
   }

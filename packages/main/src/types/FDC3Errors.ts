@@ -11,7 +11,7 @@ export const AppTimeout = OpenError.AppTimeout;
 // this is the same in 1.2 and 2.0
 export const ErrorOnLaunch = OpenError.ErrorOnLaunch;
 
-/* CHANNEL */ 
+/* CHANNEL */
 
 // this is the same in 1.2 and 2.0
 export const CreationFailed = ChannelError.CreationFailed;
@@ -28,7 +28,7 @@ export const NoAppsFound = ResolveError.NoAppsFound;
 export const ResolverTimeout = ResolveError.ResolverTimeout;
 
 // this is the same in 1.2 and 2.0
-export const ResolverUnavailable = ResolveError.ResolverUnavailable
+export const ResolverUnavailable = ResolveError.ResolverUnavailable;
 
 // only 2.0
 export const TargetInstanceUnavailable = ResolveError.TargetInstanceUnavailable;
@@ -36,5 +36,5 @@ export const TargetInstanceUnavailable = ResolveError.TargetInstanceUnavailable;
 // only 2.0
 export const TargetAppUnavailable = ResolveError.TargetAppUnavailable;
 
-// only 2.0 
+// only 2.0
 export const IntentDeliveryFailed = ResolveError.IntentDeliveryFailed;
