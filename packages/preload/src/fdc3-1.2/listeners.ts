@@ -1,6 +1,5 @@
 import {
   Listener as Listener1_2,
-  ContextHandler as ContextHandler1_2,
 } from 'fdc3-1.2';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
@@ -11,7 +10,7 @@ import {
 } from '/@main/handlers/fdc3/topics';
 
 import { Context } from '/@main/types/FDC3Message';
-import { ContextMetadata, IntentResult } from 'fdc3-2.0';
+import { IntentResult } from 'fdc3-2.0';
 import { SailContextMetadata } from '/@main/types/FDC3Data';
 
 /* Both 1.2 and 2.0 are the same signature */
