@@ -187,7 +187,7 @@ async function intentHandledByOpenAppPending(
   const data: RaiseIntentData = message.data as RaiseIntentData;
   const appDetails = theApp.details;
   const runtime = getRuntime();
-  const intentTarget = appDetails?.instanceId!;
+  const intentTarget = appDetails!.instanceId!;
   const view = runtime.getView(intentTarget);
 
   const resultId = getRuntime().initIntentResult(message.source);
@@ -227,7 +227,7 @@ async function intentHandledByOpenAppHandler(
   const data: RaiseIntentData = message.data as RaiseIntentData;
   const appDetails = theApp.details;
   const runtime = getRuntime();
-  const intentTarget = appDetails?.instanceId!;
+  const intentTarget = appDetails!.instanceId!;
   const view = runtime.getView(intentTarget);
 
   if (view) {
@@ -342,10 +342,14 @@ function matchingApp(results: FDC3App[]) {
   }
 }
 
+async function nullPromise(): Promise<null> {
+  return null;
+}
+
 function chooseResultHandler(
   results: FDC3App[],
   message: FDC3Message,
-): Promise<SailIntentResolution> | undefined {
+): Promise<SailIntentResolution | null> {
   if (results.length === 1 || matchingApp(results)) {
     const theApp = results[0];
     if (theApp.type === 'pending') {
@@ -357,6 +361,8 @@ function chooseResultHandler(
     }
   } else if (results.length > 0) {
     return intentHandledByResolver(results, message);
+  } else {
+    return nullPromise();
   }
 }
 
@@ -390,37 +396,31 @@ export const raiseIntent = async (
   if (results.length == 0) {
     throw new Error(NoAppsFound);
   } else {
-    return new Promise<SailIntentResolution>(async (resolve, reject) => {
-      const ir = await chooseResultHandler(results, message);
-
-      if (ir == undefined) {
-        reject(new Error(IntentDeliveryFailed));
-      } else {
-        // here, we're going to ensure that the chosen app has an intent handler
-        // or fail the intent
-        const instanceId = ir?.source?.instanceId;
-        if (instanceId) {
-          const newView = getRuntime().getView(instanceId);
-          if (newView) {
-            const startTime = now();
-            while (now() - startTime < NO_LISTENER_TIMEOUT) {
-              const found = newView.listeners.filter((l) => l.intent == intent);
-              if (found.length > 0) {
-                resolve(ir);
-                return;
-              } else {
-                await sleep(2);
-              }
+    const ir = await chooseResultHandler(results, message);
+    if (ir == undefined) {
+      throw new Error(IntentDeliveryFailed);
+    } else {
+      const instanceId = ir?.source?.instanceId;
+      if (instanceId) {
+        const newView = getRuntime().getView(instanceId);
+        if (newView) {
+          const startTime = now();
+          while (now() - startTime < NO_LISTENER_TIMEOUT) {
+            const found = newView.listeners.filter((l) => l.intent == intent);
+            if (found.length > 0) {
+              return ir;
+            } else {
+              await sleep(2);
             }
-
-            reject(new Error(IntentDeliveryFailed));
           }
-        } else {
-          // no instance id, don't wait
-          resolve(ir);
+
+          throw new Error(IntentDeliveryFailed);
         }
       }
-    });
+
+      // no instance id, don't wait
+      return ir;
+    }
   }
 };
 
