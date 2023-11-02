@@ -269,8 +269,8 @@ export function createDesktopAgentInstance(
               const resultPromise = createResultPromise(result.result);
               const out = {
                 source: {
-                  appId: result.source?.appId!,
-                  instanceId: result.source?.instanceId,
+                  appId: result.source!.appId!,
+                  instanceId: result.source!.instanceId,
                 },
                 intent: result.intent!,
                 getResult() {

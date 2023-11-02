@@ -21,7 +21,7 @@ import { SailChannelData, SailIntentResolution } from '/@main/types/FDC3Data';
 
 function setupResolverListener(
   resolve: (value: IntentResolution) => void,
-  version: string
+  version: string,
 ) {
   const intentTimeout = -1;
   //listen for resolve intent
