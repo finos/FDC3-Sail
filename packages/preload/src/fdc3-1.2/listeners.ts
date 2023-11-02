@@ -1,6 +1,4 @@
-import {
-  Listener as Listener1_2,
-} from 'fdc3-1.2';
+import { Listener as Listener1_2 } from 'fdc3-1.2';
 import { SendMessage } from '../message';
 import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import {

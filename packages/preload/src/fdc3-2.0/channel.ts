@@ -8,7 +8,6 @@ import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import {
   FDC3Listener,
   SailGenericHandler,
-  SailListener,
   getContextListeners,
   createListenerItem,
 } from '../fdc3-1.2/listeners';
@@ -72,7 +71,7 @@ export const createChannelObject = (
           listenerId: listenerId,
           channel: channel.id,
           contextType: thisContextType,
-        }).then((r) => {
+        }).then(() => {
           return new FDC3Listener(FDC3_TOPICS_CONTEXT, listenerId, sendMessage);
         });
       },

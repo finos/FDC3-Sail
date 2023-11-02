@@ -21,7 +21,6 @@ import { FDC3_2_0_TOPICS } from '/@main/handlers/fdc3/2.0/topics';
 import { INTENT_TIMEOUT, convertTarget } from '../lib/lib';
 import { createChannelObject, createPrivateChannelObject } from './channel';
 import { ResolverTimeout } from '/@main/types/FDC3Errors';
-import { SailGenericHandler } from '../fdc3-1.2/listeners';
 import { SailChannelData, SailIntentResolution } from '/@main/types/FDC3Data';
 import { createResultPromise } from './connect';
 
