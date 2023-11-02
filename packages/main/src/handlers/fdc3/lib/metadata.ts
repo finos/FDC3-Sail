@@ -1,6 +1,5 @@
 import { FDC3Message, SailTargetIdentifier } from '/@/types/FDC3Message';
 import { getRuntime } from '/@/index';
-import { DirectoryApp, DirectoryIntent } from '/@/directory/directory';
 
 const validAppMetaDataProperties = [
   'appId',

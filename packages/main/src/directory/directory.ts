@@ -1,4 +1,3 @@
-import { channel } from 'diagnostics_channel';
 import { components } from './generated-schema';
 
 /**
