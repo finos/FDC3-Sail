@@ -1,4 +1,4 @@
-import { AppIdentifier, ContextMetadata } from 'fdc3-2.0';
+import { ContextMetadata } from 'fdc3-2.0';
 import { DirectoryApp } from '../directory/directory';
 import { FDC3Listener } from './FDC3Listener';
 import {

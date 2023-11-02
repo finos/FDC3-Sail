@@ -9,7 +9,6 @@ import {
   getContextListeners,
   createListenerItem,
 } from './listeners';
-import { CreationFailed } from '/@main/types/FDC3Errors';
 import { FDC3_TOPICS_CONTEXT } from '/@main/handlers/fdc3/topics';
 
 export const createChannelObject = (

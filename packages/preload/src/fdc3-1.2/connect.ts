@@ -1,4 +1,3 @@
-import { ContextMetadata, IntentResult } from 'fdc3-2.0';
 import { fdc3Event } from '../lib/lib';
 import { MessagingSupport, SendMessage } from '../message';
 import { getContextListeners, getIntentListeners } from './listeners';
