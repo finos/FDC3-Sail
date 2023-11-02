@@ -6,7 +6,6 @@ import {
   FDC3Response,
   SailTargetIdentifier,
 } from '/@main/types/FDC3Message';
-import { ErrorOnLaunch } from '/@main/types/FDC3Errors';
 import { SendMessage } from '../message';
 
 //flag to indicate the background script is ready for fdc3!

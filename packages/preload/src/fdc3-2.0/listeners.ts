@@ -108,7 +108,6 @@ export const createContextTypeListenerItem = (
 export const createVoidListenerItem = (
   id: string,
   handler: () => void,
-  _contextType?: string,
 ): VoidListenerItem => {
   const listener: VoidListenerItem = {
     id,

@@ -65,7 +65,7 @@ export const connect = (ipc: MessagingSupport, sendMessage: SendMessage) => {
 };
 
 export function createResultPromise(id: string): Promise<IntentResult> {
-  return new Promise<IntentResult>((resolve, _reject) => {
+  return new Promise<IntentResult>((resolve) => {
     resultPromises.set(id, resolve);
   });
 }
