@@ -92,7 +92,6 @@ export const createListenerItem = (
   handler: SailGenericHandler,
   contextType?: string,
 ): ListenerItem => {
-
   const listener: ListenerItem = {
     id,
     handler,

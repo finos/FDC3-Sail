@@ -79,10 +79,10 @@ export function createDesktopAgentInstance(
           (result: SailIntentResolution) => {
             console.log('***** got intent resolution ', result);
             if (result.openingResolver) {
-              setupResolverListener(resolve, version, result.intent);
+              setupResolverListener(resolve, version);
             } else {
               resolve({
-                source: result.source?.name!,
+                source: result.source!.name!,
                 version: result.version,
               });
             }
