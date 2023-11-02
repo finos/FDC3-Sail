@@ -85,7 +85,6 @@ export interface ListenerItem {
   id?: string;
   handler?: SailGenericHandler;
   contextType?: string;
-  resultPromise: Promise<IntentResult>;
 }
 
 export const createListenerItem = (
@@ -93,13 +92,11 @@ export const createListenerItem = (
   handler: SailGenericHandler,
   contextType?: string,
 ): ListenerItem => {
-  const resultPromise = new Promise<IntentResult>((resolve, reject) => {});
 
   const listener: ListenerItem = {
     id,
     handler,
     contextType,
-    resultPromise,
   };
 
   return listener;
