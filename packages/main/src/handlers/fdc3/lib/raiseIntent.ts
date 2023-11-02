@@ -15,7 +15,6 @@ import {
 import {
   DirectoryApp,
   DirectoryAppLaunchDetailsWeb,
-  DirectoryIntent,
 } from '/@/directory/directory';
 import {
   AppNotFound,

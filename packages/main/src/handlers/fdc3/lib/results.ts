@@ -8,7 +8,6 @@ export const resultCreated = async (message: FDC3Message) => {
 
   const data = message.data as IntentResultData;
   const resultId = data.resultId;
-  const type = data.type;
 
   const viewId = runtime.getIntentResult(resultId);
 
