@@ -284,10 +284,6 @@ export class View {
   }
 
   getPendingIntents(): Array<Pending> {
-    console.log(
-      'view: get ' + this.id + ' pending intents',
-      this.pendingIntents,
-    );
     return this.pendingIntents;
   }
 
