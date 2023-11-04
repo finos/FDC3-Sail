@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { Runtime } from './runtime';
+import * as path from 'path';
 
 let runtime: Runtime | null = null;
 
@@ -67,6 +68,24 @@ export const getRuntime = (): Runtime => {
   }
   return runtime;
 };
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('sail', process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('sail');
+}
+
+/**
+ * handle protocol
+ */
+app.on('open-url', (event, url) => {
+  const splitUrl = url.split('//');
+  getRuntime().createView(`https://${splitUrl[1]}`);
+});
 
 /**
  * Prevent multiple instances
