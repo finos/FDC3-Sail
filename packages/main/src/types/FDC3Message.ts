@@ -1,8 +1,16 @@
-import { FDC3App } from './FDC3Data';
-import { Context, AppIdentifier } from '@finos/fdc3';
+import { FDC3App, SailChannelData } from './FDC3Data';
+
+import {
+  Context as Context2_0,
+  IntentMetadata as IntentMetadata2_0,
+  DisplayMetadata as DisplayMetadata2_0,
+} from 'fdc3-2.0';
+
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
-import { AppMetadata } from 'fdc3-1.2';
-import { ChannelData } from './Channel';
+import { DirectoryApp } from '../directory/directory';
+
+// Context is the same in 1.2 and 2.0
+export type Context = Context2_0;
 
 export interface FDC3Message extends RuntimeMessage {
   topic: string;
@@ -18,6 +26,7 @@ export type FDC3MessageData =
   | CurrentContextData
   | ChannelMessageData
   | ListenerMessageData
+  | FindInstancesData
   | FindIntentData
   | FindIntentContextData
   | OpenData
@@ -25,6 +34,7 @@ export type FDC3MessageData =
   | RaiseIntentContextData
   | ResolveIntentData
   | IntentResultData
+  | AppIdData
   | EmptyMessage;
 
 export interface EmptyMessage {
@@ -86,6 +96,10 @@ export interface ChannelListenerData {
   channel: string;
 }
 
+export interface FindInstancesData {
+  app: SailTargetIdentifier;
+}
+
 /*
   descibes data for the find intent API
 */
@@ -107,7 +121,7 @@ export interface FindIntentContextData {
   describe data for the open API
 */
 export interface OpenData {
-  target: TargetIdentifier;
+  target: SailTargetIdentifier;
   context?: Context | undefined;
 }
 
@@ -117,7 +131,8 @@ export interface OpenData {
 export interface RaiseIntentData {
   intent: string;
   context?: Context | undefined;
-  target?: TargetIdentifier | undefined;
+  fdc3Version: string;
+  target?: SailTargetIdentifier | undefined;
 }
 
 /*
@@ -125,7 +140,7 @@ export interface RaiseIntentData {
 */
 export interface RaiseIntentContextData {
   context: Context;
-  target?: TargetIdentifier | undefined;
+  target?: SailTargetIdentifier | undefined;
 }
 
 /*
@@ -142,22 +157,37 @@ export interface ResolveIntentData {
 */
 export interface IntentResultData {
   resultId: string;
-  result?: ChannelData | Context | null;
+  type: 'channel' | 'context' | 'void';
+  result?: SailChannelData | Context | null;
+}
+
+export interface AppIdData {
+  app: SailTargetIdentifier;
+}
+
+// same in 2.0 and 1.2
+export type IntentMetadata = IntentMetadata2_0;
+
+// same in 2.0 and 1.2
+export type DisplayMetadata = DisplayMetadata2_0;
+
+export interface SailAppIntent {
+  intent: IntentMetadata;
+  apps: DirectoryApp[];
 }
 
 /*
     abstraction over 1.2 TargetApp and 2.0 AppIdentifier
 */
-export interface TargetIdentifier {
-  key: string; //either name or appId
+export interface SailTargetIdentifier {
   name?: string;
   appId?: string;
-  appMetadata?: AppMetadata;
-  appIdentifier?: AppIdentifier;
+  instanceId?: string;
+  appMetadata?: DirectoryApp;
 }
 
 export interface FDC3Response {
   error?: string;
-  data: any;
+  data: object;
   topic: string;
 }

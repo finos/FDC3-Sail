@@ -1,6 +1,5 @@
+import { FDC3_TOPICS_INTENT } from '../topics';
 import { getRuntime } from '/@/index';
-import { FDC3_1_2_TOPICS } from '../1.2/topics';
-import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import {
   FDC3Message,
   ListenerMessageData,
@@ -43,10 +42,7 @@ export const addIntentListener = async (message: FDC3Message) => {
         if (n - pIntent.ts < pendingTimeout && pIntent.intent === intent) {
           //refactor with other instances of this logic
           if (view && view.content) {
-            const topic =
-              view.fdc3Version === '1.2'
-                ? FDC3_1_2_TOPICS.INTENT
-                : FDC3_2_0_TOPICS.INTENT;
+            const topic = FDC3_TOPICS_INTENT;
             view.content.webContents.send(topic, {
               topic: topic,
               data: {

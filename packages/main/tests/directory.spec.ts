@@ -36,7 +36,7 @@ test('Test Returned Intents', async () => {
 
   // retrieve by intent only
   const matchedApps: DirectoryApp[] =
-    directory.retrieveByIntentAndContextType('ViewNews');
+    directory.retrieveByIntentContextAndResultType('ViewNews');
   expect(matchedApps.length).toEqual(1);
   expect(matchedApps[0].appId).toEqual('News-Demo');
   const listensFor = matchedApps[0]?.interop?.intents?.listensFor as {
@@ -47,7 +47,7 @@ test('Test Returned Intents', async () => {
   expect(intent?.contexts).toContain('fdc3.instrument');
 
   // retrieve by intent and context
-  const matchedApps2 = directory.retrieveByIntentAndContextType(
+  const matchedApps2 = directory.retrieveByIntentContextAndResultType(
     'ViewChart',
     'fdc3.instrument',
   );

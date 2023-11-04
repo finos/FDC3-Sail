@@ -9,7 +9,6 @@ import { ViewConfig } from './types/ViewConfig';
 import { getRuntime } from './index';
 import { BrowserView } from 'electron';
 import { DirectoryApp } from './directory/directory';
-import { Context } from '@finos/fdc3';
 import { Rectangle } from 'electron/main';
 import { Workspace } from './workspace';
 import { FDC3Listener } from './types/FDC3Listener';
@@ -22,8 +21,8 @@ import { RUNTIME_TOPICS } from './handlers/runtime/topics';
 import { getSailManifest } from '/@/directory/directory';
 import { FDC3_VERSIONS } from '/@/types/Versions';
 import { shell } from 'electron';
-import { FDC3_TOPICS } from '/@/handlers/fdc3/lib/topics';
-import { TargetIdentifier } from './types/FDC3Message';
+import { Context, SailTargetIdentifier } from './types/FDC3Message';
+import { FDC3_TOPICS_RESOLVE_TRANSFER } from './handlers/fdc3/topics';
 
 const FDC3_1_2_PRELOAD = join(
   __dirname,
@@ -80,6 +79,9 @@ export class View {
     if (config) {
       this.directoryData = config.directoryData;
       this.title = config.title;
+      this.config = config;
+    } else {
+      this.config = null;
     }
 
     if (fdc3Version) {
@@ -202,10 +204,10 @@ export class View {
     }
   }
 
-  resolveTransfer(transferId: string, target: TargetIdentifier) {
+  resolveTransfer(transferId: string, target: SailTargetIdentifier) {
     //send a message to view content to resolve the transfer
     //'source' on the message will be the target of the transfer
-    this.content.webContents.send(FDC3_TOPICS.RESOLVE_TRANSFER, {
+    this.content.webContents.send(FDC3_TOPICS_RESOLVE_TRANSFER, {
       source: target,
       transferId: transferId,
     });
@@ -216,6 +218,8 @@ export class View {
   content: BrowserView;
 
   channel: string | null = null;
+
+  config: ViewConfig | null;
 
   /**
    * contexts that the view is listening to
@@ -242,14 +246,15 @@ export class View {
   private type: 'system' | 'app' = 'app';
 
   setPendingContext(context: Context, source?: string): void {
-    console.log('view: set pending context', this.id, context);
-    this.pendingContexts.push(
-      new Pending(this.id, source || this.id, { context: context }),
-    );
+    if (context) {
+      console.log('Setting pending context: ', context);
+      this.pendingContexts.push(
+        new Pending(this.id, source || this.id, { context: context }),
+      );
+    }
   }
 
   getPendingContexts(): Array<Pending> {
-    console.log('view: get pending contexts', this.pendingContexts);
     return this.pendingContexts;
   }
 
@@ -267,6 +272,8 @@ export class View {
     source?: string,
     resultId?: string,
   ): void {
+    console.log('view: set pending intent', this.id, intent, context);
+
     this.pendingIntents.push(
       new Pending(this.id, source || this.id, {
         intent: intent,

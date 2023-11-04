@@ -1,12 +1,12 @@
 import { getRuntime } from '/@/index';
-import { FDC3_1_2_TOPICS } from '../1.2/topics';
-import { FDC3_2_0_TOPICS } from '../2.0/topics';
 import { Pending } from '/@/types/Pending';
 import {
   FDC3Message,
   ListenerMessageData,
   ContextListenerData,
 } from '/@/types/FDC3Message';
+import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import { FDC3_TOPICS_CONTEXT } from '../topics';
 
 export const dropContextListener = async (message: FDC3Message) => {
   const runtime = getRuntime();
@@ -15,12 +15,35 @@ export const dropContextListener = async (message: FDC3Message) => {
   const view = runtime.getView(message.source);
   if (view && id) {
     view.listeners = view.listeners.filter((l) => {
-      return l.listenerId !== id;
+      if (l.listenerId == id) {
+        if (l.channel) {
+          // message the channel's unsubscribe listeners
+          const channelObject = runtime.getPrivateChannel(l.channel);
+          if (channelObject) {
+            channelObject.unsubscribeListeners.forEach((oacl) => {
+              const viewId = oacl.viewId;
+              const notifyView = viewId && runtime.getView(viewId);
+              if (notifyView) {
+                notifyView.content.webContents.send(
+                  FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE,
+                  oacl,
+                );
+              }
+            });
+          }
+        }
+
+        return false; // drop the listener
+      } else {
+        return true;
+      }
     });
   }
 };
 
-export const addContextListener = async (message: FDC3Message) => {
+export const addContextListener = async (
+  message: FDC3Message,
+): Promise<boolean> => {
   const runtime = getRuntime();
   const source = message.source; //this is the app instance calling addContextListener
   const data: ContextListenerData = message.data as ContextListenerData;
@@ -33,14 +56,34 @@ export const addContextListener = async (message: FDC3Message) => {
     ? view.channel
     : 'default'; //: (c && c.channel) ? c.channel
 
+  const contextType = data.contextType;
+
   if (view) {
     view.listeners.push({
       listenerId: data.listenerId || '',
       viewId: view.id,
-      contextType: data.contextType || undefined,
+      contextType: contextType,
       channel: channel,
       isChannel: channel !== 'default',
     });
+
+    /* notify any onAddContextListeners */
+    const channelObject = runtime.getPrivateChannel(channel);
+    if (channelObject) {
+      channelObject.onAddContextListeners.forEach((oacl) => {
+        const viewId = oacl.viewId;
+        const notifyView = viewId && runtime.getView(viewId);
+        if (notifyView) {
+          notifyView.content.webContents.send(
+            FDC3_2_0_TOPICS.ADD_CONTEXT_LISTENER,
+            {
+              ...oacl,
+              contextType,
+            },
+          );
+        }
+      });
+    }
 
     /* are there any pending contexts for the listener just added? */
     const pending = view.getPendingContexts();
@@ -49,13 +92,10 @@ export const addContextListener = async (message: FDC3Message) => {
         //is there a match on contextType (if specified...)
 
         if (
-          data.contextType === undefined ||
-          pending?.context?.type === data.contextType
+          contextType === undefined ||
+          pending?.context?.type === contextType
         ) {
-          const topic =
-            view.fdc3Version === '1.2'
-              ? FDC3_1_2_TOPICS.CONTEXT
-              : FDC3_2_0_TOPICS.CONTEXT;
+          const topic = FDC3_TOPICS_CONTEXT;
           view.content.webContents.send(topic, {
             topic: topic,
             listenerId: data.listenerId,
@@ -70,5 +110,9 @@ export const addContextListener = async (message: FDC3Message) => {
         }
       });
     }
+
+    return true;
+  } else {
+    return false;
   }
 };

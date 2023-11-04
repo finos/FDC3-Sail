@@ -1,4 +1,4 @@
-import { Context, AppIdentifier } from '@finos/fdc3';
+import { Context, SailTargetIdentifier } from './FDC3Message';
 
 /**
  * Custom DOM event used by the FDC3 API
@@ -32,7 +32,7 @@ export interface FDC3EventDetail {
   data?: FDC3ResponseData | null;
   name?: string;
   context?: Context;
-  target?: AppIdentifier;
+  target?: SailTargetIdentifier;
   source?: string;
   /* identifier of the browserView the event originated from */
   viewId?: string;
