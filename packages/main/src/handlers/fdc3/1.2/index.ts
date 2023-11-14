@@ -39,10 +39,19 @@ export const register = (runtime: Runtime) => {
   runtime.addHandler(FDC3_2_0_TOPICS.GET_CURRENT_CHANNEL, getCurrentChannel);
   runtime.addHandler(FDC3_2_0_TOPICS.ADD_INTENT_LISTENER, addIntentListener);
   runtime.addHandler(FDC3_2_0_TOPICS.DROP_INTENT_LISTENER, dropIntentListener);
-  runtime.addHandler(FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER, dropContextListener);
+  runtime.addHandler(
+    FDC3_2_0_TOPICS.DROP_CONTEXT_LISTENER,
+    dropContextListener,
+  );
   runtime.addHandler(FDC3_2_0_TOPICS.FIND_INTENT, findIntent);
-  runtime.addHandler(FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT,findIntentsByContext);
+  runtime.addHandler(
+    FDC3_2_0_TOPICS.FIND_INTENTS_BY_CONTEXT,
+    findIntentsByContext,
+  );
   runtime.addHandler(FDC3_2_0_TOPICS.RAISE_INTENT, raiseIntent);
-  runtime.addHandler(FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,raiseIntentForContext);
+  runtime.addHandler(
+    FDC3_2_0_TOPICS.RAISE_INTENT_FOR_CONTEXT,
+    raiseIntentForContext,
+  );
   runtime.addHandler(FDC3_2_0_TOPICS.RESOLVE_INTENT, resolveIntent);
 };

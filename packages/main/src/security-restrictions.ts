@@ -25,6 +25,7 @@ const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<
     | 'unknown'
     | 'clipboard-sanitized-write'
     | 'window-management'
+    | 'idle-detection'
   >
 >(
   import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL

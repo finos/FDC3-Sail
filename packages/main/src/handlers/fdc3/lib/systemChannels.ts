@@ -1,4 +1,4 @@
-import { SailChannelData } from "/@/types/FDC3Data";
+import { SailChannelData } from '/@/types/FDC3Data';
 
 /**
  * metadata for the system channels

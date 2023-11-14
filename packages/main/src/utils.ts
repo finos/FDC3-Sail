@@ -52,13 +52,12 @@ export default {
   isDataIntent,
 };
 
-
 export function now() {
   return new Date().getTime();
 }
 
 export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const NO_LISTENER_TIMEOUT = 20000;  // 20 seconds
+export const NO_LISTENER_TIMEOUT = 20000; // 20 seconds

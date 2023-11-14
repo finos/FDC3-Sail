@@ -1,11 +1,11 @@
 import './TopNavigation.css';
+import { EventListener } from 'jsdom';
 import React, { SyntheticEvent } from 'react';
 import { IconButton, Tabs, Tab, Stack } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RUNTIME_TOPICS } from '../../../main/src/handlers/runtime/topics';
 
 import {
-  HiveOutlined,
   LayersOutlined,
   CloseOutlined,
   OpenInNew,
@@ -17,10 +17,10 @@ import {
 
 let draggedTab: string | null = null;
 
-let tabDragTimeout: number = 0;
+let tabDragTimeout = 0;
 
 //flag to indicate we are dragging and dropping tabs within the tabset - not tearing ouut
-let internalDnD: boolean = false;
+let internalDnD = false;
 
 const darkTheme = createTheme({
   palette: {
@@ -38,10 +38,12 @@ const newTab = () => {
   window.sail.tabs.new();
 };
 
-const openChannelPicker = (event: MouseEvent) => {
-  const viewInnerWidth = event.view?.innerWidth;
+const openChannelPicker = (event: SyntheticEvent) => {
+  const viewInnerWidth = window.innerWidth;
 
-  const xPos = viewInnerWidth ? viewInnerWidth - 40 : event.clientX;
+  const xPos = viewInnerWidth
+    ? viewInnerWidth - 40
+    : (event.nativeEvent as MouseEvent).clientX;
   const yPos = 47;
 
   window.sail.menu.openChannelPicker(xPos, yPos);

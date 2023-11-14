@@ -14,7 +14,7 @@ export const createPrivateChannel = async (message: FDC3Message) => {
     type: 'private',
     unsubscribeListeners: new Map(),
     disconnectListeners: new Map(),
-    onAddContextListeners: new Map()
+    onAddContextListeners: new Map(),
   };
 
   getRuntime().setPrivateChannel(channel);
@@ -66,21 +66,27 @@ export const disconnect = async (message: FDC3Message) => {
     console.log('in disconnect', channel);
   }
 
-  channel?.unsubscribeListeners.forEach(ul => {
-      const viewId = ul.viewId;
-      const notifyView = viewId && runtime.getView(viewId);
-      if (notifyView) {
-        notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE, ul);
-      }
-  })
+  channel?.unsubscribeListeners.forEach((ul) => {
+    const viewId = ul.viewId;
+    const notifyView = viewId && runtime.getView(viewId);
+    if (notifyView) {
+      notifyView.content.webContents.send(
+        FDC3_2_0_TOPICS.PRIVATE_CHANNEL_UNSUBSCRIBE,
+        ul,
+      );
+    }
+  });
 
-  channel?.disconnectListeners.forEach(dl => {
+  channel?.disconnectListeners.forEach((dl) => {
     const viewId = dl.viewId;
     const notifyView = viewId && runtime.getView(viewId);
     if (notifyView) {
-      notifyView.content.webContents.send(FDC3_2_0_TOPICS.PRIVATE_CHANNEL_DISCONNECT, dl);
+      notifyView.content.webContents.send(
+        FDC3_2_0_TOPICS.PRIVATE_CHANNEL_DISCONNECT,
+        dl,
+      );
     }
-})
+  });
   //is it the host view or remote view that is disconnecting?
   //if the host..
   //destroy the private channel

@@ -62,10 +62,10 @@ function DirectoryView() {
               sx={{ maxWidth: 370, minHeight: 410 }}
               className="flex flex-col"
             >
-              {app.screenshots!!.length > 0 ? (
+              {app.screenshots!.length > 0 ? (
                 <CardMedia
                   component="img"
-                  image={app.screenshots!![0].src}
+                  image={app.screenshots![0].src}
                   className="h-40"
                   sx={{
                     backgroundColor: '#F7E9F2',

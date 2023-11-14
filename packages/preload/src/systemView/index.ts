@@ -1,9 +1,9 @@
 import { createAPI } from '../fdc3-1.2/api';
-import { connect } from '../fdc3-1.2/connect'
+import { connect } from '../fdc3-1.2/connect';
 import { contextBridge, ipcRenderer } from 'electron';
 import { api } from '../system/api';
 import { sendMessage } from '../lib/lib';
-connect(ipcRenderer);
+connect(ipcRenderer, sendMessage);
 //listen();
 //document.addEventListener('DOMContentLoaded', createAPI);
 

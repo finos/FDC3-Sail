@@ -247,7 +247,7 @@ export class View {
 
   setPendingContext(context: Context, source?: string): void {
     if (context) {
-      console.log("Setting pending context: ", context )
+      console.log('Setting pending context: ', context);
       this.pendingContexts.push(
         new Pending(this.id, source || this.id, { context: context }),
       );
@@ -284,7 +284,6 @@ export class View {
   }
 
   getPendingIntents(): Array<Pending> {
-    console.log('view: get '+this.id+' pending intents', this.pendingIntents);
     return this.pendingIntents;
   }
 
@@ -311,6 +310,7 @@ export class View {
   close() {
     const runtime = getRuntime();
     if (this.parent && this.parent.window) {
+      this.content.webContents.close();
       this.parent.window.removeBrowserView(this.content);
     }
     if (this.content) {

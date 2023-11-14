@@ -6,8 +6,6 @@ import {
   DisplayMetadata as DisplayMetadata2_0,
 } from 'fdc3-2.0';
 
-
-
 import { RuntimeMessage } from '/@/handlers/runtimeMessage';
 import { DirectoryApp } from '../directory/directory';
 
@@ -159,12 +157,12 @@ export interface ResolveIntentData {
 */
 export interface IntentResultData {
   resultId: string;
-  type: "channel" | "context" | "void";
+  type: 'channel' | 'context' | 'void';
   result?: SailChannelData | Context | null;
 }
 
 export interface AppIdData {
-  app: SailTargetIdentifier
+  app: SailTargetIdentifier;
 }
 
 // same in 2.0 and 1.2
