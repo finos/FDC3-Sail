@@ -885,10 +885,8 @@
       ],
       "screenshots": [
         {
-          "src": "https://fdc3-demo.adaptabletools.com/adaptable_fdc3.gif",
-          "label": "AdapTable FDC3 Demo",
-          "type": "image/gif",
-          "size": "612x300"
+          "src": "https://fdc3-demo.adaptabletools.com/adaptable_fdc3.jpeg",
+          "label": "AdapTable FDC3 Demo"
         }
       ],
       "type": "web",
@@ -903,31 +901,46 @@
               "contexts": [
                 "fdc3.instrument"
               ]
-            },
-            "ViewContact": {
-              "displayName": "View Contact",
-              "contexts": [
-                "fdc3.contact"
-              ]
-            },
-            "ViewQuote": {
-              "displayName": "View Quote",
-              "contexts": [
-                "fdc3.instrument"
-              ]
             }
           },
           "raises": {
             "ViewInstrument": [
               "fdc3.instrument"
             ],
-            "StartChat": [
-              "fdc3.contact"
+            "ViewChart": [
+              "fdc3.instrument"
+            ],
+            "ViewNews": [
+              "fdc3.instrument"
+            ],
+            "ViewAnalysis": [
+              "fdc3.instrument"
+            ],
+            "ViewHoldings": [
+              "fdc3.instrument"
+            ],
+            "ViewOrders": [
+              "fdc3.instrument"
+            ],
+            "ViewInteractions": [
+              "fdc3.instrument"
+            ],
+            "ViewOrders": [
+              "fdc3.instrument"
+            ],
+            "ViewQuote": [
+              "fdc3.instrument"
+            ],
+            "ViewResearch": [
+              "fdc3.instrument"
             ]
           }
         },
         "userChannels": {
           "broadcasts": [
+            "fdc3.instrument"
+          ],
+          "listensFor": [
             "fdc3.instrument"
           ]
         },
