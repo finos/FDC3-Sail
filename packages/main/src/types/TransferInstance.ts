@@ -1,6 +1,6 @@
 import { getRuntime } from '../index';
-import { TargetIdentifier } from './FDC3Message';
-import { Context } from '@finos/fdc3';
+import { SailTargetIdentifier } from './FDC3Message';
+import { Context } from './FDC3Message';
 
 /**
  * Base Class for IntentTransfer and ContextTransfer
@@ -21,7 +21,7 @@ export class TransferInstance {
 
   source: string;
 
-  target?: TargetIdentifier | undefined;
+  target?: SailTargetIdentifier | undefined;
 
   status: TransferStatus = 'raised';
 
@@ -31,7 +31,7 @@ export class TransferInstance {
     this.source = source;
   }
 
-  setTarget(target: TargetIdentifier) {
+  setTarget(target: SailTargetIdentifier) {
     this.target = target;
     this.status = 'pending';
   }

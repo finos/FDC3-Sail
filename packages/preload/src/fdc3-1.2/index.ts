@@ -1,8 +1,9 @@
-import { connect, createAPI } from './api';
-import { contextBridge } from 'electron';
-connect();
-//listen();
-//document.addEventListener('DOMContentLoaded', createAPI);
-const DesktopAgent = createAPI();
+import { sendMessage } from '../lib/lib';
+import { createAPI } from './api';
+import { connect } from './connect';
+import { contextBridge, ipcRenderer } from 'electron';
+
+connect(ipcRenderer, sendMessage);
+const desktopAgent = createAPI(sendMessage, ipcRenderer);
 /* expose the fdc3 api across the context isolation divide...*/
-contextBridge.exposeInMainWorld('fdc3', DesktopAgent);
+contextBridge.exposeInMainWorld('fdc3', desktopAgent);

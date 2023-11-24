@@ -1,13 +1,12 @@
 import { ipcRenderer } from 'electron';
-import { ContextHandler, IntentHandler, AppIdentifier } from '@finos/fdc3';
-import { TargetApp, AppMetadata } from 'fdc3-1.2';
 
 import {
   FDC3Message,
   FDC3MessageData,
   FDC3Response,
-  TargetIdentifier,
+  SailTargetIdentifier,
 } from '/@main/types/FDC3Message';
+import { SendMessage } from '../message';
 
 //flag to indicate the background script is ready for fdc3!
 let instanceId = '';
@@ -37,34 +36,6 @@ export type QueueItem = {
   resolve: (x: unknown) => void;
   reject: (x: string) => void;
 };
-
-//listener that takes standard ContextHandler type
-export interface ListenerItem {
-  id?: string;
-  handler?: ContextHandler;
-  contextType?: string;
-}
-
-//listener for async intent handlers (2.0)
-export interface IntentListenerItem {
-  id?: string;
-  handler?: IntentHandler;
-  contextType?: string;
-}
-
-//listener that takes handler with ContextType arg only
-export interface ContextTypeListenerItem {
-  id?: string;
-  handler?: (contextType: string) => void;
-  contextType?: string;
-}
-
-//listenet with handler that has no args
-export interface VoidListenerItem {
-  id?: string;
-  handler?: () => void;
-  contextType?: string;
-}
 
 export const processQueueItem = (qi: QueueItem) => {
   const { port1, port2 } = new MessageChannel();
@@ -96,31 +67,33 @@ export const processQueueItem = (qi: QueueItem) => {
 
 //convert a AppIdentifier or TargetApp type to TargetIdentifier
 export const convertTarget = (
-  target: TargetApp | AppIdentifier,
-): TargetIdentifier | undefined => {
+  target: any,
+): SailTargetIdentifier | undefined => {
+  console.log('Converting ', target);
   //is target just a string?  if so - treat it as name
-  if (typeof target === 'string') {
-    return { key: target, name: target };
-  } else if ((target as AppMetadata)?.name) {
-    const targetObj: AppMetadata = target as AppMetadata;
+  if (!target) {
+    return undefined;
+  } else if (typeof target === 'string') {
+    return { name: target };
+  } else if (target.appId && target.instanceId) {
     return {
-      key: targetObj.name,
-      name: targetObj.name,
-      appId: targetObj.appId,
-      appMetadata: targetObj,
+      appId: target.appId,
+      instanceId: target.instanceId,
     };
-  } else if ((target as AppIdentifier)?.appId) {
-    const appIdentifier: AppIdentifier = target as AppIdentifier;
+  } else if (target.appId) {
     return {
-      key: appIdentifier.appId,
-      appId: appIdentifier.appId,
-      appIdentifier: appIdentifier,
+      appId: target.appId,
     };
+  } else if (target.name) {
+    return {
+      name: target.name,
+    };
+  } else {
+    return undefined;
   }
-  return undefined;
 };
 
-export const sendMessage = (
+export const sendMessage: SendMessage = (
   topic: string,
   data: FDC3MessageData,
 ): Promise<any> => {

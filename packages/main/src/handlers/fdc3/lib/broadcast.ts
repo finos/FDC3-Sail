@@ -2,8 +2,7 @@ import { getRuntime } from '/@/index';
 import { FDC3Message, BroadcastData } from '/@/types/FDC3Message';
 import { View } from '/@/view';
 import { FDC3Listener } from '/@/types/FDC3Listener';
-import { FDC3_1_2_TOPICS } from '../1.2/topics';
-import { FDC3_2_0_TOPICS } from '../2.0/topics';
+import { FDC3_TOPICS_CONTEXT } from '../topics';
 
 export const broadcast = async (message: FDC3Message) => {
   const runtime = getRuntime();
@@ -63,10 +62,7 @@ export const broadcast = async (message: FDC3Message) => {
       });
       //if there are listeners found, broadcast the context to the view (with all listenerIds)
       if (viewListeners.length > 0) {
-        const topic =
-          v.fdc3Version === '2.0'
-            ? FDC3_2_0_TOPICS.CONTEXT
-            : FDC3_1_2_TOPICS.CONTEXT;
+        const topic = FDC3_TOPICS_CONTEXT;
 
         v.content.webContents.send(topic, {
           topic: topic,

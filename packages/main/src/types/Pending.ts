@@ -1,4 +1,4 @@
-import { Context } from '@finos/fdc3';
+import { Context } from './FDC3Message';
 /**
  * reperesents a pending event to be passed to an app once it is loaded
  */

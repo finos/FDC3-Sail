@@ -3,10 +3,11 @@ import {
   FDC3Message,
   CurrentContextData,
   ChannelMessageData,
+  Context,
 } from '/@/types/FDC3Message';
-import { ChannelData } from '/@/types/Channel';
-import { Context, ChannelError } from '@finos/fdc3';
 import { systemChannels } from './systemChannels';
+import { AccessDenied, CreationFailed } from '/@/types/FDC3Errors';
+import { SailChannelData } from '/@/types/FDC3Data';
 
 export const getSystemChannels = async () => {
   return systemChannels;
@@ -50,9 +51,9 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
   const id = data.channel;
   //reject with error is reserved 'default' term
   if (id === 'default') {
-    throw new Error(ChannelError.CreationFailed);
+    throw new Error(CreationFailed);
   }
-  let channel: ChannelData | null = getChannelMeta(id);
+  let channel: SailChannelData | null = getChannelMeta(id);
 
   //if not found... create as an app channel
   if (!channel) {
@@ -60,11 +61,11 @@ export const getOrCreateChannel = async (message: FDC3Message) => {
     //add an entry for the context listeners
     runtime.getContexts().set(id, []);
     runtime.setAppChannel(channel);
-  }
-  if (channel) {
+    return channel;
+  } else if (channel.type == 'app') {
     return channel;
   } else {
-    return;
+    throw new Error(AccessDenied);
   }
 };
 
@@ -92,29 +93,34 @@ export const joinChannel = async (message: FDC3Message) => {
 };
 
 //generate / get full channel object from an id - returns null if channel id is not a system channel or a registered app channel
-const getChannelMeta = (id: string): ChannelData | null => {
-  let channel: ChannelData | null = null;
+const getChannelMeta = (id: string): SailChannelData | null => {
+  const runtime = getRuntime();
+  let channel: SailChannelData | null = null;
   //is it a system channel?
-  const sChannels: Array<ChannelData> = systemChannels;
+  const sChannels: Array<SailChannelData> = systemChannels;
   const sc = sChannels.find((c) => {
     return c.id === id;
   });
 
   if (sc) {
-    channel = {
-      id: id,
-      type: 'system',
-      displayMetadata: sc.displayMetadata,
-      owner: null,
-    };
+    return sc;
   }
+
   //is it an app channel?
   if (!channel) {
-    const runtime = getRuntime();
     const ac = runtime.getAppChannel(id);
     if (ac) {
       channel = { id: id, type: 'app', owner: ac.owner };
     }
   }
+
+  // is it a private channel?
+  if (!channel) {
+    const pc = runtime.getPrivateChannel(id);
+    if (pc) {
+      channel = { id: id, type: 'private', owner: pc.owner };
+    }
+  }
+
   return channel;
 };
