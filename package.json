@@ -67,6 +67,7 @@
     "@emotion/styled": "^11.8.1",
     "@finos/fdc3": "^2.0.0-beta.4",
     "@finos/fdc3-1.2": "npm:@finos/fdc3@^1.2.0",
+    "@connectifi/agent-web":"2.5.27",
     "@fontsource/roboto": "^4.5.3",
     "@mui/icons-material": "^5.10.15",
     "@mui/lab": "^5.0.0-alpha.109",

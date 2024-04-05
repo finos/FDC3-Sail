@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { alpha, styled } from '@mui/material/styles';
 import TreeView from '@mui/lab/TreeView';
-import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
+import TreeItem, { TreeItemProps } from '@mui/lab/TreeItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { TabPanel, a11yProps } from './TabPanel';
@@ -55,7 +55,7 @@ function CloseSquare(props: SvgIconProps) {
   );
 }
 
-const StyledTreeItem = styled((props: TreeItemProps) => (
+/*const StyledTreeItem = styled((props: TreeItemProps) => (
   <TreeItem {...props} />
 ))(({ theme }) => ({
   [`& .${treeItemClasses.iconContainer}`]: {
@@ -64,6 +64,21 @@ const StyledTreeItem = styled((props: TreeItemProps) => (
     },
   },
   [`& .${treeItemClasses.group}`]: {
+    marginLeft: 15,
+    paddingLeft: 18,
+    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+  },
+}));*/
+
+const StyledTreeItem = styled((props: TreeItemProps) => (
+  <TreeItem {...props} />
+))(({ theme }) => ({
+  [`& .iconContainer}`]: {
+    '& .close': {
+      opacity: 0.3,
+    },
+  },
+  [`& .group}`]: {
     marginLeft: 15,
     paddingLeft: 18,
     borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,

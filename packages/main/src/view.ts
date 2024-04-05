@@ -25,7 +25,7 @@ import { shell } from 'electron';
 import { FDC3_TOPICS } from '/@/handlers/fdc3/lib/topics';
 import { TargetIdentifier } from './types/FDC3Message';
 
-const FDC3_1_2_PRELOAD = join(
+/*const FDC3_1_2_PRELOAD = join(
   __dirname,
   '../../preload/dist/fdc3-1.2/index.cjs',
 );
@@ -33,8 +33,12 @@ const FDC3_1_2_PRELOAD = join(
 const FDC3_2_0_PRELOAD = join(
   __dirname,
   '../../preload/dist/fdc3-2.0/index.cjs',
-);
+);*/
 
+const CONNECTIFI_PRELOAD = join(
+  __dirname,
+  '../../preload/dist/connectifi/index.cjs',
+);
 const HOME_PRELOAD = join(__dirname, '../../preload/dist/systemView/index.cjs');
 
 export class View {
@@ -104,8 +108,8 @@ export class View {
       this.type = 'system';
       preload = HOME_PRELOAD;
     } else {
-      preload =
-        this.fdc3Version === '1.2' ? FDC3_1_2_PRELOAD : FDC3_2_0_PRELOAD;
+      preload = CONNECTIFI_PRELOAD;
+      // this.fdc3Version === '1.2' ? FDC3_1_2_PRELOAD : FDC3_2_0_PRELOAD;
     }
 
     this.content = new BrowserView({
@@ -137,7 +141,7 @@ export class View {
       }
     });
 
-    this.content.webContents.on('ipc-message', (event, channel) => {
+    this.content.webContents.on('ipc-message', (event, channel: string) => {
       if (channel === SAIL_TOPICS.INITIATE && !this.initiated) {
         initView(config);
       }
@@ -154,7 +158,6 @@ export class View {
 
     if (url) {
       this.content.webContents.loadURL(url);
-
       //listen for reloads and reset id
       this.content.webContents.on('devtools-reload-page', () => {
         this.content.webContents.once('did-finish-load', () => {
