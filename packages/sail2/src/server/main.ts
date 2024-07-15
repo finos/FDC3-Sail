@@ -1,12 +1,13 @@
 import express from "express";
 import ViteExpress from "vite-express";
 import { initDesktopAgentService } from "./da/DesktopAgentService";
+import { SailDirectory } from "./appd/SailDirectory";
 
 const app = express();
 
 // // eventually, directory needs to be connected to session
-// const directory = new FDC3_2_1_JSONDirectory()
-// ///directory.load("temp/appd.json")
+const directory = new SailDirectory()
+directory.load("temp/appd.json")
 // directory.load('https://directory.fdc3.finos.org/v2/apps/')
 // //directory.load('https://directory.fdc3.finos.org/v2/apps/')
 
