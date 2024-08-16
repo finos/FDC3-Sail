@@ -1,6 +1,7 @@
 import { DirectoryApp } from "../../da-server/src/directory/DirectoryInterface"
 import { WebAppDetails } from "da-server/src/directory/DirectoryInterface"
 import { GridStackPosition } from "gridstack"
+import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = "sail-client-state"
 
@@ -33,7 +34,7 @@ export interface ClientState {
     getPanels(): AppPanel[]
 
     /** Apps */
-    open(instanceId: string, details: DirectoryApp): AppPanel | null
+    open(details: DirectoryApp): AppPanel | null
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void
@@ -99,7 +100,7 @@ abstract class AbstractClientState implements ClientState {
         this.saveState()
     }
 
-    open(instanceId: string, detail: DirectoryApp): AppPanel | null {
+    open(detail: DirectoryApp): AppPanel | null {
         if (detail.type == 'web') {
             const url = (detail.details as WebAppDetails).url
             const ap = {
@@ -109,7 +110,7 @@ abstract class AbstractClientState implements ClientState {
                 h: 4,
                 title: detail.title,
                 tabId: this.activeTabId,
-                id: instanceId,
+                id: uuidv4(),
                 url
             } as AppPanel
 
