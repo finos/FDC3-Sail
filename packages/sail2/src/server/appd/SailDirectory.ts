@@ -1,6 +1,6 @@
-import { BasicDirectory } from "da-server/src/directory/BasicDirectory";
-import { DirectoryApp } from "da-server/src/directory/DirectoryInterface";
 import fs from 'node:fs/promises';
+import { DirectoryApp } from './DirectoryInterface';
+import { BasicDirectory } from './BasicDirectory';
 
 function loadRemotely(u: string): Promise<any> {
     return fetch(u).then((response) => response.json());

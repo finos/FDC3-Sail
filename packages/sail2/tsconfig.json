@@ -26,16 +26,5 @@
   },
   "include": [
     "src"
-  ],
-  "references": [
-    {
-      "path": "../fdc3-common"
-    },
-    {
-      "path": "../client"
-    },
-    {
-      "path": "../da-server"
-    }
   ]
 }

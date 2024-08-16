@@ -1,8 +1,8 @@
 import { AppMetadata } from "@finos/fdc3/dist/bridging/BridgingTypes";
-import { ServerContext } from "da-server";
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { DA_OPEN, FDC3_APP_EVENT } from "./message-types";
+import { ServerContext } from "./ServerContext";
 
 
 
