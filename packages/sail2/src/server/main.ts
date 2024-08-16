@@ -8,16 +8,16 @@ const app = express();
 // // eventually, directory needs to be connected to session
 const directory = new SailDirectory()
 directory.load("temp/appd.json")
-// directory.load('https://directory.fdc3.finos.org/v2/apps/')
+directory.load('https://directory.fdc3.finos.org/v2/apps/')
 // //directory.load('https://directory.fdc3.finos.org/v2/apps/')
 
 app.get("/iframe", (_, res) => {
   res.send("Hello Vite + TypeScript!");
 });
 
-// app.get("/apps", (_, res) => {
-//   res.send(JSON.stringify(directory.allApps))
-// })
+app.get("/apps", (_, res) => {
+  res.send(JSON.stringify(directory.allApps))
+})
 
 
 const httpServer = ViteExpress.listen(app, 8090, () =>

@@ -1,4 +1,4 @@
-import { DirectoryApp } from "da-server"
+import { DirectoryApp } from "../../da-server/src/directory/DirectoryInterface"
 import { WebAppDetails } from "da-server/src/directory/DirectoryInterface"
 import { GridStackPosition } from "gridstack"
 

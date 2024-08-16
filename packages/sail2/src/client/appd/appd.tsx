@@ -2,9 +2,9 @@ import {Component} from "react"
 import {Icon} from "../icon/icon"
 import {getServerState} from "../state/server"
 import * as styles from "./styles.module.css"
-import {DirectoryApp} from "da-server"
 import {ClientState} from "../state/client"
 import {Popup, PopupButton} from "../popups/popup"
+import { DirectoryApp } from "../../server/appd/DirectoryInterface"
 
 const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
