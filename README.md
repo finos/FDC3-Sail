@@ -16,28 +16,45 @@
 
 ## What is FDC3 Sail?
 
-This project provides a fully open source implementation of the [FDC3](https://fdc3.finos.com) interoperability standard.  Including:
-- A fully featured and secure electron desktop agent featuring:
-    - intent resolution
-    - channel linking
-    - directory search
-- A local file-based app directory implementation
+If you are new to FDC3, it may be helpful to check out [The FDC3 Website](https://fdc3.finos.org)
 
-## FDC3 Standard Primer
+This project provides a fully open source implementation of the [FDC3](https://fdc3.finos.com) interoperability standard. Including:
 
-If you are an Electron and/or Web Dev new to FDC3, it may be helpful to check out [this primer](FDC3_PRIMER.md).
+- A fully featured and browser-based desktop agent featuring:
+  - intent resolution
+  - channel linking
+  - directory search
+  - workspace tabs
 
-## Sail at OSFF!
+## Sail v2 at OSFF!
 
-Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at the Open Source In Finance Forum (OSFF) in New York in December 2022.  They showed how you could git-clone FDC3-Sail, run it and play with all the apps in the FINOS App Directory.   They also showed how to build apps and share context data.  
+Sail v2 is a ground-up reimplementation of the FDC3-Sail project. It is a browser-based desktop agent that allows users to run and manage FDC3 apps in browser tabs or iframes. Sail v2 is built using React and makes use of [FDC3 On The Web](https://github.com/finos/FDC3/issues?q=is%3Aissue+is%3Aopen+label%3A%22FDC3+for+Web+Browsers%22) a forthcoming addition to the FDC3 standard.
+
+FDC3 For the Web and Sail v2 will be featured at FINOS' [OSFF New York event](https://osffny2024.sched.com) in September 2024.
+
+### Design Decisions
+
+1.  We should support multiple app directories.
+2.  Each user channel will be a HTML tab within the main browser tab.
+3.  User can name and colour the user channels, and move apps between them.
+4.  This is the ONLY way to control the user channel (unless the app loads outside of the main browser tab)
+5.  Message passing will happen server-side as opposed to client side as in the demo.
+6.  React will be used.
+7.  User state will be held in a cookie, so there's no session persistence.
+
+## Sail v1 at OSFF!
+
+Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at the Open Source In Finance Forum (OSFF) in New York in December 2022. They showed how you could git-clone FDC3-Sail, run it and play with all the apps in the FINOS App Directory. They also showed how to build apps and share context data.
 
 If you haven't already, check out their demo here: https://youtu.be/5VJzftderO0
 
-## About This Implementation
+At the time, Sail was an Electron App.
 
- - FDC3-Sail is an Electron application built from the [Vite Electron Builder Boilerplate]
- - The UI for the desktop agent is built using React MUI.
- - All remotely hosted content is run in BrowserView following electron security best practices.
+### The Sail v1 Implementation
+
+- FDC3-Sail v1 is an Electron application built from the [Vite Electron Builder Boilerplate]
+- The UI for the desktop agent is built using React MUI.
+- All remotely hosted content is run in BrowserView following electron security best practices.
 
 The following libraries are used:
 
@@ -51,7 +68,6 @@ The following libraries are used:
 - [ESLint] for linting
 - [Prettier] for code formatting
 - [nano-staged] and [simple-git-hooks] for code commits
-
 
 [Electron]: https://github.com/electron/electron
 [electron-builder]: https://github.com/electron-userland/electron-builder
@@ -68,65 +84,16 @@ The following libraries are used:
 [nano-staged]: https://github.com/usmanyunusov/nano-staged
 [simple-git-hooks]: https://github.com/toplenboren/simple-git-hooks
 
-### Structure
-
-- `directory/`   - for local app directories
-- `packages/main` - the main Electron application, has access to Node
-- `packages/preload` - preload scripts for web renderers.  Bridges the frontend ui to the main process through events and apis
-- `packages/renderer` - the parts of the desktop agent UI built with [React], isolated from main app, and shown in a window on the desktop
-    - `channelPicker` - UI for the channel picker
-    - `homeView` - UI for the default home view
-    - `intentResolver` - UI for the intent resolver window
-    - `searchResults` - UI for the searchResults window
-    - `sessionView` - UI for the sessionView window
-    - `topNavigation` - UI for the Top Navigation that includes the Tabs, channel picker button, and Dev Tools Menu.
-
 ## Getting Started
 
-~~~
+```
 npm install
-npm start
-~~~
-
-This will use the FINOS app directory at https://directory.fdc3.finos.org/v2/apps
-
-## Getting Started With Your Own App Directory
-
-1. Install dependencies:
-
-~~~
-npm install
-~~~
-
-2. Create your own local App directory manifest .e.g. `local.v2.json` in the `/directory` folder
-
-3. Set the environment variable to use this directory: 
-
-~~~bash
-export SAIL_DIRECTORY_URL=directory/local.v2.json
-~~~
-
-4. Start the FDC3 application:
-
-~~~
-npm start
-~~~
-
-Other useful commands:
-
-1. `npm start` / `npm run watch` - Start the Electron app in dev mode.
-2. `npm run compile` - Build the app for local debugging only.
-3. `npm run lint` - Lint the code.
-4. `npm run typecheck` - Run a TypeScript check.
-5. `npm run test` - Run tests for all parts of the application, including end-to-end tests.
+npm run dev
+```
 
 ## Mailing List
 
 To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
-
-## Roadmap
-
-[BMO Hackathon Milestone](https://github.com/finos/FDC3-Sail/milestone/1)
 
 ## Contributing
 
@@ -139,8 +106,7 @@ To join the Electron FDC3 Desktop Agent & App Directory mailing list please emai
 
 _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool (or [EasyCLA](https://github.com/finos/community/blob/master/governance/Software-Projects/EasyCLA.md)). Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
 
-*Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)*
-
+_Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
 
 ## License
 
