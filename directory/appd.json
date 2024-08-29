@@ -21,7 +21,7 @@
             "description": "App will connect to the desktop agent on startup and listen to messages on the red channel",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/app2/index.html"
+                "url": "http://localhost:8095/static/app2/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
@@ -35,7 +35,7 @@
             "description": "App creates two APIs to the desktop agent, broadcasts in one and listens in the other.",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/app3/index.html"
+                "url": "http://localhost:8095/static/app3/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
@@ -63,7 +63,7 @@
             "description": "Listens for the ViewNews intent only",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/app4/index.html"
+                "url": "http://localhost:8095/static/app4/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
@@ -73,7 +73,10 @@
                 "intents": {
                     "listensFor": {
                         "ViewNews": {
-                            "displayName": "View News"
+                            "displayName": "View News",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
                         }
                     }
                 }
@@ -86,7 +89,7 @@
             "description": "Listens for the ViewNews intent only",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/app5/index.html"
+                "url": "http://localhost:8095/static/app5/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
@@ -96,10 +99,16 @@
                 "intents": {
                     "listensFor": {
                         "ViewNews": {
-                            "displayName": "View News"
+                            "displayName": "View News",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
                         },
                         "ViewQuote": {
-                            "displayName": "View Quote"
+                            "displayName": "View Quote",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
                         }
                     }
                 }
@@ -112,12 +121,78 @@
             "description": "App asks for the result of a ViewQuote intent",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/app6/index.html"
+                "url": "http://localhost:8095/static/app6/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
             "publisher": "FINOS",
             "icons": []
+        },
+        {
+            "appId": "app7",
+            "name": "App Seven",
+            "title": "Intent Result 2",
+            "description": "App asks for the result of a ViewNews intent",
+            "type": "web",
+            "details": {
+                "url": "http://localhost:8095/static/app7/index.html"
+            },
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": []
+        },
+        {
+            "appId": "grid",
+            "name": "grid",
+            "title": "AG-Grid",
+            "type": "web",
+            "details": {
+                "url": "http://localhost:8095/static/ag-grid/index.html"
+            },
+            "interop": {
+                "intents": {
+                    "raises": {
+                        "ViewChart": [
+                            "fdc3.instrument"
+                        ]
+                    }
+                },
+                "userChannels": {
+                    "broadcasts": [
+                        "fdc3.instrument"
+                    ],
+                    "listensFor": [
+                        "fdc3.instrument"
+                    ]
+                }
+            }
+        },
+        {
+            "appId": "chartiq",
+            "name": "chartiq",
+            "title": "ChartIQ",
+            "type": "web",
+            "details": {
+                "url": "http://localhost:8095/static/chartiq/index.html"
+            },
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewChart": {
+                            "displayName": "View Chart",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
+                        }
+                    }
+                },
+                "userChannels": {
+                    "broadcasts": [
+                        "fdc3.instrument"
+                    ]
+                }
+            }
         }
     ],
     "message": "OK"

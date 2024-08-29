@@ -91,6 +91,8 @@ npm install
 npm run dev
 ```
 
+Point browser at http://localhost:8090/static/da/index.html
+
 ## Mailing List
 
 To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
