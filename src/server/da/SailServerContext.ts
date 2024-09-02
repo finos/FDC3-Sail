@@ -1,55 +1,90 @@
-import { AppMetadata } from "@finos/fdc3/dist/bridging/BridgingTypes";
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { DA_OPEN, FDC3_APP_EVENT } from "./message-types";
-import { ServerContext } from "./ServerContext";
+import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "./message-types";
+import { DirectoryApp, InstanceID, ServerContext } from "@kite9/da-server"
+import { AppIdentifier } from "@kite9/fdc3-common";
+import { SailDirectory } from "../appd/SailDirectory";
+import { OpenError } from "@kite9/fdc3";
+import { OPEN } from "ws";
+
+export enum State { Pending, Open, Closed }
+
+export type SailData = AppIdentifier & {
+    socket?: Socket,
+    url: string
+    state: State
+}
+
+export class SailServerContext implements ServerContext<SailData> {
+
+    private instances: SailData[] = []
+    readonly directory: SailDirectory
+
+    constructor(directory: SailDirectory) {
+        this.directory = directory
+    }
+
+    post(message: object, instanceId: InstanceID): Promise<void> {
+        const instance = this.instances.find(i => i.instanceId == instanceId)
+        if (instance) {
+            instance.socket?.emit(FDC3_DA_EVENT, message)
+        } else {
+            this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
+        }
+        return Promise.resolve()
+    }
 
 
+    async open(appId: string): Promise<InstanceID> {
+        const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
+        const url = (app[0].details as any)?.url ?? undefined
+        if (url) {
+            const instanceId: InstanceID = 'app-' + this.createUUID()
+            const metadata = {
+                appId,
+                instanceId,
+                state: State.Pending
+            } as SailData
 
-export class SailServerContext implements ServerContext {
+            this.setInstanceDetails(instanceId, metadata)
+            return instanceId
+        }
 
-    readonly serverSocket: Socket
-    readonly apps: Map<AppMetadata, Socket> = new Map()
+        throw new Error(OpenError.AppNotFound)
+    }
 
-    constructor(socket: Socket) {
-        this.serverSocket = socket;
+    setInstanceDetails(uuid: InstanceID, details: SailData): void {
+        if (uuid != details.instanceId) {
+            console.error("UUID mismatch", uuid, details.instanceId)
+        }
+
+        this.instances = this.instances.filter(ca => ca.instanceId !== uuid)
+        this.instances.push(details)
+    }
+
+    getInstanceDetails(uuid: InstanceID): SailData | undefined {
+        return this.instances.find(ca => ca.instanceId === uuid)
+    }
+
+    async setAppConnected(app: AppIdentifier): Promise<void> {
+        this.instances.find(ca => (ca.instanceId == app.instanceId))!!.state = OPEN
+    }
+
+    async getConnectedApps(): Promise<SailData[]> {
+        return this.instances.filter(ca => ca.state == OPEN)
+    }
+
+    async isAppConnected(app: AppIdentifier): Promise<boolean> {
+        const found = this.instances.find(a => (a.appId == app.appId) && (a.instanceId == app.instanceId) && (a.state == OPEN))
+        return found != null
+    }
+
+    async disconnect(instanceId: InstanceID): Promise<void> {
+        this.instances = this.instances.filter(ca => ca.instanceId !== instanceId)
     }
 
     createUUID(): string {
         return uuidv4()
-    }
-
-    async post(message: object, to: AppMetadata): Promise<void> {
-        const ent = Array.from(this.apps.entries()).find(e => this.matches(e[0], to))
-        if (ent) {
-            ent[1].emit(FDC3_APP_EVENT, message)
-        } else {
-            this.log(`Can't find app: ${JSON.stringify(to)}`)
-        }
-    }
-
-    async open(appId: string): Promise<AppMetadata> {
-        const instanceId = uuidv4()
-        const metadata = {
-            appId,
-            instanceId
-        } as AppMetadata
-        this.serverSocket.emit(DA_OPEN, metadata)
-        return metadata
-    }
-
-    getOpenApps(): Promise<AppMetadata[]> {
-        return Promise.resolve(Array.from(this.apps.keys()))
-    }
-
-    matches(a: AppMetadata, b: AppMetadata): boolean {
-        return (a.appId == b.appId) && (a.instanceId == b.instanceId)
-    }
-
-    async isAppOpen(app: AppMetadata): Promise<boolean> {
-        const openApps = await this.getOpenApps()
-        const found = openApps.find(a => this.matches(app, a))
-        return found != null
     }
 
     log(message: string): void {
@@ -66,23 +101,6 @@ export class SailServerContext implements ServerContext {
 
     fdc3Version(): string {
         return "2.0"
-    }
-
-    /**
-     * Called when an app connects to the server
-     */
-    connect(appId: AppMetadata, socket: Socket) {
-        this.apps.set(appId, socket)
-    }
-
-    /**
-     * Called when an app disconnects from the server
-     */
-    disconnect(socket: Socket) {
-        const ent = Array.from(this.apps.entries()).find(e => e[1].id == socket.id)
-        if (ent) {
-            this.apps.delete(ent[0])
-        }
     }
 
 }

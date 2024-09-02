@@ -1,18 +1,11 @@
+import { ChannelState } from "@kite9/da-server"
 
-export const DA_HELLO = 'da-hello'
 export const APP_HELLO = 'app-hello'
 export const FDC3_APP_EVENT = 'fdc3-app-event'
-export const DA_OPEN = 'da-open'
+export const FDC3_DA_EVENT = 'fdc3-da-event'
 
-export type ChannelMetadata = {
-    id: string
-    displayName: string,
-    color: string,
-    icon: string
-}
-
-export type HelloArgs = {
-    id: string,
+export type DesktopAgentHelloArgs = {
     directories: string[],
-    channels: ChannelMetadata[]
+    channels: ChannelState[],
+    userSessionId: string
 }

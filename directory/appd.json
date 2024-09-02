@@ -7,7 +7,7 @@
             "description": "App will connect to the desktop agent and broadcast on the red channel when you hit the button",
             "type": "web",
             "details": {
-                "url": "http://localhost:8095/static/app1/index.html"
+                "url": "http://localhost:8090/static/app1/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",

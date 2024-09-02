@@ -1,28 +1,20 @@
 import express from "express";
 import ViteExpress from "vite-express";
-import { initDesktopAgentService } from "./da/DesktopAgentService";
-import { SailDirectory } from "./appd/SailDirectory";
+import { SailFDC3Server } from "./da/SailFDC3Server";
+import { initSocketService } from "./da/initSocketService";
+import { initRestEndpoints } from "./da/initRestEndpoints";
 
 const app = express();
 
-// // eventually, directory needs to be connected to session
-const directory = new SailDirectory()
-directory.load("./directory/appd.json")
-directory.load('https://directory.fdc3.finos.org/v2/apps/')
-// //directory.load('https://directory.fdc3.finos.org/v2/apps/')
+// running sesssions - the server state
+const sessions = new Map<string, SailFDC3Server>()
 
-app.get("/iframe", (_, res) => {
-  res.send("Hello Vite + TypeScript!");
-});
+app.use(express.json())
 
-app.get("/apps", (_, res) => {
-  res.send(JSON.stringify(directory.allApps))
-})
-
+initRestEndpoints(app, sessions)
 
 const httpServer = ViteExpress.listen(app, 8090, () =>
   console.log("Server is listening on port 8090..."),
 );
 
-
-initDesktopAgentService(httpServer)
+initSocketService(httpServer, sessions)

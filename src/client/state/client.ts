@@ -1,7 +1,10 @@
-import { DirectoryApp } from "../../da-server/src/directory/DirectoryInterface"
-import { WebAppDetails } from "da-server/src/directory/DirectoryInterface"
+import { ChannelState, DirectoryApp } from "@kite9/da-server"
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
+import { DesktopAgentHelloArgs } from "../../server/da/message-types";
+import { DisplayMetadata } from "@kite9/fdc3";
+import { ChannelType } from "@kite9/da-server/dist/src/handlers/BroadcastHandler";
+import { getServerState } from "./server";
 
 const STORAGE_KEY = "sail-client-state"
 
@@ -9,7 +12,8 @@ export type AppPanel = GridStackPosition & {
     title: string
     url: string,
     tabId: string
-    id: string
+    id: string,
+    appId: string
 }
 
 export type TabDetail = {
@@ -20,6 +24,9 @@ export type TabDetail = {
 }
 
 export interface ClientState {
+
+    /** User Session ID */
+    getUserSessionID(): string
 
     /** Tabs */
     getActiveTab(): TabDetail
@@ -34,10 +41,17 @@ export interface ClientState {
     getPanels(): AppPanel[]
 
     /** Apps */
-    open(details: DirectoryApp): AppPanel | null
+    setDirectories(d: string[]): void
+    getDirectories(): string[]
+    open(details: DirectoryApp): Promise<AppPanel | null>
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void
+
+    /**
+     * For connecting to the server
+     */
+    createArgs(): DesktopAgentHelloArgs
 }
 
 abstract class AbstractClientState implements ClientState {
@@ -45,12 +59,16 @@ abstract class AbstractClientState implements ClientState {
     protected tabs: TabDetail[] = []
     protected panels: AppPanel[] = []
     protected activeTabId: string
+    protected readonly userSessionId: string
+    protected directories: string[] = []
     callbacks: (() => void)[] = []
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: string[]) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
+        this.userSessionId = userSessionId
+        this.directories = directories
         this.saveState()
     }
 
@@ -100,9 +118,11 @@ abstract class AbstractClientState implements ClientState {
         this.saveState()
     }
 
-    open(detail: DirectoryApp): AppPanel | null {
+    async open(detail: DirectoryApp): Promise<AppPanel | null> {
         if (detail.type == 'web') {
-            const url = (detail.details as WebAppDetails).url
+            const url = (detail.details as any).url
+            const appId = await getServerState().registerAppLaunch(detail.appId)
+
             const ap = {
                 x: 1,
                 y: 1,
@@ -110,8 +130,9 @@ abstract class AbstractClientState implements ClientState {
                 h: 4,
                 title: detail.title,
                 tabId: this.activeTabId,
-                id: uuidv4(),
-                url
+                id: appId,
+                url,
+                appId: detail.appId
             } as AppPanel
 
             console.log("opening app")
@@ -130,6 +151,37 @@ abstract class AbstractClientState implements ClientState {
     addStateChangeCallback(cb: () => void) {
         this.callbacks.push(cb)
     }
+
+    getUserSessionID(): string {
+        return this.userSessionId
+    }
+
+    setDirectories(d: string[]): void {
+        this.directories = d
+    }
+
+    getDirectories(): string[] {
+        return this.directories
+    }
+    createArgs(): DesktopAgentHelloArgs {
+        return {
+            userSessionId: this.userSessionId,
+            directories: this.directories,
+            channels: this.tabs.map(t => {
+                return {
+                    id: t.id,
+                    type: ChannelType.user,
+                    displayMetadata: {
+                        color: t.background,
+                        icon: t.icon,
+                        name: t.title,
+                    } as DisplayMetadata,
+                    context: []
+                } as ChannelState
+            }),
+        }
+    }
+
 }
 
 class LocalStorageClientState extends AbstractClientState {
@@ -137,21 +189,25 @@ class LocalStorageClientState extends AbstractClientState {
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
         if (theState) {
-            const { tabs, panels, activeTabId } = JSON.parse(theState)
-            super(tabs, panels, activeTabId)
+            const { tabs, panels, activeTabId, userSessionId, directories } = JSON.parse(theState)
+            super(tabs, panels, activeTabId, userSessionId, directories)
         } else {
-            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id)
+            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES)
         }
     }
 
     saveState(): void {
-        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId })
+        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories })
         localStorage.setItem(STORAGE_KEY, data)
         this.callbacks.forEach(cb => cb())
         console.log("State saved" + data)
     }
 
 }
+
+const DEFAULT_DIRECTORIES: string[] = [
+    "./directory/appd.json"
+]
 
 const DEFAULT_TABS: TabDetail[] = [
     {

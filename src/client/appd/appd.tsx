@@ -1,36 +1,36 @@
-import {Component} from "react"
-import {Icon} from "../icon/icon"
-import {getServerState} from "../state/server"
-import * as styles from "./styles.module.css"
-import {ClientState} from "../state/client"
-import {Popup, PopupButton} from "../popups/popup"
-import { DirectoryApp } from "../../server/appd/DirectoryInterface"
+import { Component } from "react";
+import { Icon } from "../icon/icon";
+import { getServerState } from "../state/server";
+import * as styles from "./styles.module.css";
+import { ClientState } from "../state/client";
+import { Popup, PopupButton } from "../popups/popup";
+import { DirectoryApp } from "@kite9/da-server";
 
-const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
+const DEFAULT_ICON = "/static/icons/control/choose-app.svg";
 
 function getIcon(a: DirectoryApp) {
-  const icons = a.icons ?? []
+  const icons = a.icons ?? [];
   if (icons.length > 0) {
-    return icons[0].src
+    return icons[0].src;
   } else {
-    return DEFAULT_ICON
+    return DEFAULT_ICON;
   }
 }
 
-type AppPanelProps = {closeAction: () => void; cs: ClientState}
+type AppPanelProps = { closeAction: () => void; cs: ClientState };
 
 type AppPanelState = {
-  chosen: DirectoryApp | null
-  apps: DirectoryApp[]
-}
+  chosen: DirectoryApp | null;
+  apps: DirectoryApp[];
+};
 
 export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   constructor(props: AppPanelProps) {
-    super(props)
+    super(props);
     this.state = {
       chosen: null,
       apps: [],
-    }
+    };
   }
 
   componentDidMount = () => {
@@ -41,20 +41,20 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         this.setState({
           chosen: null,
           apps,
-        })
-      })
-  }
+        });
+      });
+  };
 
   setChosen(app: DirectoryApp) {
-    console.log("state changed " + app.appId)
+    console.log("state changed " + app.appId);
     this.setState({
       apps: this.state.apps,
       chosen: app,
-    })
+    });
   }
 
   render() {
-    const app = this.state.chosen
+    const app: DirectoryApp = this.state.chosen;
 
     return (
       <Popup
@@ -64,7 +64,11 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
           <div className={styles.appDContent}>
             <div className={styles.appDApps}>
               {this.state.apps.map((a) => (
-                <div key={a.appId} className={`${styles.appDApp} ${a == app ? styles.selected : ""}`} onClick={() => this.setChosen(a)}>
+                <div
+                  key={a.appId}
+                  className={`${styles.appDApp} ${a == app ? styles.selected : ""}`}
+                  onClick={() => this.setChosen(a)}
+                >
                   <Icon image={getIcon(a)} text={a.title} dark={false} />
                 </div>
               ))}
@@ -75,11 +79,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                 <div className={styles.appDInfo}>
                   <h2>{app.title}</h2>
                   <p>{app.description}</p>
-                  <ul>
-                    {app.categories?.map((c) => (
-                      <li>{c}</li>
-                    ))}
-                  </ul>
+                  <ul>{app.categories?.map((c) => <li>{c}</li>)}</ul>
                   <div className={styles.appDScreenshots}>
                     {app.screenshots?.map((s) => (
                       <img src={s.src} title={s.label} />
@@ -96,11 +96,11 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
             disabled={this.state.chosen == null}
             onClick={() => {
               if (this.state.chosen) {
-                const ap = this.props.cs.open(this.state.chosen)
+                const ap = this.props.cs.open(this.state.chosen);
                 if (ap) {
-                  this.props.closeAction()
+                  this.props.closeAction();
                 } else {
-                  alert("Not a web app")
+                  alert("Not a web app");
                 }
               }
             }}
@@ -108,6 +108,6 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         }
         closeAction={() => this.props.closeAction()}
       />
-    )
+    );
   }
 }

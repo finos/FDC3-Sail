@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
-import { DirectoryApp } from './DirectoryInterface';
-import { BasicDirectory } from './BasicDirectory';
+import { BasicDirectory, DirectoryApp } from '@kite9/da-server';
 
 function loadRemotely(u: string): Promise<any> {
     return fetch(u).then((response) => response.json());
@@ -16,9 +15,9 @@ async function load(url: string): Promise<DirectoryApp[]> {
         return await loadRemotely(url).then(convertToDirectoryList);
     } else {
         return await loadFile(url).then(convertToDirectoryList);
-
     }
 }
+
 const convertToDirectoryList = (data: any) => {
     return data.applications as DirectoryApp[];
 }
@@ -29,8 +28,9 @@ export class SailDirectory extends BasicDirectory {
         super([])
     }
 
-    async load(url: string) {
-        this.allApps.push(...await load(url));
+    async load(url: string): Promise<void> {
+        const apps = await load(url)
+        apps.forEach((a) => this.allApps.push(a))
     }
 
     /**
@@ -38,6 +38,9 @@ export class SailDirectory extends BasicDirectory {
      */
     async replace(url: string[]) {
         this.allApps = []
-        url.forEach(u => load(u))
+        for (const u of url) {
+            await this.load(u)
+        }
+        console.log("Loaded " + this.allApps.length + " apps")
     }
 }
