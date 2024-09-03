@@ -18,9 +18,27 @@ export class Grids extends Component<GridsProps> {
   }
 
   render() {
-    return <div className={styles.grids} id={this.props.id}></div>;
+    return (
+      <div className={styles.grids} id={this.props.id}>
+        {this.props.cs.getPanels().map((p) => (
+          <AppFrame panel={p} />
+        ))}
+      </div>
+    );
   }
 }
+
+const AppFrame = ({ panel }: { panel: AppPanel }) => {
+  return (
+    <iframe
+      src={panel.url}
+      id={"iframe_" + panel.id}
+      name={panel.id}
+      slot={"slot_" + panel.id}
+      className={styles.iframe}
+    />
+  );
+};
 
 const LockIcon = () => {
   return (
@@ -53,14 +71,11 @@ const CloseIcon = ({ action }: { action: () => void }) => {
   );
 };
 
-const AppFrame = ({ panel }: { panel: AppPanel }) => {
+const AppSlot = ({ panel }: { panel: AppPanel }) => {
   return (
-    <iframe
-      src={panel.url}
-      className={styles.iframe}
-      id={"iframe_" + panel.id}
-      name={panel.id}
-    />
+    <div className={styles.appSlot} id={"app_" + panel.id}>
+      <slot name={"slot_" + panel.id} />
+    </div>
   );
 };
 
@@ -85,7 +100,7 @@ export const Content = ({
           <PopOutIcon />
         </div>
         <div className={styles.contentBody}>
-          {panel.url ? <AppFrame panel={panel} /> : <div />}
+          {panel.url ? <AppSlot panel={panel} /> : <div />}
         </div>
       </div>
     </div>
