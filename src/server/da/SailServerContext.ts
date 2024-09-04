@@ -4,7 +4,7 @@ import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "./message-types";
 import { DirectoryApp, InstanceID, ServerContext } from "@kite9/da-server"
 import { AppIdentifier } from "@kite9/fdc3-common";
 import { SailDirectory } from "../appd/SailDirectory";
-import { OpenError } from "@kite9/fdc3";
+import { AppIntent, Context, OpenError } from "@kite9/fdc3";
 import { OPEN } from "ws";
 
 export enum State { Pending, Open, Closed }
@@ -101,6 +101,10 @@ export class SailServerContext implements ServerContext<SailData> {
 
     fdc3Version(): string {
         return "2.0"
+    }
+
+    narrowIntents(appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+        throw new Error("Method not implemented.");
     }
 
 }

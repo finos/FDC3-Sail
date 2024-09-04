@@ -1,18 +1,24 @@
-import { Bin, Controls, NewPanel } from "../controls/controls";
+import { Bin, Controls, NewPanel, Resolver } from "../controls/controls";
 import { Logo, Settings } from "../top/top";
 import { Tabs } from "../tabs/tabs";
 import * as styles from "./styles.module.css";
-import { AppPanel, ClientState, getClientState } from "../state/client";
+import { ClientState, getClientState } from "../state/client";
 import { Component } from "react";
 import { AppDPanel } from "../appd/appd";
-import { SettingsPopup } from "../popups/settings";
 import { Content, Grids } from "../grid/grid";
 import { GridsStateImpl, GridsState } from "../grid/gridstate";
+import { ConfigPanel } from "../config/config";
+import {
+  EXAMPLE_APP_INTENTS,
+  EXAMPLE_CONTEXT,
+  ResolverPanel,
+} from "../resolver/resolver";
 
 enum Popup {
   NONE,
   APPD,
   SETTINGS,
+  RESOLVER,
 }
 
 interface FrameProps {
@@ -46,11 +52,21 @@ export class Frame extends Component<FrameProps, FrameState> {
       <div className={styles.outer}>
         <div className={styles.top}>
           <Logo />
-          <Settings />
+          <Settings onClick={() => this.setState({ popup: Popup.SETTINGS })} />
         </div>
         <div className={styles.left}>
           <Tabs cs={this.props.cs} />
           <Controls>
+            <Resolver
+              onClick={() => {
+                this.props.cs.setIntentResolution({
+                  appIntents: EXAMPLE_APP_INTENTS,
+                  context: EXAMPLE_CONTEXT,
+                  requestId: "123",
+                });
+                this.setState(this.state);
+              }}
+            />
             <NewPanel onClick={() => this.setState({ popup: Popup.APPD })} />
             <Bin />
           </Controls>
@@ -73,7 +89,25 @@ export class Frame extends Component<FrameProps, FrameState> {
           />
         ) : null}
         {this.state?.popup == Popup.SETTINGS ? (
-          <SettingsPopup cs={this.props.cs} />
+          <ConfigPanel
+            cs={this.props.cs}
+            closeAction={() =>
+              this.setState({
+                popup: Popup.NONE,
+              })
+            }
+          />
+        ) : null}
+        {this.props.cs.getIntentResolution() ? (
+          <ResolverPanel
+            cs={this.props.cs}
+            appIntents={this.props.cs.getIntentResolution()!!.appIntents}
+            context={this.props.cs.getIntentResolution()!!.context}
+            closeAction={() => {
+              this.props.cs.setIntentResolution(null);
+              this.setState(this.state);
+            }}
+          />
         ) : null}
       </div>
     );

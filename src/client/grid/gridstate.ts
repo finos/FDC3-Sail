@@ -62,7 +62,7 @@ export class GridsStateImpl implements GridsState {
 
     removePanel(ap: AppPanel) {
         const grid = this.gridstacks[ap.tabId]
-        const el = document.getElementById(ap.id)
+        const el = this.findChild(grid.el, ap.id)
         if (el) {
             grid.removeWidget(el!!)
         }

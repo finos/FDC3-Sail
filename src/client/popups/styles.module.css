@@ -46,7 +46,7 @@
 
 .popupTitleText {
     display: inline;
-    text-align: right;
+    text-align: left;
     font-weight: 600;
     font-size: 1.2rem;
     margin: 0;

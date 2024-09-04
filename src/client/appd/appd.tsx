@@ -90,13 +90,13 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
             </div>
           </div>
         }
-        button={
+        buttons={[
           <PopupButton
             text="open"
             disabled={this.state.chosen == null}
-            onClick={() => {
+            onClick={async () => {
               if (this.state.chosen) {
-                const ap = this.props.cs.open(this.state.chosen);
+                const ap = await this.props.cs.open(this.state.chosen);
                 if (ap) {
                   this.props.closeAction();
                 } else {
@@ -104,8 +104,8 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                 }
               }
             }}
-          />
-        }
+          />,
+        ]}
         closeAction={() => this.props.closeAction()}
       />
     );

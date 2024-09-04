@@ -29,8 +29,12 @@ export class SailDirectory extends BasicDirectory {
     }
 
     async load(url: string): Promise<void> {
-        const apps = await load(url)
-        apps.forEach((a) => this.allApps.push(a))
+        try {
+            const apps = await load(url)
+            apps.forEach((a) => this.allApps.push(a))
+        } catch (e) {
+            console.error("Error loading " + url, e)
+        }
     }
 
     /**

@@ -1,0 +1,91 @@
+.resolverContainer {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: normal;
+    align-items: normal;
+    align-content: normal;
+    width: 60rem;
+    height: 30rem;
+    gap: 1rem;
+}
+
+.resolverChoiceContainer {
+    display: block;
+    flex-grow: 0;
+    flex-shrink: 1;
+    align-self: auto;
+    order: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: normal;
+    align-items: stretch;
+    align-content: stretch;
+    gap: 1rem;
+}
+
+.choiceBox {
+    display: block;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 30rem;
+    align-self: auto;
+    border: 2px solid #EEEEEE;
+    padding: .5rem;
+    border-radius: .5rem;
+}
+
+.highlightedChoiceBox {
+    border: 2px solid #000000;
+    background-color: #EEEEFF;
+}
+
+.resolverPanesContainer {
+    display: block;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    align-self: auto;
+    order: 0;
+    gap: 1rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: normal;
+    align-items: stretch;
+    align-content: stretch;
+}
+
+.resolverPane {
+    display: block;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 30rem;
+    align-self: auto;
+    order: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: normal;
+    align-items: stretch;
+    align-content: stretch;
+    gap: .5rem;
+}
+
+.lineItem {
+    display: block;
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: auto;
+    align-self: auto;
+    order: 0;
+    padding: .5rem;
+    border: 1px solid #EEEEEE;
+    border-radius: .2rem;
+}
+
+.highlightedLineItem {
+    background-color: #EEEEFF;
+    border: 2px solid #000000;
+}

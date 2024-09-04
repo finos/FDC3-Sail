@@ -73,7 +73,7 @@ const CloseIcon = ({ action }: { action: () => void }) => {
 
 const AppSlot = ({ panel }: { panel: AppPanel }) => {
   return (
-    <div className={styles.appSlot} id={"app_" + panel.id}>
+    <div id={"app_" + panel.id}>
       <slot name={"slot_" + panel.id} />
     </div>
   );

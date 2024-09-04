@@ -2,7 +2,7 @@ import { ChannelState, DirectoryApp } from "@kite9/da-server"
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
-import { DisplayMetadata } from "@kite9/fdc3";
+import { AppIntent, Context, DisplayMetadata } from "@kite9/fdc3";
 import { ChannelType } from "@kite9/da-server/dist/src/handlers/BroadcastHandler";
 import { getServerState } from "./server";
 
@@ -23,6 +23,18 @@ export type TabDetail = {
     background: string,
 }
 
+export type Directory = {
+    label: string,
+    url: string,
+    active: boolean
+}
+
+export type IntentResolution = {
+    appIntents: AppIntent[]
+    requestId: string,
+    context: Context
+}
+
 export interface ClientState {
 
     /** User Session ID */
@@ -41,8 +53,9 @@ export interface ClientState {
     getPanels(): AppPanel[]
 
     /** Apps */
-    setDirectories(d: string[]): void
-    getDirectories(): string[]
+    setDirectories(d: Directory[]): void
+    getDirectories(): Directory[]
+    updateDirectory(din: Directory): void
     open(details: DirectoryApp): Promise<AppPanel | null>
 
     /** Callback */
@@ -52,6 +65,13 @@ export interface ClientState {
      * For connecting to the server
      */
     createArgs(): DesktopAgentHelloArgs
+
+    /**
+     * Triggers intent resolution
+     */
+    getIntentResolution(): IntentResolution | null
+    setIntentResolution(ir: IntentResolution | null): void
+
 }
 
 abstract class AbstractClientState implements ClientState {
@@ -60,10 +80,11 @@ abstract class AbstractClientState implements ClientState {
     protected panels: AppPanel[] = []
     protected activeTabId: string
     protected readonly userSessionId: string
-    protected directories: string[] = []
+    protected directories: Directory[] = []
     callbacks: (() => void)[] = []
+    protected intentResolution: IntentResolution | null = null
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: string[]) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[]) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
@@ -156,17 +177,29 @@ abstract class AbstractClientState implements ClientState {
         return this.userSessionId
     }
 
-    setDirectories(d: string[]): void {
+    setDirectories(d: Directory[]): void {
         this.directories = d
+        this.saveState()
     }
 
-    getDirectories(): string[] {
+    getDirectories(): Directory[] {
         return this.directories
     }
+
+    updateDirectory(din: Directory) {
+        const idx = this.directories.findIndex(d => d.url == din.url)
+        if (idx > -1) {
+            this.directories[idx] = din
+        } else {
+            this.directories.push(din)
+        }
+        this.saveState()
+    }
+
     createArgs(): DesktopAgentHelloArgs {
         return {
             userSessionId: this.userSessionId,
-            directories: this.directories,
+            directories: this.directories.filter(d => d.active).map(d => d.url),
             channels: this.tabs.map(t => {
                 return {
                     id: t.id,
@@ -180,6 +213,13 @@ abstract class AbstractClientState implements ClientState {
                 } as ChannelState
             }),
         }
+    }
+
+    getIntentResolution(): IntentResolution | null {
+        return this.intentResolution
+    }
+    setIntentResolution(ir: IntentResolution | null): void {
+        this.intentResolution = ir
     }
 
 }
@@ -205,8 +245,22 @@ class LocalStorageClientState extends AbstractClientState {
 
 }
 
-const DEFAULT_DIRECTORIES: string[] = [
-    "./directory/appd.json"
+const DEFAULT_DIRECTORIES: Directory[] = [
+    {
+        label: "FDC3 Demo Apps",
+        url: "./directory/appd.json",
+        active: true
+    },
+    {
+        label: "FDC3 Conformance",
+        url: "https://directory.fdc3.finos.org/v2/apps/",
+        active: false
+    },
+    {
+        label: "Sail Built-In Apps",
+        url: "./directory/sail.json",
+        active: false
+    }
 ]
 
 const DEFAULT_TABS: TabDetail[] = [
