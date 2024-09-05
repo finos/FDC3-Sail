@@ -1,8 +1,11 @@
 import * as styles from "./styles.module.css";
 import { Popup, PopupButton } from "../popups/popup";
 import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3";
-import { ClientState } from "../state/client";
+import { ClientState } from "../state/clientState";
 import { useState } from "react";
+import { getServerState } from "../state/serverConnectivity";
+import { NewPanel } from "../controls/controls";
+import { channel } from "diagnostics_channel";
 
 export const EXAMPLE_CONTEXT = {
   type: "fdc3.instrument",
@@ -91,6 +94,24 @@ function relevantApps(a: AppIntent, newApps: boolean): AppIntent | null {
   }
 }
 
+function firstApp(
+  appIntents: AppIntent[],
+  intent: string,
+  newApps: boolean,
+): AppIdentifier | null {
+  const relevant = appIntents
+    .filter((a) => a.intent.name === intent)
+    .map((a) => relevantApps(a, newApps))
+    .filter((a) => a != null)
+    .flatMap((a) => a?.apps);
+
+  if (relevant.length == 0) {
+    return null;
+  } else {
+    return relevant[0];
+  }
+}
+
 export const ResolverPanel = ({
   cs,
   context,
@@ -102,17 +123,36 @@ export const ResolverPanel = ({
   appIntents: AppIntent[];
   closeAction: () => void;
 }) => {
-  const [state, setState]: [State, (x: State) => void] = useState({
-    newApps: false,
-    chosenApp: null,
-    chosenIntent: null,
-  } as State);
-
-  const uniqueIntents = appIntents
-    .filter((a) => relevantApps(a, state.newApps) != null)
+  const uniqueExistingAppIntents = appIntents
+    .filter((a) => relevantApps(a, false) != null)
     .map((a) => a.intent.name)
     .filter((v, i, a) => a.indexOf(v) === i)
     .sort();
+
+  const uniqueNewAppIntents = appIntents
+    .filter((a) => relevantApps(a, true) != null)
+    .map((a) => a.intent.name)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .sort();
+
+  const startState: State =
+    uniqueExistingAppIntents.length > 0
+      ? {
+          newApps: false,
+          chosenApp: firstApp(appIntents, uniqueExistingAppIntents[0], false),
+          chosenIntent: uniqueExistingAppIntents[0],
+        }
+      : {
+          newApps: true,
+          chosenApp: firstApp(appIntents, uniqueNewAppIntents[0], true),
+          chosenIntent: uniqueNewAppIntents[0],
+        };
+
+  const [state, setState]: [State, (x: State) => void] = useState(startState);
+
+  const intentsToUse = state.newApps
+    ? uniqueNewAppIntents
+    : uniqueExistingAppIntents;
 
   return (
     <Popup
@@ -122,12 +162,12 @@ export const ResolverPanel = ({
         <div className={styles.resolverContainer}>
           <div className={styles.resolverChoiceContainer}>
             <div
-              className={` ${styles.choiceBox} ${state.newApps ? "" : styles.highlightedChoiceBox}`}
+              className={` ${styles.choiceBox} ${state.newApps ? "" : styles.highlightedChoiceBox} ${uniqueExistingAppIntents.length > 0 ? styles.activeChoiceBox : styles.inactiveChoiceBox}`}
               onClick={() => {
-                if (state.newApps) {
+                if (state.newApps && uniqueExistingAppIntents.length > 0) {
                   setState({
                     chosenApp: null,
-                    chosenIntent: null,
+                    chosenIntent: state.chosenIntent,
                     newApps: false,
                   });
                 }
@@ -140,8 +180,8 @@ export const ResolverPanel = ({
               onClick={() => {
                 if (!state.newApps) {
                   setState({
+                    chosenIntent: state.chosenIntent,
                     chosenApp: null,
-                    chosenIntent: null,
                     newApps: true,
                   });
                 }
@@ -152,7 +192,7 @@ export const ResolverPanel = ({
           </div>
           <div className={styles.resolverPanesContainer}>
             <div className={styles.resolverPane}>
-              {uniqueIntents.map((i) => (
+              {intentsToUse.map((i) => (
                 <LineItemComponent
                   li={i}
                   text={i}
@@ -177,6 +217,7 @@ export const ResolverPanel = ({
                 .flatMap((a) => a?.apps)
                 .map((i) => (
                   <LineItemComponent
+                    key={i.appId + i.instanceId}
                     li={i}
                     text={i.appId + (i.instanceId ? ` (${i.instanceId})` : "")}
                     setState={(a) => setState({ ...state, chosenApp: a })}
@@ -193,12 +234,19 @@ export const ResolverPanel = ({
           disabled={state.chosenApp == null || state.chosenIntent == null}
           onClick={async () => {
             if (state.chosenApp && state.chosenIntent) {
-              alert("Do it");
+              getServerState().intentChosen(
+                state.chosenApp,
+                state.chosenIntent,
+              );
+              closeAction();
             }
           }}
         />,
       ]}
-      closeAction={() => closeAction()}
+      closeAction={() => {
+        getServerState().intentChosen(null, null);
+        closeAction();
+      }}
     />
   );
 };

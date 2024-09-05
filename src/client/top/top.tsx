@@ -1,5 +1,3 @@
-import { Popup } from "../popups/popup";
-import { ClientState } from "../state/client";
 import * as styles from "./styles.module.css";
 
 export const Empty = () => {

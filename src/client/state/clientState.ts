@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
 import { AppIntent, Context, DisplayMetadata } from "@kite9/fdc3";
 import { ChannelType } from "@kite9/da-server/dist/src/handlers/BroadcastHandler";
-import { getServerState } from "./server";
 
 const STORAGE_KEY = "sail-client-state"
 
@@ -47,16 +46,16 @@ export interface ClientState {
     addTab(td: TabDetail): void
     removeTab(id: string): void
 
-    /** Panels */
+    /** Panel State */
     updatePanel(ap: AppPanel): void
     removePanel(id: string): void
     getPanels(): AppPanel[]
+    newPanel(detail: DirectoryApp, instanceId: string): void
 
-    /** Apps */
+    /** App Directory */
     setDirectories(d: Directory[]): void
     getDirectories(): Directory[]
     updateDirectory(din: Directory): void
-    open(details: DirectoryApp): Promise<AppPanel | null>
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void
@@ -139,10 +138,9 @@ abstract class AbstractClientState implements ClientState {
         this.saveState()
     }
 
-    async open(detail: DirectoryApp): Promise<AppPanel | null> {
+    newPanel(detail: DirectoryApp, instanceId: string): void {
         if (detail.type == 'web') {
             const url = (detail.details as any).url
-            const appId = await getServerState().registerAppLaunch(detail.appId)
 
             const ap = {
                 x: 1,
@@ -151,7 +149,7 @@ abstract class AbstractClientState implements ClientState {
                 h: 4,
                 title: detail.title,
                 tabId: this.activeTabId,
-                id: appId,
+                id: instanceId,
                 url,
                 appId: detail.appId
             } as AppPanel
@@ -159,9 +157,8 @@ abstract class AbstractClientState implements ClientState {
             console.log("opening app")
             this.panels.push(ap)
             this.saveState()
-            return ap
         } else {
-            return null;
+            throw new Error("Unsupported app type", detail.type)
         }
     }
 
@@ -218,8 +215,10 @@ abstract class AbstractClientState implements ClientState {
     getIntentResolution(): IntentResolution | null {
         return this.intentResolution
     }
+
     setIntentResolution(ir: IntentResolution | null): void {
         this.intentResolution = ir
+        this.saveState()
     }
 
 }

@@ -2,7 +2,7 @@ import { Bin, Controls, NewPanel, Resolver } from "../controls/controls";
 import { Logo, Settings } from "../top/top";
 import { Tabs } from "../tabs/tabs";
 import * as styles from "./styles.module.css";
-import { ClientState, getClientState } from "../state/client";
+import { ClientState, getClientState } from "../state/clientState";
 import { Component } from "react";
 import { AppDPanel } from "../appd/appd";
 import { Content, Grids } from "../grid/grid";
@@ -64,7 +64,6 @@ export class Frame extends Component<FrameProps, FrameState> {
                   context: EXAMPLE_CONTEXT,
                   requestId: "123",
                 });
-                this.setState(this.state);
               }}
             />
             <NewPanel onClick={() => this.setState({ popup: Popup.APPD })} />
@@ -80,7 +79,6 @@ export class Frame extends Component<FrameProps, FrameState> {
         {this.state?.popup == Popup.APPD ? (
           <AppDPanel
             key="appd"
-            cs={this.props.cs}
             closeAction={() =>
               this.setState({
                 popup: Popup.NONE,
@@ -105,7 +103,6 @@ export class Frame extends Component<FrameProps, FrameState> {
             context={this.props.cs.getIntentResolution()!!.context}
             closeAction={() => {
               this.props.cs.setIntentResolution(null);
-              this.setState(this.state);
             }}
           />
         ) : null}

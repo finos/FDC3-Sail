@@ -1,7 +1,7 @@
 import { io } from "socket.io-client"
 import { link } from "./util";
-import { APP_HELLO } from "../server/da/message-types";
-import { getClientState } from "../client/state/client";
+import { APP_HELLO, AppHelloArgs } from "../server/da/message-types";
+import { getClientState } from "../client/state/clientState";
 
 const appWindow = window.parent;
 
@@ -46,7 +46,11 @@ window.addEventListener("load", () => {
 
         link(socket, channel, instanceId)
 
-        socket.emit(APP_HELLO, clientState.getUserSessionID(), instanceId, appId)
+        socket.emit(APP_HELLO, {
+            userSessionId: clientState.getUserSessionID(),
+            instanceId,
+            appId
+        } as AppHelloArgs)
 
         // sned the other end of the channel to the app
         appWindow.postMessage({

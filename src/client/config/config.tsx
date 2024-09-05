@@ -1,6 +1,6 @@
 import { Component } from "react";
 import * as styles from "./styles.module.css";
-import { ClientState, Directory, getClientState } from "../state/client";
+import { ClientState, Directory, getClientState } from "../state/clientState";
 import { Popup } from "../popups/popup";
 
 const CONFIG_ITENS = ["Directories", "Something else", "Thing 3", "Thing 4"];

@@ -41,6 +41,14 @@
     background-color: #EEEEFF;
 }
 
+.activeChoiceBox {}
+
+.inactiveChoiceBox {
+    background-color: #EEEEEE;
+    color: #DDDDDD;
+    border-color: #DDDDDD;
+}
+
 .resolverPanesContainer {
     display: block;
     flex-grow: 1;

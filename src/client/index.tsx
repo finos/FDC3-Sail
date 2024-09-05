@@ -1,6 +1,6 @@
 import { Frame } from "./frame/frame";
 import { createRoot } from "react-dom/client";
-import { getClientState } from "./state/client";
+import { getClientState } from "./state/clientState";
 import { setupPostMessage } from "./state/postMessage";
 import "../../static/fonts/DM_Sans/DM_Sans.css";
 

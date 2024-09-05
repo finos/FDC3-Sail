@@ -1,7 +1,7 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
 import ReactDOM from 'react-dom';
-import { AppPanel, ClientState } from "../state/client"
+import { AppPanel, ClientState } from "../state/clientState"
 
 const TRASH_DROP = "trash";
 

@@ -1,8 +1,7 @@
 import { Component } from "react";
 import { Icon } from "../icon/icon";
-import { getServerState } from "../state/server";
+import { getServerState } from "../state/serverConnectivity";
 import * as styles from "./styles.module.css";
-import { ClientState } from "../state/client";
 import { Popup, PopupButton } from "../popups/popup";
 import { DirectoryApp } from "@kite9/da-server";
 
@@ -17,7 +16,7 @@ function getIcon(a: DirectoryApp) {
   }
 }
 
-type AppPanelProps = { closeAction: () => void; cs: ClientState };
+type AppPanelProps = { closeAction: () => void };
 
 type AppPanelState = {
   chosen: DirectoryApp | null;
@@ -96,12 +95,8 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
             disabled={this.state.chosen == null}
             onClick={async () => {
               if (this.state.chosen) {
-                const ap = await this.props.cs.open(this.state.chosen);
-                if (ap) {
-                  this.props.closeAction();
-                } else {
-                  alert("Not a web app");
-                }
+                getServerState().registerAppLaunch(this.state.chosen.appId);
+                this.props.closeAction();
               }
             }}
           />,

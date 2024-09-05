@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "./message-types";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE } from "./message-types";
 import { DirectoryApp, InstanceID, ServerContext } from "@kite9/da-server"
 import { AppIdentifier } from "@kite9/fdc3-common";
 import { SailDirectory } from "../appd/SailDirectory";
@@ -19,9 +19,11 @@ export class SailServerContext implements ServerContext<SailData> {
 
     private instances: SailData[] = []
     readonly directory: SailDirectory
+    private readonly socket: Socket
 
-    constructor(directory: SailDirectory) {
+    constructor(directory: SailDirectory, socket: Socket) {
         this.directory = directory
+        this.socket = socket
     }
 
     post(message: object, instanceId: InstanceID): Promise<void> {
@@ -47,6 +49,12 @@ export class SailServerContext implements ServerContext<SailData> {
             } as SailData
 
             this.setInstanceDetails(instanceId, metadata)
+            this.socket.emit(SAIL_APP_OPEN, {
+                appId,
+                instanceId,
+                url,
+                detail: app[0]
+            })
             return instanceId
         }
 
@@ -70,8 +78,15 @@ export class SailServerContext implements ServerContext<SailData> {
         this.instances.find(ca => (ca.instanceId == app.instanceId))!!.state = OPEN
     }
 
-    async getConnectedApps(): Promise<SailData[]> {
-        return this.instances.filter(ca => ca.state == OPEN)
+    async getConnectedApps(): Promise<AppIdentifier[]> {
+        return this.instances
+            .filter(ca => ca.state == OPEN)
+            .map(a => {
+                return {
+                    appId: a.appId,
+                    instanceId: a.instanceId
+                }
+            })
     }
 
     async isAppConnected(app: AppIdentifier): Promise<boolean> {
@@ -103,8 +118,50 @@ export class SailServerContext implements ServerContext<SailData> {
         return "2.0"
     }
 
-    narrowIntents(appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
-        throw new Error("Method not implemented.");
+    async narrowIntents(appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+        console.log("Narrowing intents", appIntents, context)
+
+
+        function runningApps(arg0: AppIntent): number {
+            return arg0.apps.filter(a => a.instanceId).length
+        }
+
+        function uniqueApps(arg0: AppIntent): number {
+            return arg0.apps.map(a => a.appId).filter((value, index, self) => self.indexOf(value) === index).length
+        }
+
+
+        if (appIntents.length == 0) {
+            return appIntents
+        }
+
+        if (appIntents.length == 1) {
+            if ((uniqueApps(appIntents[0]) == 1) && (runningApps(appIntents[0]) <= 1)) {
+                return appIntents
+            }
+        }
+
+        return new Promise<AppIntent[]>((resolve, _reject) => {
+            console.log("Narrowing intents", appIntents, context)
+            this.socket.emit(SAIL_INTENT_RESOLVE, {
+                appIntents,
+                context
+            }, (response: AppIntent[], err: string) => {
+                if (err) {
+                    console.error(err)
+                    resolve([])
+                } else {
+                    console.log("Narrowed intents", response)
+                    resolve(response)
+                }
+            })
+        })
     }
+
+    userChannelChanged(app: AppIdentifier, channelId: string | null): void {
+        console.log("User channel changed", app, channelId)
+        this.socket.emit(SAIL_CHANNEL_CHANGE, app, channelId)
+    }
+
 
 }

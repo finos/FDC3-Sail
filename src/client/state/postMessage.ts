@@ -1,5 +1,5 @@
-import { AppPanel, ClientState } from "./client"
-import { getServerState } from "./server"
+import { AppPanel, ClientState } from "./clientState"
+import { getServerState } from "./serverConnectivity"
 
 
 type WindowInformation = {

@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { AppPanel, ClientState } from "../state/client";
+import { AppPanel, ClientState } from "../state/clientState";
 import * as styles from "./styles.module.css";
 import "gridstack/dist/gridstack.css";
 import { GridsState } from "./gridstate";

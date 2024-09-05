@@ -23,6 +23,7 @@
     margin-top: 1rem;
     margin: auto;
     max-width: 50rem;
+    max-height: 80%;
     background-color: white;
     border-radius: .5rem;
     padding: 1rem;
@@ -36,6 +37,7 @@
 .popupArea {
     display: flex;
     flex-direction: row;
+    overflow: scroll;
 }
 
 .popupTitle {
