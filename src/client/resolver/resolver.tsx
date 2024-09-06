@@ -3,9 +3,7 @@ import { Popup, PopupButton } from "../popups/popup";
 import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3";
 import { ClientState } from "../state/clientState";
 import { useState } from "react";
-import { getServerState } from "../state/serverConnectivity";
-import { NewPanel } from "../controls/controls";
-import { channel } from "diagnostics_channel";
+import { getServerState } from "../state/ServerState";
 
 export const EXAMPLE_CONTEXT = {
   type: "fdc3.instrument",
@@ -230,6 +228,7 @@ export const ResolverPanel = ({
       }
       buttons={[
         <PopupButton
+          key="go"
           text="Go"
           disabled={state.chosenApp == null || state.chosenIntent == null}
           onClick={async () => {

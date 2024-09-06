@@ -8,11 +8,7 @@ import { AppDPanel } from "../appd/appd";
 import { Content, Grids } from "../grid/grid";
 import { GridsStateImpl, GridsState } from "../grid/gridstate";
 import { ConfigPanel } from "../config/config";
-import {
-  EXAMPLE_APP_INTENTS,
-  EXAMPLE_CONTEXT,
-  ResolverPanel,
-} from "../resolver/resolver";
+import { ResolverPanel } from "../resolver/resolver";
 
 enum Popup {
   NONE,
@@ -57,15 +53,6 @@ export class Frame extends Component<FrameProps, FrameState> {
         <div className={styles.left}>
           <Tabs cs={this.props.cs} />
           <Controls>
-            <Resolver
-              onClick={() => {
-                this.props.cs.setIntentResolution({
-                  appIntents: EXAMPLE_APP_INTENTS,
-                  context: EXAMPLE_CONTEXT,
-                  requestId: "123",
-                });
-              }}
-            />
             <NewPanel onClick={() => this.setState({ popup: Popup.APPD })} />
             <Bin />
           </Controls>
@@ -88,6 +75,7 @@ export class Frame extends Component<FrameProps, FrameState> {
         ) : null}
         {this.state?.popup == Popup.SETTINGS ? (
           <ConfigPanel
+            key="config"
             cs={this.props.cs}
             closeAction={() =>
               this.setState({
@@ -98,6 +86,7 @@ export class Frame extends Component<FrameProps, FrameState> {
         ) : null}
         {this.props.cs.getIntentResolution() ? (
           <ResolverPanel
+            key="resolver"
             cs={this.props.cs}
             appIntents={this.props.cs.getIntentResolution()!!.appIntents}
             context={this.props.cs.getIntentResolution()!!.context}

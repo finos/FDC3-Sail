@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE } from "./message-types";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
 import { DirectoryApp, InstanceID, ServerContext } from "@kite9/da-server"
 import { AppIdentifier } from "@kite9/fdc3-common";
 import { SailDirectory } from "../appd/SailDirectory";
@@ -11,7 +11,6 @@ export enum State { Pending, Open, Closed }
 
 export type SailData = AppIdentifier & {
     socket?: Socket,
-    url: string
     state: State
 }
 
@@ -41,20 +40,9 @@ export class SailServerContext implements ServerContext<SailData> {
         const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
         const url = (app[0].details as any)?.url ?? undefined
         if (url) {
-            const instanceId: InstanceID = 'app-' + this.createUUID()
-            const metadata = {
-                appId,
-                instanceId,
-                state: State.Pending
-            } as SailData
-
-            this.setInstanceDetails(instanceId, metadata)
-            this.socket.emit(SAIL_APP_OPEN, {
-                appId,
-                instanceId,
-                url,
-                detail: app[0]
-            })
+            const instanceId = await this.socket.emitWithAck(SAIL_APP_OPEN, {
+                appDRecord: app[0]
+            } as SailAppOpenArgs)
             return instanceId
         }
 
@@ -119,9 +107,6 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     async narrowIntents(appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
-        console.log("Narrowing intents", appIntents, context)
-
-
         function runningApps(arg0: AppIntent): number {
             return arg0.apps.filter(a => a.instanceId).length
         }

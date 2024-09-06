@@ -1,19 +1,24 @@
 import { DirectoryApp } from "@kite9/da-server";
 import { getClientState } from "./clientState";
-import { DA_HELLO, DesktopAgentHelloArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpen, SailChannelChange, SailIntentResolve } from "../../server/da/message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@kite9/fdc3";
+import { getAppState } from "./AppState";
 
 export interface ServerState {
 
-    getApplications(): Promise<DirectoryApp[]>
+    /**
+     * Call on startup to register the desktop agent with the server
+     */
+    registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void>
 
     /**
-     *  Returns the instance ID for a new application
+     * Called when an application begins the WCP handshake process.
+     * Returns the instance ID of the app.
      */
     registerAppLaunch(appId: string): Promise<string>
 
-    registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void>
+    getApplications(): Promise<DirectoryApp[]>
 
     setAppChannel(instanceId: string, channel: string): Promise<void>
 
@@ -26,24 +31,23 @@ class ServerStateImpl implements ServerState {
     resolveCallback: any
 
     async getApplications(): Promise<DirectoryApp[]> {
+        if (!this.socket) {
+            throw new Error("Desktop Agent not registered")
+        }
+
         const userSessionId = getClientState().getUserSessionID()
-        return await fetch("/apps?" + new URLSearchParams({ userSessionId }).toString())
-            .then((response) => response.json())
-            .then(o => o as DirectoryApp[]);
+        const response = await this.socket.emitWithAck(DA_DIRECTORY_LISTING, { userSessionId } as DesktopAgentDirectoryListingArgs)
+        return response as DirectoryApp[]
     }
 
     async registerAppLaunch(appId: string): Promise<string> {
-        const userSessionId = getClientState().getUserSessionID()
-        const response = await fetch("/registerAppLaunch", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ appId, userSessionId })
-        })
+        if (!this.socket) {
+            throw new Error("Desktop Agent not registered")
+        }
 
-        const json = await response.json()
-        return json.instanceId
+        const userSessionId = getClientState().getUserSessionID()
+        const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId } as DesktopAgentRegisterAppLaunchArgs)
+        return instanceId
     }
 
     async registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void> {
@@ -55,16 +59,17 @@ class ServerStateImpl implements ServerState {
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props)
 
-            this.socket?.on(SAIL_APP_OPEN, (data: SailAppOpen) => {
-                console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
-                cs.newPanel(data.detail, data.instanceId)
+            this.socket?.on(SAIL_APP_OPEN, (data: SailAppOpenArgs, callback) => {
+                // (`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
+                const instanceId = getAppState().open(data.appDRecord)
+                callback(instanceId)
             })
 
-            this.socket?.on(SAIL_CHANNEL_CHANGE, (data: SailChannelChange) => {
+            this.socket?.on(SAIL_CHANNEL_CHANGE, (data: SailChannelChangeArgs) => {
                 console.log(`SAIL_CHANNEL_CHANGE: ${JSON.stringify(data)}`)
             })
 
-            this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolve, callback) => {
+            this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
                 console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
                 cs.setIntentResolution({
                     appIntents: data.appIntents,

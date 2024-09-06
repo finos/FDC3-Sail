@@ -21,6 +21,7 @@
     "@kite9/client": "2.2.0-beta.6",
     "@kite9/da-server": "2.2.0-beta.6",
     "@kite9/fdc3": "2.2.0-beta.6",
+    "@kite9/fdc3-common": "2.2.0-beta.6",
     "@types/react-dom": "^18.2.25",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",

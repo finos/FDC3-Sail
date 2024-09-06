@@ -1,9 +1,9 @@
-import { APP_HELLO, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT } from "./message-types";
+import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs } from "./message-types";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailServerContext, State } from "./SailServerContext";
 import { SailDirectory } from "../appd/SailDirectory";
-
+import { v4 as uuid } from 'uuid'
 export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
@@ -36,6 +36,33 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 const fdc3Server = new SailFDC3Server(serverContext, props)
                 sessions.set(userSessionId, fdc3Server)
                 console.log("created agent session.  Running sessions ", sessions.size, props.userSessionId)
+            }
+        })
+
+        socket.on(DA_DIRECTORY_LISTING, function (props: DesktopAgentDirectoryListingArgs, callback: (success: any, err?: string) => void) {
+            const userSessionId = props.userSessionId
+            const session = sessions.get(userSessionId)
+            if (session) {
+                callback(session?.getDirectory().allApps)
+            } else {
+                callback(null, "Session not found")
+            }
+        })
+
+        socket.on(DA_REGISTER_APP_LAUNCH, async function (props: DesktopAgentRegisterAppLaunchArgs, callback: (success: any, err?: string) => void) {
+            const { appId, userSessionId } = props
+            const session = sessions.get(userSessionId)
+            if (session) {
+                const instanceId = uuid()
+                session.serverContext.setInstanceDetails(instanceId, {
+                    instanceId: instanceId,
+                    state: State.Pending,
+                    appId
+                })
+                console.log("Registered app", appId, instanceId)
+                callback(instanceId)
+            } else {
+                callback(null, "Session not found")
             }
         })
 
@@ -91,10 +118,10 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 if (type == SocketType.APP) {
                     await fdc3ServerInstance.serverContext.disconnect(appInstanceId!!)
                     const remaining = await fdc3ServerInstance.serverContext.getConnectedApps()
-                    console.log(`Apparent disconnect: ${remaining.length} remaining`)
+                    console.error(`Apparent disconnect: ${remaining.length} remaining`)
                 } else {
                     sessions.delete(userSessionId!!)
-                    console.log("Desktop Agent Disconnected", userSessionId)
+                    console.error("Desktop Agent Disconnected", userSessionId)
                 }
             }
         })

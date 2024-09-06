@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
 import { AppIntent, Context, DisplayMetadata } from "@kite9/fdc3";
 import { ChannelType } from "@kite9/da-server/dist/src/handlers/BroadcastHandler";
+import { getServerState } from "./ServerState";
 
 const STORAGE_KEY = "sail-client-state"
 
@@ -11,7 +12,7 @@ export type AppPanel = GridStackPosition & {
     title: string
     url: string,
     tabId: string
-    id: string,
+    panelId: string,
     appId: string
 }
 
@@ -50,7 +51,7 @@ export interface ClientState {
     updatePanel(ap: AppPanel): void
     removePanel(id: string): void
     getPanels(): AppPanel[]
-    newPanel(detail: DirectoryApp, instanceId: string): void
+    newPanel(detail: DirectoryApp, instanceId: string): AppPanel
 
     /** App Directory */
     setDirectories(d: Directory[]): void
@@ -120,25 +121,25 @@ abstract class AbstractClientState implements ClientState {
 
     /** Panels */
     updatePanel(ap: AppPanel): void {
-        console.log("Panels " + JSON.stringify(this.panels))
-        const idx = this.panels.findIndex(p => p.id == ap.id)
+        // console.log("Panels " + JSON.stringify(this.panels))
+        const idx = this.panels.findIndex(p => p.panelId == ap.panelId)
         if (idx != -1) {
             this.panels[idx] = ap
         } else {
             this.panels.push(ap)
         }
 
-        console.log("Total Panels: " + this.panels.length)
+        // console.log("Total Panels: " + this.panels.length)
 
         this.saveState()
     }
 
     removePanel(id: string): void {
-        this.panels = this.panels.filter(p => p.id != id)
+        this.panels = this.panels.filter(p => p.panelId != id)
         this.saveState()
     }
 
-    newPanel(detail: DirectoryApp, instanceId: string): void {
+    newPanel(detail: DirectoryApp, instanceId: string): AppPanel {
         if (detail.type == 'web') {
             const url = (detail.details as any).url
 
@@ -149,14 +150,14 @@ abstract class AbstractClientState implements ClientState {
                 h: 4,
                 title: detail.title,
                 tabId: this.activeTabId,
-                id: instanceId,
+                panelId: instanceId,
                 url,
                 appId: detail.appId
             } as AppPanel
 
-            console.log("opening app")
             this.panels.push(ap)
             this.saveState()
+            return ap
         } else {
             throw new Error("Unsupported app type", detail.type)
         }
@@ -190,6 +191,9 @@ abstract class AbstractClientState implements ClientState {
         } else {
             this.directories.push(din)
         }
+
+        getServerState().registerDesktopAgent(this.createArgs())
+
         this.saveState()
     }
 
@@ -239,7 +243,6 @@ class LocalStorageClientState extends AbstractClientState {
         const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories })
         localStorage.setItem(STORAGE_KEY, data)
         this.callbacks.forEach(cb => cb())
-        console.log("State saved" + data)
     }
 
 }
@@ -252,6 +255,11 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     },
     {
         label: "FDC3 Conformance",
+        url: "./directory/local-conformance-2_0.v2.json",
+        active: false
+    },
+    {
+        label: "FINOS FDC3 Directory",
         url: "https://directory.fdc3.finos.org/v2/apps/",
         active: false
     },

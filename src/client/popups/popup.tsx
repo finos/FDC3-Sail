@@ -28,6 +28,7 @@ export class Popup extends Component<PopupProps> {
             <div className={styles.popupArea}>{this.props.area}</div>
             <div className={styles.popupButtons}>
               <PopupButton
+                key="cancel"
                 onClick={() => this.props.closeAction()}
                 text="Cancel"
                 disabled={false}

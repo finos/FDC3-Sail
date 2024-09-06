@@ -2,6 +2,8 @@
     display: flex;
     flex-direction: row;
     gap: 1rem;
+    width: 60rem;
+    height: 30rem;
 }
 
 .appDApps {
@@ -21,6 +23,7 @@
     flex-basis: 7.5rem;
     flex-grow: 0;
     flex-shrink: 0;
+    max-height: 7.5rem;
     display: flex;
     flex-direction: column;
     justify-content: center;

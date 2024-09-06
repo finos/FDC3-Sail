@@ -1,9 +1,10 @@
 import { Component } from "react";
 import { Icon } from "../icon/icon";
-import { getServerState } from "../state/serverConnectivity";
+import { getServerState } from "../state/ServerState";
 import * as styles from "./styles.module.css";
 import { Popup, PopupButton } from "../popups/popup";
 import { DirectoryApp } from "@kite9/da-server";
+import { getAppState } from "../state/AppState";
 
 const DEFAULT_ICON = "/static/icons/control/choose-app.svg";
 
@@ -39,13 +40,13 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         //console.log("loaded - ready to display")
         this.setState({
           chosen: null,
-          apps,
+          apps: apps.filter((d) => onlyRelevantApps(d)),
         });
       });
   };
 
   setChosen(app: DirectoryApp) {
-    console.log("state changed " + app.appId);
+    //console.log("state changed " + app.appId);
     this.setState({
       apps: this.state.apps,
       chosen: app,
@@ -81,7 +82,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                   <ul>{app.categories?.map((c: any) => <li>{c}</li>)}</ul>
                   <div className={styles.appDScreenshots}>
                     {app.screenshots?.map((s: any) => (
-                      <img src={s.src} title={s.label} />
+                      <img key={s.src} src={s.src} title={s.label} />
                     ))}
                   </div>
                 </div>
@@ -91,11 +92,12 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         }
         buttons={[
           <PopupButton
+            key="open"
             text="open"
             disabled={this.state.chosen == null}
             onClick={async () => {
               if (this.state.chosen) {
-                getServerState().registerAppLaunch(this.state.chosen.appId);
+                getAppState().open(this.state.chosen);
                 this.props.closeAction();
               }
             }}
@@ -105,4 +107,11 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
       />
     );
   }
+}
+function onlyRelevantApps(d: DirectoryApp): boolean {
+  const sail = d.hostManifests?.sail;
+  const show = sail ? sail.searchable != false : true;
+  const type = d.type == "web";
+  const url = d.details?.url;
+  return show && type && url;
 }
