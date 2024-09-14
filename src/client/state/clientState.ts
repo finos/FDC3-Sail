@@ -267,8 +267,14 @@ const DEFAULT_DIRECTORIES: Directory[] = [
         label: "Sail Built-In Apps",
         url: "./directory/sail.json",
         active: false
+    },
+    {
+        label: "Developer Tutorial",
+        url: "./directory/training-appd.v2.json",
+        active: false
     }
 ]
+
 
 const DEFAULT_TABS: TabDetail[] = [
     {
