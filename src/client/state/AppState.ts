@@ -1,7 +1,7 @@
 import { WebConnectionProtocol1Hello } from "@kite9/fdc3-common";
 import { getClientState } from "./clientState"
 import { getServerState } from "./ServerState"
-import { DirectoryApp } from "@kite9/da-server";
+import { DirectoryApp } from "@kite9/fdc3-web-impl";
 import { v4 as uuid } from 'uuid'
 
 interface AppState {

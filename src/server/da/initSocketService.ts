@@ -20,6 +20,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         var type: SocketType | undefined = undefined
 
         socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {
+            console.log(JSON.stringify(props))
+
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
             console.log("Desktop Agent Connecting", userSessionId)
@@ -45,11 +47,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             if (session) {
                 callback(session?.getDirectory().allApps)
             } else {
+                console.error("Session not found", userSessionId)
                 callback(null, "Session not found")
             }
         })
 
         socket.on(DA_REGISTER_APP_LAUNCH, async function (props: DesktopAgentRegisterAppLaunchArgs, callback: (success: any, err?: string) => void) {
+            console.log(JSON.stringify(props))
+
             const { appId, userSessionId } = props
             const session = sessions.get(userSessionId)
             if (session) {
@@ -62,11 +67,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 console.log("Registered app", appId, instanceId)
                 callback(instanceId)
             } else {
+                console.error("Session not found", userSessionId)
                 callback(null, "Session not found")
             }
         })
 
         socket.on(APP_HELLO, function (props: AppHelloArgs) {
+            console.log(JSON.stringify(props))
+
             appInstanceId = props.instanceId
             userSessionId = props.userSessionId
             type = SocketType.APP
@@ -96,7 +104,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     console.error("App tried to connect with invalid instance id")
                 }
             } else {
-                console.log("App Tried Connecting to non-existent DA Instance ", userSessionId, appInstanceId)
+                console.error("App Tried Connecting to non-existent DA Instance ", userSessionId, appInstanceId)
             }
         })
 
@@ -110,6 +118,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 } catch (e) {
                     console.error("Error processing message", e)
                 }
+            } else {
+                console.error("No Server instance")
             }
         })
 
@@ -123,6 +133,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     sessions.delete(userSessionId!!)
                     console.error("Desktop Agent Disconnected", userSessionId)
                 }
+            } else {
+                console.error("No Server instance")
             }
         })
     })

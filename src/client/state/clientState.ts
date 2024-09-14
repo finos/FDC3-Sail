@@ -1,9 +1,9 @@
-import { ChannelState, DirectoryApp } from "@kite9/da-server"
+import { ChannelState, DirectoryApp } from "@kite9/fdc3-web-impl"
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
 import { AppIntent, Context, DisplayMetadata } from "@kite9/fdc3";
-import { ChannelType } from "@kite9/da-server/dist/src/handlers/BroadcastHandler";
+import { ChannelType } from "@kite9/fdc3-web-impl/dist/src/handlers/BroadcastHandler";
 import { getServerState } from "./ServerState";
 
 const STORAGE_KEY = "sail-client-state"

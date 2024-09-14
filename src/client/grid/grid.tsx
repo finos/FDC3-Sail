@@ -20,7 +20,7 @@ export class Grids extends Component<GridsProps> {
     return (
       <div className={styles.grids} id={this.props.id}>
         {this.props.cs.getPanels().map((p) => (
-          <AppFrame panel={p} />
+          <AppFrame key={p.panelId} panel={p} />
         ))}
       </div>
     );

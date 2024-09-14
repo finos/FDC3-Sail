@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
-import { DirectoryApp, InstanceID, ServerContext } from "@kite9/da-server"
-import { AppIdentifier } from "@kite9/fdc3-common";
+import { DirectoryApp, InstanceID, ServerContext } from "@kite9/fdc3-web-impl"
+import { AppIdentifier } from "@kite9/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@kite9/fdc3";
 import { OPEN } from "ws";

@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@kite9/da-server";
+import { DirectoryApp } from "@kite9/fdc3-web-impl";
 import { getClientState } from "./clientState";
 import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
@@ -59,9 +59,9 @@ class ServerStateImpl implements ServerState {
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props)
 
-            this.socket?.on(SAIL_APP_OPEN, (data: SailAppOpenArgs, callback) => {
+            this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
                 // (`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
-                const instanceId = getAppState().open(data.appDRecord)
+                const instanceId = await getAppState().open(data.appDRecord)
                 callback(instanceId)
             })
 
