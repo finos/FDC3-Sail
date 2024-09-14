@@ -1,8 +1,11 @@
-import { WebConnectionProtocol1Hello } from "@kite9/fdc3-common";
+import { BrowserTypes } from "@kite9/fdc3";
 import { getClientState } from "./clientState"
 import { getServerState } from "./ServerState"
 import { DirectoryApp } from "@kite9/fdc3-web-impl";
 import { v4 as uuid } from 'uuid'
+
+type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
+
 
 interface AppState {
 
@@ -21,7 +24,11 @@ class DefaultAppState implements AppState {
     async getDirectoryAppForUrl(identityUrl: string): DirectoryApp {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")
         const applications: DirectoryApp[] = await getServerState().getApplications()
-        const firstMatchingApp = applications.find(x => (x.details.url == strippedIdentityUrl) || (x.details.url == identityUrl))
+        const firstMatchingApp = applications.find(x =>
+            (x.details.url == strippedIdentityUrl) ||
+            (x.details.url == identityUrl) ||
+            ((x.details.url.startsWith("/")) && identityUrl.endsWith(x.details.url))    // allows for local urls
+        )
         return firstMatchingApp
     }
 

@@ -1,11 +1,35 @@
 // TradingViewWidget.jsx
-import { useEffect, useRef, memo } from "react";
+import { getAgent } from "@kite9/fdc3";
+import { useEffect, useRef, memo, useState } from "react";
 
-export function TradingViewWidget() {
+export const TradingViewWidget = () => {
   const container: any = useRef();
 
+  const [state, setState] = useState("MSFT");
+
   useEffect(() => {
-    const script = document.createElement("script");
+    getAgent().then((fdc3) => {
+      fdc3.addIntentListener("ViewChart", async (context) => {
+        setState(context?.id?.ticker);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    var script: HTMLScriptElement | null = null;
+
+    script = document.getElementById(
+      "tradingview-widget-script",
+    ) as HTMLScriptElement;
+
+    if (script) {
+      container.current.removeChild(script);
+    }
+
+    script = document.createElement("script");
+    container.current.appendChild(script);
+
+    script!!.id = "tradingview-widget-script";
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
@@ -13,18 +37,17 @@ export function TradingViewWidget() {
     script.innerHTML = `
         {
           "autosize": true,
-          "symbol": "NASDAQ:AAPL",
+          "symbol": "NASDAQ:${state}",
           "interval": "D",
           "timezone": "Etc/UTC",
           "theme": "light",
           "style": "1",
           "locale": "en",
-          "allow_symbol_change": true,
+          "allow_symbol_change": false,
           "calendar": false,
           "support_host": "https://www.tradingview.com"
         }`;
-    container.current.appendChild(script);
-  }, []);
+  }, [state]);
 
   return (
     <div
@@ -47,6 +70,6 @@ export function TradingViewWidget() {
       </div>
     </div>
   );
-}
+};
 
 export default memo(TradingViewWidget);

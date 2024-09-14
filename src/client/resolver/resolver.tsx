@@ -192,6 +192,7 @@ export const ResolverPanel = ({
             <div className={styles.resolverPane}>
               {intentsToUse.map((i) => (
                 <LineItemComponent
+                  key={i}
                   li={i}
                   text={i}
                   setState={(a) => {

@@ -11,7 +11,8 @@ export enum State { Pending, Open, Closed }
 
 export type SailData = AppIdentifier & {
     socket?: Socket,
-    state: State
+    state: State,
+    url?: string
 }
 
 export class SailServerContext implements ServerContext<SailData> {

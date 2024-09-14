@@ -40,6 +40,22 @@
     padding-right: .2rem;
 }
 
+.resizeBaffle {
+    display: none;
+    position: absolute;
+    top: 2rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    z-index: 1000;
+}
+
+.resizing .resizeBaffle {
+    display: block;
+    background-color: #FFFFFF22;
+}
+
 .contentBody {
     position: absolute;
     top: 2rem;

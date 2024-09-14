@@ -114,6 +114,7 @@ export const Content = ({
             }}
           />
         </div>
+        <div className={styles.resizeBaffle} />
         <div className={styles.contentBody}>
           {panel.url ? <AppSlot panel={panel} /> : <div />}
         </div>

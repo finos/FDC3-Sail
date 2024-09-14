@@ -83,13 +83,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             if (fdc3Server != undefined) {
                 console.log("An app connected: ", userSessionId, appInstanceId)
                 const appInstance = fdc3Server.getServerContext().getInstanceDetails(appInstanceId)
+                const directoryItem = fdc3Server.getServerContext().directory.retrieveAppsById(props.appId)
                 if ((appInstance != undefined) && (appInstance.state == State.Pending)) {
                     appInstance.socket = socket
+                    appInstance.url = directoryItem[0].details.url
                     fdc3ServerInstance = fdc3Server
                     fdc3ServerInstance.serverContext.setAppConnected({ appId: props.appId, instanceId: appInstanceId })
                 } else if (DEBUG_MODE) {
                     console.error("App tried to connect with invalid instance id, allowing connection anyway ", appInstanceId)
-                    const directoryItem = fdc3Server.getServerContext().directory.retrieveAppsById(props.appId)
 
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, {
                         appId: props.appId,

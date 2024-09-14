@@ -22,7 +22,19 @@
                 {
                     "src": "/static/example-apps/tradingview/tradingview-icon.png"
                 }
-            ]
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewChart": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Chart"
+                        }
+                    }
+                }
+            }
         }
     ],
     "message": "OK"

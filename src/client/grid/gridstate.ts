@@ -1,8 +1,8 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
-import ReactDOM from 'react-dom';
 import { AppPanel, ClientState } from "../state/clientState"
 import { createRoot } from 'react-dom/client';
+import * as styles from "./styles.module.css";
 
 
 const TRASH_DROP = "trash";
@@ -89,7 +89,8 @@ export class GridsStateImpl implements GridsState {
             {
                 removable: "#" + TRASH_DROP,
                 acceptWidgets: true,
-                margin: '1'
+                margin: '1',
+                cellHeight: '70px'
             },
             e as GridStackElement
         )
@@ -104,6 +105,12 @@ export class GridsStateImpl implements GridsState {
                     this.cs.updatePanel(panel)
                 }
             }
+
+            element.classList.remove(styles.resizing)
+        })
+
+        grid.on("resizestart", (_event, element) => {
+            element.classList.add(styles.resizing)
         })
 
         grid.on("removed", (event, items) => {
