@@ -1,7 +1,7 @@
 import { io } from "socket.io-client"
 import { link } from "./util";
 import { APP_HELLO, AppHelloArgs } from "../server/da/message-types";
-import { getClientState } from "../client/state/clientState";
+import { getClientState } from "../client/state/ClientState";
 
 const appWindow = window.parent;
 

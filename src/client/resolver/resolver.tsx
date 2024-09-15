@@ -1,7 +1,7 @@
 import * as styles from "./styles.module.css";
 import { Popup, PopupButton } from "../popups/popup";
 import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3";
-import { ClientState } from "../state/clientState";
+import { ClientState } from "../state/ClientState";
 import { useState } from "react";
 import { getServerState } from "../state/ServerState";
 

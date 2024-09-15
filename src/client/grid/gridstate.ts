@@ -1,6 +1,6 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
-import { AppPanel, ClientState } from "../state/clientState"
+import { AppPanel, ClientState } from "../state/ClientState"
 import { createRoot } from 'react-dom/client';
 import * as styles from "./styles.module.css";
 

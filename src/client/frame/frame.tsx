@@ -1,8 +1,8 @@
-import { Bin, Controls, NewPanel, Resolver } from "../controls/controls";
+import { Bin, Controls, NewPanel } from "../controls/controls";
 import { Logo, Settings } from "../top/top";
 import { Tabs } from "../tabs/tabs";
 import * as styles from "./styles.module.css";
-import { ClientState, getClientState } from "../state/clientState";
+import { ClientState, getClientState } from "../state/ClientState";
 import { Component } from "react";
 import { AppDPanel } from "../appd/appd";
 import { Content, Grids } from "../grid/grid";

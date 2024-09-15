@@ -1,9 +1,9 @@
 import { Component } from "react";
 import * as styles from "./styles.module.css";
-import { ClientState, Directory, getClientState } from "../state/clientState";
+import { ClientState, Directory, getClientState } from "../state/ClientState";
 import { Popup } from "../popups/popup";
 
-const CONFIG_ITENS = ["Directories", "Something else", "Thing 3", "Thing 4"];
+const CONFIG_ITEMS = ["Directories", "Panels"];
 
 type AppPanelProps = {
   closeAction: () => void;
@@ -23,7 +23,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
   constructor(props: AppPanelProps) {
     super(props);
     this.state = {
-      item: CONFIG_ITENS[0],
+      item: CONFIG_ITEMS[0],
     };
   }
 
@@ -35,7 +35,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
         area={
           <div className={styles.configContent}>
             <div className={styles.configChoice}>
-              {CONFIG_ITENS.map((a) => (
+              {CONFIG_ITEMS.map((a) => (
                 <div
                   key={a}
                   className={`${styles.configItem} ${a == this.state.item ? styles.selected : ""}`}
@@ -47,7 +47,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
             </div>
 
             <div className={styles.configChoice}>
-              {this.state.item == CONFIG_ITENS[0]
+              {this.state.item == CONFIG_ITEMS[0]
                 ? getClientState()
                     .getDirectories()
                     .map((d) => (
