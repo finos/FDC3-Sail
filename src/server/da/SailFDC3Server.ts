@@ -12,7 +12,7 @@ export class SailFDC3Server extends DefaultFDC3Server {
     readonly serverContext: SailServerContext
 
     constructor(sc: SailServerContext, helloArgs: DesktopAgentHelloArgs) {
-        super(sc, sc.directory, helloArgs.channels)
+        super(sc, sc.directory, helloArgs.channels, true, 60000, 20000)
         sc.directory.replace(helloArgs.directories)
         this.serverContext = sc
     }

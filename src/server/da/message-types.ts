@@ -58,3 +58,4 @@ export type SailAppOpenArgs = {
  */
 export const FDC3_APP_EVENT = 'fdc3-app-event'
 export const FDC3_DA_EVENT = 'fdc3-da-event'
+

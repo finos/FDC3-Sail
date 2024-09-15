@@ -67,6 +67,13 @@ export class SailServerContext implements ServerContext<SailData> {
         this.instances.find(ca => (ca.instanceId == app.instanceId))!!.state = OPEN
     }
 
+    async setAppDisconnected(app: AppIdentifier): Promise<void> {
+        const idx = this.instances.findIndex(ca => (ca.instanceId == app.instanceId))
+        if (idx != -1) {
+            this.instances.splice(idx, 1)
+        }
+    }
+
     async getConnectedApps(): Promise<AppIdentifier[]> {
         return this.instances
             .filter(ca => ca.state == OPEN)

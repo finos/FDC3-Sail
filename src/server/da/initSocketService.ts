@@ -111,7 +111,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
         socket.on(FDC3_APP_EVENT, function (data, from): void {
             // message from app to da
-            console.log(JSON.stringify(data))
+            console.log(JSON.stringify(data) + " from " + from)
 
             if (fdc3ServerInstance != undefined) {
                 try {

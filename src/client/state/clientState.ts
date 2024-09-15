@@ -144,9 +144,9 @@ abstract class AbstractClientState implements ClientState {
             const url = (detail.details as any).url
 
             const ap = {
-                x: 1,
-                y: 1,
-                w: 3,
+                x: -1,
+                y: -1,
+                w: 6,
                 h: 4,
                 title: detail.title,
                 tabId: this.activeTabId,

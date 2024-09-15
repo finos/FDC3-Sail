@@ -83,6 +83,14 @@ export class GridsStateImpl implements GridsState {
         })
     }
 
+    setResizing(resizing: boolean, element: HTMLElement) {
+        if (resizing) {
+            element.parentElement?.classList.add(styles.resizing)
+        } else {
+            element.parentElement?.classList.remove(styles.resizing)
+        }
+    }
+
     createGridstack(e: Element): GridStack {
         //const gridId = gridIdforTab(tabId)
         const grid = GridStack.init(
@@ -90,7 +98,11 @@ export class GridsStateImpl implements GridsState {
                 removable: "#" + TRASH_DROP,
                 acceptWidgets: true,
                 margin: '1',
-                cellHeight: '70px'
+                cellHeight: '70px',
+                resizable: {
+                    handles: 'e, se, s, sw, w'
+
+                }
             },
             e as GridStackElement
         )
@@ -106,11 +118,11 @@ export class GridsStateImpl implements GridsState {
                 }
             }
 
-            element.classList.remove(styles.resizing)
+            this.setResizing(false, element)
         })
 
         grid.on("resizestart", (_event, element) => {
-            element.classList.add(styles.resizing)
+            this.setResizing(true, element)
         })
 
         grid.on("removed", (event, items) => {
@@ -140,6 +152,12 @@ export class GridsStateImpl implements GridsState {
                     this.cs.updatePanel(panel)
                 }
             }
+
+            this.setResizing(false, element)
+        })
+
+        grid.on("dragstart", (_event, element) => {
+            this.setResizing(true, element)
         })
 
         return grid
@@ -173,6 +191,11 @@ export class GridsStateImpl implements GridsState {
     }
 
     createWidget(grid: GridStack, p: AppPanel, content: boolean): GridItemHTMLElement {
+        // check the panel size
+        if (p.x == -1 || p.y == -1) {
+            this.findEmptyArea(p, grid)
+        }
+
         // add to the grid
         const opts: GridStackWidget = {
             h: p.h,
@@ -198,7 +221,6 @@ export class GridsStateImpl implements GridsState {
         const root = createRoot(div)
         const content = this.render(p, contentIdforTab(p.panelId))
         root.render(content)
-        //ReactDOM.render(content, div)
     }
 
     findChild(e: DocumentFragment | HTMLElement | Element, id: string): HTMLElement | null {

@@ -60,7 +60,7 @@ class ServerStateImpl implements ServerState {
             this.socket?.emit(DA_HELLO, props)
 
             this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
-                // (`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
+                console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
                 const instanceId = await getAppState().open(data.appDRecord)
                 callback(instanceId)
             })
