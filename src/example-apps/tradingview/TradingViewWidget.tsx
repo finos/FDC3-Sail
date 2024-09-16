@@ -12,6 +12,10 @@ export const TradingViewWidget = () => {
       fdc3.addIntentListener("ViewChart", async (context) => {
         setState(context?.id?.ticker);
       });
+
+      fdc3.addContextListener("fdc3.instrument", async (context) => {
+        setState(context?.id?.ticker);
+      });
     });
   }, []);
 
