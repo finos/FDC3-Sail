@@ -1,6 +1,6 @@
 import { DirectoryApp } from "../../ftw";
 import { getClientState } from "./ClientState";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@kite9/fdc3";
 import { getAppState } from "./AppState";
@@ -65,8 +65,13 @@ class ServerStateImpl implements ServerState {
                 callback(instanceId)
             })
 
-            this.socket?.on(SAIL_CHANNEL_CHANGE, (data: SailChannelChangeArgs) => {
-                console.log(`SAIL_CHANNEL_CHANGE: ${JSON.stringify(data)}`)
+            this.socket?.on(SAIL_CHANNEL_SETUP, (instanceId: string) => {
+                console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)
+                const cs = getClientState()
+                const panel = cs.getPanels().find(p => p.panelId === instanceId)
+                if (panel) {
+                    this.setUserChannel(instanceId, panel.tabId)
+                }
             })
 
             this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
@@ -83,18 +88,12 @@ class ServerStateImpl implements ServerState {
         })
     }
 
-    async setUserChannel(instanceId: string): Promise<void> {
-        const userSessionId = getClientState().getUserSessionID()
-        await fetch("/setAppChannel", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                instanceId,
-                userSessionId
-            })
-        })
+    async setUserChannel(instanceId: string, channelId: string): Promise<void> {
+        this.socket?.emit(SAIL_CHANNEL_CHANGE, {
+            instanceId,
+            channel: channelId,
+            userSessionId: getClientState().getUserSessionID()
+        } as SailChannelChangeArgs)
     }
 
     async intentChosen(ai: AppIdentifier | null, intent: string | null): Promise<void> {

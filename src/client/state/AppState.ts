@@ -1,8 +1,9 @@
 import { BrowserTypes } from "@kite9/fdc3";
 import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
-import { DirectoryApp } from "../../ftw/directory/DirectoryInterface";
+import { DirectoryApp } from "../../ftw";
 import { v4 as uuid } from 'uuid'
+import { WebAppDetails } from "../../ftw/directory/DirectoryInterface";
 
 type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
 
@@ -21,14 +22,15 @@ class DefaultAppState implements AppState {
 
 
 
-    async getDirectoryAppForUrl(identityUrl: string): DirectoryApp {
+    async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")
         const applications: DirectoryApp[] = await getServerState().getApplications()
-        const firstMatchingApp = applications.find(x =>
-            (x.details.url == strippedIdentityUrl) ||
-            (x.details.url == identityUrl) ||
-            ((x.details.url.startsWith("/")) && identityUrl.endsWith(x.details.url))    // allows for local urls
-        )
+        const firstMatchingApp = applications.find(x => {
+            const d = x.details as WebAppDetails
+            return (d.url == strippedIdentityUrl) ||
+                (d.url == identityUrl) ||
+                ((d.url.startsWith("/")) && identityUrl.endsWith(d.url))    // allows for local urls
+        })
         return firstMatchingApp
     }
 
@@ -46,7 +48,7 @@ class DefaultAppState implements AppState {
             if (data.type == "WCP1Hello") {
                 const helloData: WebConnectionProtocol1Hello = event.data
 
-                const appD: DirectoryApp = await this.getDirectoryAppForUrl(helloData.payload.identityUrl)
+                const appD: DirectoryApp | undefined = await this.getDirectoryAppForUrl(helloData.payload.identityUrl)
                 const appId = appD?.appId
                 const instanceId = await this.getInstanceIdForWindow(source)
 
@@ -104,10 +106,10 @@ class DefaultAppState implements AppState {
      */
     open(detail: DirectoryApp): Promise<string> {
         return new Promise((resolve, _reject) => {
-            const openAsTab = detail.hostManifests?.sail?.forceNewWindow ?? false
+            const openAsTab = (detail.hostManifests as any)?.sail?.forceNewWindow ?? false
             const instanceId = 'app-' + uuid()
             if (openAsTab) {
-                const w = window.open(detail.details.url, "_blank")!!;
+                const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;
                 this.registerAppWindow(w, instanceId)
                 return resolve(instanceId)
             } else {

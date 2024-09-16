@@ -1,4 +1,4 @@
-import { ChannelState, DirectoryApp } from "../../ftw/directory/DirectoryInterface";
+import { ChannelState, DirectoryApp } from "../../ftw";
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
@@ -159,7 +159,7 @@ abstract class AbstractClientState implements ClientState {
             this.saveState()
             return ap
         } else {
-            throw new Error("Unsupported app type", detail.type)
+            throw new Error("Unsupported app type: " + detail.type)
         }
     }
 

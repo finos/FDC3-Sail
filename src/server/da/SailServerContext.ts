@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
 import { DirectoryApp, InstanceID, ServerContext } from "../../ftw"
 import { AppIdentifier } from "@kite9/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
@@ -66,6 +66,11 @@ export class SailServerContext implements ServerContext<SailData> {
 
     async setAppConnected(app: AppIdentifier): Promise<void> {
         this.instances.find(ca => (ca.instanceId == app.instanceId))!!.state = OPEN
+        this.setInitialChannel(app)
+    }
+
+    async setInitialChannel(app: AppIdentifier): Promise<void> {
+        this.socket.emit(SAIL_CHANNEL_SETUP, app.instanceId)
     }
 
     async setAppDisconnected(app: AppIdentifier): Promise<void> {

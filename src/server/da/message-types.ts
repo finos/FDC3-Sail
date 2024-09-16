@@ -31,11 +31,12 @@ export type DesktopAgentDirectoryListingArgs = {
     userSessionId: string
 }
 
-
+export const SAIL_CHANNEL_SETUP = 'sail-channel-setup'
 
 export const SAIL_CHANNEL_CHANGE = 'sail-channel-change'
 
 export type SailChannelChangeArgs = {
+    userSessionId: string,
     channel: string | null,
     instanceId: string
 }

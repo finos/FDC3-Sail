@@ -3,6 +3,7 @@ import { ReactElement } from "react"
 import { AppPanel, ClientState } from "../state/ClientState"
 import { createRoot } from 'react-dom/client';
 import * as styles from "./styles.module.css";
+import { getServerState } from "../state/ServerState";
 
 
 const TRASH_DROP = "trash";
@@ -238,7 +239,7 @@ export class GridsStateImpl implements GridsState {
             const newGrid = this.gridstacks[p.tabId]
             this.addPanel(newGrid, p)
 
-            // rmemove old
+            // remove old
             const gridId = oldGridEl?.getAttribute("id")?.substring(4)
             if (gridId) {
                 const oldGrid = this.gridstacks[gridId]
@@ -246,6 +247,8 @@ export class GridsStateImpl implements GridsState {
             }
             oldGridEl.removeChild(oldWidget)
         }
+
+        getServerState().setUserChannel(p.panelId, p.tabId)
     }
 
 
