@@ -1,5 +1,5 @@
 import { DesktopAgentHelloArgs } from "./message-types";
-import { DefaultFDC3Server } from "@kite9/fdc3-web-impl"
+import { DefaultFDC3Server } from "../../ftw"
 import { SailServerContext } from "./SailServerContext";
 
 

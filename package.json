@@ -18,8 +18,7 @@
     "vite": "^5.0.2"
   },
   "dependencies": {
-    "@kite9/fdc3": "2.2.0-beta.23",
-    "@kite9/fdc3-web-impl": "2.2.0-beta.23",
+    "@kite9/fdc3": "2.2.0-beta.24",
     "@types/react-dom": "^18.2.25",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",

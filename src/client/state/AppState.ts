@@ -1,7 +1,7 @@
 import { BrowserTypes } from "@kite9/fdc3";
 import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
-import { DirectoryApp } from "@kite9/fdc3-web-impl";
+import { DirectoryApp } from "../../ftw/directory/DirectoryInterface";
 import { v4 as uuid } from 'uuid'
 
 type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello

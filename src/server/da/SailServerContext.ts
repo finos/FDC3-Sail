@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
-import { DirectoryApp, InstanceID, ServerContext } from "@kite9/fdc3-web-impl"
+import { DirectoryApp, InstanceID, ServerContext } from "../../ftw"
 import { AppIdentifier } from "@kite9/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@kite9/fdc3";
@@ -29,6 +29,7 @@ export class SailServerContext implements ServerContext<SailData> {
     post(message: object, instanceId: InstanceID): Promise<void> {
         const instance = this.instances.find(i => i.instanceId == instanceId)
         if (instance) {
+            this.log("Posting message to app: " + JSON.stringify(message))
             instance.socket?.emit(FDC3_DA_EVENT, message)
         } else {
             this.log(`Can't find app: ${JSON.stringify(instanceId)}`)

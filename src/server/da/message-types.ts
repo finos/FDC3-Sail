@@ -1,4 +1,4 @@
-import { ChannelState, DirectoryApp } from "@kite9/fdc3-web-impl"
+import { ChannelState, DirectoryApp } from "../../ftw"
 import { AppIntent, Context } from "@kite9/fdc3"
 
 export const DA_HELLO = 'da-hello'

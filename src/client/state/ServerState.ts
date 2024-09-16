@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@kite9/fdc3-web-impl";
+import { DirectoryApp } from "../../ftw";
 import { getClientState } from "./ClientState";
 import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
@@ -20,7 +20,7 @@ export interface ServerState {
 
     getApplications(): Promise<DirectoryApp[]>
 
-    setAppChannel(instanceId: string, channel: string): Promise<void>
+    setUserChannel(instanceId: string, channel: string): Promise<void>
 
     intentChosen(ai: AppIdentifier | null, intent: string | null): Promise<void>
 }
@@ -83,7 +83,7 @@ class ServerStateImpl implements ServerState {
         })
     }
 
-    async setAppChannel(instanceId: string): Promise<void> {
+    async setUserChannel(instanceId: string): Promise<void> {
         const userSessionId = getClientState().getUserSessionID()
         await fetch("/setAppChannel", {
             method: "POST",

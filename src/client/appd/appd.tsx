@@ -3,7 +3,7 @@ import { Icon } from "../icon/icon";
 import { getServerState } from "../state/ServerState";
 import * as styles from "./styles.module.css";
 import { Popup, PopupButton } from "../popups/popup";
-import { DirectoryApp } from "@kite9/fdc3-web-impl";
+import { DirectoryApp } from "../../ftw/directory/DirectoryInterface";
 import { getAppState } from "../state/AppState";
 
 const DEFAULT_ICON = "/static/icons/control/choose-app.svg";
