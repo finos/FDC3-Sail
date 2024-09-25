@@ -1,20 +1,20 @@
-import React, { Component, useEffect } from "react";
-import { AppPanel, ClientState } from "../state/ClientState";
-import * as styles from "./styles.module.css";
-import "gridstack/dist/gridstack.css";
-import { GridsState } from "./gridstate";
-import { getAppState } from "../state/AppState";
-import { State } from "@kite9/fdc3-web-impl";
+import { Component } from "react"
+import { AppPanel, ClientState } from "../state/ClientState"
+import * as styles from "./styles.module.css"
+import "gridstack/dist/gridstack.css"
+import { GridsState } from "./gridstate"
+import { AppState, getAppState } from "../state/AppState"
+import { State } from "@kite9/fdc3-web-impl"
 
-type GridsProps = { cs: ClientState; gs: GridsState; id: string };
+type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 
 export class Grids extends Component<GridsProps> {
   componentDidMount(): void {
-    this.componentDidUpdate();
+    this.componentDidUpdate()
   }
 
   componentDidUpdate(): void {
-    this.props.gs.updatePanels();
+    this.props.gs.updatePanels()
   }
 
   render() {
@@ -24,7 +24,7 @@ export class Grids extends Component<GridsProps> {
           <AppFrame key={p.panelId} panel={p} />
         ))}
       </div>
-    );
+    )
   }
 }
 
@@ -41,14 +41,14 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
           // this is a bit hacky but we need to track the window objects
           // in the app state so we make sure we know who we're talking to
           if (ref) {
-            const contentWindow = (ref as HTMLIFrameElement).contentWindow;
-            getAppState().registerAppWindow(contentWindow!!, panel.panelId);
+            const contentWindow = (ref as HTMLIFrameElement).contentWindow
+            getAppState().registerAppWindow(contentWindow!!, panel.panelId)
           }
-        }, 10);
+        }, 10)
       }}
     />
-  );
-};
+  )
+}
 
 const LockIcon = () => {
   return (
@@ -57,43 +57,41 @@ const LockIcon = () => {
       className={styles.contentTitleIcon}
       title="Lock"
     />
-  );
-};
+  )
+}
 
-const AppStateIcon = ({ instanceId }: { instanceId: string }) => {
-  const D = "/static/icons/app-state/";
-  //const [state, setState] = React.useState([D + "unknown.svg", "Unknown"]);
+const AppStateIcon = ({
+  instanceId,
+  as,
+}: {
+  instanceId: string
+  as: AppState
+}) => {
+  const D = "/static/icons/app-state/"
 
   function symbolForState(s: State | undefined): string[] {
     if (s == undefined) {
-      return [D + "unknown.svg", "Unknown"];
+      return [D + "unknown.svg", "Unknown"]
     } else {
       switch (s) {
         case State.NotResponding:
-          return [D + "not-responding.svg", "Not Responding"];
+          return [D + "not-responding.svg", "Not Responding"]
         case State.Connected:
-          return [D + "connected.svg", "Connected to FDC3"];
+          return [D + "connected.svg", "Connected to FDC3"]
         case State.Pending:
-          return [D + "pending.svg", "Pending"];
+          return [D + "pending.svg", "Pending"]
         case State.Terminated:
-          return [D + "terminated.svg", "Terminated"];
+          return [D + "terminated.svg", "Terminated"]
       }
     }
   }
 
-  const state = symbolForState(getAppState().getAppState(instanceId));
-
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     const s = getAppState().getAppState(instanceId);
-  //     setState(symbolForState(s));
-  //   }, 1000);
-  // });
+  const state = symbolForState(as.getAppState(instanceId))
 
   return (
     <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
-  );
-};
+  )
+}
 const PopOutIcon = ({ action }: { action: () => void }) => {
   return (
     <img
@@ -102,8 +100,8 @@ const PopOutIcon = ({ action }: { action: () => void }) => {
       title="Pop Out"
       onClick={() => action()}
     />
-  );
-};
+  )
+}
 
 const CloseIcon = ({ action }: { action: () => void }) => {
   return (
@@ -113,25 +111,27 @@ const CloseIcon = ({ action }: { action: () => void }) => {
       title="Pop Out"
       onClick={() => action()}
     />
-  );
-};
+  )
+}
 
 const AppSlot = ({ panel }: { panel: AppPanel }) => {
   return (
     <div id={"app_" + panel.panelId}>
       <slot name={"slot_" + panel.panelId} />
     </div>
-  );
-};
+  )
+}
 
 export const Content = ({
   panel,
   cs,
+  as,
   id,
 }: {
-  panel: AppPanel;
-  cs: ClientState;
-  id: string;
+  panel: AppPanel
+  cs: ClientState
+  as: AppState
+  id: string
 }) => {
   return (
     <div className={styles.content} id={id}>
@@ -141,12 +141,12 @@ export const Content = ({
           <p className={styles.contentTitleText}>
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
-          <AppStateIcon instanceId={panel.panelId} />
+          <AppStateIcon instanceId={panel.panelId} as={as} />
           <LockIcon />
           <PopOutIcon
             action={() => {
-              cs.removePanel(panel.panelId);
-              window.open(panel.url, "_blank");
+              cs.removePanel(panel.panelId)
+              window.open(panel.url, "_blank")
             }}
           />
         </div>
@@ -156,5 +156,5 @@ export const Content = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

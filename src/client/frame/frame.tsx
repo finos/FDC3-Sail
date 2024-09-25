@@ -10,6 +10,7 @@ import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
 import { getServerState } from "../state/ServerState"
+import { AppState } from "../state/AppState"
 
 enum Popup {
   NONE,
@@ -20,6 +21,7 @@ enum Popup {
 
 interface FrameProps {
   cs: ClientState
+  as: AppState
 }
 
 interface FrameState {
@@ -31,7 +33,9 @@ const CONTAINER_ID = "container-id"
 export class Frame extends Component<FrameProps, FrameState> {
   private gs: GridsState = new GridsStateImpl(
     CONTAINER_ID,
-    (ap, id) => <Content panel={ap} cs={this.props.cs} id={id} />,
+    (ap, id) => (
+      <Content panel={ap} cs={this.props.cs} as={this.props.as} id={id} />
+    ),
     getClientState(),
   )
 
@@ -62,7 +66,12 @@ export class Frame extends Component<FrameProps, FrameState> {
           className={styles.main}
           style={{ backgroundColor: activeTab!!.background }}
         >
-          <Grids cs={this.props.cs} gs={this.gs} id={CONTAINER_ID} />
+          <Grids
+            cs={this.props.cs}
+            gs={this.gs}
+            as={this.props.as}
+            id={CONTAINER_ID}
+          />
         </div>
         {this.state?.popup == Popup.APPD ? (
           <AppDPanel

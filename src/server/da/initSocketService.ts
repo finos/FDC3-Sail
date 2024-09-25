@@ -160,7 +160,6 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         const reporter = setInterval(async () => {
             if (fdc3ServerInstance) {
                 const state = await fdc3ServerInstance.serverContext.getAllApps()
-                console.log("SENDING APP STATES: " + JSON.stringify(state))
                 socket.emit(SAIL_APP_STATE, state)
             }
         }, 3000)

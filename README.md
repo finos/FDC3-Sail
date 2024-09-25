@@ -91,7 +91,7 @@ npm install
 npm run dev
 ```
 
-Point browser at http://localhost:8090/static/da/index.html
+Point browser at http://localhost:8090/static/index.html
 
 ## Mailing List
 

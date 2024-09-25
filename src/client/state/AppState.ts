@@ -8,7 +8,7 @@ import { AppHosting } from "../../server/da/SailServerContext";
 type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
 
 
-interface AppState {
+export interface AppState {
 
     registerAppWindow(window: Window, instanceId: string): void
 
@@ -18,6 +18,8 @@ interface AppState {
 
     setAppState(state: SailAppStateArgs): void
 
+    addStateChangeCallback(cb: () => void): void
+
 }
 
 
@@ -25,6 +27,7 @@ class DefaultAppState implements AppState {
 
     windowInformation: Map<Window, string> = new Map()
     states: SailAppStateArgs = []
+    callbacks: (() => void)[] = []
 
     getAppState(instanceId: string): State | undefined {
         return this.states.find(x => x.instanceId == instanceId)?.state
@@ -32,7 +35,13 @@ class DefaultAppState implements AppState {
 
     setAppState(state: SailAppStateArgs): void {
         this.states = state
+        this.callbacks.forEach(x => x())
     }
+
+    addStateChangeCallback(cb: () => void): void {
+        this.callbacks.push(cb)
+    }
+
 
     async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")

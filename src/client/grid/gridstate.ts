@@ -1,7 +1,7 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
 import { AppPanel, ClientState } from "../state/ClientState"
-import { createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
 import * as styles from "./styles.module.css";
 import { getServerState } from "../state/ServerState";
 
@@ -32,6 +32,7 @@ export class GridsStateImpl implements GridsState {
     private readonly cs: ClientState
     private readonly containerId: string
     private readonly render: (ap: AppPanel, id: string) => ReactElement
+    private readonly roots: Map<string, Root> = new Map()
 
     // tracks state of grids
     private panelsInGrid: MountedPanel[] = []
@@ -220,8 +221,17 @@ export class GridsStateImpl implements GridsState {
         // add content to it
         const div = widget.children[0]
         const root = createRoot(div)
+        this.roots.set(p.panelId, root)
         const content = this.render(p, contentIdforTab(p.panelId))
         root.render(content)
+    }
+
+    refreshPanel(p: AppPanel) {
+        const root = this.roots.get(p.panelId)
+        if (root) {
+            const content = this.render(p, contentIdforTab(p.panelId))
+            root.render(content)
+        }
     }
 
     findChild(e: DocumentFragment | HTMLElement | Element, id: string): HTMLElement | null {
@@ -292,6 +302,8 @@ export class GridsStateImpl implements GridsState {
                 return true
             }
         })
+
+        this.panelsInGrid.forEach(p => this.refreshPanel(p))
 
         // console.log(`Moved Tab: ${changedTabPanels.length} Removed: ${removedPanels.length} Added: ${addedPanels.length} Unchanged: ${this.panelsInGrid.length}`)
 

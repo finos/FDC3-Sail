@@ -73,18 +73,18 @@ class ServerStateImpl implements ServerState {
             this.socket?.emit(DA_HELLO, props)
 
             this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
-                console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
                 const instanceId = await getAppState().open(data.appDRecord)
                 callback(instanceId)
             })
 
             this.socket?.on(SAIL_APP_STATE, (data: SailAppStateArgs) => {
-                console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
                 getAppState().setAppState(data)
             })
 
             this.socket?.on(SAIL_CHANNEL_SETUP, (instanceId: string) => {
-                console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)
+                //console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)
                 const cs = getClientState()
                 const panel = cs.getPanels().find(p => p.panelId === instanceId)
                 if (panel) {
