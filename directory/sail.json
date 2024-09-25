@@ -7,11 +7,11 @@
             "description": "Displays a chart of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/chart.html"
+                "url": "/static/example-apps/tradingview/chart/chart.html"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/chart.png",
+                    "src": "/static/example-apps/tradingview/chart/chart.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -31,6 +31,42 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Chart"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "appId": "trading-view-news-1",
+            "name": "Top Stories",
+            "title": "Top Stories",
+            "description": "Help your audience keep track of what's happening in the crypto and stock markets with our daily news briefs – designed to be read in 20 seconds or less.",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/tradingview/top-stories/top-stories.html"
+            },
+            "screenshots": [
+                {
+                    "src": "/static/example-apps/tradingview/top-stories/top-stories.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [
+                {
+                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                }
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewNews": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View News"
                         }
                     }
                 }
