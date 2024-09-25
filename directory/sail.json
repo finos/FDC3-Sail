@@ -37,42 +37,86 @@
             }
         },
         {
-            "appId": "trading-view-chart-2",
-            "name": "Trading View Chart",
-            "title": "Trading View Chart (New Window)",
-            "description": "Displays a chart of a given stock, using the TradingView applications",
+            "appId": "workbench",
+            "name": "FDC3 Workbench",
+            "title": "FDC3 Workbench - Sail Version",
+            "description": "Part of the WebFDC3 Demo - Port of the FDC3 Workbench.  Must be started separately on localhost:3000",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/chart.html"
-            },
-            "screenshots": [
-                {
-                    "src": "/static/example-apps/tradingview/chart.png",
-                    "label": "Demo Screenshot"
-                }
-            ],
-            "hostManifests": {
-                "sail": {
-                    "forceNewWindow": true
-                }
+                "url": "http://localhost:3000/toolbox/fdc3-workbench/"
             },
             "version": "1.0.0",
             "publisher": "FINOS",
+            "icons": []
+        },
+        {
+            "appId": "pricer",
+            "name": "Pricer",
+            "title": "Pricer",
+            "description": "A demo app for the FDC3 Developer Course",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "http://localhost:5000/static/pricer/icon.png"
                 }
             ],
+            "screenshots": [
+                {
+                    "src": "http://localhost:5000/static/pricer/screenshot.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "type": "web",
+            "details": {
+                "url": "http://localhost:5000/static/pricer/index.html"
+            },
             "interop": {
                 "intents": {
                     "listensFor": {
-                        "ViewChart": {
+                        "ViewQuote": {
+                            "displayName": "View Quote",
                             "contexts": [
                                 "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
+                            ]
+                        },
+                        "demo.GetPrices": {
+                            "displayName": "Get Prices",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
                         }
                     }
+                }
+            },
+            "hostManifests": {
+                "sail": {
+                    "injectApi": "2.0"
+                }
+            }
+        },
+        {
+            "appId": "tradelist",
+            "name": "TradeList",
+            "title": "TradeList",
+            "description": "A demo app for the FDC3 Developer Course",
+            "icons": [
+                {
+                    "src": "http://localhost:5000/static/tradelist/icon.png"
+                }
+            ],
+            "screenshots": [
+                {
+                    "src": "http://localhost:5000/static/tradelist/screenshot.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "type": "web",
+            "details": {
+                "url": "http://localhost:5000/static/tradelist/index.html"
+            },
+            "interop": {},
+            "hostManifests": {
+                "sail": {
+                    "injectApi": "2.0"
                 }
             }
         }

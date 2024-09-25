@@ -1,44 +1,44 @@
-import { Component } from "react";
-import * as styles from "./styles.module.css";
-import { ClientState, Directory, getClientState } from "../state/ClientState";
-import { Popup } from "../popups/popup";
+import { Component } from "react"
+import * as styles from "./styles.module.css"
+import { ClientState, Directory, getClientState } from "../state/ClientState"
+import { Popup } from "../popups/popup"
 
-const CONFIG_ITEMS = ["Directories", "Panels"];
+const CONFIG_ITEMS = ["Directories"]
 
 type AppPanelProps = {
-  closeAction: () => void;
-  cs: ClientState;
-};
+  closeAction: () => void
+  cs: ClientState
+}
 
 type AppPanelState = {
-  item: string;
-};
+  item: string
+}
 
 function updateText(url: string, text: string) {
-  const directories = getClientState().getDirectories();
-  const d = directories.find((d) => d.url == url);
-  d!!.label = text;
-  getClientState().setDirectories(directories);
+  const directories = getClientState().getDirectories()
+  const d = directories.find((d) => d.url == url)
+  d!!.label = text
+  getClientState().setDirectories(directories)
 }
 
 function updateUrl(url: string, text: string) {
-  const directories = getClientState().getDirectories();
-  const d = directories.find((d) => d.url == url);
-  d!!.url = text;
-  getClientState().setDirectories(directories);
+  const directories = getClientState().getDirectories()
+  const d = directories.find((d) => d.url == url)
+  d!!.url = text
+  getClientState().setDirectories(directories)
 }
 
 function toggleDirectory(d: Directory) {
-  d.active = !d.active;
-  getClientState().updateDirectory(d);
+  d.active = !d.active
+  getClientState().updateDirectory(d)
 }
 
 function removeDirectory(d: Directory) {
   if (confirm("Remove this directory - are you sure?") == true) {
-    const directories = getClientState().getDirectories();
-    const i = directories.findIndex((x) => x.url == d.url);
-    directories.splice(i, 1);
-    getClientState().setDirectories(directories);
+    const directories = getClientState().getDirectories()
+    const i = directories.findIndex((x) => x.url == d.url)
+    directories.splice(i, 1)
+    getClientState().setDirectories(directories)
   }
 }
 
@@ -47,17 +47,17 @@ const AddButton = ({ onClick }: { onClick: () => void }) => {
     <div className={styles.add} onClick={onClick}>
       <p>Click to Add New Directory</p>
     </div>
-  );
-};
+  )
+}
 
 const InlineButton = ({
   text,
   url,
   onClick,
 }: {
-  text: string;
-  url: string;
-  onClick: () => void;
+  text: string
+  url: string
+  onClick: () => void
 }) => {
   return (
     <img
@@ -66,8 +66,8 @@ const InlineButton = ({
       title={text}
       onClick={onClick}
     />
-  );
-};
+  )
+}
 
 const DirectoryItem = ({ d }: { d: Directory }) => {
   return (
@@ -101,15 +101,15 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
         {d.url}
       </div>
     </div>
-  );
-};
+  )
+}
 
 export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
   constructor(props: AppPanelProps) {
-    super(props);
+    super(props)
     this.state = {
       item: CONFIG_ITEMS[0],
-    };
+    }
   }
 
   render() {
@@ -139,14 +139,14 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
                 : null}
               <AddButton
                 onClick={() => {
-                  const directories = getClientState().getDirectories();
+                  const directories = getClientState().getDirectories()
                   directories.push({
                     label: "New Directory",
                     url: "",
                     active: false,
-                  });
-                  getClientState().setDirectories(directories);
-                  this.setState(this.state);
+                  })
+                  getClientState().setDirectories(directories)
+                  this.setState(this.state)
                 }}
               />
             </div>
@@ -156,6 +156,6 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
         closeAction={() => this.props.closeAction()}
         closeName="Done"
       />
-    );
+    )
   }
 }

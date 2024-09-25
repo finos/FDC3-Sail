@@ -191,8 +191,6 @@ abstract class AbstractClientState implements ClientState {
             this.directories.push(din)
         }
 
-        getServerState().registerDesktopAgent(this.createArgs())
-
         this.saveState()
     }
 
