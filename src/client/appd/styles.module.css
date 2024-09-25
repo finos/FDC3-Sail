@@ -2,8 +2,6 @@
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    width: 60rem;
-    height: 30rem;
 }
 
 .appDApps {

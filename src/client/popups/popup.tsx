@@ -7,6 +7,7 @@ type PopupProps = {
   area: ReactNode;
   closeAction: () => void;
   title: string;
+  closeName: string;
 };
 
 export class Popup extends Component<PopupProps> {
@@ -30,7 +31,7 @@ export class Popup extends Component<PopupProps> {
               <PopupButton
                 key="cancel"
                 onClick={() => this.props.closeAction()}
-                text="Cancel"
+                text={this.props.closeName}
                 disabled={false}
               />
               {this.props.buttons}

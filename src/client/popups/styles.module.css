@@ -20,10 +20,11 @@
 }
 
 .popupInner {
-    margin-top: 1rem;
-    margin: auto;
-    max-width: 50rem;
-    max-height: 80%;
+    position: fixed;
+    top: 10%;
+    bottom: 10%;
+    left: 10%;
+    right: 10%;
     background-color: white;
     border-radius: .5rem;
     padding: 1rem;
@@ -38,6 +39,7 @@
     display: flex;
     flex-direction: row;
     overflow: scroll;
+    flex-grow: 1;
 }
 
 .popupTitle {

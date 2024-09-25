@@ -104,6 +104,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
           />,
         ]}
         closeAction={() => this.props.closeAction()}
+        closeName="Cancel"
       />
     );
   }
