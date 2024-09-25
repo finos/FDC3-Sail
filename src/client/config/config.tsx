@@ -3,7 +3,7 @@ import * as styles from "./styles.module.css";
 import { ClientState, Directory, getClientState } from "../state/ClientState";
 import { Popup } from "../popups/popup";
 
-const CONFIG_ITEMS = ["Directories"];
+const CONFIG_ITEMS = ["Directories", "Panels"];
 
 type AppPanelProps = {
   closeAction: () => void;
@@ -31,6 +31,15 @@ function updateUrl(url: string, text: string) {
 function toggleDirectory(d: Directory) {
   d.active = !d.active;
   getClientState().updateDirectory(d);
+}
+
+function removeDirectory(d: Directory) {
+  if (confirm("Remove this directory - are you sure?") == true) {
+    const directories = getClientState().getDirectories();
+    const i = directories.findIndex((x) => x.url == d.url);
+    directories.splice(i, 1);
+    getClientState().setDirectories(directories);
+  }
 }
 
 const AddButton = ({ onClick }: { onClick: () => void }) => {
@@ -77,6 +86,11 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
           onClick={() => toggleDirectory(d)}
           text="Toggle Use Of Directory"
           url="/static/icons/control/tick.svg"
+        />
+        <InlineButton
+          onClick={() => removeDirectory(d)}
+          text="Remove This Directory"
+          url="/static/icons/control/cross.svg"
         />
       </div>
       <div
@@ -140,7 +154,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
         }
         buttons={[]}
         closeAction={() => this.props.closeAction()}
-        closeName="Close"
+        closeName="Done"
       />
     );
   }

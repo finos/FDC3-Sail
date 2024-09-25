@@ -1,5 +1,5 @@
 import { Icon } from "../icon/icon";
-import { ClientState, TabDetail } from "../state/clientState";
+import { ClientState, TabDetail } from "../state/ClientState";
 import * as styles from "./styles.module.css";
 
 const Tab = ({
