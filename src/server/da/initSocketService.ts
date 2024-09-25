@@ -1,12 +1,11 @@
-import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs } from "./message-types";
+import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE } from "./message-types";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
-import { SailServerContext, State } from "./SailServerContext";
+import { SailServerContext } from "./SailServerContext";
 import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
-import { DirectoryApp } from "../../ftw";
+import { DirectoryApp, State, WebAppDetails } from "@kite9/fdc3-web-impl";
 import { BrowserTypes } from "@kite9/fdc3";
-import { WebAppDetails } from "../../ftw/directory/DirectoryInterface";
 export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
@@ -23,7 +22,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         var type: SocketType | undefined = undefined
 
         socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {
-            console.log(JSON.stringify(props))
+            console.log("DA HELLO:" + JSON.stringify(props))
 
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
@@ -56,7 +55,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(DA_REGISTER_APP_LAUNCH, async function (props: DesktopAgentRegisterAppLaunchArgs, callback: (success: any, err?: string) => void) {
-            console.log(JSON.stringify(props))
+            console.log("DA REGISTER APP LAUNCH: " + JSON.stringify(props))
 
             const { appId, userSessionId } = props
             const session = sessions.get(userSessionId)
@@ -92,7 +91,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(APP_HELLO, function (props: AppHelloArgs) {
-            console.log(JSON.stringify(props))
+            console.log("APP HELLO: " + JSON.stringify(props))
 
             appInstanceId = props.instanceId
             userSessionId = props.userSessionId
@@ -107,20 +106,26 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     appInstance.socket = socket
                     appInstance.url = (directoryItem[0].details as WebAppDetails).url
                     fdc3ServerInstance = fdc3Server
-                    fdc3ServerInstance.serverContext.setAppConnected({ appId: props.appId, instanceId: appInstanceId })
+                    fdc3ServerInstance.serverContext.setInstanceDetails(appInstanceId, {
+                        appId: props.appId,
+                        instanceId: appInstanceId,
+                        state: State.Pending,
+                        socket,
+                        url: appInstance.url
+                    })
                 } else if (DEBUG_MODE) {
                     console.error("App tried to connect with invalid instance id, allowing connection anyway ", appInstanceId)
 
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, {
                         appId: props.appId,
                         instanceId: appInstanceId,
-                        state: State.Open,
+                        state: State.Pending,
                         socket,
                         url: (directoryItem[0].details as WebAppDetails).url
                     })
 
                     fdc3ServerInstance = fdc3Server
-                    fdc3ServerInstance.serverContext.setAppConnected({ appId: props.appId, instanceId: appInstanceId })
+                    //fdc3ServerInstance.serverContext.setAppConnected({ appId: props.appId, instanceId: appInstanceId })
 
                 } else {
                     console.error("App tried to connect with invalid instance id")
@@ -132,7 +137,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
         socket.on(FDC3_APP_EVENT, function (data, from): void {
             // message from app to da
-            console.log(JSON.stringify(data) + " from " + from)
+            if (!data.type.startsWith("heartbeat")) {
+                console.log("FDC3_APP_EVENT: " + JSON.stringify(data) + " from " + from)
+            }
 
             if (fdc3ServerInstance != undefined) {
                 try {
@@ -145,10 +152,18 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             }
         })
 
+        const reporter = setInterval(async () => {
+            if (fdc3ServerInstance) {
+                const state = await fdc3ServerInstance.serverContext.getAllApps()
+                console.log("SENDING APP STATES: " + JSON.stringify(state))
+                socket.emit(SAIL_APP_STATE, { apps: state })
+            }
+        }, 3000)
+
         socket.on("disconnect", async function (): Promise<void> {
             if (fdc3ServerInstance) {
                 if (type == SocketType.APP) {
-                    await fdc3ServerInstance.serverContext.disconnect(appInstanceId!!)
+                    await fdc3ServerInstance.serverContext.setAppState(appInstanceId!!, State.Terminated)
                     const remaining = await fdc3ServerInstance.serverContext.getConnectedApps()
                     console.error(`Apparent disconnect: ${remaining.length} remaining`)
                 } else {
@@ -158,6 +173,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             } else {
                 console.error("No Server instance")
             }
+            clearInterval(reporter)
         })
     })
 

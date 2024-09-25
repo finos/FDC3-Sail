@@ -1,17 +1,20 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
-import { DirectoryApp, InstanceID, ServerContext } from "../../ftw"
+import { AppRegistration, DirectoryApp, InstanceID, ServerContext, State } from "@kite9/fdc3-web-impl"
 import { AppIdentifier } from "@kite9/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@kite9/fdc3";
-import { OPEN } from "ws";
 
-export enum State { Pending, Open, Closed }
-
-export type SailData = AppIdentifier & {
+/**
+ * Represents the state of a Sail app.
+ * Pending: App has a window, but isn't connected to FDC3
+ * Open: App is connected to FDC3
+ * NotResponding: App is not responding to heartbeats
+ * Terminated: App Window has been closed
+ */
+export type SailData = AppRegistration & {
     socket?: Socket,
-    state: State,
     url?: string
 }
 
@@ -29,7 +32,9 @@ export class SailServerContext implements ServerContext<SailData> {
     post(message: object, instanceId: InstanceID): Promise<void> {
         const instance = this.instances.find(i => i.instanceId == instanceId)
         if (instance) {
-            this.log("Posting message to app: " + JSON.stringify(message))
+            if (!(message as any)?.type?.startsWith("heartbeat")) {
+                this.log("Posting message to app: " + JSON.stringify(message))
+            }
             instance.socket?.emit(FDC3_DA_EVENT, message)
         } else {
             this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
@@ -45,6 +50,12 @@ export class SailServerContext implements ServerContext<SailData> {
             const instanceId = await this.socket.emitWithAck(SAIL_APP_OPEN, {
                 appDRecord: app[0]
             } as SailAppOpenArgs)
+            this.setInstanceDetails(instanceId, {
+                appId,
+                instanceId,
+                url,
+                state: State.Pending
+            })
             return instanceId
         }
 
@@ -64,40 +75,35 @@ export class SailServerContext implements ServerContext<SailData> {
         return this.instances.find(ca => ca.instanceId === uuid)
     }
 
-    async setAppConnected(app: AppIdentifier): Promise<void> {
-        this.instances.find(ca => (ca.instanceId == app.instanceId))!!.state = OPEN
-        this.setInitialChannel(app)
-    }
-
     async setInitialChannel(app: AppIdentifier): Promise<void> {
         this.socket.emit(SAIL_CHANNEL_SETUP, app.instanceId)
     }
 
-    async setAppDisconnected(app: AppIdentifier): Promise<void> {
-        const idx = this.instances.findIndex(ca => (ca.instanceId == app.instanceId))
-        if (idx != -1) {
-            this.instances.splice(idx, 1)
-        }
+    async getConnectedApps(): Promise<AppRegistration[]> {
+        return (await this.getAllApps()).filter(ca => ca.state == State.Connected)
     }
 
-    async getConnectedApps(): Promise<AppIdentifier[]> {
-        return this.instances
-            .filter(ca => ca.state == OPEN)
-            .map(a => {
-                return {
-                    appId: a.appId,
-                    instanceId: a.instanceId
-                }
-            })
-    }
-
-    async isAppConnected(app: AppIdentifier): Promise<boolean> {
-        const found = this.instances.find(a => (a.appId == app.appId) && (a.instanceId == app.instanceId) && (a.state == OPEN))
+    async isAppConnected(app: InstanceID): Promise<boolean> {
+        const found = (await this.getAllApps()).find(a => (a.instanceId == app) && (a.state == State.Connected))
         return found != null
     }
 
-    async disconnect(instanceId: InstanceID): Promise<void> {
-        this.instances = this.instances.filter(ca => ca.instanceId !== instanceId)
+    async setAppState(app: InstanceID, state: State): Promise<void> {
+        const found = this.instances.find(a => (a.instanceId == app))
+        if (found) {
+            found.state = state
+        }
+    }
+
+
+    async getAllApps(): Promise<AppRegistration[]> {
+        return this.instances.map(x => {
+            return {
+                appId: x.appId,
+                instanceId: x.instanceId,
+                state: x.state
+            }
+        })
     }
 
     createUUID(): string {

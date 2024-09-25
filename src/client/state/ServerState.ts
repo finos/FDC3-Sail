@@ -1,6 +1,6 @@
-import { DirectoryApp } from "../../ftw";
+import { DirectoryApp } from "@kite9/fdc3-web-impl";
 import { getClientState } from "./ClientState";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@kite9/fdc3";
 import { getAppState } from "./AppState";
@@ -63,6 +63,11 @@ class ServerStateImpl implements ServerState {
                 console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
                 const instanceId = await getAppState().open(data.appDRecord)
                 callback(instanceId)
+            })
+
+            this.socket?.on(SAIL_APP_STATE, (data: SailAppStateArgs) => {
+                console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
+                getAppState().setAppState(data)
             })
 
             this.socket?.on(SAIL_CHANNEL_SETUP, (instanceId: string) => {

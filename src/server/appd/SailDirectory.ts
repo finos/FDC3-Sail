@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { BasicDirectory, DirectoryApp } from "../../ftw";
+import { BasicDirectory, DirectoryApp } from "@kite9/fdc3-web-impl";
 
 function loadRemotely(u: string): Promise<any> {
     return fetch(u).then((response) => response.json());

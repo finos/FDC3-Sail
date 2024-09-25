@@ -3,7 +3,7 @@ import { Icon } from "../icon/icon";
 import { getServerState } from "../state/ServerState";
 import * as styles from "./styles.module.css";
 import { Popup, PopupButton } from "../popups/popup";
-import { DirectoryApp } from "../../ftw/directory/DirectoryInterface";
+import { DirectoryApp, WebAppDetails } from "@kite9/fdc3-web-impl";
 import { getAppState } from "../state/AppState";
 
 const DEFAULT_ICON = "/static/icons/control/choose-app.svg";
@@ -54,7 +54,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   }
 
   render() {
-    const app: DirectoryApp = this.state.chosen;
+    const app: DirectoryApp = this.state.chosen!!;
 
     return (
       <Popup
@@ -109,9 +109,9 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   }
 }
 function onlyRelevantApps(d: DirectoryApp): boolean {
-  const sail = d.hostManifests?.sail;
+  const sail: any = d.hostManifests?.sail;
   const show = sail ? sail.searchable != false : true;
   const type = d.type == "web";
-  const url = d.details?.url;
-  return show && type && url;
+  const url = (d.details as WebAppDetails).url;
+  return show && type && url != null;
 }

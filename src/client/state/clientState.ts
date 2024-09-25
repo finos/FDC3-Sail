@@ -1,9 +1,8 @@
-import { ChannelState, DirectoryApp } from "../../ftw";
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
 import { DesktopAgentHelloArgs } from "../../server/da/message-types";
 import { AppIntent, Context, DisplayMetadata } from "@kite9/fdc3";
-import { ChannelType } from "../../ftw/handlers/BroadcastHandler";
+import { ChannelType, ChannelState, DirectoryApp } from "@kite9/fdc3-web-impl";
 import { getServerState } from "./ServerState";
 
 const STORAGE_KEY = "sail-client-state"

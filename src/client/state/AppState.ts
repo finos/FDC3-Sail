@@ -1,9 +1,9 @@
 import { BrowserTypes } from "@kite9/fdc3";
 import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
-import { DirectoryApp } from "../../ftw";
+import { DirectoryApp, WebAppDetails, State } from "@kite9/fdc3-web-impl";
 import { v4 as uuid } from 'uuid'
-import { WebAppDetails } from "../../ftw/directory/DirectoryInterface";
+import { SailAppStateArgs } from "../../server/da/message-types";
 
 type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
 
@@ -13,14 +13,26 @@ interface AppState {
     registerAppWindow(window: Window, instanceId: string): void
 
     open(detail: DirectoryApp): Promise<string>
+
+    getAppState(instanceId: string): State | undefined
+
+    setAppState(state: SailAppStateArgs): void
+
 }
 
 
 class DefaultAppState implements AppState {
 
     windowInformation: Map<Window, string> = new Map()
+    states: SailAppStateArgs = []
 
+    getAppState(instanceId: string): State | undefined {
+        return this.states.find(x => x.instanceId == instanceId)?.state
+    }
 
+    setAppState(state: SailAppStateArgs): void {
+        this.states = state
+    }
 
     async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")

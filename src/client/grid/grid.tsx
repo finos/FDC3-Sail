@@ -1,9 +1,10 @@
-import { Component } from "react";
+import React, { Component, useEffect } from "react";
 import { AppPanel, ClientState } from "../state/ClientState";
 import * as styles from "./styles.module.css";
 import "gridstack/dist/gridstack.css";
 import { GridsState } from "./gridstate";
 import { getAppState } from "../state/AppState";
+import { State } from "@kite9/fdc3-web-impl";
 
 type GridsProps = { cs: ClientState; gs: GridsState; id: string };
 
@@ -59,6 +60,39 @@ const LockIcon = () => {
   );
 };
 
+const AppStateIcon = ({ instanceId }: { instanceId: string }) => {
+  const D = "/static/icons/app-state/";
+  const [state, setState] = React.useState([D + "unknown.svg", "Unknown"]);
+
+  function symbolForState(s: State | undefined): string[] {
+    if (s == undefined) {
+      return [D + "unknown.svg", "Unknown"];
+    } else {
+      switch (s) {
+        case State.NotResponding:
+          return [D + "not-responding.svg", "Not Responding"];
+        case State.Connected:
+          return [D + "connected.svg", "Connected to FDC3"];
+        case State.Pending:
+          return [D + "pending.svg", "Pending"];
+        case State.Terminated:
+          return [D + "terminated.svg", "Terminated"];
+      }
+    }
+  }
+
+  useEffect(() => {
+    setInterval(() => {
+      const s = getAppState().getAppState(instanceId);
+      console.log(`${instanceId}  state ${s}`);
+      setState(symbolForState(s));
+    }, 1000);
+  });
+
+  return (
+    <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
+  );
+};
 const PopOutIcon = ({ action }: { action: () => void }) => {
   return (
     <img
@@ -106,6 +140,7 @@ export const Content = ({
           <p className={styles.contentTitleText}>
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
+          <AppStateIcon instanceId={panel.panelId} />
           <LockIcon />
           <PopOutIcon
             action={() => {

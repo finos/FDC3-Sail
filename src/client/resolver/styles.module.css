@@ -97,3 +97,9 @@
     background-color: #EEEEFF;
     border: 2px solid #000000;
 }
+
+.channelIndicator {
+    border: 1px solid black;
+    border-radius: .25rem;
+    width: 3rem;
+}
