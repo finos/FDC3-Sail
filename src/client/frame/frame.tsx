@@ -1,14 +1,15 @@
-import { Bin, Controls, NewPanel } from "../controls/controls";
-import { Logo, Settings } from "../top/top";
-import { Tabs } from "../tabs/tabs";
-import * as styles from "./styles.module.css";
-import { ClientState, getClientState } from "../state/ClientState";
-import { Component } from "react";
-import { AppDPanel } from "../appd/appd";
-import { Content, Grids } from "../grid/grid";
-import { GridsStateImpl, GridsState } from "../grid/gridstate";
-import { ConfigPanel } from "../config/config";
-import { ResolverPanel } from "../resolver/resolver";
+import { Bin, Controls, NewPanel } from "../controls/controls"
+import { Logo, Settings } from "../top/top"
+import { Tabs } from "../tabs/tabs"
+import * as styles from "./styles.module.css"
+import { ClientState, getClientState } from "../state/ClientState"
+import { Component } from "react"
+import { AppDPanel } from "../appd/appd"
+import { Content, Grids } from "../grid/grid"
+import { GridsStateImpl, GridsState } from "../grid/gridstate"
+import { ConfigPanel } from "../config/config"
+import { ResolverPanel } from "../resolver/resolver"
+import { getServerState } from "../state/ServerState"
 
 enum Popup {
   NONE,
@@ -18,31 +19,31 @@ enum Popup {
 }
 
 interface FrameProps {
-  cs: ClientState;
+  cs: ClientState
 }
 
 interface FrameState {
-  popup: Popup;
+  popup: Popup
 }
 
-const CONTAINER_ID = "container-id";
+const CONTAINER_ID = "container-id"
 
 export class Frame extends Component<FrameProps, FrameState> {
   private gs: GridsState = new GridsStateImpl(
     CONTAINER_ID,
     (ap, id) => <Content panel={ap} cs={this.props.cs} id={id} />,
     getClientState(),
-  );
+  )
 
   constructor(p: FrameProps) {
-    super(p);
+    super(p)
     this.state = {
       popup: Popup.NONE,
-    };
+    }
   }
 
   render() {
-    const activeTab = this.props.cs.getActiveTab();
+    const activeTab = this.props.cs.getActiveTab()
 
     return (
       <div className={styles.outer}>
@@ -87,15 +88,17 @@ export class Frame extends Component<FrameProps, FrameState> {
         {this.props.cs.getIntentResolution() ? (
           <ResolverPanel
             key="resolver"
-            cs={this.props.cs}
             appIntents={this.props.cs.getIntentResolution()!!.appIntents}
             context={this.props.cs.getIntentResolution()!!.context}
             closeAction={() => {
-              this.props.cs.setIntentResolution(null);
+              this.props.cs.setIntentResolution(null)
             }}
+            chooseAction={(chosenApp, chosenIntent) =>
+              getServerState().intentChosen(chosenApp, chosenIntent)
+            }
           />
         ) : null}
       </div>
-    );
+    )
   }
 }

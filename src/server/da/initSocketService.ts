@@ -16,7 +16,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
     io.on('connection', (socket: Socket) => {
 
-        var fdc3ServerInstance: SailFDC3Server | undefined
+        var fdc3ServerInstance: SailFDC3Server | undefined = undefined
         var userSessionId: string | undefined
         var appInstanceId: string | undefined
         var type: SocketType | undefined = undefined
@@ -27,20 +27,22 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
             console.log("Desktop Agent Connecting", userSessionId)
-            fdc3ServerInstance = sessions.get(userSessionId)
+            var fdc3Server = sessions.get(userSessionId)
 
-            if (fdc3ServerInstance) {
+            if (fdc3Server) {
                 // reconfiguring current session
-                const newFdc3Server = new SailFDC3Server(fdc3ServerInstance.serverContext, props)
-                sessions.set(userSessionId, newFdc3Server)
+                fdc3Server = new SailFDC3Server(fdc3Server.serverContext, props)
+                sessions.set(userSessionId, fdc3Server)
                 console.log("updated desktop agent channels and directories", sessions.size, props.userSessionId)
             } else {
                 // starting session
                 const serverContext = new SailServerContext(new SailDirectory(), socket)
-                const fdc3Server = new SailFDC3Server(serverContext, props)
+                fdc3Server = new SailFDC3Server(serverContext, props)
                 sessions.set(userSessionId, fdc3Server)
                 console.log("created agent session.  Running sessions ", sessions.size, props.userSessionId)
             }
+
+            fdc3ServerInstance = fdc3Server
         })
 
         socket.on(DA_DIRECTORY_LISTING, function (props: DesktopAgentDirectoryListingArgs, callback: (success: any, err?: string) => void) {
@@ -170,6 +172,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     const remaining = await fdc3ServerInstance.serverContext.getConnectedApps()
                     console.error(`Apparent disconnect: ${remaining.length} remaining`)
                 } else {
+                    fdc3ServerInstance.shutdown()
                     sessions.delete(userSessionId!!)
                     console.error("Desktop Agent Disconnected", userSessionId)
                 }

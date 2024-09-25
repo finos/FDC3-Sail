@@ -47,7 +47,7 @@ window.addEventListener("load", () => {
       type: "iframeHello",
       payload: {
         initialCSS: DEFAULT_COLLAPSED_CSS,
-        implementationDetails: "Demo Channel Selector v1.0",
+        implementationDetails: "Sail Channel Selector v1.0",
       },
     } as any as IframeHello,
     "*",

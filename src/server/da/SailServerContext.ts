@@ -132,7 +132,11 @@ export class SailServerContext implements ServerContext<SailData> {
         return "2.0"
     }
 
-    async narrowIntents(appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+
+
+    async narrowIntents(raiser: AppIdentifier, appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+        const sc = this
+
         function runningApps(arg0: AppIntent): number {
             return arg0.apps.filter(a => a.instanceId).length
         }
@@ -141,6 +145,15 @@ export class SailServerContext implements ServerContext<SailData> {
             return arg0.apps.map(a => a.appId).filter((value, index, self) => self.indexOf(value) === index).length
         }
 
+        function isRunningInTab(arg0: AppIdentifier): boolean {
+            const details = sc.getInstanceDetails(arg0.instanceId!!)
+            return details?.hosting == AppHosting.Tab
+        }
+
+        if (isRunningInTab(raiser)) {
+            // in this case, the tab needs the intent resolver
+            return appIntents
+        }
 
         if (appIntents.length == 0) {
             return appIntents

@@ -1,9 +1,7 @@
-import * as styles from "./styles.module.css";
-import { Popup, PopupButton } from "../popups/popup";
-import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3";
-import { ClientState } from "../state/ClientState";
-import { useState } from "react";
-import { getServerState } from "../state/ServerState";
+import * as styles from "./styles.module.css"
+import { Popup, PopupButton } from "../popups/popup"
+import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3"
+import { useState } from "react"
 
 export const EXAMPLE_CONTEXT = {
   type: "fdc3.instrument",
@@ -11,7 +9,7 @@ export const EXAMPLE_CONTEXT = {
     ticker: "AAPL",
   },
   name: "APPLE INC",
-};
+}
 
 export const EXAMPLE_APP_INTENTS: AppIntent[] = [
   {
@@ -47,13 +45,13 @@ export const EXAMPLE_APP_INTENTS: AppIntent[] = [
       },
     ],
   },
-];
+]
 
 type State = {
-  newApps: boolean;
-  chosenIntent: string | null;
-  chosenApp: AppIdentifier | null;
-};
+  newApps: boolean
+  chosenIntent: string | null
+  chosenApp: AppIdentifier | null
+}
 
 const LineItemComponent = ({
   li,
@@ -61,34 +59,34 @@ const LineItemComponent = ({
   setState,
   isSelected,
 }: {
-  li: any;
-  text: string;
-  setState: (a: any) => void;
-  isSelected: (a: any) => boolean;
+  li: any
+  text: string
+  setState: (a: any) => void
+  isSelected: (a: any) => boolean
 }) => {
   return (
     <div
       className={`${styles.lineItem} ${isSelected(li) ? styles.highlightedLineItem : ""}`}
       onClick={() => {
-        console.log("Setting state to ", li);
-        setState(li);
+        console.log("Setting state to ", li)
+        setState(li)
       }}
     >
       {text}
     </div>
-  );
-};
+  )
+}
 
 function relevantApps(a: AppIntent, newApps: boolean): AppIntent | null {
   const out = {
     intent: a.intent,
     apps: a.apps.filter((x) => (newApps ? !x.instanceId : x.instanceId)),
-  };
+  }
 
   if (out.apps.length == 0) {
-    return null;
+    return null
   } else {
-    return out;
+    return out
   }
 }
 
@@ -101,37 +99,40 @@ function firstApp(
     .filter((a) => a.intent.name === intent)
     .map((a) => relevantApps(a, newApps))
     .filter((a) => a != null)
-    .flatMap((a) => a?.apps);
+    .flatMap((a) => a?.apps)
 
   if (relevant.length == 0) {
-    return null;
+    return null
   } else {
-    return relevant[0];
+    return relevant[0]
   }
 }
 
 export const ResolverPanel = ({
-  cs,
   context,
   appIntents,
   closeAction,
+  chooseAction,
 }: {
-  cs: ClientState;
-  context: Context;
-  appIntents: AppIntent[];
-  closeAction: () => void;
+  context: Context
+  appIntents: AppIntent[]
+  closeAction: () => void
+  chooseAction: (
+    chosenApp: AppIdentifier | null,
+    chosenIntent: string | null,
+  ) => void
 }) => {
   const uniqueExistingAppIntents = appIntents
     .filter((a) => relevantApps(a, false) != null)
     .map((a) => a.intent.name)
     .filter((v, i, a) => a.indexOf(v) === i)
-    .sort();
+    .sort()
 
   const uniqueNewAppIntents = appIntents
     .filter((a) => relevantApps(a, true) != null)
     .map((a) => a.intent.name)
     .filter((v, i, a) => a.indexOf(v) === i)
-    .sort();
+    .sort()
 
   const startState: State =
     uniqueExistingAppIntents.length > 0
@@ -144,13 +145,13 @@ export const ResolverPanel = ({
           newApps: true,
           chosenApp: firstApp(appIntents, uniqueNewAppIntents[0], true),
           chosenIntent: uniqueNewAppIntents[0],
-        };
+        }
 
-  const [state, setState]: [State, (x: State) => void] = useState(startState);
+  const [state, setState]: [State, (x: State) => void] = useState(startState)
 
   const intentsToUse = state.newApps
     ? uniqueNewAppIntents
-    : uniqueExistingAppIntents;
+    : uniqueExistingAppIntents
 
   return (
     <Popup
@@ -167,7 +168,7 @@ export const ResolverPanel = ({
                     chosenApp: null,
                     chosenIntent: state.chosenIntent,
                     newApps: false,
-                  });
+                  })
                 }
               }}
             >
@@ -181,7 +182,7 @@ export const ResolverPanel = ({
                     chosenIntent: state.chosenIntent,
                     chosenApp: null,
                     newApps: true,
-                  });
+                  })
                 }
               }}
             >
@@ -201,7 +202,7 @@ export const ResolverPanel = ({
                         newApps: state.newApps,
                         chosenIntent: a,
                         chosenApp: null,
-                      });
+                      })
                     }
                   }}
                   isSelected={(a) => a === state.chosenIntent}
@@ -234,20 +235,17 @@ export const ResolverPanel = ({
           disabled={state.chosenApp == null || state.chosenIntent == null}
           onClick={async () => {
             if (state.chosenApp && state.chosenIntent) {
-              getServerState().intentChosen(
-                state.chosenApp,
-                state.chosenIntent,
-              );
-              closeAction();
+              chooseAction(state.chosenApp, state.chosenIntent)
+              closeAction()
             }
           }}
         />,
       ]}
       closeAction={() => {
-        getServerState().intentChosen(null, null);
-        closeAction();
+        chooseAction(null, null)
+        closeAction()
       }}
       closeName="Cancel"
     />
-  );
-};
+  )
+}
