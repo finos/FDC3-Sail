@@ -1,5 +1,6 @@
-import { AppRegistration, ChannelState, DirectoryApp, State } from "@kite9/fdc3-web-impl"
+import { AppRegistration, ChannelState, DirectoryApp } from "@kite9/fdc3-web-impl"
 import { AppIntent, Context } from "@kite9/fdc3"
+import { Directory, TabDetail } from "../../client/state/ClientState"
 
 
 /**
@@ -90,6 +91,17 @@ export type SailChannelChangeArgs = {
 export const SAIL_APP_STATE = 'sail-app-state'
 
 export type SailAppStateArgs = AppRegistration[]
+
+/**
+ * Sent from the browser to the server to say that the client has updated state
+ */
+export const SAIL_CLIENT_STATE = 'sail-client-state'
+
+export type SailClientStateArgs = {
+    userSessionId: string,
+    tabs: TabDetail[],
+    directories: Directory[]
+}
 
 /**
  * These two messages carry FDC3 Communication Protocol messages.

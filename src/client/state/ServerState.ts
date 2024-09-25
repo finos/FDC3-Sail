@@ -1,6 +1,6 @@
 import { DirectoryApp } from "@kite9/fdc3-web-impl";
-import { getClientState } from "./ClientState";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailIntentResolveArgs } from "../../server/da/message-types";
+import { Directory, getClientState, TabDetail } from "./ClientState";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@kite9/fdc3";
 import { getAppState } from "./AppState";
@@ -23,6 +23,8 @@ export interface ServerState {
     setUserChannel(instanceId: string, channel: string): Promise<void>
 
     intentChosen(ai: AppIdentifier | null, intent: string | null): Promise<void>
+
+    sendClientState(tabs: TabDetail[], directories: Directory[]): Promise<void>
 }
 
 class ServerStateImpl implements ServerState {
@@ -48,6 +50,16 @@ class ServerStateImpl implements ServerState {
         const userSessionId = getClientState().getUserSessionID()
         const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId } as DesktopAgentRegisterAppLaunchArgs)
         return instanceId
+    }
+
+    async sendClientState(tabs: TabDetail[], directories: Directory[]): Promise<void> {
+        if (!this.socket) {
+            return
+        }
+        const userSessionId = getClientState().getUserSessionID()
+
+
+        await this.socket.emitWithAck(SAIL_CLIENT_STATE, { userSessionId, tabs, directories } as SailClientStateArgs)
     }
 
     async registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void> {

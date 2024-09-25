@@ -242,6 +242,7 @@ class LocalStorageClientState extends AbstractClientState {
         const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories })
         localStorage.setItem(STORAGE_KEY, data)
         this.callbacks.forEach(cb => cb())
+        getServerState().sendClientState(this.tabs, this.directories)
     }
 
 }

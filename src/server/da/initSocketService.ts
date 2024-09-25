@@ -1,4 +1,4 @@
-import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE } from "./message-types";
+import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SailAppStateArgs, SAIL_CLIENT_STATE, SailClientStateArgs } from "./message-types";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailServerContext } from "./SailServerContext";
@@ -72,6 +72,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 console.error("Session not found", userSessionId)
                 callback(null, "Session not found")
             }
+        })
+
+        socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs) {
+            console.log("SAIL APP STATE: " + JSON.stringify(props))
+            const session = sessions.get(props.userSessionId)
+            session?.serverContext.reloadAppDirectories(props.directories)
         })
 
         socket.on(SAIL_CHANNEL_CHANGE, async function (props: SailChannelChangeArgs) {

@@ -5,6 +5,7 @@ import { AppRegistration, DirectoryApp, InstanceID, ServerContext, State } from 
 import { AppIdentifier } from "@kite9/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@kite9/fdc3";
+import { Directory } from "../../client/state/ClientState";
 
 /**
  * Represents the state of a Sail app.
@@ -168,5 +169,9 @@ export class SailServerContext implements ServerContext<SailData> {
         this.socket.emit(SAIL_CHANNEL_CHANGE, app, channelId)
     }
 
+    reloadAppDirectories(d: Directory[]) {
+        const toLoad = d.filter(d => d.active).map(d => d.url)
+        this.directory.replace(toLoad)
+    }
 
 }
