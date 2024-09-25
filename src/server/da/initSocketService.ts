@@ -1,7 +1,7 @@
-import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, DA_REGISTER_APP_LAUNCH, DesktopAgentRegisterAppLaunchArgs, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SailAppStateArgs, SAIL_CLIENT_STATE, SailClientStateArgs } from "./message-types";
+import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH } from "./message-types";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
-import { SailServerContext } from "./SailServerContext";
+import { AppHosting, SailServerContext } from "./SailServerContext";
 import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
 import { DirectoryApp, State, WebAppDetails } from "@kite9/fdc3-web-impl";
@@ -60,11 +60,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             const { appId, userSessionId } = props
             const session = sessions.get(userSessionId)
             if (session) {
-                const instanceId = uuid()
+                const instanceId = 'sail-app-' + uuid()
                 session.serverContext.setInstanceDetails(instanceId, {
                     instanceId: instanceId,
                     state: State.Pending,
-                    appId
+                    appId,
+                    hosting: props.hosting
                 })
                 console.log("Registered app", appId, instanceId)
                 callback(instanceId)
@@ -96,7 +97,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             } as BrowserTypes.JoinUserChannelRequest, props.instanceId)
         })
 
-        socket.on(APP_HELLO, function (props: AppHelloArgs) {
+        socket.on(APP_HELLO, function (props: AppHelloArgs, callback: (success: any, err?: string) => void) {
             console.log("APP HELLO: " + JSON.stringify(props))
 
             appInstanceId = props.instanceId
@@ -112,32 +113,28 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     appInstance.socket = socket
                     appInstance.url = (directoryItem[0].details as WebAppDetails).url
                     fdc3ServerInstance = fdc3Server
-                    fdc3ServerInstance.serverContext.setInstanceDetails(appInstanceId, {
-                        appId: props.appId,
-                        instanceId: appInstanceId,
-                        state: State.Pending,
-                        socket,
-                        url: appInstance.url
-                    })
-                } else if (DEBUG_MODE) {
+                    fdc3ServerInstance.serverContext.setInstanceDetails(appInstanceId, appInstance)
+                    callback(appInstance.hosting)
+                } else if ((appInstance != undefined) && DEBUG_MODE) {
                     console.error("App tried to connect with invalid instance id, allowing connection anyway ", appInstanceId)
-
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, {
                         appId: props.appId,
                         instanceId: appInstanceId,
                         state: State.Pending,
                         socket,
-                        url: (directoryItem[0].details as WebAppDetails).url
+                        url: (directoryItem[0].details as WebAppDetails).url,
+                        hosting: directoryItem[0]?.hostManifests?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
                     })
 
                     fdc3ServerInstance = fdc3Server
-                    //fdc3ServerInstance.serverContext.setAppConnected({ appId: props.appId, instanceId: appInstanceId })
-
+                    callback(appInstance.hosting)
                 } else {
                     console.error("App tried to connect with invalid instance id")
+                    callback(null, "Invalid instance id")
                 }
             } else {
                 console.error("App Tried Connecting to non-existent DA Instance ", userSessionId, appInstanceId)
+                callback(null, "App Tried Connecting to non-existent DA Instance")
             }
         })
 
@@ -162,7 +159,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             if (fdc3ServerInstance) {
                 const state = await fdc3ServerInstance.serverContext.getAllApps()
                 console.log("SENDING APP STATES: " + JSON.stringify(state))
-                socket.emit(SAIL_APP_STATE, { apps: state })
+                socket.emit(SAIL_APP_STATE, state)
             }
         }, 3000)
 

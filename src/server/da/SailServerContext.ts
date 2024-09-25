@@ -7,6 +7,8 @@ import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@kite9/fdc3";
 import { Directory } from "../../client/state/ClientState";
 
+export enum AppHosting { Frame, Tab }
+
 /**
  * Represents the state of a Sail app.
  * Pending: App has a window, but isn't connected to FDC3
@@ -16,7 +18,8 @@ import { Directory } from "../../client/state/ClientState";
  */
 export type SailData = AppRegistration & {
     socket?: Socket,
-    url?: string
+    url?: string,
+    hosting: AppHosting
 }
 
 export class SailServerContext implements ServerContext<SailData> {
@@ -47,6 +50,7 @@ export class SailServerContext implements ServerContext<SailData> {
     async open(appId: string): Promise<InstanceID> {
         const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
         const url = (app[0].details as any)?.url ?? undefined
+        const hosting = (app[0].hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
         if (url) {
             const instanceId = await this.socket.emitWithAck(SAIL_APP_OPEN, {
                 appDRecord: app[0]
@@ -55,7 +59,8 @@ export class SailServerContext implements ServerContext<SailData> {
                 appId,
                 instanceId,
                 url,
-                state: State.Pending
+                state: State.Pending,
+                hosting
             })
             return instanceId
         }

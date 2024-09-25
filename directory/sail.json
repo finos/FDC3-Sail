@@ -1,7 +1,7 @@
 {
     "applications": [
         {
-            "appId": "trading-view-chart",
+            "appId": "trading-view-chart-1",
             "name": "Trading View Chart",
             "title": "Trading View Chart",
             "description": "Displays a chart of a given stock, using the TradingView applications",
@@ -16,6 +16,46 @@
                 }
             ],
             "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [
+                {
+                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                }
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewChart": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Chart"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "appId": "trading-view-chart-2",
+            "name": "Trading View Chart",
+            "title": "Trading View Chart (New Window)",
+            "description": "Displays a chart of a given stock, using the TradingView applications",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/tradingview/chart.html"
+            },
+            "screenshots": [
+                {
+                    "src": "/static/example-apps/tradingview/chart.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "hostManifests": {
+                "sail": {
+                    "forceNewWindow": true
+                }
+            },
             "version": "1.0.0",
             "publisher": "FINOS",
             "icons": [

@@ -247,6 +247,7 @@ export const ResolverPanel = ({
         getServerState().intentChosen(null, null);
         closeAction();
       }}
+      closeName="Cancel"
     />
   );
 };

@@ -62,7 +62,7 @@ const LockIcon = () => {
 
 const AppStateIcon = ({ instanceId }: { instanceId: string }) => {
   const D = "/static/icons/app-state/";
-  const [state, setState] = React.useState([D + "unknown.svg", "Unknown"]);
+  //const [state, setState] = React.useState([D + "unknown.svg", "Unknown"]);
 
   function symbolForState(s: State | undefined): string[] {
     if (s == undefined) {
@@ -81,13 +81,14 @@ const AppStateIcon = ({ instanceId }: { instanceId: string }) => {
     }
   }
 
-  useEffect(() => {
-    setInterval(() => {
-      const s = getAppState().getAppState(instanceId);
-      console.log(`${instanceId}  state ${s}`);
-      setState(symbolForState(s));
-    }, 1000);
-  });
+  const state = symbolForState(getAppState().getAppState(instanceId));
+
+  // useEffect(() => {
+  //   setInterval(() => {
+  //     const s = getAppState().getAppState(instanceId);
+  //     setState(symbolForState(s));
+  //   }, 1000);
+  // });
 
   return (
     <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />

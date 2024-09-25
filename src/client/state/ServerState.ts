@@ -4,6 +4,7 @@ import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDir
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@kite9/fdc3";
 import { getAppState } from "./AppState";
+import { AppHosting } from "../../server/da/SailServerContext";
 
 export interface ServerState {
 
@@ -16,7 +17,7 @@ export interface ServerState {
      * Called when an application begins the WCP handshake process.
      * Returns the instance ID of the app.
      */
-    registerAppLaunch(appId: string): Promise<string>
+    registerAppLaunch(appId: string, hosting: AppHosting): Promise<string>
 
     getApplications(): Promise<DirectoryApp[]>
 
@@ -42,13 +43,13 @@ class ServerStateImpl implements ServerState {
         return response as DirectoryApp[]
     }
 
-    async registerAppLaunch(appId: string): Promise<string> {
+    async registerAppLaunch(appId: string, hosting: AppHosting): Promise<string> {
         if (!this.socket) {
             throw new Error("Desktop Agent not registered")
         }
 
         const userSessionId = getClientState().getUserSessionID()
-        const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId } as DesktopAgentRegisterAppLaunchArgs)
+        const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId, hosting } as DesktopAgentRegisterAppLaunchArgs)
         return instanceId
     }
 

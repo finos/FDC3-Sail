@@ -206,7 +206,7 @@ abstract class AbstractClientState implements ClientState {
                     type: ChannelType.user,
                     displayMetadata: {
                         color: t.background,
-                        icon: t.icon,
+                        glyph: t.icon,
                         name: t.title,
                     } as DisplayMetadata,
                     context: []

@@ -37,6 +37,7 @@
     font-size: .8rem;
     margin: 0;
     text-align: center;
+    font-family: "DM-Sans";
 }
 
 [data-dark=false] .iconNameText {

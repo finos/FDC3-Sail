@@ -51,7 +51,11 @@
             "details": {
                 "url": "http://localhost:3000/toolbox/fdc3-workbench/"
             },
-            "hostManifests": {},
+            "hostManifests": {
+                "sail": {
+                    "forceNewWindow": true
+                }
+            },
             "version": "1.0.0",
             "publisher": "FINOS",
             "icons": []

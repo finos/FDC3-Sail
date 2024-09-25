@@ -2,8 +2,8 @@ import { BrowserTypes } from "@kite9/fdc3";
 import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
 import { DirectoryApp, WebAppDetails, State } from "@kite9/fdc3-web-impl";
-import { v4 as uuid } from 'uuid'
 import { SailAppStateArgs } from "../../server/da/message-types";
+import { AppHosting } from "../../server/da/SailServerContext";
 
 type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
 
@@ -117,10 +117,10 @@ class DefaultAppState implements AppState {
      * returns the instance id for the new thing.
      */
     open(detail: DirectoryApp): Promise<string> {
-        return new Promise((resolve, _reject) => {
-            const openAsTab = (detail.hostManifests as any)?.sail?.forceNewWindow ?? false
-            const instanceId = 'app-' + uuid()
-            if (openAsTab) {
+        return new Promise(async (resolve, _reject) => {
+            const hosting: AppHosting = (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+            const instanceId = await getServerState().registerAppLaunch(detail.appId, hosting)
+            if (hosting == AppHosting.Tab) {
                 const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;
                 this.registerAppWindow(w, instanceId)
                 return resolve(instanceId)

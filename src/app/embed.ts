@@ -1,7 +1,8 @@
 import { io } from "socket.io-client"
 import { link } from "./util";
 import { APP_HELLO, AppHelloArgs } from "../server/da/message-types";
-import { getClientState } from "../client/state/ClientState";
+import { AppHosting } from "../server/da/SailServerContext";
+import { BrowserTypes } from "@kite9/fdc3";
 
 const appWindow = window.parent;
 
@@ -17,6 +18,11 @@ function getQueryVariable(variable: string): string {
 
     return ""
 
+}
+
+function getUserSessionId(): string {
+    const uuid = getQueryVariable("desktopAgentId")
+    return uuid
 }
 
 function getConnectionAttemptUuid(): string {
@@ -39,33 +45,41 @@ window.addEventListener("load", () => {
     const socket = io()
     const channel = new MessageChannel()
     const instanceId = getInstanceId()
-    const clientState = getClientState()
     const appId = getAppId()
 
-    socket.on("connect", () => {
+    socket.on("connect", async () => {
 
-        link(socket, channel, instanceId)
+        try {
+            link(socket, channel, instanceId)
+            const sessionId = getUserSessionId()
 
-        socket.emit(APP_HELLO, {
-            userSessionId: clientState.getUserSessionID(),
-            instanceId,
-            appId
-        } as AppHelloArgs)
+            const response = await socket.emitWithAck(APP_HELLO, {
+                userSessionId: sessionId,
+                instanceId,
+                appId
+            } as AppHelloArgs)
 
-        // sned the other end of the channel to the app
-        appWindow.postMessage({
-            type: 'WCP3Handshake',
-            meta: {
-                connectionAttemptUuid: getConnectionAttemptUuid(),
-                timestamp: new Date()
-            },
-            payload: {
-                fdc3Version: "2.2",
-                resolver: false, //window.location.origin + "/static/da/intent-resolver.html",
-                channelSelector: false //window.location.origin + "/static/da/channel-selector.html",
-            }
-        }, "*", [channel.port1])
+            console.log("Received: " + JSON.stringify(response));
 
+            const intentResolverUrl = response == AppHosting.Tab ? window.location.origin + "/static/ui/intent-resolver.html" : undefined
+            const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + "/static/ui/channel-selector.html" : undefined
 
+            // send the other end of the channel to the app
+            appWindow.postMessage({
+                type: 'WCP3Handshake',
+                meta: {
+                    connectionAttemptUuid: getConnectionAttemptUuid(),
+                    timestamp: new Date()
+                },
+                payload: {
+                    fdc3Version: "2.2",
+                    intentResolverUrl,
+                    channelSelectorUrl,
+                }
+            } as BrowserTypes.WebConnectionProtocol3Handshake, "*", [channel.port1])
+
+        } catch (e) {
+            console.error("Error in handshake", e)
+        }
     })
 })
