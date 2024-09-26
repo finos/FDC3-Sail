@@ -29,6 +29,11 @@ export const Widget = () => {
       container.current.removeChild(script)
     }
 
+    const contents = document.getElementById("bzf")
+    if (contents) {
+      contents.innerHTML = ""
+    }
+
     script = document.createElement("script")
     container.current.appendChild(script)
 
@@ -40,7 +45,12 @@ export const Widget = () => {
 
   return (
     <div style={{ width: "100%", height: "100%" }} ref={container}>
-      <div className="bz-widget" data-name="newsfeed" data-ticker={state}></div>
+      <div
+        id="bzf"
+        className="bz-widget"
+        data-name="newsfeed"
+        data-ticker={state}
+      ></div>
       <div style={{ textAlign: "center", width: "100%", fontSize: "14px" }}>
         <a
           href="https://www.benzinga.com"

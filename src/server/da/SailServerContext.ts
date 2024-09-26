@@ -97,7 +97,11 @@ export class SailServerContext implements ServerContext<SailData> {
     async setAppState(app: InstanceID, state: State): Promise<void> {
         const found = this.instances.find(a => (a.instanceId == app))
         if (found) {
+            const needsInitialChannelSetup = (found.state == State.Pending) && (state == State.Connected)
             found.state = state
+            if (needsInitialChannelSetup) {
+                this.setInitialChannel(found)
+            }
         }
     }
 
