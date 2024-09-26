@@ -42,56 +42,68 @@ FDC3 For the Web and Sail v2 will be featured at FINOS' [OSFF New York event](ht
 6.  React will be used.
 7.  User state will be held in a cookie, so there's no session persistence.
 
-## Sail v1 at OSFF!
-
-Nick Kolba (Connectifi) and Seb M'Barek (Norman and Sons) presented FDC3-Sail at the Open Source In Finance Forum (OSFF) in New York in December 2022. They showed how you could git-clone FDC3-Sail, run it and play with all the apps in the FINOS App Directory. They also showed how to build apps and share context data.
-
-If you haven't already, check out their demo here: https://youtu.be/5VJzftderO0
-
-At the time, Sail was an Electron App.
-
-### The Sail v1 Implementation
-
-- FDC3-Sail v1 is an Electron application built from the [Vite Electron Builder Boilerplate]
-- The UI for the desktop agent is built using React MUI.
-- All remotely hosted content is run in BrowserView following electron security best practices.
-
-The following libraries are used:
-
-- [Electron] cross-platform desktop framework
-- [electron-builder] for packaging, distribution and auto-updates
-- [Vite] for building, running and hot-reloading
-- [React] for UI rendering
-- [Vitest] and [React Testing Library] for testing
-- [Playwright] for test automation
-- [TypeScript] for type safety
-- [ESLint] for linting
-- [Prettier] for code formatting
-- [nano-staged] and [simple-git-hooks] for code commits
-
-[Electron]: https://github.com/electron/electron
-[electron-builder]: https://github.com/electron-userland/electron-builder
-[Vite]: https://github.com/vitejs/vite/
-[Vite Electron Builder Boilerplate]: https://github.com/cawa-93/vite-electron-builder
-[Vitest]: https://vitest.dev/
-[React]: https://reactjs.org/
-[MUI]: https://github.com/mui
-[React Testing Library]: https://testing-library.com/docs/react-testing-library/intro/
-[Typescript]: https://github.com/microsoft/TypeScript/
-[Playwright]: https://playwright.dev
-[Prettier]: https://prettier.io/
-[ESLint]: https://eslint.org/
-[nano-staged]: https://github.com/usmanyunusov/nano-staged
-[simple-git-hooks]: https://github.com/toplenboren/simple-git-hooks
-
 ## Getting Started
+
+### Prerequisites
+
+1.  You'll need to install `git` on your machine. Git is a version-control system and in this case will be used for downloading code from https://github.com
+2.  You'll need an editor. We recommend Visual Studio Code, but you can use any editor you like.
+
+### Checking Out the Repo
+
+From the command line (you can open a terminal in Visual Studio Code), run the following command:
+
+```
+git clone -b sail2-osff https://github.com/finos/FDC3-Sail.git fdc3-workshop
+```
+
+Next, open the `fdc3-workshop` folder in Visual Studio Code.
+
+### Running The Project
+
+From the terminal in Visual Studio Code (and assuming your current directory is now `fdc3-workshop`), run the following commands:
 
 ```
 npm install
 npm run dev
 ```
 
-Point browser at http://localhost:8090/static/index.html
+Point your browser at http://localhost:8090/static/index.html
+
+![Sail Initial Screen](images/blank-screen.png)
+
+### Opening Apps
+
+This tutorial version of Sail contains several apps that you can open. To open an app, click the plus icon in the bottom left corner of the sail window. You'll be given a choice of applications to open like so:
+
+![Sail App Picker](images/open-app.png)
+
+Once an application is opened, you'll be able to see it, and interact with it, in the main window.
+
+![FDC3 Workbench](images/workbench.png)
+
+## Tutorial Applications
+
+For the purposes of the training tutorial, Sail has been bundled with two toy applications:
+
+- `Pricer`: A simple application that displays a price for a given instrument.
+- `TradeList`: A simple application that displays a list of trades.
+
+You can start these from the app picker.
+
+These applications are hed in the `training` folder within the Sail distribution that you downloaded and are run on their own web server on port 5000. You can access them directly by visiting http://localhost:5000/static/pricer/index.html or http://localhost:5000/static/tradelist/index.html.
+
+**Note**: If you want to run the training apps _without running Sail_ you can do this by running `npm run dev-training` instead of `npm run dev` as described above.
+
+## About Application Directories
+
+The list of applications available to Sail is provided in what's called an "Application Directory Record". You can find the Application Directory Records for the tutorial applications in the `directory/training-appd.v2.json` file. This includes details about where the application is run from (e.g. http://localhost:5000/static/pricer/index.html), what it's called, images, icons and what FDC3 messages it responds to (in a section of the json called `interop:`).
+
+## Other FDC3 Desktop Agents
+
+FDC3 is an open standard and there are other desktop agents available. You can find a list of them on the [FDC3 Website](https://fdc3.finos.org). Sail is just a 'toy' desktop agent, but if you would rather follow the tutorial using a different desktop agent, you can do so. Here are some instructions provided by other vendors to get started with their desktop agents.
+
+- [Connectifi](training/instructions/Connectifi.md)
 
 ## Mailing List
 
