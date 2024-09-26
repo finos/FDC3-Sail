@@ -249,7 +249,7 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     {
         label: "FDC3 Demo Apps",
         url: "./directory/appd.json",
-        active: true
+        active: false
     },
     {
         label: "FDC3 Conformance",
@@ -264,12 +264,12 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     {
         label: "Sail Built-In Apps",
         url: "./directory/sail.json",
-        active: false
+        active: true
     },
     {
         label: "Developer Tutorial",
         url: "./directory/training-appd.v2.json",
-        active: false
+        active: true
     }
 ]
 
