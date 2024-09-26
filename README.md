@@ -32,17 +32,9 @@ Sail v2 is a ground-up reimplementation of the FDC3-Sail project. It is a browse
 
 FDC3 For the Web and Sail v2 will be featured at FINOS' [OSFF New York event](https://osffny2024.sched.com) in September 2024.
 
-### Design Decisions
-
-1.  We should support multiple app directories.
-2.  Each user channel will be a HTML tab within the main browser tab.
-3.  User can name and colour the user channels, and move apps between them.
-4.  This is the ONLY way to control the user channel (unless the app loads outside of the main browser tab)
-5.  Message passing will happen server-side as opposed to client side as in the demo.
-6.  React will be used.
-7.  User state will be held in a cookie, so there's no session persistence.
-
 ## Getting Started
+
+**Note:** If you're not a developer and all of this seems very daunting - don't worry! Come along to [The FDC3 Developer Training Workshop](https://osffny2024.sched.com/event/1k1nV/fdc3-developer-training-workshop-pre-registration-required-rob-moffat-finos) anyway. Maybe you can be an extra pair of eyes and hands to help out someone else?
 
 ### Prerequisites
 
@@ -104,6 +96,8 @@ The list of applications available to Sail is provided in what's called an "Appl
 FDC3 is an open standard and there are other desktop agents available. You can find a list of them on the [FDC3 Website](https://fdc3.finos.org). Sail is just a 'toy' desktop agent, but if you would rather follow the tutorial using a different desktop agent, you can do so. Here are some instructions provided by other vendors to get started with their desktop agents.
 
 - [Connectifi](training/instructions/Connectifi.md)
+- [io.Connect](training/instructions/Io.Connect.md)
+- [OpenFin](training/instructions/OpenFin.md)
 
 ## Mailing List
 
@@ -121,6 +115,16 @@ To join the Electron FDC3 Desktop Agent & App Directory mailing list please emai
 _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool (or [EasyCLA](https://github.com/finos/community/blob/master/governance/Software-Projects/EasyCLA.md)). Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
 
 _Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
+
+### Design Decisions
+
+1.  We should support multiple app directories.
+2.  Each user channel will be a HTML tab within the main browser tab.
+3.  User can name and colour the user channels, and move apps between them.
+4.  This is the ONLY way to control the user channel (unless the app loads outside of the main browser tab)
+5.  Message passing will happen server-side as opposed to client side as in the demo.
+6.  React will be used.
+7.  User state will be held in a cookie, so there's no session persistence.
 
 ## License
 

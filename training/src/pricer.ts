@@ -110,7 +110,6 @@ function changePrice(ticker: string) {
         redrawChooser();
         redrawPrice();
 
-        // lab-8
         if (window.fdc3) {
             window.fdc3.broadcast({ type: "fdc3.instrument", id: { "ticker": ticker } })
         }

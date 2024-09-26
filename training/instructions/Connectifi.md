@@ -30,6 +30,10 @@ createAgent('https://dev.connectifi-interop.com', 'tradelist@sandbox').then(a =>
 
 **Note**: Make sure to leave the `.then()` after the original `fdc3Ready()` intact - don't change that part.
 
+## Try It Out!
+
+You can start the tradelist and pricer applications (open tabs for them in a browser), see Connectifi connect and then raise an intent from the tradelist to the pricer.
+
 ## Connectifi Directory Service
 
 Use our FDC3 Sandbox app and demo apps directory to test out FDC3 APIs using Connectifi: https://apps.connectifi-interop.com/sandbox
