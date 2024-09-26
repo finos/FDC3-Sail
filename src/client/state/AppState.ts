@@ -12,7 +12,7 @@ export interface AppState {
 
     registerAppWindow(window: Window, instanceId: string): void
 
-    open(detail: DirectoryApp): Promise<string>
+    open(detail: DirectoryApp, destination?: AppHosting): Promise<string>
 
     getAppState(instanceId: string): State | undefined
 
@@ -125,9 +125,9 @@ class DefaultAppState implements AppState {
      * Opens either a new panel or a browser tab for the application to go in, 
      * returns the instance id for the new thing.
      */
-    open(detail: DirectoryApp): Promise<string> {
+    open(detail: DirectoryApp, destination?: AppHosting): Promise<string> {
         return new Promise(async (resolve, _reject) => {
-            const hosting: AppHosting = (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+            const hosting: AppHosting = destination ?? (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
             const instanceId = await getServerState().registerAppLaunch(detail.appId, hosting)
             if (hosting == AppHosting.Tab) {
                 const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;

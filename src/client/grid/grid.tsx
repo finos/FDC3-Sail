@@ -5,6 +5,7 @@ import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
 import { AppState, getAppState } from "../state/AppState"
 import { State } from "@kite9/fdc3-web-impl"
+import { AppHosting } from "../../server/da/SailServerContext"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 
@@ -142,13 +143,14 @@ export const Content = ({
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
           <AppStateIcon instanceId={panel.panelId} as={as} />
-          <LockIcon />
+          {/* <LockIcon />
           <PopOutIcon
             action={() => {
               cs.removePanel(panel.panelId)
+              as.open(panel.appId, AppHosting.Tab)
               window.open(panel.url, "_blank")
             }}
-          />
+          /> */}
         </div>
         <div className={styles.resizeBaffle} />
         <div className={styles.contentBody}>

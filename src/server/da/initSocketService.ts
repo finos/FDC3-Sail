@@ -116,9 +116,10 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     appInstance.url = (directoryItem[0].details as WebAppDetails).url
                     fdc3ServerInstance = fdc3Server
                     fdc3ServerInstance.serverContext.setInstanceDetails(appInstanceId, appInstance)
-                    callback(appInstance.hosting)
-                } else if (DEBUG_MODE) {
+                    return callback(appInstance.hosting)
+                } else if ((DEBUG_MODE && directoryItem.length > 0)) {
                     console.error("App tried to connect with invalid instance id, allowing connection anyway ", appInstanceId)
+
                     const instanceDetails: SailData = {
                         appId: props.appId,
                         instanceId: appInstanceId,
@@ -130,11 +131,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, instanceDetails)
 
                     fdc3ServerInstance = fdc3Server
-                    callback(instanceDetails.hosting)
-                } else {
-                    console.error("App tried to connect with invalid instance id")
-                    callback(null, "Invalid instance id")
+                    return callback(instanceDetails.hosting)
                 }
+
+                console.error("App tried to connect with invalid instance id")
+                return callback(null, "Invalid instance id")
+
             } else {
                 console.error("App Tried Connecting to non-existent DA Instance ", userSessionId, appInstanceId)
                 callback(null, "App Tried Connecting to non-existent DA Instance")
