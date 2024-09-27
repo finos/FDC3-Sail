@@ -13,10 +13,6 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "@connectifi/agent-web": "^2.9.5",
-    "@interopio/browser": "^3.4.1",
-    "@interopio/browser-platform": "^3.4.1",
-    "@interopio/fdc3": "^2.4.1",
-    "@kite9/fdc3": "2.2.0-beta.27"
+    "@kite9/fdc3": "2.2.0-beta.29"
   }
 }

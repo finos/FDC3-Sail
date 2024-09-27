@@ -2,7 +2,6 @@ import { Channel, PrivateChannel, fdc3Ready } from "@kite9/fdc3";
 
 enum Direction { UP, DOWN, NONE }
 
-// lab-9
 type Price = {
     ticker: string,
     price: number,
@@ -20,7 +19,8 @@ function calculateInitialPrice(ticker: string): number {
 
 const prices: Price[] = [
     { ticker: "TSLA", price: calculateInitialPrice("TSLA"), direction: Direction.NONE },
-    { ticker: "MSFT", price: calculateInitialPrice("MSFT"), direction: Direction.NONE }
+    { ticker: "MSFT", price: calculateInitialPrice("MSFT"), direction: Direction.NONE },
+    { ticker: "AAPL", price: calculateInitialPrice("APPL"), direction: Direction.NONE }
 ];
 
 var onScreenPrice: Price = prices[0]
@@ -74,17 +74,13 @@ function recalculate() {
         const direction = (newPriceStr == oldPriceStr) ? Direction.NONE : (change > 0) ? Direction.UP : Direction.DOWN;
         p.price = newPrice;
         p.direction = direction;
-
-        // lab-9
-        if (p.channel) {
-            p.channel.broadcast({ type: "fdc3.valuation", value: p.price })
-        }
     })
 }
 
 setInterval(() => {
-    recalculate(),
-        redrawPrice()
+    recalculate();
+    redrawPrice();
+    redrawChooser();
 }, 2000)
 
 
@@ -110,9 +106,10 @@ function changePrice(ticker: string) {
         redrawChooser();
         redrawPrice();
 
-        if (window.fdc3) {
-            window.fdc3.broadcast({ type: "fdc3.instrument", id: { "ticker": ticker } })
-        }
+        // // training 2
+        // if (window.fdc3) {
+        //     window.fdc3.broadcast({ type: "fdc3.instrument", id: { "ticker": ticker } })
+        // }
     }
 }
 
@@ -125,32 +122,22 @@ window.addEventListener("load", () => {
 
 })
 
-// lab-6
 fdc3Ready().then(() => {
 
-    window.fdc3.addIntentListener("ViewQuote", (instrument) => {
-        if (instrument?.id?.ticker) {
-            changePrice(instrument.id.ticker);
-        }
-    })
+    // // training 1
+    // window.fdc3.addContextListener("fdc3.instrument", (instrument) => {
+    //     if (instrument?.id?.ticker) {
+    //         changePrice(instrument.id.ticker);
+    //     }
+    // })
 
-    window.fdc3.addContextListener("fdc3.instrument", (instrument) => {
-        if (instrument?.id?.ticker) {
-            changePrice(instrument.id.ticker);
-        }
-    })
+    // // training 3
+    // window.fdc3.addIntentListener("ViewQuote", (instrument) => {
+    //     if (instrument?.id?.ticker) {
+    //         changePrice(instrument.id.ticker);
+    //     }
+    // })
 
-    // lab-9
-    window.fdc3.addIntentListener("demo.GetPrices", async (instrument) => {
-        const price = getPrice(instrument?.id?.ticker ?? "Unknown");
-        if (price.channel == undefined) {
-            const channel: PrivateChannel = await window.fdc3.createPrivateChannel();
-            price.channel = channel;
-            return channel;
-        } else {
-            return price.channel;
-        }
-    })
 });
 
 

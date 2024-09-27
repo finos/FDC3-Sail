@@ -81,7 +81,7 @@
     "forwardErrorReports": true
   },
   "snapshot": {
-    "windows": [ ]
+    "windows": []
   },
   "customSettings": {
     "bootstrap": {
@@ -102,8 +102,8 @@
           "width": 665,
           "fdc3InteropApi": "2.0"
         },
-        "intentOptions": { },
-        "openOptions": { },
+        "intentOptions": {},
+        "openOptions": {},
         "unregisteredApp": {
           "appId": "unregistered",
           "title": "Other",
@@ -208,10 +208,9 @@
     },
     "appProvider": {
       "endpointIds": [
-        "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/apps-fdc3-1-2.json",
         "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/apps-fdc3-2-0.json",
-        "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/apps-fdc3-1-2.json",
-        "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/apps-fdc3-2-0.json"
+        "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/apps-fdc3-2-0.json",
+        "http://localhost:5000/static/opt/io.connect/training-appd.v2.json"
       ],
       "cacheDurationInSeconds": 10,
       "cacheDurationInMinutes": 0,
@@ -249,7 +248,7 @@
           }
         },
         "workspacePlatform": {
-          "pages": [ ],
+          "pages": [],
           "title": "FDC3 Workspace",
           "newTabUrl": "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/views/platform/new-tab/new-tab.html",
           "newPageUrl": "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/views/platform/new-tab/new-tab.html"
@@ -266,7 +265,7 @@
             "iconUrl": "https://built-on-openfin.github.io/workspace-starter/workspace/v19.0.0/workspace-platform-starter/common/icons/{theme}/{scheme}/search.svg",
             "action": {
               "id": "home-show",
-              "customData": { }
+              "customData": {}
             }
           }
         },

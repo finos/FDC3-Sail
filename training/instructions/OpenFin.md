@@ -1,11 +1,11 @@
 # Using OpenFin For the Training Course
 
-1. Use https://start.openfin.co, enter the manifest location and generate an installer. If you have the training apps running, then the correct URL is http://localhost:5000/static/opt/OpenFin/manifest.json
+1. Use https://start.openfin.co, enter the manifest location and generate an installer. If you have the training apps running, then the correct URL is:
 
-2. Run the app - it will download the necessary OpenFin binaires, place an icon on the desktop and start the app.
+http://localhost:5000/static/opt/OpenFin/manifest.json
 
-3. Modify the manifest file with the location of the AppD.
+2. Run the installer - it will download the necessary OpenFin binaires.
 
-4. Restart the app and see your apps.
+3. Start OpenFin (if it doesn't start automatically) and at the prompt where it says "what would you like to do?" enter "tradelist"
 
-5. Interop!
+4. The tradelist app will start up.

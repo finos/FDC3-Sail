@@ -1,6 +1,5 @@
-import { fdc3Ready, Channel, Context, PrivateChannel } from '@kite9/fdc3'
+import { fdc3Ready, Channel } from '@kite9/fdc3'
 
-// lab-9
 type StockItem = {
     ticker: string,
     holding: number,
@@ -30,8 +29,6 @@ function removeStock(si: StockItem) {
     render();
 }
 
-// lab-7
-
 function renderStock(si: StockItem): HTMLTableRowElement {
     const out: HTMLTableRowElement = document.createElement("tr");
     const ticker: HTMLTableCellElement = document.createElement("td");
@@ -55,23 +52,18 @@ function renderStock(si: StockItem): HTMLTableRowElement {
     remove.onclick = () => removeStock(si);
     out.appendChild(buttons);
 
-    // lab-4
 
-    // lab-6
-
-    // lab-7
-    const ctx = { type: "fdc3.instrument", id: { ticker: si.ticker } };
-    if (window.fdc3) {
-        // quote button
-        const price: HTMLButtonElement = document.createElement("button");
-        buttons.appendChild(price);
-        price.textContent = "..."
-        price.onclick = () => {
-            window.fdc3.raiseIntentForContext(ctx);
-        }
-    }
-
-    // lab-7
+    // // training 4
+    // if (window.fdc3) {
+    //     // quote button
+    //     const price: HTMLButtonElement = document.createElement("button");
+    //     buttons.appendChild(price);
+    //     price.textContent = "..."
+    //     price.onclick = () => {
+    //         const ctx = { type: "fdc3.instrument", id: { ticker: si.ticker } };
+    //         window.fdc3.raiseIntentForContext(ctx);
+    //     }
+    // }
 
     return out;
 }
@@ -108,31 +100,7 @@ theForm.addEventListener("submit", event => {
 window.addEventListener("load", _e => render());
 
 
-
-// lab-9
-fdc3Ready().then((da) => {
-
-    // make sure we are getting price updates for each stock
-    // setInterval(() => {
-    //     stockItems.forEach(s => {
-    //         if (!s.channel) {
-    //             const ctx : Context = { type: "fdc3.instrument", id: { ticker: s.ticker }};
-    //             fdc3.raiseIntent("demo.GetPrices", ctx).then(async (r: Context) => {
-    //                 const result = await r.getResult();
-    //                 if (result?.broadcast) {
-    //                     const channel = result as PrivateChannel;
-    //                     s.channel = channel;
-    //                     channel.addContextListener("fdc3.valuation", (valuation: Context) => {
-    //                         if (valuation?.value) {
-    //                             s.value = parseFloat((Math.round(valuation.value * 100) / 100).toFixed(2));
-    //                         }
-    //                     });
-    //                  }
-    //             })
-    //         }
-    //     })
-    // }, 5000);
-
+fdc3Ready().then(() => {
     // update the screen
     setInterval(render, 5000);
 })
