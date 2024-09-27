@@ -21,10 +21,11 @@
     right: .5rem;
     bottom: .5rem;
     position: absolute;
-    background-color: #FFFFFF22;
+    background-color: white;
     overflow-x: hidden;
     overflow-y: auto;
     border-radius: .25rem;
+    box-shadow: -2px 2px 2px #00000030;
 }
 
 .contentTitle {
@@ -34,7 +35,7 @@
     left: 0;
     right: 0;
     display: flex;
-    background-color: #FFFFFF55;
+    background-color: #ddd;
     gap: .3rem;
     padding-left: .2rem;
     padding-right: .2rem;
@@ -100,4 +101,5 @@
     right: 0;
     width: 100%;
     height: 100%;
+    border: 0;
 }

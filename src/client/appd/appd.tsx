@@ -1,36 +1,37 @@
-import { Component } from "react";
-import { Icon } from "../icon/icon";
-import { getServerState } from "../state/ServerState";
-import * as styles from "./styles.module.css";
-import { Popup, PopupButton } from "../popups/popup";
-import { DirectoryApp, WebAppDetails } from "@kite9/fdc3-web-impl";
-import { getAppState } from "../state/AppState";
+import { Component } from "react"
+import { Icon } from "../icon/icon"
+import { getServerState } from "../state/ServerState"
+import * as styles from "./styles.module.css"
+import { Popup, PopupButton } from "../popups/popup"
+import { DirectoryApp, WebAppDetails } from "@kite9/fdc3-web-impl"
+import { getAppState } from "../state/AppState"
+import { AppHosting } from "../../server/da/SailServerContext"
 
-const DEFAULT_ICON = "/static/icons/control/choose-app.svg";
+const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
 function getIcon(a: DirectoryApp) {
-  const icons = a.icons ?? [];
+  const icons = a.icons ?? []
   if (icons.length > 0) {
-    return icons[0].src;
+    return icons[0].src
   } else {
-    return DEFAULT_ICON;
+    return DEFAULT_ICON
   }
 }
 
-type AppPanelProps = { closeAction: () => void };
+type AppPanelProps = { closeAction: () => void }
 
 type AppPanelState = {
-  chosen: DirectoryApp | null;
-  apps: DirectoryApp[];
-};
+  chosen: DirectoryApp | null
+  apps: DirectoryApp[]
+}
 
 export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   constructor(props: AppPanelProps) {
-    super(props);
+    super(props)
     this.state = {
       chosen: null,
       apps: [],
-    };
+    }
   }
 
   componentDidMount = () => {
@@ -41,20 +42,20 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         this.setState({
           chosen: null,
           apps: apps.filter((d) => onlyRelevantApps(d)),
-        });
-      });
-  };
+        })
+      })
+  }
 
   setChosen(app: DirectoryApp) {
     //console.log("state changed " + app.appId);
     this.setState({
       apps: this.state.apps,
       chosen: app,
-    });
+    })
   }
 
   render() {
-    const app: DirectoryApp = this.state.chosen!!;
+    const app: DirectoryApp = this.state.chosen!!
 
     return (
       <Popup
@@ -92,13 +93,24 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         }
         buttons={[
           <PopupButton
-            key="open"
-            text="open"
+            key="open-frame"
+            text="Open Here"
             disabled={this.state.chosen == null}
             onClick={async () => {
               if (this.state.chosen) {
-                getAppState().open(this.state.chosen);
-                this.props.closeAction();
+                getAppState().open(this.state.chosen, AppHosting.Frame)
+                this.props.closeAction()
+              }
+            }}
+          />,
+          <PopupButton
+            key="open-tab"
+            text="Open In Tab"
+            disabled={this.state.chosen == null}
+            onClick={async () => {
+              if (this.state.chosen) {
+                getAppState().open(this.state.chosen, AppHosting.Tab)
+                this.props.closeAction()
               }
             }}
           />,
@@ -106,13 +118,13 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         closeAction={() => this.props.closeAction()}
         closeName="Cancel"
       />
-    );
+    )
   }
 }
 function onlyRelevantApps(d: DirectoryApp): boolean {
-  const sail: any = d.hostManifests?.sail;
-  const show = sail ? sail.searchable != false : true;
-  const type = d.type == "web";
-  const url = (d.details as WebAppDetails).url;
-  return show && type && url != null;
+  const sail: any = d.hostManifests?.sail
+  const show = sail ? sail.searchable != false : true
+  const type = d.type == "web"
+  const url = (d.details as WebAppDetails).url
+  return show && type && url != null
 }

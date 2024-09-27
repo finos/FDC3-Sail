@@ -64,7 +64,7 @@ export class Frame extends Component<FrameProps, FrameState> {
         </div>
         <div
           className={styles.main}
-          style={{ backgroundColor: activeTab!!.background }}
+          style={{ border: `1px solid ${activeTab!!.background}` }}
         >
           <Grids
             cs={this.props.cs}

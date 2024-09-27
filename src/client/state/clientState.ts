@@ -278,19 +278,19 @@ const DEFAULT_TABS: TabDetail[] = [
     {
         title: "One",
         id: "one",
-        icon: "/static/icons/tabs/noun-airplane-3707662.svg",
+        icon: "/static/icons/tabs/one.svg",
         background: '#123456',
     },
     {
         title: "Two",
         id: "two",
-        icon: "/static/icons/tabs/noun-camera-3707659.svg",
+        icon: "/static/icons/tabs/two.svg",
         background: '#564312',
     },
     {
         title: "Three",
         id: "three",
-        icon: "/static/icons/tabs/noun-driller-3707669.svg",
+        icon: "/static/icons/tabs/three.svg",
         background: '#125634',
     }
 ]

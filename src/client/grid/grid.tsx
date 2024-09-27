@@ -136,8 +136,14 @@ export const Content = ({
 }) => {
   return (
     <div className={styles.content} id={id}>
-      <div className={styles.contentInner}>
-        <div className={styles.contentTitle}>
+      <div
+        className={styles.contentInner}
+        style={{ border: `1px solid ${cs.getActiveTab().background}` }}
+      >
+        <div
+          className={styles.contentTitle}
+          style={{ backgroundColor: cs.getActiveTab().background }}
+        >
           <CloseIcon action={() => cs.removePanel(panel.panelId)} />
           <p className={styles.contentTitleText}>
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>

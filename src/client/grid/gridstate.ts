@@ -186,7 +186,7 @@ export class GridsStateImpl implements GridsState {
 
         if (gridEl) {
             const active = this.cs.getActiveTab().id == td?.id
-            gridEl.setAttribute("style", `display: ${active ? "block" : "none"}; background-color: ${td?.background}; `)
+            gridEl.setAttribute("style", `display: ${active ? "block" : "none"}; `)
         }
 
         return gs;

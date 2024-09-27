@@ -8,7 +8,6 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    background-color: white;
     flex-basis: 4rem;
     flex-grow: 0;
     flex-shrink: 0;
@@ -17,7 +16,6 @@
 
 .logo {
     display: inline;
-    background-color: white;
     text-align: right;
     flex-basis: 8rem;
     flex-grow: 0;

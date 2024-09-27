@@ -34,4 +34,5 @@
     border-radius: .5rem;
     box-shadow: -4px 4px 3px #00000030;
     overflow-y: scroll;
+    background-color: white;
 }

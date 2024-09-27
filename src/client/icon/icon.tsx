@@ -1,6 +1,14 @@
 import * as styles from "./styles.module.css"
 
-export const Icon = ({image, text, dark}: {image: string; text: string; dark: boolean}) => {
+export const Icon = ({
+  image,
+  text,
+  dark,
+}: {
+  image: string
+  text: string
+  dark: boolean
+}) => {
   return (
     <div className={styles.icon} data-dark={dark}>
       <img src={image} className={styles.iconImage} />
