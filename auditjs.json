@@ -1,3 +1,0 @@
-{
-    "ignore": [{ "id": "sonatype-2017-0717", "reason": "This is a known React issue that doesn't affect our application since it is used in the context of Electron which is sandboxed" }]
-}

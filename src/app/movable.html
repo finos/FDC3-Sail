@@ -1,0 +1,33 @@
+<html>
+  <style>
+    .background {
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      position: fixed;
+      background-color: #22222202;
+    }
+
+    .handle {
+      position: fixed;
+      right: 10;
+      width: 200px;
+      height: 200px;
+      background-color: red;
+    }
+  </style>
+
+  <body>
+    <div class="Background"></div>
+
+    <div class="handle" id="myDiv">Drag Me</div>
+
+    <script>
+      window.onload = function () {
+        console.log("loaded")
+        dragElement(document.getElementById("myDiv"))
+      }
+    </script>
+  </body>
+</html>
