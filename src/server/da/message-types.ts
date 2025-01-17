@@ -1,5 +1,5 @@
-import { AppRegistration, ChannelState, DirectoryApp } from "@kite9/fdc3-web-impl"
-import { AppIntent, Context } from "@kite9/fdc3"
+import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
+import { AppIntent, Context } from "@finos/fdc3"
 import { Directory, TabDetail } from "../../client/state/ClientState"
 import { AppHosting } from "./SailServerContext"
 

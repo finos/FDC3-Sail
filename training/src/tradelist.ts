@@ -1,4 +1,4 @@
-import { fdc3Ready, Channel } from '@kite9/fdc3'
+import { fdc3Ready, Channel } from '@finos/fdc3'
 
 type StockItem = {
     ticker: string,

@@ -1,5 +1,5 @@
 // TradingViewWidget.jsx
-import { getAgent } from "@kite9/fdc3"
+import { getAgent } from "@finos/fdc3"
 import { useEffect, useRef, useState } from "react"
 
 export const Widget = () => {

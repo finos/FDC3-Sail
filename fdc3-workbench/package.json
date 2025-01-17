@@ -30,7 +30,7 @@
     ]
   },
   "devDependencies": {
-    "@kite9/fdc3": "2.2.0-beta.27",
+    "@finos/fdc3": "2.2.0-alpha.3",
     "@types/jsoneditor": "^8.6.1",
     "@typescript-eslint/eslint-plugin": "7.1.1",
     "@typescript-eslint/parser": "7.1.0",

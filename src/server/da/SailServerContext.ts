@@ -1,10 +1,10 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
-import { AppRegistration, DirectoryApp, InstanceID, ServerContext, State } from "@kite9/fdc3-web-impl"
-import { AppIdentifier } from "@kite9/fdc3";
+import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
+import { AppIdentifier } from "@finos/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
-import { AppIntent, Context, OpenError } from "@kite9/fdc3";
+import { AppIntent, Context, OpenError } from "@finos/fdc3";
 import { Directory } from "../../client/state/ClientState";
 
 export enum AppHosting { Frame, Tab }
@@ -27,10 +27,15 @@ export class SailServerContext implements ServerContext<SailData> {
     private instances: SailData[] = []
     readonly directory: SailDirectory
     private readonly socket: Socket
+    private fdc3Server: FDC3Server | undefined
 
     constructor(directory: SailDirectory, socket: Socket) {
         this.directory = directory
         this.socket = socket
+    }
+
+    setFDC3Server(server: FDC3Server): void {
+        this.fdc3Server = server
     }
 
     post(message: object, instanceId: InstanceID): Promise<void> {
@@ -49,6 +54,11 @@ export class SailServerContext implements ServerContext<SailData> {
 
     async open(appId: string): Promise<InstanceID> {
         const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
+
+        if (app.length == 0) {
+            throw new Error(OpenError.AppNotFound)
+        }
+
         const url = (app[0].details as any)?.url ?? undefined
         const hosting = (app[0].hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
         if (url) {
@@ -101,6 +111,11 @@ export class SailServerContext implements ServerContext<SailData> {
             found.state = state
             if (needsInitialChannelSetup) {
                 this.setInitialChannel(found)
+            }
+
+            if (state == State.Terminated) {
+                this.instances = this.instances.filter(a => (a.instanceId !== app))
+                this.fdc3Server?.cleanup(found.instanceId)
             }
         }
     }

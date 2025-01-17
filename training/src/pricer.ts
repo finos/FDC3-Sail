@@ -1,4 +1,4 @@
-import { Channel, PrivateChannel, fdc3Ready } from "@kite9/fdc3";
+import { Channel, PrivateChannel, fdc3Ready } from "@finos/fdc3";
 
 enum Direction { UP, DOWN, NONE }
 

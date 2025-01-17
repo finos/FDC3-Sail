@@ -1,6 +1,6 @@
 import * as styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { AppIdentifier, AppIntent, Context } from "@kite9/fdc3"
+import { AppIdentifier, AppIntent, Context } from "@finos/fdc3"
 import { useState } from "react"
 
 export const EXAMPLE_CONTEXT = {

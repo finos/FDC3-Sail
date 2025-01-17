@@ -1,7 +1,7 @@
-import { BrowserTypes } from "@kite9/fdc3";
+import { BrowserTypes } from "@finos/fdc3";
 import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
-import { DirectoryApp, WebAppDetails, State } from "@kite9/fdc3-web-impl";
+import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
 import { SailAppStateArgs } from "../../server/da/message-types";
 import { AppHosting } from "../../server/da/SailServerContext";
 

@@ -3,7 +3,7 @@ import { Icon } from "../icon/icon"
 import { getServerState } from "../state/ServerState"
 import * as styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { DirectoryApp, WebAppDetails } from "@kite9/fdc3-web-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { getAppState } from "../state/AppState"
 import { AppHosting } from "../../server/da/SailServerContext"
 

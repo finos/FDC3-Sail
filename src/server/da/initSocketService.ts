@@ -4,8 +4,8 @@ import { SailFDC3Server } from "./SailFDC3Server";
 import { AppHosting, SailData, SailServerContext } from "./SailServerContext";
 import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
-import { DirectoryApp, State, WebAppDetails } from "@kite9/fdc3-web-impl";
-import { BrowserTypes } from "@kite9/fdc3";
+import { DirectoryApp, State, WebAppDetails } from "@finos/fdc3-web-impl";
+import { BrowserTypes } from "@finos/fdc3";
 export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
@@ -38,6 +38,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 // starting session
                 const serverContext = new SailServerContext(new SailDirectory(), socket)
                 fdc3Server = new SailFDC3Server(serverContext, props)
+                serverContext.setFDC3Server(fdc3Server)
                 sessions.set(userSessionId, fdc3Server)
                 console.log("created agent session.  Running sessions ", sessions.size, props.userSessionId)
             }

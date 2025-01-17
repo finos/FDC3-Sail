@@ -4,7 +4,7 @@ import * as styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
 import { AppState, getAppState } from "../state/AppState"
-import { State } from "@kite9/fdc3-web-impl"
+import { State } from "@finos/fdc3-web-impl"
 import { AppHosting } from "../../server/da/SailServerContext"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }

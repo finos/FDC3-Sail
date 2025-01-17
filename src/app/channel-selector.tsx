@@ -1,4 +1,4 @@
-import { BrowserTypes } from "@kite9/fdc3"
+import { BrowserTypes } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
 import { TabDetail } from "../client/state/ClientState"

@@ -1,6 +1,6 @@
 import IOBrowser from "@interopio/browser";
 import "@interopio/fdc3";
-import { DesktopAgent } from "@kite9/fdc3";
+import { DesktopAgent } from "@finos/fdc3";
 import IOBrowserWidget from "@interopio/widget";
 import "@interopio/widget/styles";
 

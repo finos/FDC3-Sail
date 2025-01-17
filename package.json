@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev-sail": "nodemon -w src/server -x tsx src/server/main.ts",
+    "dev-sail": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
     "dev-workbench": "cd fdc3-workbench && npm up; npm run dev",
     "dev-training": "cd training && npm up; npm run dev",
     "dev": "concurrently \"npm run dev-workbench\" \"npm run dev-sail\" \"npm run dev-training\""
@@ -20,8 +20,8 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "@kite9/fdc3": "2.2.0-beta.29",
-    "@kite9/fdc3-web-impl": "2.2.0-beta.29",
+    "@finos/fdc3": "2.2.0-alpha.3",
+    "@finos/fdc3-web-impl": "2.2.0-alpha.3",
     "@types/react-dom": "^18.2.25",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",

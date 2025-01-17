@@ -1,8 +1,8 @@
-import { DirectoryApp } from "@kite9/fdc3-web-impl";
+import { DirectoryApp } from "@finos/fdc3-web-impl";
 import { Directory, getClientState, TabDetail } from "./ClientState";
 import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs } from "../../server/da/message-types";
 import { io, Socket } from "socket.io-client"
-import { AppIdentifier, ResolveError } from "@kite9/fdc3";
+import { AppIdentifier, ResolveError } from "@finos/fdc3";
 import { getAppState } from "./AppState";
 import { AppHosting } from "../../server/da/SailServerContext";
 
