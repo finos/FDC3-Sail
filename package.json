@@ -1,35 +1,21 @@
 {
-  "name": "sail2",
+  "name": "@finos/sail",
   "private": true,
   "version": "0.0.0",
   "scripts": {
     "dev-sail": "cd web; npm up; npm run dev",
     "dev-training": "cd training && npm up; npm run dev",
-    "dev": "concurrently  \"npm run dev-sail\" \"npm run dev-training\""
+    "dev-electron": "cd electron && npm up; npm run dev",
+    "web": "concurrently  \"npm run dev-sail\" \"npm run dev-training\"",
+    "electron": "concurrently  \"npm run dev-sail\" \"npm run dev-training\" \"npm run dev-electron\""
   },
   "workspaces": [
     "web",
-    "training"
+    "training",
+    "electron2"
   ],
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
-  "dependencies": {
-    "@finos/fdc3": "2.2.0-alpha.3",
-    "@finos/fdc3-web-impl": "2.2.0-alpha.3",
-    "@types/react-dom": "^18.2.25",
-    "@types/uuid": "^9.0.8",
-    "@types/ws": "^8.5.10",
-    "express": "^4.18.3",
-    "gridstack": "^10.1.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hooks": "^1.0.1",
-    "socket.io": "^4.7.5",
-    "socket.io-client": "^4.7.5",
-    "tsx": "^4.5.0",
-    "typescript": "^5.3.2",
-    "uuid": "^9.0.1",
-    "vite-express": "^0.15.0"
-  }
+  "dependencies": {}
 }
