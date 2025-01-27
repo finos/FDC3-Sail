@@ -248,7 +248,7 @@ class LocalStorageClientState extends AbstractClientState {
 const DEFAULT_DIRECTORIES: Directory[] = [
     {
         label: "FDC3 Demo Apps",
-        url: "./directory/appd.json",
+        url: "../directory/appd.json",
         active: false
     },
     {
@@ -263,12 +263,12 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     },
     {
         label: "Sail Built-In Apps",
-        url: "./directory/sail.json",
+        url: "../directory/sail.json",
         active: true
     },
     {
         label: "Developer Tutorial",
-        url: "./directory/training-appd.v2.json",
+        url: "../directory/training-appd.v2.json",
         active: true
     }
 ]

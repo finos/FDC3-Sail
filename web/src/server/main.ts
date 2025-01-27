@@ -11,7 +11,7 @@ const sessions = new Map<string, SailFDC3Server>()
 app.use(express.json())
 
 const httpServer = ViteExpress.listen(app, 8090, () =>
-  console.log("Server is listening on port 8090..."),
+  console.log("Server is listening.  Head to http://localhost:8090/static/index.html"),
 );
 
 initSocketService(httpServer, sessions)

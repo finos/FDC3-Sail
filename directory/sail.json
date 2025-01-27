@@ -103,7 +103,7 @@
             "description": "Part of the WebFDC3 Demo - Port of the FDC3 Workbench.  Must be started separately on localhost:3000",
             "type": "web",
             "details": {
-                "url": "http://localhost:3000/toolbox/fdc3-workbench/"
+                "url": "https://deploy-preview-1309--fdc3.netlify.app/toolbox/fdc3-workbench/"
             },
             "version": "1.0.0",
             "publisher": "FINOS",
