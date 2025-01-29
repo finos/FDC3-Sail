@@ -3,16 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev-sail": "cd web; npm up; npm run dev",
-    "dev-training": "cd training && npm up; npm run dev",
-    "dev-electron": "cd electron && npm up; npm run dev",
-    "web": "concurrently  \"npm run dev-sail\" \"npm run dev-training\"",
-    "electron": "concurrently  \"npm run dev-sail\" \"npm run dev-training\" \"npm run dev-electron\""
+    "clean": "npm run clean --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "web": "npm run build && npm run web --workspaces --if-present",
+    "electron": "concurrently \"npm run web\" \"npm run electron --workspaces --if-present \""
   },
   "workspaces": [
+    "common",
     "web",
     "training",
-    "electron2"
+    "electron"
   ],
   "devDependencies": {
     "concurrently": "^8.2.2"

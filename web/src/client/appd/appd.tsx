@@ -5,7 +5,7 @@ import * as styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { getAppState } from "../state/AppState"
-import { AppHosting } from "../../server/da/SailServerContext"
+import { AppHosting } from "@finos/fdc3-sail-common"
 
 const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 

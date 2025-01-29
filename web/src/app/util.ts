@@ -1,10 +1,10 @@
 import { InstanceID } from "@finos/fdc3-web-impl"
 import { Socket } from "socket.io-client"
-import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "../server/da/message-types"
+import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "@finos/fdc3-sail-common"
 
 
 export function link(socket: Socket, channel: MessageChannel, source: InstanceID) {
-    socket.on(FDC3_DA_EVENT, (data: any, to: InstanceID) => {
+    socket.on(FDC3_DA_EVENT, (data: any, _to: InstanceID) => {
         // console.log(`DA Sent ${JSON.stringify(data)} from socket`)
         channel.port2.postMessage(data)
     })

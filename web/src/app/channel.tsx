@@ -1,6 +1,6 @@
-import { TabDetail } from "../client/state/ClientState"
+import { TabDetail } from "@finos/fdc3-sail-common"
 import { Icon } from "./Icon"
-import * as styles from "./styles.module.css"
+import styles from "./styles.module.css"
 
 const NO_CHANNEL: TabDetail = {
   background: "white",

@@ -1,13 +1,11 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs } from "./message-types";
 import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { Directory } from "../../client/state/ClientState";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory } from "@finos/fdc3-sail-common";
 
-export enum AppHosting { Frame, Tab }
 
 /**
  * Represents the state of a Sail app.

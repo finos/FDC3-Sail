@@ -1,6 +1,6 @@
 import { GridStackPosition } from "gridstack"
 import { v4 as uuidv4 } from 'uuid';
-import { DesktopAgentHelloArgs } from "../../server/da/message-types";
+import { DesktopAgentHelloArgs, TabDetail, Directory } from "@finos/fdc3-sail-common";
 import { AppIntent, Context, DisplayMetadata } from "@finos/fdc3";
 import { ChannelType, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl";
 import { getServerState } from "./ServerState";
@@ -13,19 +13,6 @@ export type AppPanel = GridStackPosition & {
     tabId: string
     panelId: string,
     appId: string
-}
-
-export type TabDetail = {
-    title: string,
-    id: string,
-    icon: string,
-    background: string,
-}
-
-export type Directory = {
-    label: string,
-    url: string,
-    active: boolean
 }
 
 export type IntentResolution = {

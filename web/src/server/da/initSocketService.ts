@@ -1,7 +1,7 @@
-import { DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH } from "./message-types";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
-import { AppHosting, SailData, SailServerContext } from "./SailServerContext";
+import { SailData, SailServerContext } from "./SailServerContext";
 import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
 import { DirectoryApp, State, WebAppDetails } from "@finos/fdc3-web-impl";
@@ -121,13 +121,15 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 } else if ((DEBUG_MODE && directoryItem.length > 0)) {
                     console.error("App tried to connect with invalid instance id, allowing connection anyway ", appInstanceId)
 
+                    const shm: SailHostManifest = directoryItem[0]?.hostManifests?.sail as any
+
                     const instanceDetails: SailData = {
                         appId: props.appId,
                         instanceId: appInstanceId,
                         state: State.Pending,
                         socket,
                         url: (directoryItem[0].details as WebAppDetails).url,
-                        hosting: directoryItem[0]?.hostManifests?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+                        hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
                     }
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, instanceDetails)
 

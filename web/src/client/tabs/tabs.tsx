@@ -1,15 +1,16 @@
-import { Icon } from "../icon/icon";
-import { ClientState, TabDetail } from "../state/ClientState";
-import * as styles from "./styles.module.css";
+import { Icon } from "../icon/icon"
+import { ClientState } from "../state/clientState"
+import { TabDetail } from "@finos/fdc3-sail-common"
+import * as styles from "./styles.module.css"
 
 const Tab = ({
   td,
   active,
   onClick,
 }: {
-  td: TabDetail;
-  active: boolean;
-  onClick: () => void;
+  td: TabDetail
+  active: boolean
+  onClick: () => void
 }) => {
   return (
     <div
@@ -23,8 +24,8 @@ const Tab = ({
     >
       <Icon text={td.title} image={td.icon} dark={true} />
     </div>
-  );
-};
+  )
+}
 
 export const Tabs = ({ cs }: { cs: ClientState }) => {
   return (
@@ -38,5 +39,5 @@ export const Tabs = ({ cs }: { cs: ClientState }) => {
         />
       ))}
     </div>
-  );
-};
+  )
+}

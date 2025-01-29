@@ -1,11 +1,11 @@
 import { Component } from "react"
-import { AppPanel, ClientState } from "../state/ClientState"
+import { AppPanel, ClientState } from "../state/clientState"
 import * as styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
 import { AppState, getAppState } from "../state/AppState"
 import { State } from "@finos/fdc3-web-impl"
-import { AppHosting } from "../../server/da/SailServerContext"
+//import { AppHosting } from "@finos/fdc3-sail-common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 
@@ -51,15 +51,15 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
   )
 }
 
-const LockIcon = () => {
-  return (
-    <img
-      src="/static/icons/control/lock.svg"
-      className={styles.contentTitleIcon}
-      title="Lock"
-    />
-  )
-}
+// const LockIcon = () => {
+//   return (
+//     <img
+//       src="/static/icons/control/lock.svg"
+//       className={styles.contentTitleIcon}
+//       title="Lock"
+//     />
+//   )
+//}
 
 const AppStateIcon = ({
   instanceId,
@@ -93,16 +93,17 @@ const AppStateIcon = ({
     <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
   )
 }
-const PopOutIcon = ({ action }: { action: () => void }) => {
-  return (
-    <img
-      src="/static/icons/control/pop-out.svg"
-      className={styles.contentTitleIcon}
-      title="Pop Out"
-      onClick={() => action()}
-    />
-  )
-}
+
+// const PopOutIcon = ({ action }: { action: () => void }) => {
+//   return (
+//     <img
+//       src="/static/icons/control/pop-out.svg"
+//       className={styles.contentTitleIcon}
+//       title="Pop Out"
+//       onClick={() => action()}
+//     />
+//   )
+// }
 
 const CloseIcon = ({ action }: { action: () => void }) => {
   return (

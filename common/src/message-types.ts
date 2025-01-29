@@ -1,8 +1,33 @@
 import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppIntent, Context } from "@finos/fdc3"
-import { Directory, TabDetail } from "../../client/state/ClientState"
-import { AppHosting } from "./SailServerContext"
+import { Directory, TabDetail } from "./client-state"
+import { AppHosting } from "./app-hosting"
 
+
+/**
+ * Sent when a window is opened by the Electron Desktop Agent,
+ * via preload.ts.  Could be a desktop agent window, an iframe or an app window.
+ */
+export const ELECTRON_HELLO = 'electron-hello'
+
+export type ElectronHelloArgs = {
+    url: string
+}
+
+export type ElectronAppResponse = {
+    type: 'app',
+    userSessionId: string,
+    instanceId: string,
+    appId: string,
+    intentResolver: string | null,
+    channelSelector: string | null
+}
+
+export type ElectronDAResponse = {
+    type: 'da'
+}
+
+export type ElectronHelloResponse = ElectronAppResponse | ElectronDAResponse
 
 /**
  * Sent when the Desktop Agent web page connects to the server.

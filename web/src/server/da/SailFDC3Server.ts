@@ -1,4 +1,4 @@
-import { DesktopAgentHelloArgs } from "./message-types";
+import { DesktopAgentHelloArgs } from "@finos/fdc3-sail-common"
 import { DefaultFDC3Server } from "@finos/fdc3-web-impl"
 import { SailServerContext } from "./SailServerContext";
 

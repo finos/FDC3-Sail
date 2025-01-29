@@ -1,6 +1,7 @@
 import { Component } from "react"
 import * as styles from "./styles.module.css"
-import { ClientState, Directory, getClientState } from "../state/ClientState"
+import { ClientState, getClientState } from "../state/clientState"
+import { Directory } from "@finos/fdc3-sail-common"
 import { Popup } from "../popups/popup"
 
 const CONFIG_ITEMS = ["Directories"]

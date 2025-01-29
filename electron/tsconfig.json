@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "./build",
+    "outDir": "./dist",
     "rootDirs": [
       "src"
-    ]
+    ],
   },
   "include": [
-    "src"
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "../common"
+    },
   ]
 }

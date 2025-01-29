@@ -3,10 +3,10 @@ import { createRoot } from "react-dom/client"
 import { ResolverPanel } from "../client/resolver/resolver"
 import "/static/fonts/DM_Sans/DM_Sans.css"
 
-type IframeResolveAction = BrowserTypes.IframeResolveAction
-type IframeResolvePayload = BrowserTypes.IframeResolvePayload
-type IframeHello = BrowserTypes.IframeHello
-type IframeRestyle = BrowserTypes.IframeRestyle
+type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
+type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
+type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
+type IframeRestyle = BrowserTypes.Fdc3UserInterfaceRestyle
 
 const DEFAULT_COLLAPSED_CSS = {
   position: "fixed",
@@ -50,7 +50,7 @@ window.addEventListener("load", () => {
   function renderIntentResolver(data: IframeResolvePayload | null) {
     if (data) {
       myPort.postMessage({
-        type: "iframeRestyle",
+        type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_EXPANDED_CSS },
       } as IframeRestyle)
       root.render(
@@ -68,7 +68,7 @@ window.addEventListener("load", () => {
       )
     } else {
       myPort.postMessage({
-        type: "iframeRestyle",
+        type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
       } as IframeRestyle)
     }
@@ -76,13 +76,13 @@ window.addEventListener("load", () => {
 
   function callback(intent: string | null, app: AppIdentifier | null) {
     myPort.postMessage({
-      type: "iframeRestyle",
+      type: "Fdc3UserInterfaceRestyle",
       payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
     } as IframeRestyle)
 
     if (intent && app) {
       myPort.postMessage({
-        type: "iframeResolveAction",
+        type: "Fdc3UserInterfaceResolveAction",
         payload: {
           action: "click",
           appIdentifier: app,
@@ -91,7 +91,7 @@ window.addEventListener("load", () => {
       } as IframeResolveAction)
     } else {
       myPort.postMessage({
-        type: "iframeResolveAction",
+        type: "Fdc3UserInterfaceResolveAction",
         payload: {
           action: "cancel",
         },

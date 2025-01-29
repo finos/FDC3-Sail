@@ -1,6 +1,6 @@
 // TradingViewWidget.jsx
 import { getAgent } from "@finos/fdc3"
-import { useEffect, useRef, memo, useState } from "react"
+import { useEffect, memo, useState } from "react"
 
 export const EmbeddedScreen = () => {
   const [state, setState] = useState("https://finance.yahoo.com/")

@@ -1,7 +1,6 @@
 import { io } from "socket.io-client"
 import { link } from "./util";
-import { APP_HELLO, AppHelloArgs } from "../server/da/message-types";
-import { AppHosting } from "../server/da/SailServerContext";
+import { AppHosting, APP_HELLO, AppHelloArgs } from "@finos/fdc3-sail-common";
 import { BrowserTypes } from "@finos/fdc3";
 
 const appWindow = window.parent;

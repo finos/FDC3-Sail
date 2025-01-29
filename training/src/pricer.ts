@@ -1,4 +1,4 @@
-import { Channel, PrivateChannel, fdc3Ready } from "@finos/fdc3";
+import { Channel, getAgent } from "@finos/fdc3";
 
 enum Direction { UP, DOWN, NONE }
 
@@ -122,7 +122,7 @@ window.addEventListener("load", () => {
 
 })
 
-fdc3Ready().then(() => {
+getAgent().then(() => {
 
     // // training 1
     // window.fdc3.addContextListener("fdc3.instrument", (instrument) => {

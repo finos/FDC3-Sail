@@ -1,12 +1,13 @@
 import { BrowserTypes } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
-import { TabDetail } from "../client/state/ClientState"
+import { TabDetail } from "@finos/fdc3-sail-common"
 import "../../static/fonts/DM_Sans/DM_Sans.css"
 
-type IframeChannels = BrowserTypes.IframeChannels
-type IframeHello = BrowserTypes.IframeHello
-type IframeRestyle = BrowserTypes.IframeRestyle
+type IframeChannels = BrowserTypes.Fdc3UserInterfaceChannels
+type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
+type IframeRestyle = BrowserTypes.Fdc3UserInterfaceRestyle
+type IframeChannelSelected = BrowserTypes.Fdc3UserInterfaceChannelSelected
 
 var channels: TabDetail[] = []
 var channelId: string | null = null
@@ -59,7 +60,7 @@ window.addEventListener("load", () => {
     renderChannels(open)
     document.body.setAttribute("data-expanded", "" + expanded)
     myPort.postMessage({
-      type: "iframeRestyle",
+      type: "Fdc3UserInterfaceRestyle",
       payload: {
         updatedCSS: expanded ? DEFAULT_EXPANDED_CSS : DEFAULT_COLLAPSED_CSS,
       },
@@ -68,9 +69,9 @@ window.addEventListener("load", () => {
 
   function activate(channelId: string | null) {
     myPort.postMessage({
-      type: "iframeChannelSelected",
+      type: "Fdc3UserInterfaceChannelSelected",
       payload: { selected: channelId },
-    })
+    } as IframeChannelSelected)
   }
 
   function renderChannels(isOpen: boolean) {
@@ -87,10 +88,10 @@ window.addEventListener("load", () => {
 
   myPort.addEventListener("message", (e) => {
     console.log(e.data.type)
-    if (e.data.type == "iframeHandshake") {
+    if (e.data.type == "FDC3UserInterfaceHandshake") {
       // ok, port is ready, send the iframe position detials
       myPort.postMessage({
-        type: "iframeRestyle",
+        type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
       } as IframeRestyle)
     } else if (e.data.type == "iframeChannels") {
