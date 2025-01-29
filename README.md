@@ -50,23 +50,34 @@ FDC3 Sail is based on the newly-approved FDC3 For-The-Web standard. It is curren
 From the command line (you can open a terminal in Visual Studio Code), run the following command:
 
 ```
-git clone -b sail2-osff https://github.com/finos/FDC3-Sail.git fdc3-workshop
+git clone -b sail2 https://github.com/finos/FDC3-Sail.git
 ```
 
-Next, open the `fdc3-workshop` folder in Visual Studio Code.
+Next, open the `FDC3-Sail` folder in Visual Studio Code.
 
-### Running The Project
+### Running The Project (For The Browser)
 
-From the terminal in Visual Studio Code (and assuming your current directory is now `fdc3-workshop`), run the following commands:
+From the terminal in Visual Studio Code (and assuming your current directory is now `FDC3-Sail`), run the following commands:
 
 ```
 npm install
-npm run dev
+npm run web
 ```
 
 Point your browser at http://localhost:8090/static/index.html
 
 ![Sail Initial Screen](images/blank-screen.png)
+
+### Running The Project (For Electron)
+
+From the terminal in Visual Studio Code (and assuming your current directory is now `FDC3-Sail`), run the following commands:
+
+```bash
+npm install
+npm run electron
+```
+
+The desktop app should load and you should see the same screen as above.
 
 ### Opening Apps
 
