@@ -23,6 +23,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
         socket.on(ELECTRON_HELLO, function (props: ElectronHelloArgs, callback: (success: any, err?: string) => void) {
 
+
+
+
             // figure something out here...
 
             callback({

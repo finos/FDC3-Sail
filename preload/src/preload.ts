@@ -4,7 +4,7 @@ import { contextBridge } from 'electron'
 import { ELECTRON_HELLO, ElectronHelloResponse } from '@finos/fdc3-sail-common'
 import { io } from 'socket.io-client'
 
-console.log("PRELOAD CALLED", new Date().toISOString())
+console.log("PRELOAD CALLED", new Date().toISOString(), location.href)
 
 const socket = io("http://localhost:8090")
 

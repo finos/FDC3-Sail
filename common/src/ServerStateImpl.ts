@@ -1,31 +1,11 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl";
-import { getClientState, } from "./clientState";
-import { TabDetail, AppHosting, Directory, DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs } from "@finos/fdc3-sail-common";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, TabDetail } from "./message-types";
+import { AppHosting } from "./app-hosting";
+import { getClientState } from "./ClientState";
 import { getAppState } from "./AppState";
-
-export interface ServerState {
-
-    /**
-     * Call on startup to register the desktop agent with the server
-     */
-    registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void>
-
-    /**
-     * Called when an application begins the WCP handshake process.
-     * Returns the instance ID of the app.
-     */
-    registerAppLaunch(appId: string, hosting: AppHosting): Promise<string>
-
-    getApplications(): Promise<DirectoryApp[]>
-
-    setUserChannel(instanceId: string, channel: string): Promise<void>
-
-    intentChosen(ai: AppIdentifier | null, intent: string | null): Promise<void>
-
-    sendClientState(tabs: TabDetail[], directories: Directory[]): Promise<void>
-}
+import { ServerState } from "./ServerState";
 
 class ServerStateImpl implements ServerState {
 

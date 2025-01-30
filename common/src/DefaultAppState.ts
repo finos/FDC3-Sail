@@ -1,26 +1,10 @@
-import { BrowserTypes } from "@finos/fdc3";
-import { getClientState } from "./clientState"
+import { AppState } from "./AppState"
+import { getClientState } from "./ClientState"
 import { getServerState } from "./ServerState"
+import { AppHosting } from "./app-hosting"
 import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
-import { SailAppStateArgs, AppHosting } from "@finos/fdc3-sail-common";
-
-type WebConnectionProtocol1Hello = BrowserTypes.WebConnectionProtocol1Hello
-
-
-export interface AppState {
-
-    registerAppWindow(window: Window, instanceId: string): void
-
-    open(detail: DirectoryApp, destination?: AppHosting): Promise<string>
-
-    getAppState(instanceId: string): State | undefined
-
-    setAppState(state: SailAppStateArgs): void
-
-    addStateChangeCallback(cb: () => void): void
-
-}
-
+import { SailAppStateArgs } from "./message-types";
+import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 
 class DefaultAppState implements AppState {
 

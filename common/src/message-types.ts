@@ -1,8 +1,19 @@
 import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppIntent, Context } from "@finos/fdc3"
-import { Directory, TabDetail } from "./client-state"
 import { AppHosting } from "./app-hosting"
 
+export type TabDetail = {
+    title: string,
+    id: string,
+    icon: string,
+    background: string,
+}
+
+export type Directory = {
+    label: string,
+    url: string,
+    active: boolean
+}
 
 /**
  * Sent when a window is opened by the Electron Desktop Agent,

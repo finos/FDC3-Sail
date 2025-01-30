@@ -1,3 +1,5 @@
 export * from "./app-hosting"
-export * from "./client-state"
+export * from "./ClientState"
 export * from "./message-types"
+export * from "./AppState"
+export * from "./ServerState"

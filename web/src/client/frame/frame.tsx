@@ -2,15 +2,18 @@ import { Bin, Controls, NewPanel } from "../controls/controls"
 import { Logo, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
 import * as styles from "./styles.module.css"
-import { ClientState, getClientState } from "../state/clientState"
+import {
+  ClientState,
+  getClientState,
+  getServerState,
+  AppState,
+} from "@finos/fdc3-sail-common"
 import { Component } from "react"
 import { AppDPanel } from "../appd/appd"
 import { Content, Grids } from "../grid/grid"
 import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
-import { getServerState } from "../state/ServerState"
-import { AppState } from "../state/AppState"
 
 enum Popup {
   NONE,
