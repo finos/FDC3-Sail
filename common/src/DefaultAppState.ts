@@ -1,16 +1,18 @@
 import { AppState } from "./AppState"
-import { getClientState } from "./ClientState"
-import { getServerState } from "./ServerState"
 import { AppHosting } from "./app-hosting"
 import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
 import { SailAppStateArgs } from "./message-types";
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
+import { ServerState } from "./ServerState";
+import { ClientState } from "./ClientState";
 
-class DefaultAppState implements AppState {
+export class DefaultAppState implements AppState {
 
     windowInformation: Map<Window, string> = new Map()
     states: SailAppStateArgs = []
     callbacks: (() => void)[] = []
+    cs: ClientState | null = null
+    ss: ServerState | null = null
 
     getAppState(instanceId: string): State | undefined {
         return this.states.find(x => x.instanceId == instanceId)?.state
@@ -28,7 +30,7 @@ class DefaultAppState implements AppState {
 
     async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")
-        const applications: DirectoryApp[] = await getServerState().getApplications()
+        const applications: DirectoryApp[] = await this.ss!!.getApplications()
         const firstMatchingApp = applications.find(x => {
             const d = x.details as WebAppDetails
             return (d.url == strippedIdentityUrl) ||
@@ -38,9 +40,10 @@ class DefaultAppState implements AppState {
         return firstMatchingApp
     }
 
-    init(): void {
+    init(ss: ServerState, cs: ClientState): void {
+        this.cs = cs;
+        this.ss = ss;
         // sets up postMessage listener for new applications joining
-        const cs = getClientState()
 
         window.addEventListener("message", async (e) => {
             const event = e as MessageEvent
@@ -111,20 +114,14 @@ class DefaultAppState implements AppState {
     open(detail: DirectoryApp, destination?: AppHosting): Promise<string> {
         return new Promise(async (resolve, _reject) => {
             const hosting: AppHosting = destination ?? (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
-            const instanceId = await getServerState().registerAppLaunch(detail.appId, hosting)
+            const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting)
             if (hosting == AppHosting.Tab) {
                 const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;
                 this.registerAppWindow(w, instanceId)
                 return resolve(instanceId)
             } else {
-                getClientState().newPanel(detail, instanceId)
+                this.cs!!.newPanel(detail, instanceId)
             }
         })
     }
-}
-
-const theAppState = new DefaultAppState()
-
-export function getAppState() {
-    return theAppState
 }

@@ -1,8 +1,16 @@
 import { DirectoryApp, State } from "@finos/fdc3-web-impl";
 import { AppHosting } from "./app-hosting";
 import { SailAppStateArgs } from "./message-types";
+import { ServerState } from "./ServerState";
+import { ClientState } from "./ClientState";
 
+/**
+ * Stores the state of the applications themselves and whether or not they're
+ * connected to FDC3.
+ */
 export interface AppState {
+
+    init(ss: ServerState, cs: ClientState): void
 
     registerAppWindow(window: Window, instanceId: string): void
 
@@ -15,5 +23,3 @@ export interface AppState {
     addStateChangeCallback(cb: () => void): void
 
 }
-
-export declare function getAppState(): AppState

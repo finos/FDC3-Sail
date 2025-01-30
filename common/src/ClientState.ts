@@ -17,6 +17,10 @@ export type IntentResolution = {
     context: Context
 }
 
+/**
+ * This stores the state of the DesktopAgent on the client.
+ * That is, positions of panels, tabs, details of directories set up, active tab etc.
+ */
 export interface ClientState {
 
     /** User Session ID */
@@ -55,5 +59,3 @@ export interface ClientState {
     setIntentResolution(ir: IntentResolution | null): void
 
 }
-
-export declare function getClientState(): ClientState

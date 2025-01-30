@@ -3,21 +3,28 @@ import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3";
 import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, TabDetail } from "./message-types";
 import { AppHosting } from "./app-hosting";
-import { getClientState } from "./ClientState";
-import { getAppState } from "./AppState";
 import { ServerState } from "./ServerState";
+import { AppState } from "./AppState";
+import { ClientState } from "./ClientState";
 
-class ServerStateImpl implements ServerState {
+export class ServerStateImpl implements ServerState {
 
     socket: Socket | null = null
     resolveCallback: any
+    cs: ClientState | null = null
+    as: AppState | null = null
+
+    init(cs: ClientState, as: AppState): void {
+        this.cs = cs;
+        this.as = as;
+    }
 
     async getApplications(): Promise<DirectoryApp[]> {
         if (!this.socket) {
             throw new Error("Desktop Agent not registered")
         }
 
-        const userSessionId = getClientState().getUserSessionID()
+        const userSessionId = this.cs!!.getUserSessionID()
         const response = await this.socket.emitWithAck(DA_DIRECTORY_LISTING, { userSessionId } as DesktopAgentDirectoryListingArgs)
         return response as DirectoryApp[]
     }
@@ -27,7 +34,7 @@ class ServerStateImpl implements ServerState {
             throw new Error("Desktop Agent not registered")
         }
 
-        const userSessionId = getClientState().getUserSessionID()
+        const userSessionId = this.cs!!.getUserSessionID()
         const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId, hosting } as DesktopAgentRegisterAppLaunchArgs)
         return instanceId
     }
@@ -36,7 +43,7 @@ class ServerStateImpl implements ServerState {
         if (!this.socket) {
             return
         }
-        const userSessionId = getClientState().getUserSessionID()
+        const userSessionId = this.cs!!.getUserSessionID()
 
 
         await this.socket.emitWithAck(SAIL_CLIENT_STATE, { userSessionId, tabs, directories } as SailClientStateArgs)
@@ -47,25 +54,23 @@ class ServerStateImpl implements ServerState {
         // agent server to the client, such as requests to change
         // the user channel, open a new app, resolve an intent, etc.
         this.socket = io()
-        const cs = getClientState()
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props)
 
             this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
                 //console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
-                const instanceId = await getAppState().open(data.appDRecord)
+                const instanceId = await this.as!!.open(data.appDRecord)
                 callback(instanceId)
             })
 
             this.socket?.on(SAIL_APP_STATE, (data: SailAppStateArgs) => {
                 //console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
-                getAppState().setAppState(data)
+                this.as!!.setAppState(data)
             })
 
             this.socket?.on(SAIL_CHANNEL_SETUP, (instanceId: string) => {
                 //console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)
-                const cs = getClientState()
-                const panel = cs.getPanels().find(p => p.panelId === instanceId)
+                const panel = this.cs!!.getPanels().find(p => p.panelId === instanceId)
                 if (panel) {
                     this.setUserChannel(instanceId, panel.tabId)
                 }
@@ -73,7 +78,7 @@ class ServerStateImpl implements ServerState {
 
             this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
                 console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
-                cs.setIntentResolution({
+                this.cs!!.setIntentResolution({
                     appIntents: data.appIntents,
                     context: data.context,
                     requestId: '1234'
@@ -89,7 +94,7 @@ class ServerStateImpl implements ServerState {
         this.socket?.emit(SAIL_CHANNEL_CHANGE, {
             instanceId,
             channel: channelId,
-            userSessionId: getClientState().getUserSessionID()
+            userSessionId: this.cs!!.getUserSessionID()
         } as SailChannelChangeArgs)
     }
 
@@ -111,10 +116,4 @@ class ServerStateImpl implements ServerState {
             }
         }
     }
-}
-
-const theServerState = new ServerStateImpl()
-
-export function getServerState(): ServerState {
-    return theServerState
 }

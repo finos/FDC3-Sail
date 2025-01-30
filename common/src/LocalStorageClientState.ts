@@ -1,12 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getServerState } from "./ServerState";
-import { AppPanel, ClientState } from "./ClientState";
+import { AppPanel } from "./ClientState";
 import { AbstractClientState } from "./AbstractClientState";
 import { Directory, TabDetail } from "./message-types";
+import { ServerState } from './ServerState';
 
 const STORAGE_KEY = "sail-client-state"
 
-class LocalStorageClientState extends AbstractClientState {
+declare const localStorage: any
+
+export class LocalStorageClientState extends AbstractClientState {
+
+    ss: ServerState | null = null
 
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
@@ -18,11 +22,18 @@ class LocalStorageClientState extends AbstractClientState {
         }
     }
 
+    init(ss: ServerState): void {
+        if (this.ss == null) {
+            this.ss = ss;
+            this.saveState()
+        }
+    }
+
     saveState(): void {
         const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories })
         localStorage.setItem(STORAGE_KEY, data)
         this.callbacks.forEach(cb => cb())
-        getServerState().sendClientState(this.tabs, this.directories)
+        this.ss!!.sendClientState(this.tabs, this.directories)
     }
 
 }
@@ -79,9 +90,3 @@ const DEFAULT_TABS: TabDetail[] = [
 
 const DEFAULT_PANELS: AppPanel[] = [
 ]
-
-const theState = new LocalStorageClientState()
-
-export function getClientState(): ClientState {
-    return theState
-}

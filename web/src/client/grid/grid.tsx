@@ -1,9 +1,13 @@
 import { Component } from "react"
-import { AppPanel, ClientState } from "../state/clientState"
 import * as styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
-import { AppState, getAppState } from "../state/AppState"
+import {
+  AppState,
+  getAppState,
+  AppPanel,
+  ClientState,
+} from "@finos/fdc3-sail-common"
 import { State } from "@finos/fdc3-web-impl"
 //import { AppHosting } from "@finos/fdc3-sail-common"
 

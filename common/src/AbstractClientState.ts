@@ -19,7 +19,6 @@ export abstract class AbstractClientState implements ClientState {
         this.activeTabId = activeTabId
         this.userSessionId = userSessionId
         this.directories = directories
-        this.saveState()
     }
 
     abstract saveState(): void
