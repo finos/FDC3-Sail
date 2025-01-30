@@ -3,10 +3,8 @@ import { contextBridge } from 'electron'
 // import { createSailDesktopAgent } from './createSailDesktopAgent'
 import { ELECTRON_HELLO, ElectronHelloResponse } from '@finos/fdc3-sail-common'
 import { io } from 'socket.io-client'
-import { X } from './someImport'
 
-console.log("PRELOAD CALLED", X)
-
+console.log("PRELOAD CALLED", new Date().toISOString())
 
 const socket = io("http://localhost:8090")
 

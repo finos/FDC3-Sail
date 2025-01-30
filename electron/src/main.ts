@@ -1,16 +1,20 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserView, BrowserWindow } from 'electron'
 import http from "http";
 
 const SAIL_URL = 'http://localhost:8090/static/index.html'
+
+const WEB_PREFERENCES = {
+    contextIsolation: false,    // allow child window preload
+    nodeIntegration: true,
+    nodeIntegrationInSubFrames: true,
+    preload: `${__dirname}/../../preload/dist/preload.js`
+}
 
 async function createWindow() {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
-        webPreferences: {
-            contextIsolation: true,
-            preload: `${__dirname}/../../preload/dist/preload.js`
-        }
+        webPreferences: WEB_PREFERENCES
     })
 
     await win.loadFile('static/loading.html')
@@ -18,6 +22,22 @@ async function createWindow() {
     await waitForServer()
 
     await win.loadURL(SAIL_URL)
+
+    win.webContents.setWindowOpenHandler(hd => {
+        console.log('Window open handler', hd)
+        return {
+            action: 'allow',
+            createWindow: (options) => {
+                const win2 = new BrowserWindow({
+                    ...options,
+                    width: 600,
+                    height: 400,
+                    webPreferences: WEB_PREFERENCES
+                })
+                return win2.webContents
+            }
+        }
+    })
 }
 
 app.whenReady().then(() => {
