@@ -12,6 +12,7 @@
     "common",
     "web",
     "training",
+    "preload",
     "electron"
   ],
   "devDependencies": {
