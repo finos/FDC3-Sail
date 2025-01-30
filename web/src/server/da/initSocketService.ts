@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -20,6 +20,16 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         var userSessionId: string | undefined
         var appInstanceId: string | undefined
         var type: SocketType | undefined = undefined
+
+        socket.on(ELECTRON_HELLO, function (props: ElectronHelloArgs, callback: (success: any, err?: string) => void) {
+
+            // figure something out here...
+
+            callback({
+                type: 'app',
+            } as ElectronAppResponse)
+
+        })
 
         socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {
             console.log("DA HELLO:" + JSON.stringify(props))

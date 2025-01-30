@@ -37,7 +37,7 @@ window.addEventListener("load", () => {
   // ISSUE: 1302
   parent.postMessage(
     {
-      type: "iframeHello",
+      type: "Fdc3UserInterfaceHello",
       payload: {
         initialCSS: DEFAULT_COLLAPSED_CSS,
         implementationDetails: "Sail Intent Resolver v1.0",
