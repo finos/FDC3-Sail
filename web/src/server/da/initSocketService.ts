@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SAIL_URL } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -22,16 +22,44 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         var type: SocketType | undefined = undefined
 
         socket.on(ELECTRON_HELLO, function (props: ElectronHelloArgs, callback: (success: any, err?: string) => void) {
+            console.log("ELECTRON HELLO: " + JSON.stringify(props))
+            var fdc3Server = sessions.get(props.userSessionId)
+
+            if (fdc3Server) {
+                const allApps = fdc3Server.getDirectory().retrieveAppsByUrl(props.url)
+
+                if (allApps.length > 0) {
+                    console.log("Found app", allApps[0].appId)
+                    callback({
+                        type: 'app',
+                        userSessionId: userSessionId,
+                        appId: allApps[0].appId,
+                        instanceId: 'sail-app-' + uuid(),
+                        intentResolver: null,
+                        channelSelector: null
+                    } as ElectronAppResponse)
+                } else {
+                    console.error("App not found", props.url)
+                    callback(null, "App not found")
+                }
 
 
 
 
-            // figure something out here...
+                callback(session?.getDirectory().allApps)
+            } else if (props.url == SAIL_URL) {
+                userSessionId = props.userSessionId
+                const serverContext = new SailServerContext(new SailDirectory(), socket)
+                fdc3Server = new SailFDC3Server(serverContext, props)
+                serverContext.setFDC3Server(fdc3Server)
+                sessions.set(userSessionId, fdc3Server)
 
-            callback({
-                type: 'app',
-            } as ElectronAppResponse)
-
+                callback({
+                    type: 'da',
+                } as ElectronDAResponse)
+            } else {
+                console.error("Session not found", userSessionId)
+            }
         })
 
         socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {

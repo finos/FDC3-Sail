@@ -47,4 +47,9 @@ export class SailDirectory extends BasicDirectory {
         }
         console.log("Loaded " + this.allApps.length + " apps")
     }
+
+    retrieveAppsByUrl(url: string): DirectoryApp[] {
+        return this.retrieveAllApps().filter(a => a.type == 'web' && (a.details as any).url == url);
+    }
+
 }

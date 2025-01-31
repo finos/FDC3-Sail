@@ -1,14 +1,14 @@
 import { app, BrowserView, BrowserWindow } from 'electron'
 import http from "http";
 
-const SAIL_URL = 'http://localhost:8090/static/index.html'
-
 const WEB_PREFERENCES = {
-    contextIsolation: false,    // allow child window preload
+    contextIsolation: true,    // allow frame preload
     nodeIntegration: true,
     nodeIntegrationInSubFrames: true,
     preload: `${__dirname}/../../preload/dist/preload.js`
 }
+
+export const SAIL_URL = 'http://localhost:8090/static/index.html'
 
 async function createWindow() {
     const win = new BrowserWindow({
@@ -23,6 +23,7 @@ async function createWindow() {
 
     await win.loadURL(SAIL_URL)
 
+    // Ensures the preload gets run in tabs
     win.webContents.setWindowOpenHandler(hd => {
         console.log('Window open handler', hd)
         return {

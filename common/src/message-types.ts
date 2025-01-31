@@ -21,7 +21,7 @@ export type Directory = {
  */
 export const ELECTRON_HELLO = 'electron-hello'
 
-export type ElectronHelloArgs = {
+export type ElectronHelloArgs = DesktopAgentHelloArgs & {
     url: string
 }
 
