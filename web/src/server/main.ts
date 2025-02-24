@@ -12,7 +12,7 @@ const sessions = new Map<string, SailFDC3Server>()
 app.use(express.json())
 
 const httpServer = ViteExpress.listen(app, 8090, () =>
-  console.log("Server is listening.  Head to " + getSailUrl()),
+  console.log("SAIL Server is listening.  Head to " + getSailUrl()),
 );
 
 initSocketService(httpServer, sessions)

@@ -68,7 +68,7 @@ const LineItemComponent = ({
     <div
       className={`${styles.lineItem} ${isSelected(li) ? styles.highlightedLineItem : ""}`}
       onClick={() => {
-        console.log("Setting state to ", li)
+        // console.log("Setting state to ", li)
         setState(li)
       }}
     >

@@ -100,7 +100,9 @@ window.addEventListener("load", () => {
       } as IframeRestyle)
     } else if (isFdc3UserInterfaceChannels(e.data)) {
       const details = e.data as IframeChannels
-      console.log(JSON.stringify("CHANNEL DETAILS: " + JSON.stringify(details)))
+      console.log(
+        JSON.stringify("SAIL CHANNEL DETAILS: " + JSON.stringify(details)),
+      )
 
       channels = details.payload.userChannels.map((c) => {
         return {

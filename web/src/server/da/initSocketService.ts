@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SAIL_URL, getSailUrl } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, getSailUrl } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -23,14 +23,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         var type: SocketType | undefined = undefined
 
         socket.on(ELECTRON_HELLO, function (props: ElectronHelloArgs, callback: (success: any, err?: string) => void) {
-            console.log("ELECTRON HELLO: " + JSON.stringify(props))
+            console.log("SAIL ELECTRON HELLO: " + JSON.stringify(props))
             var fdc3Server = sessions.get(props.userSessionId)
 
             if (fdc3Server) {
                 const allApps = fdc3Server.getDirectory().retrieveAppsByUrl(props.url)
 
                 if (allApps.length > 0) {
-                    console.log("Found app", allApps[0].appId)
+                    console.log("SAIL Found app", allApps[0].appId)
                     callback({
                         type: 'app',
                         userSessionId: userSessionId,
@@ -59,25 +59,25 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {
-            console.log("DA HELLO:" + JSON.stringify(props))
+            console.log("SAIL DA HELLO:" + JSON.stringify(props))
 
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
-            console.log("Desktop Agent Connecting", userSessionId)
+            console.log("SAILDesktop Agent Connecting", userSessionId)
             var fdc3Server = sessions.get(userSessionId)
 
             if (fdc3Server) {
                 // reconfiguring current session
                 fdc3Server = new SailFDC3Server(fdc3Server.serverContext, props)
                 sessions.set(userSessionId, fdc3Server)
-                console.log("updated desktop agent channels and directories", sessions.size, props.userSessionId)
+                console.log("SAIL updated desktop agent channels and directories", sessions.size, props.userSessionId)
             } else {
                 // starting session
                 const serverContext = new SailServerContext(new SailDirectory(), socket)
                 fdc3Server = new SailFDC3Server(serverContext, props)
                 serverContext.setFDC3Server(fdc3Server)
                 sessions.set(userSessionId, fdc3Server)
-                console.log("created agent session.  Running sessions ", sessions.size, props.userSessionId)
+                console.log("SAIL created agent session.  Running sessions ", sessions.size, props.userSessionId)
             }
 
             fdc3ServerInstance = fdc3Server
@@ -95,7 +95,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(DA_REGISTER_APP_LAUNCH, async function (props: DesktopAgentRegisterAppLaunchArgs, callback: (success: any, err?: string) => void) {
-            console.log("DA REGISTER APP LAUNCH: " + JSON.stringify(props))
+            console.log("SAIL DA REGISTER APP LAUNCH: " + JSON.stringify(props))
 
             const { appId, userSessionId } = props
             const session = sessions.get(userSessionId)
@@ -107,10 +107,10 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     appId,
                     hosting: props.hosting
                 })
-                console.log("Registered app", appId, instanceId)
+                console.log("SAIL Registered app", appId, instanceId)
                 callback(instanceId)
             } else {
-                console.error("Session not found", userSessionId)
+                console.error("SAIL Session not found", userSessionId)
                 callback(null, "Session not found")
             }
         })
@@ -138,7 +138,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(APP_HELLO, function (props: AppHelloArgs, callback: (success: any, err?: string) => void) {
-            console.log("APP HELLO: " + JSON.stringify(props))
+            console.log("SAIL APP HELLO: " + JSON.stringify(props))
 
             appInstanceId = props.instanceId
             userSessionId = props.userSessionId
@@ -146,7 +146,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             const fdc3Server = sessions.get(userSessionId)
 
             if (fdc3Server != undefined) {
-                console.log("An app connected: ", userSessionId, appInstanceId)
+                console.log("SAIL An app connected: ", userSessionId, appInstanceId)
                 const appInstance = fdc3Server.getServerContext().getInstanceDetails(appInstanceId)
                 const directoryItem = fdc3Server.getServerContext().directory.retrieveAppsById(props.appId) as DirectoryApp[]
                 if ((appInstance != undefined) && (appInstance.state == State.Pending)) {
@@ -186,7 +186,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         socket.on(FDC3_APP_EVENT, function (data, from): void {
             // message from app to da
             if (!data.type.startsWith("heartbeat")) {
-                console.log("FDC3_APP_EVENT: " + JSON.stringify(data) + " from " + from)
+                console.log("SAIL FDC3_APP_EVENT: " + JSON.stringify(data) + " from " + from)
             }
 
             if (fdc3ServerInstance != undefined) {

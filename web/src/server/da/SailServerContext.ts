@@ -134,7 +134,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     log(message: string): void {
-        console.log(message)
+        console.log('SAIL:' + message)
     }
 
     provider(): string {
@@ -183,7 +183,7 @@ export class SailServerContext implements ServerContext<SailData> {
         }
 
         return new Promise<AppIntent[]>((resolve, _reject) => {
-            console.log("Narrowing intents", appIntents, context)
+            console.log("SAIL Narrowing intents", appIntents, context)
             this.socket.emit(SAIL_INTENT_RESOLVE, {
                 appIntents,
                 context
@@ -192,7 +192,7 @@ export class SailServerContext implements ServerContext<SailData> {
                     console.error(err)
                     resolve([])
                 } else {
-                    console.log("Narrowed intents", response)
+                    console.log("SAIL Narrowed intents", response)
                     resolve(response)
                 }
             })
@@ -200,7 +200,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     userChannelChanged(app: AppIdentifier, channelId: string | null): void {
-        console.log("User channel changed", app, channelId)
+        console.log("SAIL User channel changed", app, channelId)
         this.socket.emit(SAIL_CHANNEL_CHANGE, app, channelId)
     }
 

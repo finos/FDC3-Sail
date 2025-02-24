@@ -24,7 +24,7 @@ async function createWindow() {
 
     // Ensures the preload gets run in tabs
     win.webContents.setWindowOpenHandler(hd => {
-        console.log('Window open handler', hd)
+        console.log('SAIL Window open handler', hd)
         return {
             action: 'allow',
             createWindow: (options) => {
@@ -51,8 +51,8 @@ async function waitForServer(timeout = 10000, interval = 500) {
 
     return new Promise<void>((resolve, reject) => {
         const checkServer = () => {
-            http.get(SAIL_URL, (res) => {
-                console.log('Testing for server start', res);
+            http.get(getSailUrl(), (res) => {
+                console.log('SAIL Testing for server start', res);
                 if (res.statusCode === 200) {
                     resolve();
                 } else {

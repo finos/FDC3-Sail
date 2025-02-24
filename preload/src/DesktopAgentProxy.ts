@@ -12,7 +12,7 @@ export const fdc3 = {
 
     getAgent(): Promise<DesktopAgent> {
         if (this._agent == null) {
-            console.log("Getting agent");
+            console.log("SAIL: Getting agent");
             this._agent = fdc3GetAgent();
         }
 
@@ -85,7 +85,6 @@ export const fdc3 = {
     },
 
     async getInfo(): Promise<ImplementationMetadata> {
-        console.log("hello")
         return (await this.getAgent()).getInfo();
     },
 
