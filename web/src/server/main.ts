@@ -1,8 +1,7 @@
 import express from "express";
 import ViteExpress from "vite-express";
 import { SailFDC3Server } from "./da/SailFDC3Server";
-import { initSocketService } from "./da/initSocketService";
-import { getSailUrl } from "@finos/fdc3-sail-common";
+import { getSailUrl, initSocketService } from "./da/initSocketService";
 
 const app = express();
 

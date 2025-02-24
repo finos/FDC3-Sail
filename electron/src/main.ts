@@ -1,5 +1,4 @@
 import { app, BrowserWindow } from 'electron'
-import { getSailUrl } from '@finos/fdc3-sail-common'
 import http from "http";
 
 const WEB_PREFERENCES = {
@@ -8,6 +7,11 @@ const WEB_PREFERENCES = {
     nodeIntegrationInSubFrames: true,
     preload: `${__dirname}/../../preload/dist/preload.js`
 }
+
+function getSailUrl(): string {
+    return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
+}
+
 
 async function createWindow() {
     const win = new BrowserWindow({

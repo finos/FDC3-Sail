@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, getSailUrl } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -10,6 +10,11 @@ import { BrowserTypes } from "@finos/fdc3";
 export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
+
+
+export function getSailUrl(): string {
+    return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
+}
 
 export function initSocketService(httpServer: any, sessions: Map<string, SailFDC3Server>): Server {
 

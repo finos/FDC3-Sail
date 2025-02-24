@@ -9,6 +9,7 @@ export default {
     output: {
         file: 'dist/preload.js',
         format: 'cjs',
+        sourcemap: true
     },
 
     plugins: [
