@@ -108,10 +108,29 @@ export class DefaultAppState implements AppState {
     }
 
     /**
-     * TODO: Fix this so it doesn't reuse the numbers when apps close
+     * Creates a unique title for the app by finding the first unused number
+     * for the given app title
      */
     createTitle(detail: DirectoryApp): string {
-        const number = this.states.filter(p => p.appId != detail.appId).length + 1
+        // Get all existing panels
+        const existingPanels = this.cs!!.getPanels()
+
+        // Get all numbers currently in use for this app title
+        const usedNumbers = new Set(
+            existingPanels
+                .filter(p => p.title.startsWith(detail.title))
+                .map(p => {
+                    const match = p.title.match(/\d+$/)
+                    return match ? parseInt(match[0]) : 0
+                })
+        )
+
+        // Find first unused number starting from 1
+        let number = 1
+        while (usedNumbers.has(number)) {
+            number++
+        }
+
         return `${detail.title} ${number}`
     }
 
