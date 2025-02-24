@@ -2,6 +2,10 @@ import { BrowserTypes, AppIdentifier } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ResolverPanel } from "../client/resolver/resolver"
 import "/static/fonts/DM_Sans/DM_Sans.css"
+import {
+  isFdc3UserInterfaceHandshake,
+  isFdc3UserInterfaceResolve,
+} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
@@ -34,7 +38,6 @@ window.addEventListener("load", () => {
   const myPort = mc.port1
   myPort.start()
 
-  // ISSUE: 1302
   parent.postMessage(
     {
       type: "Fdc3UserInterfaceHello",
@@ -100,9 +103,9 @@ window.addEventListener("load", () => {
   }
 
   myPort.addEventListener("message", (e) => {
-    if (e.data.type == "iframeHandshake") {
+    if (isFdc3UserInterfaceHandshake(e.data)) {
       renderIntentResolver(null)
-    } else if (e.data.type == "iframeResolve") {
+    } else if (isFdc3UserInterfaceResolve(e.data)) {
       renderIntentResolver(e.data.payload)
     }
   })

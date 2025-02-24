@@ -3,6 +3,10 @@ import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
 import { TabDetail } from "@finos/fdc3-sail-common"
 import "../../static/fonts/DM_Sans/DM_Sans.css"
+import {
+  isFdc3UserInterfaceChannels,
+  isFdc3UserInterfaceHandshake,
+} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 
 type IframeChannels = BrowserTypes.Fdc3UserInterfaceChannels
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
@@ -88,13 +92,13 @@ window.addEventListener("load", () => {
 
   myPort.addEventListener("message", (e) => {
     console.log(e.data.type)
-    if (e.data.type == "FDC3UserInterfaceHandshake") {
+    if (isFdc3UserInterfaceHandshake(e.data)) {
       // ok, port is ready, send the iframe position detials
       myPort.postMessage({
         type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
       } as IframeRestyle)
-    } else if (e.data.type == "iframeChannels") {
+    } else if (isFdc3UserInterfaceChannels(e.data)) {
       const details = e.data as IframeChannels
       console.log(JSON.stringify("CHANNEL DETAILS: " + JSON.stringify(details)))
 
