@@ -41,3 +41,7 @@ export function getClientState(): ClientState {
     ensureSetup()
     return theClientState!!
 }
+
+export function getSailUrl(): string {
+    return "http://localhost:8090/static/index.html"
+}

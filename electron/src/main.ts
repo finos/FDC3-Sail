@@ -1,4 +1,5 @@
-import { app, BrowserView, BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
+import { getSailUrl } from '@finos/fdc3-sail-common'
 import http from "http";
 
 const WEB_PREFERENCES = {
@@ -7,8 +8,6 @@ const WEB_PREFERENCES = {
     nodeIntegrationInSubFrames: true,
     preload: `${__dirname}/../../preload/dist/preload.js`
 }
-
-export const SAIL_URL = 'http://localhost:8090/static/index.html'
 
 async function createWindow() {
     const win = new BrowserWindow({
@@ -21,7 +20,7 @@ async function createWindow() {
 
     await waitForServer()
 
-    await win.loadURL(SAIL_URL)
+    await win.loadURL(getSailUrl())
 
     // Ensures the preload gets run in tabs
     win.webContents.setWindowOpenHandler(hd => {

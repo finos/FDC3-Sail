@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SAIL_URL } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SAIL_URL, getSailUrl } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -6,6 +6,7 @@ import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
 import { DirectoryApp, State, WebAppDetails } from "@finos/fdc3-web-impl";
 import { BrowserTypes } from "@finos/fdc3";
+
 export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
@@ -42,12 +43,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     console.error("App not found", props.url)
                     callback(null, "App not found")
                 }
-
-
-
-
-                callback(session?.getDirectory().allApps)
-            } else if (props.url == SAIL_URL) {
+            } else if (props.url == getSailUrl()) {
                 userSessionId = props.userSessionId
                 const serverContext = new SailServerContext(new SailDirectory(), socket)
                 fdc3Server = new SailFDC3Server(serverContext, props)
