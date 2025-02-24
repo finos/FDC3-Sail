@@ -40,7 +40,7 @@ function getAppId(): string {
     return source
 }
 
-function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId: string, appId: string) {
+function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId: string, appId: string, messageData: BrowserTypes.WebConnectionProtocol1Hello) {
     socket.on("connect", async () => {
 
         try {
@@ -62,7 +62,7 @@ function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId:
             appWindow.postMessage({
                 type: 'WCP3Handshake',
                 meta: {
-                    connectionAttemptUuid: getConnectionAttemptUuid(),
+                    connectionAttemptUuid: messageData.meta.connectionAttemptUuid,
                     timestamp: new Date()
                 },
                 payload: {
@@ -108,7 +108,7 @@ const helloListener = (e: MessageEvent) => {
         const instanceId = getInstanceId()
         const appId = getAppId()
 
-        doSocketConnection(socket, channel, instanceId, appId)
+        doSocketConnection(socket, channel, instanceId, appId, messageData)
     }
 };
 

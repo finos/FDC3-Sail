@@ -107,6 +107,9 @@ export class DefaultAppState implements AppState {
         })
     }
 
+    /**
+     * TODO: Fix this so it doesn't reuse the numbers when apps close
+     */
     createTitle(detail: DirectoryApp): string {
         const number = this.states.filter(p => p.appId != detail.appId).length + 1
         return `${detail.title} ${number}`
