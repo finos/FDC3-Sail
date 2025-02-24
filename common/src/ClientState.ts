@@ -37,7 +37,7 @@ export interface ClientState {
     updatePanel(ap: AppPanel): void
     removePanel(id: string): void
     getPanels(): AppPanel[]
-    newPanel(detail: DirectoryApp, instanceId: string): AppPanel
+    newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel
 
     /** App Directory */
     setDirectories(d: Directory[]): void

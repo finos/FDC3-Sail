@@ -107,6 +107,11 @@ export class DefaultAppState implements AppState {
         })
     }
 
+    createTitle(detail: DirectoryApp): string {
+        const number = this.states.filter(p => p.appId != detail.appId).length + 1
+        return `${detail.title} ${number}`
+    }
+
     /**
      * Opens either a new panel or a browser tab for the application to go in, 
      * returns the instance id for the new thing.
@@ -120,7 +125,7 @@ export class DefaultAppState implements AppState {
                 this.registerAppWindow(w, instanceId)
                 return resolve(instanceId)
             } else {
-                this.cs!!.newPanel(detail, instanceId)
+                this.cs!!.newPanel(detail, instanceId, this.createTitle(detail))
             }
         })
     }

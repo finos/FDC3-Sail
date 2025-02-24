@@ -97,19 +97,6 @@
             ]
         },
         {
-            "appId": "workbench",
-            "name": "FDC3 Workbench",
-            "title": "FDC3 Workbench - Sail Version",
-            "description": "Part of the WebFDC3 Demo - Port of the FDC3 Workbench.  Must be started separately on localhost:3000",
-            "type": "web",
-            "details": {
-                "url": "https://deploy-preview-1309--fdc3.netlify.app/toolbox/fdc3-workbench/"
-            },
-            "version": "1.0.0",
-            "publisher": "FINOS",
-            "icons": []
-        },
-        {
             "appId": "old-fdc3",
             "name": "Old FDC3 2.0 App",
             "title": "FDC3 2.0 Electron App",

@@ -67,7 +67,7 @@ export abstract class AbstractClientState implements ClientState {
         this.saveState()
     }
 
-    newPanel(detail: DirectoryApp, instanceId: string): AppPanel {
+    newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel {
         if (detail.type == 'web') {
             const url = (detail.details as any).url
 
@@ -76,7 +76,7 @@ export abstract class AbstractClientState implements ClientState {
                 y: -1,
                 w: 6,
                 h: 8,
-                title: detail.title,
+                title: title,
                 tabId: this.activeTabId,
                 panelId: instanceId,
                 url,
