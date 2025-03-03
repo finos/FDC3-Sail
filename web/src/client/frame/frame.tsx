@@ -5,8 +5,8 @@ import * as styles from "./styles.module.css"
 import {
   ClientState,
   getClientState,
-  getServerState,
   AppState,
+  getServerState,
 } from "@finos/fdc3-sail-common"
 import { Component } from "react"
 import { AppDPanel } from "../appd/appd"
@@ -14,6 +14,7 @@ import { Content, Grids } from "../grid/grid"
 import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
+import { DirectoryApp } from "@finos/fdc3-web-impl"
 
 enum Popup {
   NONE,
@@ -102,12 +103,20 @@ export class Frame extends Component<FrameProps, FrameState> {
             key="resolver"
             appIntents={this.props.cs.getIntentResolution()!!.appIntents}
             context={this.props.cs.getIntentResolution()!!.context}
+            channelDetails={this.props.cs.getTabs()}
+            currentChannel={this.props.cs.getActiveTab()!!.id}
+            panelDetails={this.props.cs.getPanels()}
+            appDetails={this.props.cs.getKnownApps()}
             closeAction={() => {
               this.props.cs.setIntentResolution(null)
             }}
-            chooseAction={(chosenApp, chosenIntent) =>
-              getServerState().intentChosen(chosenApp, chosenIntent)
-            }
+            chooseAction={(chosenApp, chosenIntent, chosenChannel) => {
+              getServerState().intentChosen(
+                chosenApp,
+                chosenIntent,
+                chosenChannel,
+              )
+            }}
           />
         ) : null}
       </div>

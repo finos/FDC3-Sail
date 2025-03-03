@@ -41,40 +41,42 @@ export class DefaultAppState implements AppState {
     }
 
     init(ss: ServerState, cs: ClientState): void {
-        this.cs = cs;
-        this.ss = ss;
-        // sets up postMessage listener for new applications joining
+        if (this.cs == null) {
+            this.cs = cs;
+            this.ss = ss;
+            // sets up postMessage listener for new applications joining
 
-        window.addEventListener("message", async (e) => {
-            const event = e as MessageEvent
-            const data = event.data;
-            const source = event.source as Window
-            const origin = event.origin;
+            window.addEventListener("message", async (e) => {
+                const event = e as MessageEvent
+                const data = event.data;
+                const source = event.source as Window
+                const origin = event.origin;
 
-            console.log("Received: " + JSON.stringify(event.data));
-            if (data.type == "WCP1Hello") {
-                const helloData: WebConnectionProtocol1Hello = event.data
+                console.log("Received: " + JSON.stringify(event.data));
+                if (data.type == "WCP1Hello") {
+                    const helloData: WebConnectionProtocol1Hello = event.data
 
-                const appD: DirectoryApp | undefined = await this.getDirectoryAppForUrl(helloData.payload.identityUrl)
-                const appId = appD?.appId
-                const instanceId = await this.getInstanceIdForWindow(source)
+                    const appD: DirectoryApp | undefined = await this.getDirectoryAppForUrl(helloData.payload.identityUrl)
+                    const appId = appD?.appId
+                    const instanceId = await this.getInstanceIdForWindow(source)
 
-                if (appD && instanceId) {
-                    source.postMessage({
-                        type: "WCP2LoadUrl",
-                        meta: {
-                            connectionAttemptUuid: data.meta.connectionAttemptUuid,
-                            timestamp: new Date()
-                        },
-                        payload: {
-                            iframeUrl: window.location.origin + `/static/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId}`
-                        }
-                    }, origin)
-                } else {
-                    console.error("Illegal handshake attempt", JSON.stringify(helloData, null, 2), appD, instanceId)
+                    if (appD && instanceId) {
+                        source.postMessage({
+                            type: "WCP2LoadUrl",
+                            meta: {
+                                connectionAttemptUuid: data.meta.connectionAttemptUuid,
+                                timestamp: new Date()
+                            },
+                            payload: {
+                                iframeUrl: window.location.origin + `/static/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId}`
+                            }
+                        }, origin)
+                    } else {
+                        console.error("Illegal handshake attempt", JSON.stringify(helloData, null, 2), appD, instanceId)
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     registerAppWindow(window: Window, instanceId: string): void {

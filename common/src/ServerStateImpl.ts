@@ -15,8 +15,10 @@ export class ServerStateImpl implements ServerState {
     as: AppState | null = null
 
     init(cs: ClientState, as: AppState): void {
-        this.cs = cs;
-        this.as = as;
+        if (this.cs == null) {
+            this.cs = cs;
+            this.as = as;
+        }
     }
 
     async getApplications(): Promise<DirectoryApp[]> {
@@ -26,7 +28,9 @@ export class ServerStateImpl implements ServerState {
 
         const userSessionId = this.cs!!.getUserSessionID()
         const response = await this.socket.emitWithAck(DA_DIRECTORY_LISTING, { userSessionId } as DesktopAgentDirectoryListingArgs)
-        return response as DirectoryApp[]
+        const out = response as DirectoryApp[]
+        this.cs!!.setKnownApps(out)
+        return out
     }
 
     async registerAppLaunch(appId: string, hosting: AppHosting): Promise<string> {
@@ -55,7 +59,9 @@ export class ServerStateImpl implements ServerState {
         // the user channel, open a new app, resolve an intent, etc.
         this.socket = io()
         this.socket.on("connect", () => {
-            this.socket?.emit(DA_HELLO, props)
+            this.socket?.emit(DA_HELLO, props, () => {
+                this.getApplications()
+            })
 
             this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
                 //console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
@@ -86,7 +92,6 @@ export class ServerStateImpl implements ServerState {
 
                 this.resolveCallback = callback
             })
-
         })
     }
 

@@ -82,10 +82,13 @@
 }
 
 .lineItem {
-    display: block;
+    display: flex;
+    flex-direction: row;
     flex-grow: 0;
     flex-shrink: 1;
     flex-basis: auto;
+    align-items: center;
+    gap: .5rem;
     align-self: auto;
     order: 0;
     padding: .5rem;
@@ -93,10 +96,26 @@
     border-radius: .2rem;
 }
 
+.lineItemIcon {
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: 2rem;
+    align-self: auto;
+    height: 2rem;
+}
+
+.lineItemText {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    align-self: auto;
+}
+
 .highlightedLineItem {
     background-color: #EEEEFF;
     border: 2px solid #000000;
 }
+
 
 .channelIndicator {
     border: 1px solid black;

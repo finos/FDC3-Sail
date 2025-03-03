@@ -15,25 +15,29 @@ export class LocalStorageClientState extends AbstractClientState {
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
         if (theState) {
-            const { tabs, panels, activeTabId, userSessionId, directories } = JSON.parse(theState)
-            super(tabs, panels, activeTabId, userSessionId, directories)
+            const { tabs, panels, activeTabId, userSessionId, directories, knownApps } = JSON.parse(theState)
+            super(tabs, panels, activeTabId, userSessionId, directories, knownApps)
         } else {
-            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES)
+            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [])
         }
     }
 
     init(ss: ServerState): void {
         if (this.ss == null) {
             this.ss = ss;
-            this.saveState()
         }
     }
 
     saveState(): void {
-        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories })
+        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps })
         localStorage.setItem(STORAGE_KEY, data)
         this.callbacks.forEach(cb => cb())
         this.ss!!.sendClientState(this.tabs, this.directories)
+    }
+
+    async updateKnownApps(): Promise<void> {
+        const apps = await this.ss!!.getApplications()
+        this.setKnownApps(apps)
     }
 
 }

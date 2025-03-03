@@ -21,4 +21,4 @@ getAppState().addStateChangeCallback(() => {
 
 getServerState().registerDesktopAgent(getClientState().createArgs())
 
-getAppState().init()
+getAppState().init(getServerState(), getClientState())

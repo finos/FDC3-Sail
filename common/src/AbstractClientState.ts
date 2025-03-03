@@ -12,14 +12,18 @@ export abstract class AbstractClientState implements ClientState {
     protected directories: Directory[] = []
     callbacks: (() => void)[] = []
     protected intentResolution: IntentResolution | null = null
+    protected knownApps: DirectoryApp[] = []
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[]) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[]) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
         this.userSessionId = userSessionId
         this.directories = directories
+        this.knownApps = knownApps
     }
+
+    abstract updateKnownApps(): Promise<void>
 
     abstract saveState(): void
 
@@ -80,7 +84,8 @@ export abstract class AbstractClientState implements ClientState {
                 tabId: this.activeTabId,
                 panelId: instanceId,
                 url,
-                appId: detail.appId
+                appId: detail.appId,
+                icon: detail.icons?.[0]?.src ?? null
             } as AppPanel
 
             this.panels.push(ap)
@@ -148,6 +153,16 @@ export abstract class AbstractClientState implements ClientState {
 
     setIntentResolution(ir: IntentResolution | null): void {
         this.intentResolution = ir
+        this.saveState()
+    }
+
+
+    getKnownApps(): DirectoryApp[] {
+        return this.knownApps
+    }
+
+    setKnownApps(apps: DirectoryApp[]): void {
+        this.knownApps = apps
         this.saveState()
     }
 

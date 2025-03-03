@@ -7,8 +7,9 @@ export type AppPanel = GridStackPosition & {
     title: string
     url: string,
     tabId: string
-    panelId: string,
-    appId: string
+    panelId: string,  // the instanceId of the app
+    appId: string,
+    icon: string | null
 }
 
 export type IntentResolution = {
@@ -43,6 +44,8 @@ export interface ClientState {
     setDirectories(d: Directory[]): void
     getDirectories(): Directory[]
     updateDirectory(din: Directory): void
+    getKnownApps(): DirectoryApp[]
+    setKnownApps(apps: DirectoryApp[]): void
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void

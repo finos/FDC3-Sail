@@ -6,6 +6,7 @@ import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { getClientState, getServerState } from "@finos/fdc3-sail-common"
 
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
@@ -60,6 +61,10 @@ window.addEventListener("load", () => {
         <ResolverPanel
           context={data.context}
           appIntents={data.appIntents}
+          channelDetails={getClientState().getTabs()}
+          currentChannel={null}
+          appDetails={getClientState().getKnownApps()}
+          panelDetails={getClientState().getPanels()}
           closeAction={() => {
             renderIntentResolver(null)
           }}
