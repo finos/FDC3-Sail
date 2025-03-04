@@ -4,7 +4,7 @@ import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, S
 import { AppIdentifier } from "@finos/fdc3";
 import { SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory } from "@finos/fdc3-sail-common";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveArgs, SailIntentResolveResponse } from "@finos/fdc3-sail-common";
 
 
 /**
@@ -49,8 +49,11 @@ export class SailServerContext implements ServerContext<SailData> {
         return Promise.resolve()
     }
 
-
     async open(appId: string): Promise<InstanceID> {
+        return this.openSail(appId, undefined)
+    }
+
+    async openSail(appId: string, channel: string | null | undefined): Promise<InstanceID> {
         const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
 
         if (app.length == 0) {
@@ -58,17 +61,22 @@ export class SailServerContext implements ServerContext<SailData> {
         }
 
         const url = (app[0].details as any)?.url ?? undefined
-        const hosting = (app[0].hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
         if (url) {
+            const forceNewWindow = (app[0].hostManifests as any)?.sail?.forceNewWindow
+            const approach = forceNewWindow || (channel === null) ? AppHosting.Tab : AppHosting.Frame
+
             const instanceId = await this.socket.emitWithAck(SAIL_APP_OPEN, {
-                appDRecord: app[0]
+                appDRecord: app[0],
+                approach,
+                channel
             } as SailAppOpenArgs)
+
             this.setInstanceDetails(instanceId, {
                 appId,
                 instanceId,
                 url,
                 state: State.Pending,
-                hosting
+                hosting: approach
             })
             return instanceId
         }
@@ -187,13 +195,32 @@ export class SailServerContext implements ServerContext<SailData> {
             this.socket.emit(SAIL_INTENT_RESOLVE, {
                 appIntents,
                 context
-            }, (response: AppIntent[], err: string) => {
+            }, async (response: SailIntentResolveResponse, err: string) => {
                 if (err) {
                     console.error(err)
                     resolve([])
                 } else {
                     console.log("SAIL Narrowed intents", response)
-                    resolve(response)
+
+                    if (appNeedsStarting(response.appIntents)) {
+                        // this overrides the fdc3-for-web-impl default behavior in order
+                        // that we can open the app in the right tab
+                        const theAppIntent = getSingleAppIntent(response.appIntents)
+                        const theApp = theAppIntent.apps[0]
+                        const instanceId = await this.openSail(theApp.appId, response.channel)
+                        const out: AppIntent[] = [
+                            {
+                                intent: theAppIntent.intent,
+                                apps: [{
+                                    appId: theApp.appId,
+                                    instanceId
+                                }]
+                            }
+                        ]
+                        resolve(out)
+                    } else {
+                        resolve(response.appIntents)
+                    }
                 }
             })
         })
@@ -209,4 +236,12 @@ export class SailServerContext implements ServerContext<SailData> {
         this.directory.replace(toLoad)
     }
 
+}
+
+function appNeedsStarting(appIntents: AppIntent[]) {
+    return (appIntents.length == 1) && (appIntents[0].apps.length == 1) && (appIntents[0].apps[0].instanceId == null)
+}
+
+function getSingleAppIntent(appIntents: AppIntent[]) {
+    return appIntents[0]
 }

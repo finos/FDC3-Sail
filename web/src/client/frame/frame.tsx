@@ -14,7 +14,6 @@ import { Content, Grids } from "../grid/grid"
 import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
-import { DirectoryApp } from "@finos/fdc3-web-impl"
 
 enum Popup {
   NONE,
@@ -112,6 +111,7 @@ export class Frame extends Component<FrameProps, FrameState> {
             }}
             chooseAction={(chosenApp, chosenIntent, chosenChannel) => {
               getServerState().intentChosen(
+                this.props.cs.getIntentResolution()!!.requestId,
                 chosenApp,
                 chosenIntent,
                 chosenChannel,

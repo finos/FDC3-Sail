@@ -98,7 +98,15 @@ export const SAIL_INTENT_RESOLVE = 'sail-intent-resolve'
 
 export type SailIntentResolveArgs = {
     appIntents: AppIntent[],
-    context: Context
+    context: Context,
+    requestId: string
+}
+
+export type SailIntentResolveResponse = {
+    appIntents: AppIntent[],    // should be just one app intent if it resolves
+    requestId: string,
+    channel: string | null,
+    error: string | null
 }
 
 /**
@@ -108,7 +116,9 @@ export type SailIntentResolveArgs = {
 export const SAIL_APP_OPEN = 'sail-app-open'
 
 export type SailAppOpenArgs = {
-    appDRecord: DirectoryApp
+    appDRecord: DirectoryApp,
+    channel: string | null,
+    approach: AppHosting
 }
 
 

@@ -41,7 +41,7 @@ export interface ServerState {
      * Used when the intent resolver is managed by the desktop agent as opposed
      * to running inside an iframe in the client app.
      */
-    intentChosen(ai: AppIdentifier | null, intent: string | null, channel: string | null): Promise<void>
+    intentChosen(requestId: string, ai: AppIdentifier | null, intent: string | null, channel: string | null): Promise<void>
 
     /**
      * This is used when the user changes the directories or the details of the

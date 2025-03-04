@@ -5,7 +5,7 @@ import { useEffect, useRef, memo, useState } from "react"
 export const TradingViewWidget = () => {
   const container: any = useRef()
 
-  const [state, setState] = useState("MSFT")
+  const [state, setState] = useState("TSLA")
 
   useEffect(() => {
     getAgent().then((fdc3) => {

@@ -1,7 +1,7 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, TabDetail } from "./message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse, TabDetail } from "./message-types";
 import { AppHosting } from "./app-hosting";
 import { ServerState } from "./ServerState";
 import { AppState } from "./AppState";
@@ -10,7 +10,7 @@ import { ClientState } from "./ClientState";
 export class ServerStateImpl implements ServerState {
 
     socket: Socket | null = null
-    resolveCallback: any
+    resolveCallback: (x: SailIntentResolveResponse) => void = () => { }
     cs: ClientState | null = null
     as: AppState | null = null
 
@@ -65,8 +65,16 @@ export class ServerStateImpl implements ServerState {
 
             this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
                 //console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
-                const instanceId = await this.as!!.open(data.appDRecord)
-                callback(instanceId)
+                if (data.channel) {
+                    // opening in a panel inside sail
+                    this.cs?.setActiveTabId(data.channel)
+                    const instanceId = await this.as!!.open(data.appDRecord, AppHosting.Frame)
+                    callback(instanceId)
+                } else {
+                    // opening in a new tab
+                    const instanceId = await this.as!!.open(data.appDRecord, AppHosting.Tab)
+                    callback(instanceId)
+                }
             })
 
             this.socket?.on(SAIL_APP_STATE, (data: SailAppStateArgs) => {
@@ -87,7 +95,7 @@ export class ServerStateImpl implements ServerState {
                 this.cs!!.setIntentResolution({
                     appIntents: data.appIntents,
                     context: data.context,
-                    requestId: '1234'
+                    requestId: data.requestId
                 })
 
                 this.resolveCallback = callback
@@ -103,21 +111,31 @@ export class ServerStateImpl implements ServerState {
         } as SailChannelChangeArgs)
     }
 
-    async intentChosen(ai: AppIdentifier | null, intent: string | null): Promise<void> {
+    async intentChosen(requestId: string, ai: AppIdentifier | null, intent: string | null, channel: string | null): Promise<void> {
         if (this.resolveCallback) {
             if (ai && intent) {
-                this.resolveCallback([
-                    {
-                        intent: {
-                            name: intent,
-                        },
-                        apps: [
-                            ai
-                        ]
-                    }
-                ])
+                this.resolveCallback({
+                    appIntents: [
+                        {
+                            intent: {
+                                name: intent,
+                            },
+                            apps: [
+                                ai
+                            ]
+                        }
+                    ],
+                    channel,
+                    requestId,
+                    error: null
+                })
             } else {
-                this.resolveCallback([], ResolveError.UserCancelled)
+                this.resolveCallback({
+                    appIntents: [],
+                    channel: null,
+                    requestId,
+                    error: ResolveError.UserCancelled
+                })
             }
         }
     }
