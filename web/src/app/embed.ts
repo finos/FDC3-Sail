@@ -25,11 +25,6 @@ function getUserSessionId(): string {
     return uuid
 }
 
-function getConnectionAttemptUuid(): string {
-    const uuid = getQueryVariable("connectionAttemptUuid")
-    return uuid
-}
-
 function getInstanceId(): string {
     const source = getQueryVariable("instanceId")
     return source

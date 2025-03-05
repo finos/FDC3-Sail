@@ -1,5 +1,5 @@
 import { Component } from "react"
-import * as styles from "./styles.module.css"
+import styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
 import {

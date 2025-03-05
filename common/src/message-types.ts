@@ -1,6 +1,6 @@
 import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
-import { AppIntent, Context } from "@finos/fdc3"
 import { AppHosting } from "./app-hosting"
+import { AppIntent, Context, IntentMetadata, AppMetadata } from "@finos/fdc3"
 
 export type TabDetail = {
     title: string,
@@ -71,7 +71,9 @@ export const DA_REGISTER_APP_LAUNCH = 'da-launch'
 export type DesktopAgentRegisterAppLaunchArgs = {
     userSessionId: string,
     appId: string,
-    hosting: AppHosting
+    hosting: AppHosting,
+    channel: string | null,
+    instanceTitle: string
 }
 
 /**
@@ -96,8 +98,22 @@ export const SAIL_CHANNEL_SETUP = 'sail-channel-setup'
  */
 export const SAIL_INTENT_RESOLVE = 'sail-intent-resolve'
 
+/**
+ * Augmented App Metadata, which allows the intent resolver to have a bit more contextual
+ * information about the apps it is showing.
+ */
+export type AugmentedAppMetadata = AppMetadata & {
+    channel?: string | null
+    instanceTitle?: string
+}
+
+export type AugmentedAppIntent = {
+    intent: IntentMetadata,
+    apps: AugmentedAppMetadata[]
+}
+
 export type SailIntentResolveArgs = {
-    appIntents: AppIntent[],
+    appIntents: AugmentedAppIntent[],
     context: Context,
     requestId: string
 }
@@ -119,6 +135,11 @@ export type SailAppOpenArgs = {
     appDRecord: DirectoryApp,
     channel: string | null,
     approach: AppHosting
+}
+
+export type SailAppOpenResponse = {
+    instanceId: string,
+    instanceTitle: string
 }
 
 

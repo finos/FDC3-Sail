@@ -1,4 +1,4 @@
-import { AppState } from "./AppState"
+import { AppOpenDetails, AppState } from "./AppState"
 import { AppHosting } from "./app-hosting"
 import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
 import { SailAppStateArgs } from "./message-types";
@@ -30,7 +30,7 @@ export class DefaultAppState implements AppState {
 
     async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")
-        const applications: DirectoryApp[] = await this.ss!!.getApplications()
+        const applications: DirectoryApp[] = this.cs!!.getKnownApps()
         const firstMatchingApp = applications.find(x => {
             const d = x.details as WebAppDetails
             return (d.url == strippedIdentityUrl) ||
@@ -140,17 +140,22 @@ export class DefaultAppState implements AppState {
      * Opens either a new panel or a browser tab for the application to go in, 
      * returns the instance id for the new thing.
      */
-    open(detail: DirectoryApp, destination?: AppHosting): Promise<string> {
+    open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails> {
         return new Promise(async (resolve, _reject) => {
             const hosting: AppHosting = destination ?? (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
-            const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting)
+            const instanceTitle = this.createTitle(detail)
             if (hosting == AppHosting.Tab) {
+                const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting, null, instanceTitle)
                 const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;
                 this.registerAppWindow(w, instanceId)
-                return resolve(instanceId)
+                return resolve({ instanceId, channel: null, instanceTitle })
             } else {
-                this.cs!!.newPanel(detail, instanceId, this.createTitle(detail))
+                const channel = this.cs!!.getActiveTab().id
+                const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
+                this.cs!!.newPanel(detail, instanceId, instanceTitle)
+                return resolve({ instanceId, channel, instanceTitle })
             }
         })
     }
 }
+

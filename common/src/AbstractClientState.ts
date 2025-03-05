@@ -23,36 +23,34 @@ export abstract class AbstractClientState implements ClientState {
         this.knownApps = knownApps
     }
 
-    abstract updateKnownApps(): Promise<void>
-
-    abstract saveState(): void
+    abstract saveState(): Promise<void>
 
     /** Tabs */
     getActiveTab(): TabDetail {
         return this.tabs.find(t => t.id == this.activeTabId)!!
     }
 
-    setActiveTabId(id: string) {
+    async setActiveTabId(id: string): Promise<void> {
         this.activeTabId = id
-        this.saveState()
+        await this.saveState()
     }
 
     getTabs(): TabDetail[] {
         return this.tabs
     }
 
-    addTab(td: TabDetail) {
+    async addTab(td: TabDetail): Promise<void> {
         this.tabs.push(td)
-        this.saveState()
+        await this.saveState()
     }
 
-    removeTab(id: string) {
+    async removeTab(id: string): Promise<void> {
         this.tabs = this.tabs.filter(t => t.id != id)
-        this.saveState()
+        await this.saveState()
     }
 
     /** Panels */
-    updatePanel(ap: AppPanel): void {
+    async updatePanel(ap: AppPanel): Promise<void> {
         // console.log("Panels " + JSON.stringify(this.panels))
         const idx = this.panels.findIndex(p => p.panelId == ap.panelId)
         if (idx != -1) {
@@ -63,12 +61,12 @@ export abstract class AbstractClientState implements ClientState {
 
         // console.log("Total Panels: " + this.panels.length)
 
-        this.saveState()
+        await this.saveState()
     }
 
-    removePanel(id: string): void {
+    async removePanel(id: string): Promise<void> {
         this.panels = this.panels.filter(p => p.panelId != id)
-        this.saveState()
+        await this.saveState()
     }
 
     newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel {
@@ -108,16 +106,16 @@ export abstract class AbstractClientState implements ClientState {
         return this.userSessionId
     }
 
-    setDirectories(d: Directory[]): void {
+    async setDirectories(d: Directory[]): Promise<void> {
         this.directories = d
-        this.saveState()
+        await this.saveState()
     }
 
     getDirectories(): Directory[] {
         return this.directories
     }
 
-    updateDirectory(din: Directory) {
+    async updateDirectory(din: Directory) {
         const idx = this.directories.findIndex(d => d.url == din.url)
         if (idx > -1) {
             this.directories[idx] = din
@@ -125,7 +123,7 @@ export abstract class AbstractClientState implements ClientState {
             this.directories.push(din)
         }
 
-        this.saveState()
+        await this.saveState()
     }
 
     createArgs(): DesktopAgentHelloArgs {
@@ -158,12 +156,14 @@ export abstract class AbstractClientState implements ClientState {
 
 
     getKnownApps(): DirectoryApp[] {
+        console.log("SAIL Get Known Apps: " + this.knownApps.length)
         return this.knownApps
     }
 
-    setKnownApps(apps: DirectoryApp[]): void {
+    async setKnownApps(apps: DirectoryApp[]): Promise<void> {
         this.knownApps = apps
-        this.saveState()
+        console.log("SAIL Set Known Apps: " + this.knownApps.length)
+        await this.saveState()
     }
 
 }

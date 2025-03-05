@@ -6,7 +6,7 @@ import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { AugmentedAppIntent, getClientState } from "@finos/fdc3-sail-common"
 
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
@@ -60,7 +60,7 @@ window.addEventListener("load", () => {
       root.render(
         <ResolverPanel
           context={data.context}
-          appIntents={data.appIntents}
+          appIntents={data.appIntents as AugmentedAppIntent[]}
           channelDetails={getClientState().getTabs()}
           currentChannel={null}
           appDetails={getClientState().getKnownApps()}
@@ -68,7 +68,10 @@ window.addEventListener("load", () => {
           closeAction={() => {
             renderIntentResolver(null)
           }}
-          chooseAction={(app, intent) => {
+          chooseAction={(app, intent, channel) => {
+            if (channel) {
+              getClientState().setActiveTabId(channel)
+            }
             callback(intent, app)
             renderIntentResolver(null)
           }}

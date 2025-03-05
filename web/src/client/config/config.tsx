@@ -1,6 +1,10 @@
 import { Component } from "react"
-import * as styles from "./styles.module.css"
-import { getClientState, ClientState } from "@finos/fdc3-sail-common"
+import styles from "./styles.module.css"
+import {
+  getClientState,
+  ClientState,
+  getServerState,
+} from "@finos/fdc3-sail-common"
 import { Directory } from "@finos/fdc3-sail-common"
 import { Popup } from "../popups/popup"
 
@@ -146,8 +150,13 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
                     url: "",
                     active: false,
                   })
-                  getClientState().setDirectories(directories)
-                  this.setState(this.state)
+                  getClientState()
+                    .setDirectories(directories)
+                    .then(async () => {
+                      getClientState().setKnownApps(
+                        await getServerState().getApplications(),
+                      )
+                    })
                 }}
               />
             </div>

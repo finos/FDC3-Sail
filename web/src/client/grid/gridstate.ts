@@ -2,7 +2,7 @@ import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } fro
 import { ReactElement } from "react"
 import { AppPanel, ClientState, getServerState } from "@finos/fdc3-sail-common"
 import { createRoot, Root } from 'react-dom/client';
-import * as styles from "./styles.module.css";
+import styles from "./styles.module.css";
 
 
 const TRASH_DROP = "trash";

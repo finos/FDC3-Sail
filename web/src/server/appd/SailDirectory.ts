@@ -31,7 +31,12 @@ export class SailDirectory extends BasicDirectory {
     async load(url: string): Promise<void> {
         try {
             const apps = await load(url)
-            apps.forEach((a) => this.allApps.push(a))
+            apps.forEach((a) => {
+                // ensure we don't have two apps with same appId
+                if (!this.allApps.find(a2 => a2.appId == a.appId)) {
+                    this.allApps.push(a)
+                }
+            })
         } catch (e) {
             console.error("Error loading " + url, e)
         }

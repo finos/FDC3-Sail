@@ -12,13 +12,16 @@
       }
     ],
     "outDir": "dist",
+    "rootDirs": [
+      "src"
+    ],
   },
   "include": [
-    "src/**/*"
+    "src"
   ],
   "references": [
     {
       "path": "../common"
-    },
+    }
   ]
 }

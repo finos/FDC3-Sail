@@ -1,4 +1,5 @@
-import * as styles from "./styles.module.css"
+import { DEFAULT_ICON } from "../appd/appd"
+import styles from "./styles.module.css"
 
 export const Icon = ({
   image,
@@ -11,7 +12,11 @@ export const Icon = ({
 }) => {
   return (
     <div className={styles.icon} data-dark={dark}>
-      <img src={image} className={styles.iconImage} />
+      <img
+        src={image}
+        className={styles.iconImage}
+        onError={(x) => ((x.target as HTMLImageElement).src = DEFAULT_ICON)}
+      />
       <div className={styles.iconName}>
         <span className={styles.iconNameText}>{text}</span>
       </div>

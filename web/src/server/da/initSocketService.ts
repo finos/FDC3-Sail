@@ -11,6 +11,7 @@ export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
 
+let debugReconnectionNumber = 0;
 
 export function getSailUrl(): string {
     return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
@@ -63,12 +64,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             }
         })
 
-        socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs) {
+        socket.on(DA_HELLO, function (props: DesktopAgentHelloArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL DA HELLO:" + JSON.stringify(props))
 
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
-            console.log("SAILDesktop Agent Connecting", userSessionId)
+            console.log("SAIL Desktop Agent Connecting", userSessionId)
             var fdc3Server = sessions.get(userSessionId)
 
             if (fdc3Server) {
@@ -76,6 +77,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 fdc3Server = new SailFDC3Server(fdc3Server.serverContext, props)
                 sessions.set(userSessionId, fdc3Server)
                 console.log("SAIL updated desktop agent channels and directories", sessions.size, props.userSessionId)
+                callback(true)
             } else {
                 // starting session
                 const serverContext = new SailServerContext(new SailDirectory(), socket)
@@ -83,6 +85,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 serverContext.setFDC3Server(fdc3Server)
                 sessions.set(userSessionId, fdc3Server)
                 console.log("SAIL created agent session.  Running sessions ", sessions.size, props.userSessionId)
+                callback(true)
             }
 
             fdc3ServerInstance = fdc3Server
@@ -110,7 +113,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     instanceId: instanceId,
                     state: State.Pending,
                     appId,
-                    hosting: props.hosting
+                    hosting: props.hosting,
+                    channel: props.channel,
+                    instanceTitle: props.instanceTitle
                 })
                 console.log("SAIL Registered app", appId, instanceId)
                 callback(instanceId)
@@ -120,13 +125,15 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             }
         })
 
-        socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs) {
+        socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL APP STATE: " + JSON.stringify(props))
             const session = sessions.get(props.userSessionId)
-            session?.serverContext.reloadAppDirectories(props.directories)
+            session?.serverContext.reloadAppDirectories(props.directories).then(() => {
+                callback(true)
+            })
         })
 
-        socket.on(SAIL_CHANNEL_CHANGE, async function (props: SailChannelChangeArgs) {
+        socket.on(SAIL_CHANNEL_CHANGE, async function (props: SailChannelChangeArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL CHANNEL CHANGE: " + JSON.stringify(props))
             const session = sessions.get(props.userSessionId)
 
@@ -139,7 +146,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     requestUuid: uuid(),
                     timestamp: new Date()
                 }
-            } as BrowserTypes.JoinUserChannelRequest, props.instanceId)
+            } as BrowserTypes.JoinUserChannelRequest, props.instanceId).then(() => {
+                callback(true)
+            })
         })
 
         socket.on(APP_HELLO, function (props: AppHelloArgs, callback: (success: any, err?: string) => void) {
@@ -171,8 +180,11 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                         state: State.Pending,
                         socket,
                         url: (directoryItem[0].details as WebAppDetails).url,
-                        hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+                        hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
+                        channel: null,
+                        instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++
                     }
+
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, instanceDetails)
 
                     fdc3ServerInstance = fdc3Server

@@ -23,7 +23,7 @@ export interface ServerState {
      * Called when an application begins the WCP handshake process.
      * Returns the instance ID of the app.
      */
-    registerAppLaunch(appId: string, hosting: AppHosting): Promise<string>
+    registerAppLaunch(appId: string, hosting: AppHosting, channel: string | null, instanceTitle: string): Promise<string>
 
     /**
      * Allows the client to query the app directory from the server, 

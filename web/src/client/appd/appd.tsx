@@ -1,14 +1,14 @@
 import { Component } from "react"
 import { Icon } from "../icon/icon"
-import { getAppState, getServerState } from "@finos/fdc3-sail-common"
-import * as styles from "./styles.module.css"
+import { getAppState, getClientState } from "@finos/fdc3-sail-common"
+import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
 
-const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
+export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
-function getIcon(a: DirectoryApp) {
+export function getIcon(a: DirectoryApp) {
   const icons = a.icons ?? []
   if (icons.length > 0) {
     return icons[0].src
@@ -29,20 +29,10 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
     super(props)
     this.state = {
       chosen: null,
-      apps: [],
+      apps: getClientState()
+        .getKnownApps()
+        .filter((d) => onlyRelevantApps(d)),
     }
-  }
-
-  componentDidMount = () => {
-    getServerState()
-      .getApplications()
-      .then((apps) => {
-        //console.log("loaded - ready to display")
-        this.setState({
-          chosen: null,
-          apps: apps.filter((d) => onlyRelevantApps(d)),
-        })
-      })
   }
 
   setChosen(app: DirectoryApp) {

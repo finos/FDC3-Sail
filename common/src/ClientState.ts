@@ -1,6 +1,6 @@
 import { GridStackPosition } from "gridstack"
-import { DesktopAgentHelloArgs, TabDetail, Directory } from "./message-types";
-import { AppIntent, Context } from "@finos/fdc3";
+import { DesktopAgentHelloArgs, TabDetail, Directory, AugmentedAppIntent } from "./message-types";
+import { Context } from "@finos/fdc3";
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 
 export type AppPanel = GridStackPosition & {
@@ -13,7 +13,7 @@ export type AppPanel = GridStackPosition & {
 }
 
 export type IntentResolution = {
-    appIntents: AppIntent[]
+    appIntents: AugmentedAppIntent[]
     requestId: string,
     context: Context
 }
@@ -29,23 +29,23 @@ export interface ClientState {
 
     /** Tabs */
     getActiveTab(): TabDetail
-    setActiveTabId(n: string): void
+    setActiveTabId(n: string): Promise<void>
     getTabs(): TabDetail[]
-    addTab(td: TabDetail): void
-    removeTab(id: string): void
+    addTab(td: TabDetail): Promise<void>
+    removeTab(id: string): Promise<void>
 
     /** Panel State */
-    updatePanel(ap: AppPanel): void
-    removePanel(id: string): void
+    updatePanel(ap: AppPanel): Promise<void>
+    removePanel(id: string): Promise<void>
     getPanels(): AppPanel[]
     newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel
 
     /** App Directory */
-    setDirectories(d: Directory[]): void
+    setDirectories(d: Directory[]): Promise<void>
     getDirectories(): Directory[]
-    updateDirectory(din: Directory): void
+    updateDirectory(din: Directory): Promise<void>
     getKnownApps(): DirectoryApp[]
-    setKnownApps(apps: DirectoryApp[]): void
+    setKnownApps(apps: DirectoryApp[]): Promise<void>
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void

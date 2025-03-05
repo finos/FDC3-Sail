@@ -1,7 +1,7 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse, TabDetail } from "./message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse, TabDetail } from "./message-types";
 import { AppHosting } from "./app-hosting";
 import { ServerState } from "./ServerState";
 import { AppState } from "./AppState";
@@ -33,13 +33,13 @@ export class ServerStateImpl implements ServerState {
         return out
     }
 
-    async registerAppLaunch(appId: string, hosting: AppHosting): Promise<string> {
+    async registerAppLaunch(appId: string, hosting: AppHosting, channel: string | null, instanceTitle: string): Promise<string> {
         if (!this.socket) {
             throw new Error("Desktop Agent not registered")
         }
 
         const userSessionId = this.cs!!.getUserSessionID()
-        const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId, hosting } as DesktopAgentRegisterAppLaunchArgs)
+        const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId, hosting, channel, instanceTitle } as DesktopAgentRegisterAppLaunchArgs)
         return instanceId
     }
 
@@ -60,20 +60,22 @@ export class ServerStateImpl implements ServerState {
         this.socket = io()
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props, () => {
-                this.getApplications()
+                this.sendClientState(this.cs!!.getTabs(), this.cs!!.getDirectories()).then(() => {
+                    this.getApplications()
+                })
             })
 
-            this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback) => {
+            this.socket?.on(SAIL_APP_OPEN, async (data: SailAppOpenArgs, callback: (response: SailAppOpenResponse) => void) => {
                 //console.log(`SAIL_APP_OPEN: ${JSON.stringify(data)}`)
                 if (data.channel) {
                     // opening in a panel inside sail
                     this.cs?.setActiveTabId(data.channel)
-                    const instanceId = await this.as!!.open(data.appDRecord, AppHosting.Frame)
-                    callback(instanceId)
+                    const openDetails = await this.as!!.open(data.appDRecord, AppHosting.Frame)
+                    callback(openDetails)
                 } else {
                     // opening in a new tab
-                    const instanceId = await this.as!!.open(data.appDRecord, AppHosting.Tab)
-                    callback(instanceId)
+                    const openDetails = await this.as!!.open(data.appDRecord, AppHosting.Tab)
+                    callback(openDetails)
                 }
             })
 
@@ -104,7 +106,7 @@ export class ServerStateImpl implements ServerState {
     }
 
     async setUserChannel(instanceId: string, channelId: string): Promise<void> {
-        this.socket?.emit(SAIL_CHANNEL_CHANGE, {
+        await this.socket?.emitWithAck(SAIL_CHANNEL_CHANGE, {
             instanceId,
             channel: channelId,
             userSessionId: this.cs!!.getUserSessionID()

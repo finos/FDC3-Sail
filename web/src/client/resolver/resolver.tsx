@@ -1,10 +1,16 @@
-import * as styles from "./styles.module.css"
+import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { AppIdentifier, AppIntent, Context, Intent } from "@finos/fdc3"
 import { useState } from "react"
-import { AppPanel, TabDetail } from "@finos/fdc3-sail-common"
+import {
+  AppPanel,
+  AugmentedAppIntent,
+  AugmentedAppMetadata,
+  TabDetail,
+} from "@finos/fdc3-sail-common"
 import { DirectoryApp } from "@finos/fdc3-web-impl"
 import { selectHighestContrast } from "../../util/contrast"
+import { DEFAULT_ICON, getIcon } from "../appd/appd"
 
 type State = {
   newApps: boolean
@@ -29,11 +35,11 @@ const LineItemComponent = ({
   isSelected: (a: any) => boolean
 }) => {
   const selected = isSelected(li)
-  const lightBackground = background ? background + "44" : null
+  const lightBackground = background ? background + "44" : undefined
 
   return (
     <div
-      className={`${styles.lineItem} ${selected ? styles.highlightedLineItem : styles.inactiveLineItem}`}
+      className={`${styles.lineItem} ${selected ? styles.highlightedLineItem : null}`}
       onClick={() => {
         setState(li)
       }}
@@ -46,34 +52,34 @@ const LineItemComponent = ({
           : {}
       }
     >
-      <img src={icon} alt={text} className={styles.lineItemIcon} />
+      <img
+        src={icon}
+        alt={text}
+        className={styles.lineItemIcon}
+        onError={(x) => ((x.target as HTMLImageElement).src = DEFAULT_ICON)}
+      />
       <div className={styles.lineItemText}>{text}</div>
     </div>
   )
 }
 
-function getFirstIcon(appId: string, appDetails: DirectoryApp[]): string {
-  const app = appDetails.find((a) => a.appId === appId)
-  return app?.icons?.[0]?.src ?? ""
+function getFirstIcon(a: AugmentedAppMetadata): string {
+  return getIcon(a) ?? DEFAULT_ICON
 }
 
 function relevantApps(
-  a: AppIntent,
+  a: AugmentedAppIntent,
   newApps: boolean,
-  panelDetails: AppPanel[],
   currentChannel: string | null,
-): AppIntent | null {
-  const out = {
+): AugmentedAppIntent | null {
+  const out: AugmentedAppIntent = {
     intent: a.intent,
     apps: a.apps
       .filter((x) => (newApps ? !x.instanceId : x.instanceId))
       .filter((x) => {
         if (!newApps) {
           // only show apps that are in the current channel
-          const panel = panelDetails.find(
-            (p) => p.appId === x.appId && p.panelId === x.instanceId,
-          )
-          return panel?.tabId === currentChannel
+          return x.channel === currentChannel
         } else {
           return true
         }
@@ -88,15 +94,14 @@ function relevantApps(
 }
 
 function firstApp(
-  appIntents: AppIntent[],
+  appIntents: AugmentedAppIntent[],
   intent: string,
   newApps: boolean,
-  panelDetails: AppPanel[],
   currentChannel: string | null,
 ): AppIdentifier | null {
   const relevant = appIntents
     .filter((a) => a.intent.name === intent)
-    .map((a) => relevantApps(a, newApps, panelDetails, currentChannel))
+    .map((a) => relevantApps(a, newApps, currentChannel))
     .filter((a) => a != null)
     .flatMap((a) => a?.apps)
 
@@ -107,27 +112,16 @@ function firstApp(
   }
 }
 
-function getAppTitle(
-  app: AppIdentifier,
-  panelDetails: AppPanel[],
-  appDetails: DirectoryApp[],
-): string {
-  const panel = panelDetails.find(
-    (p) => p.appId === app.appId && p.panelId === app.instanceId,
-  )
-
-  const appTitle = appDetails.find((a) => a.appId === app.appId)?.title
-
-  return panel?.title ?? `New ${appTitle}`
+function getAppTitle(app: AugmentedAppMetadata): string {
+  return app.instanceTitle ?? `New ${app.title}`
 }
 
 function generateUniqueExistingAppIntents(
-  appIntents: AppIntent[],
-  panelDetails: AppPanel[],
+  appIntents: AugmentedAppIntent[],
   currentChannel: string | null,
 ): Intent[] {
   return appIntents
-    .filter((a) => relevantApps(a, false, panelDetails, currentChannel) != null)
+    .filter((a) => relevantApps(a, false, currentChannel) != null)
     .map((a) => a.intent.name)
     .filter((v, i, a) => a.indexOf(v) === i)
     .sort()
@@ -135,29 +129,25 @@ function generateUniqueExistingAppIntents(
 
 function generateUniqueNewAppIntents(
   appIntents: AppIntent[],
-  panelDetails: AppPanel[],
   currentChannel: string | null,
 ): Intent[] {
   return appIntents
-    .filter((a) => relevantApps(a, true, panelDetails, currentChannel) != null)
+    .filter((a) => relevantApps(a, true, currentChannel) != null)
     .map((a) => a.intent.name)
     .filter((v, i, a) => a.indexOf(v) === i)
     .sort()
 }
 
 function generateStartState(
-  appIntents: AppIntent[],
-  panelDetails: AppPanel[],
+  appIntents: AugmentedAppIntent[],
   currentChannel: string | null,
 ): State {
   const uniqueExistingAppIntents = generateUniqueExistingAppIntents(
     appIntents,
-    panelDetails,
     currentChannel,
   )
   const uniqueNewAppIntents = generateUniqueNewAppIntents(
     appIntents,
-    panelDetails,
     currentChannel,
   )
 
@@ -169,7 +159,6 @@ function generateStartState(
             appIntents,
             uniqueExistingAppIntents[0],
             false,
-            panelDetails,
             currentChannel,
           ),
           chosenIntent: uniqueExistingAppIntents[0],
@@ -181,7 +170,6 @@ function generateStartState(
             appIntents,
             uniqueNewAppIntents[0],
             true,
-            panelDetails,
             currentChannel,
           ),
           chosenIntent: uniqueNewAppIntents[0],
@@ -193,15 +181,13 @@ function generateStartState(
 export const ResolverPanel = ({
   context,
   appIntents,
-  appDetails,
   channelDetails,
-  panelDetails,
   currentChannel,
   closeAction,
   chooseAction,
 }: {
   context: Context
-  appIntents: AppIntent[]
+  appIntents: AugmentedAppIntent[]
   channelDetails: TabDetail[]
   panelDetails: AppPanel[]
   appDetails: DirectoryApp[]
@@ -214,18 +200,16 @@ export const ResolverPanel = ({
   ) => void
 }) => {
   const [state, setState]: [State, (x: State) => void] = useState(
-    generateStartState(appIntents, panelDetails, currentChannel),
+    generateStartState(appIntents, currentChannel),
   )
 
   const uniqueExistingAppIntents = generateUniqueExistingAppIntents(
     appIntents,
-    panelDetails,
     state.channelId,
   )
 
   const uniqueNewAppIntents = generateUniqueNewAppIntents(
     appIntents,
-    panelDetails,
     state.channelId,
   )
 
@@ -281,7 +265,7 @@ export const ResolverPanel = ({
                   text={c.title}
                   background={c.background}
                   icon={c.icon}
-                  setState={(a) => {
+                  setState={() => {
                     setState({
                       newApps: state.newApps,
                       chosenIntent: state.chosenIntent,
@@ -298,7 +282,7 @@ export const ResolverPanel = ({
                 text={"New Tab"}
                 background={null}
                 icon={"/static/icons/logo/logo.svg"}
-                setState={(a) => {
+                setState={() => {
                   setState({
                     newApps: state.newApps,
                     chosenIntent: state.chosenIntent,
@@ -334,22 +318,15 @@ export const ResolverPanel = ({
             <div className={styles.resolverPane}>
               {appIntents
                 .filter((a) => a.intent.name === state.chosenIntent)
-                .map((ai) =>
-                  relevantApps(
-                    ai,
-                    state.newApps,
-                    panelDetails,
-                    state.channelId,
-                  ),
-                )
+                .map((ai) => relevantApps(ai, state.newApps, state.channelId))
                 .filter((a) => a != null)
                 .flatMap((a) => a?.apps)
                 .map((i) => (
                   <LineItemComponent
                     key={i.appId + i.instanceId}
                     li={i}
-                    text={getAppTitle(i, panelDetails, appDetails)}
-                    icon={getFirstIcon(i.appId, appDetails)}
+                    text={getAppTitle(i)}
+                    icon={getFirstIcon(i)}
                     background={null}
                     setState={(a) => setState({ ...state, chosenApp: a })}
                     isSelected={(a) => a === state.chosenApp}

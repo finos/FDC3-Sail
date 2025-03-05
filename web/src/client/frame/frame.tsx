@@ -1,7 +1,7 @@
 import { Bin, Controls, NewPanel } from "../controls/controls"
 import { Logo, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
-import * as styles from "./styles.module.css"
+import styles from "./styles.module.css"
 import {
   ClientState,
   getClientState,

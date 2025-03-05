@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import * as styles from "./styles.module.css";
+import { ReactNode } from "react"
+import styles from "./styles.module.css"
 
 export const Bin = () => {
   return (
@@ -10,8 +10,8 @@ export const Bin = () => {
         className={styles.controlImage}
       />
     </div>
-  );
-};
+  )
+}
 
 export const NewPanel = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -23,8 +23,8 @@ export const NewPanel = ({ onClick }: { onClick: () => void }) => {
         onClick={onClick}
       />
     </div>
-  );
-};
+  )
+}
 
 export const Resolver = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -36,9 +36,9 @@ export const Resolver = ({ onClick }: { onClick: () => void }) => {
         onClick={onClick}
       />
     </div>
-  );
-};
+  )
+}
 
 export const Controls = ({ children }: { children: ReactNode }) => {
-  return <div className={styles.controls}>{children}</div>;
-};
+  return <div className={styles.controls}>{children}</div>
+}

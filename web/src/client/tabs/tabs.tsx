@@ -1,7 +1,7 @@
 import { Icon } from "../icon/icon"
 import { ClientState } from "@finos/fdc3-sail-common"
 import { TabDetail } from "@finos/fdc3-sail-common"
-import * as styles from "./styles.module.css"
+import styles from "./styles.module.css"
 
 const Tab = ({
   td,
