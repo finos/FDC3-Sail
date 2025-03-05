@@ -184,7 +184,7 @@ export class SailServerContext implements ServerContext<SailData> {
      * This is used when the intent resolver is managed by the desktop agent as opposed
      * to running inside an iframe in the client app.
      */
-    async narrowIntents(raiser: AppIdentifier, appIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+    async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
         const sc = this
 
         function runningApps(arg0: AppIntent): number {
@@ -200,25 +200,25 @@ export class SailServerContext implements ServerContext<SailData> {
             return details?.hosting == AppHosting.Tab
         }
 
+        const augmentedIntents = this.augmentIntents(incomingIntents)
+
         if (isRunningInTab(raiser)) {
             // in this case, the tab needs the intent resolver
-            return appIntents
+            return augmentedIntents
         }
 
-        if (appIntents.length == 0) {
-            return appIntents
+        if (augmentedIntents.length == 0) {
+            return augmentedIntents
         }
 
-        if (appIntents.length == 1) {
-            if ((uniqueApps(appIntents[0]) == 1) && (runningApps(appIntents[0]) <= 1)) {
-                return appIntents
+        if (augmentedIntents.length == 1) {
+            if ((uniqueApps(augmentedIntents[0]) == 1) && (runningApps(augmentedIntents[0]) <= 1)) {
+                return augmentedIntents
             }
         }
 
         return new Promise<AppIntent[]>((resolve, _reject) => {
-            console.log("SAIL Narrowing intents", appIntents, context)
-
-            const augmentedIntents: AugmentedAppIntent[] = this.augmentIntents(appIntents)
+            console.log("SAIL Narrowing intents", augmentedIntents, context)
 
             this.socket.emit(SAIL_INTENT_RESOLVE, {
                 appIntents: augmentedIntents,

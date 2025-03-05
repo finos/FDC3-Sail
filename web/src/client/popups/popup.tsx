@@ -1,20 +1,20 @@
-import { Component, ReactNode } from "react";
-import * as styles from "./styles.module.css";
-import { Logo } from "../top/top";
+import { Component, ReactNode } from "react"
+import styles from "./styles.module.css"
+import { Logo } from "../top/top"
 
 type PopupProps = {
-  buttons: ReactNode[];
-  area: ReactNode;
-  closeAction: () => void;
-  title: string;
-  closeName: string;
-};
+  buttons: ReactNode[]
+  area: ReactNode
+  closeAction: () => void
+  title: string
+  closeName: string
+}
 
 export class Popup extends Component<PopupProps> {
   componentDidMount(): void {
     setTimeout(() => {
-      document.getElementById("backdrop")?.setAttribute("data-loaded", "true");
-    }, 10);
+      document.getElementById("backdrop")?.setAttribute("data-loaded", "true")
+    }, 10)
   }
 
   render() {
@@ -39,7 +39,7 @@ export class Popup extends Component<PopupProps> {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
@@ -48,9 +48,9 @@ export const PopupButton = ({
   onClick,
   disabled,
 }: {
-  text: string;
-  onClick: () => void;
-  disabled: boolean;
+  text: string
+  onClick: () => void
+  disabled: boolean
 }) => {
   return (
     <button
@@ -61,5 +61,5 @@ export const PopupButton = ({
     >
       {text}
     </button>
-  );
-};
+  )
+}
