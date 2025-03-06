@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3";
-import { SailDirectory } from "../appd/SailDirectory";
+import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
 
@@ -165,16 +165,26 @@ export class SailServerContext implements ServerContext<SailData> {
     augmentIntents(appIntents: AppIntent[]): AugmentedAppIntent[] {
         return appIntents.map(a => ({
             intent: a.intent,
-            apps: a.apps.map(a => {
+            apps: a.apps.map((a) => {
+                const dir = this.directory.retrieveAppsById(a.appId)
+                const icon = getIcon(dir[0])
+                const title = dir.length > 0 ? dir[0]?.title : "Unknown App"
+
                 if (a.instanceId) {
                     const instance = this.getInstanceDetails(a.instanceId)
                     return {
                         ...a,
                         channel: instance?.channel ?? null,
-                        instanceTitle: instance?.instanceTitle ?? undefined
+                        instanceTitle: instance?.instanceTitle ?? undefined,
+                        icon,
+                        title
                     } as AugmentedAppMetadata
                 } else {
-                    return a
+                    return {
+                        ...a,
+                        icon,
+                        title
+                    } as AugmentedAppMetadata
                 }
             })
         }))

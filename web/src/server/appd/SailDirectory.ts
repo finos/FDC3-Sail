@@ -1,6 +1,19 @@
 import fs from 'node:fs/promises';
 import { BasicDirectory, DirectoryApp } from "@finos/fdc3-web-impl";
 
+export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
+
+export function getIcon(a: DirectoryApp | undefined) {
+  if (a) {
+    const icons = a.icons ?? []
+    if (icons.length > 0) {
+      return icons[0].src
+    }
+  }
+
+  return DEFAULT_ICON
+}
+
 function loadRemotely(u: string): Promise<any> {
     return fetch(u).then((response) => response.json());
 }

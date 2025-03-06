@@ -8,13 +8,15 @@ import { AppHosting } from "@finos/fdc3-sail-common"
 
 export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
-export function getIcon(a: DirectoryApp) {
-  const icons = a.icons ?? []
-  if (icons.length > 0) {
-    return icons[0].src
-  } else {
-    return DEFAULT_ICON
+export function getIcon(a: DirectoryApp | undefined) {
+  if (a) {
+    const icons = a.icons ?? []
+    if (icons.length > 0) {
+      return icons[0].src
+    }
   }
+
+  return DEFAULT_ICON
 }
 
 type AppPanelProps = { closeAction: () => void }

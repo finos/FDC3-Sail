@@ -17,8 +17,10 @@
     ],
   },
   "include": [
-    "src",
-    "types.d.ts"
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "types.d.ts",
+    "src/**/*.css"
   ],
   "references": [
     {
