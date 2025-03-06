@@ -2,10 +2,6 @@
   "compilerOptions": {
     /* Basic Options */
     "esModuleInterop": true,
-    "outDir": "./dist",
-    "rootDirs": [
-      "src"
-    ],
     "module": "es2022",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
@@ -30,6 +26,7 @@
     /* From Coverage Work */
     "skipLibCheck": true,
     /* From Distribution Work */
+    "declaration": true,
     "declarationMap": true
   }
 }
