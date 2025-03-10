@@ -21,8 +21,18 @@ function updateUrl(url: string, text: string) {
 }
 
 function toggleDirectory(d: Directory) {
-  d.active = !d.active
-  getClientState().updateDirectory(d)
+  const directories = getClientState().getDirectories()
+  const i = directories.findIndex((x) => x.url == d.url)
+  directories[i].active = !directories[i].active
+  updateDirectories(directories)
+}
+
+function updateDirectories(directories: Directory[]) {
+  getClientState()
+    .setDirectories(directories)
+    .then(async () => {
+      getClientState().setKnownApps(await getServerState().getApplications())
+    })
 }
 
 function removeDirectory(d: Directory) {
@@ -30,7 +40,7 @@ function removeDirectory(d: Directory) {
     const directories = getClientState().getDirectories()
     const i = directories.findIndex((x) => x.url == d.url)
     directories.splice(i, 1)
-    getClientState().setDirectories(directories)
+    updateDirectories(directories)
   }
 }
 
@@ -97,13 +107,7 @@ export const DirectoryList = () => {
             url: "",
             active: false,
           })
-          getClientState()
-            .setDirectories(directories)
-            .then(async () => {
-              getClientState().setKnownApps(
-                await getServerState().getApplications(),
-              )
-            })
+          updateDirectories(directories)
         }}
       />{" "}
     </div>
