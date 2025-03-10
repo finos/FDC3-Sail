@@ -38,6 +38,8 @@ export type ElectronDAResponse = {
     type: 'da'
 }
 
+
+
 export type ElectronHelloResponse = ElectronAppResponse | ElectronDAResponse
 
 /**

@@ -5,10 +5,11 @@ import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
+import { AppMetadata } from "@finos/fdc3"
 
 export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
-export function getIcon(a: DirectoryApp | undefined) {
+export function getIcon(a: DirectoryApp | AppMetadata | undefined): string {
   if (a) {
     const icons = a.icons ?? []
     if (icons.length > 0) {

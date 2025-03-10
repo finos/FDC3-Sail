@@ -10,7 +10,7 @@ import {
 } from "@finos/fdc3-sail-common"
 import { DirectoryApp } from "@finos/fdc3-web-impl"
 import { selectHighestContrast } from "../../util/contrast"
-import { DEFAULT_ICON } from "../appd/appd"
+import { DEFAULT_ICON, getIcon } from "../appd/appd"
 
 type State = {
   newApps: boolean
@@ -64,7 +64,7 @@ const LineItemComponent = ({
 }
 
 function getFirstIcon(a: AugmentedAppMetadata): string {
-  return a.icon ?? DEFAULT_ICON
+  return getIcon(a)
 }
 
 function relevantApps(

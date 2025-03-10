@@ -17,6 +17,18 @@ export function getSailUrl(): string {
     return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
 }
 
+function getFdc3ServerInstance(sessions: Map<string, SailFDC3Server>, userSessionId: string): Promise<SailFDC3Server> {
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            const fdc3Server = sessions.get(userSessionId)
+            if (fdc3Server) {
+                clearInterval(interval)
+                resolve(fdc3Server)
+            }
+        }, 100)
+    })
+}
+
 export function initSocketService(httpServer: any, sessions: Map<string, SailFDC3Server>): Server {
 
     const io = new Server(httpServer)
@@ -91,9 +103,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             fdc3ServerInstance = fdc3Server
         })
 
-        socket.on(DA_DIRECTORY_LISTING, function (props: DesktopAgentDirectoryListingArgs, callback: (success: any, err?: string) => void) {
+        socket.on(DA_DIRECTORY_LISTING, async function (props: DesktopAgentDirectoryListingArgs, callback: (success: any, err?: string) => void) {
             const userSessionId = props.userSessionId
-            const session = sessions.get(userSessionId)
+            const session = await getFdc3ServerInstance(sessions, userSessionId)
             if (session) {
                 callback(session?.getDirectory().allApps)
             } else {
@@ -106,7 +118,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             console.log("SAIL DA REGISTER APP LAUNCH: " + JSON.stringify(props))
 
             const { appId, userSessionId } = props
-            const session = sessions.get(userSessionId)
+            const session = await getFdc3ServerInstance(sessions, userSessionId)
             if (session) {
                 const instanceId = 'sail-app-' + uuid()
                 session.serverContext.setInstanceDetails(instanceId, {
@@ -127,7 +139,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
         socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL APP STATE: " + JSON.stringify(props))
-            const session = sessions.get(props.userSessionId)
+            const session = await getFdc3ServerInstance(sessions, props.userSessionId)
             session?.serverContext.reloadAppDirectories(props.directories).then(() => {
                 callback(true)
             })
@@ -135,7 +147,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
         socket.on(SAIL_CHANNEL_CHANGE, async function (props: SailChannelChangeArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL CHANNEL CHANGE: " + JSON.stringify(props))
-            const session = sessions.get(props.userSessionId)
+            const session = await getFdc3ServerInstance(sessions, props.userSessionId)
 
             session?.receive({
                 type: 'joinUserChannelRequest',
@@ -151,13 +163,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             })
         })
 
-        socket.on(APP_HELLO, function (props: AppHelloArgs, callback: (success: any, err?: string) => void) {
+        socket.on(APP_HELLO, async function (props: AppHelloArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL APP HELLO: " + JSON.stringify(props))
 
             appInstanceId = props.instanceId
             userSessionId = props.userSessionId
             type = SocketType.APP
-            const fdc3Server = sessions.get(userSessionId)
+
+            const fdc3Server = await getFdc3ServerInstance(sessions, userSessionId)
 
             if (fdc3Server != undefined) {
                 console.log("SAIL An app connected: ", userSessionId, appInstanceId)

@@ -167,7 +167,7 @@ export class SailServerContext implements ServerContext<SailData> {
             intent: a.intent,
             apps: a.apps.map((a) => {
                 const dir = this.directory.retrieveAppsById(a.appId)
-                const icon = getIcon(dir[0])
+                const iconSrc = getIcon(dir[0])
                 const title = dir.length > 0 ? dir[0]?.title : "Unknown App"
 
                 if (a.instanceId) {
@@ -176,13 +176,13 @@ export class SailServerContext implements ServerContext<SailData> {
                         ...a,
                         channel: instance?.channel ?? null,
                         instanceTitle: instance?.instanceTitle ?? undefined,
-                        icon,
+                        icons: [{ src: iconSrc }],
                         title
                     } as AugmentedAppMetadata
                 } else {
                     return {
                         ...a,
-                        icon,
+                        icons: [{ src: iconSrc }],
                         title
                     } as AugmentedAppMetadata
                 }
@@ -246,6 +246,7 @@ export class SailServerContext implements ServerContext<SailData> {
                         const theAppIntent = getSingleAppIntent(response.appIntents)
                         const theApp = theAppIntent.apps[0]
                         const instanceId = await this.openSail(theApp.appId, response.channel)
+
                         const out: AppIntent[] = [
                             {
                                 intent: theAppIntent.intent,
