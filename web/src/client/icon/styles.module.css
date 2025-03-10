@@ -32,7 +32,6 @@
 .iconNameText {
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: .4rem;
     font-weight: 300;
     font-size: .8rem;
     margin: 0;

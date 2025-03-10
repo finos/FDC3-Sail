@@ -33,6 +33,7 @@ export interface ClientState {
     getTabs(): TabDetail[]
     addTab(td: TabDetail): Promise<void>
     removeTab(id: string): Promise<void>
+    updateTab(td: TabDetail): Promise<void>
 
     /** Panel State */
     updatePanel(ap: AppPanel): Promise<void>

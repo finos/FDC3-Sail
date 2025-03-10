@@ -49,6 +49,14 @@ export abstract class AbstractClientState implements ClientState {
         await this.saveState()
     }
 
+    async updateTab(td: TabDetail): Promise<void> {
+        const idx = this.tabs.findIndex(t => t.id == td.id)
+        if (idx != -1) {
+            this.tabs[idx] = td
+        }
+        await this.saveState()
+    }
+
     /** Panels */
     async updatePanel(ap: AppPanel): Promise<void> {
         // console.log("Panels " + JSON.stringify(this.panels))
