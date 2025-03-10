@@ -57,6 +57,23 @@ export abstract class AbstractClientState implements ClientState {
         await this.saveState()
     }
 
+    async moveTab(id: string, delta: "up" | "down"): Promise<void> {
+        const idx = this.tabs.findIndex(t => t.id == id)
+        if (idx != -1) {
+            if ((delta == "up") && (idx > 0)) {
+                const temp = this.tabs[idx - 1]
+                this.tabs[idx - 1] = this.tabs[idx]
+                this.tabs[idx] = temp
+            } else if ((delta == "down") && (idx < this.tabs.length - 1)) {
+                const temp = this.tabs[idx + 1]
+                this.tabs[idx + 1] = this.tabs[idx]
+                this.tabs[idx] = temp
+            }
+        }
+
+        await this.saveState()
+    }
+
     /** Panels */
     async updatePanel(ap: AppPanel): Promise<void> {
         // console.log("Panels " + JSON.stringify(this.panels))

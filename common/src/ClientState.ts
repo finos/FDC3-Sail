@@ -34,6 +34,7 @@ export interface ClientState {
     addTab(td: TabDetail): Promise<void>
     removeTab(id: string): Promise<void>
     updateTab(td: TabDetail): Promise<void>
+    moveTab(id: string, delta: "up" | "down"): Promise<void>
 
     /** Panel State */
     updatePanel(ap: AppPanel): Promise<void>

@@ -81,9 +81,8 @@ function updateIconUrl(id: string, url: string) {
   getClientState().updateTab(tab)
 }
 
-function move(_id: string, _d: number) {
-  // d.active = !d.active
-  // getClientState().updateDirectory(d)
+function move(id: string, d: "up" | "down") {
+  getClientState().moveTab(id, d)
 }
 
 function removeTab(is: string) {
@@ -149,12 +148,12 @@ const TabItem = ({ d }: { d: TabDetail }) => {
       </div>
       <div className={styles.verticalControlsSlim}>
         <InlineButton
-          onClick={() => move(d.id, -1)}
+          onClick={() => move(d.id, "up")}
           text="Move Tab Up"
           url="/static/icons/control/move-up.svg"
         />
         <InlineButton
-          onClick={() => move(d.id, 1)}
+          onClick={() => move(d.id, "down")}
           text="Move Tab Down"
           url="/static/icons/control/move-down.svg"
         />
