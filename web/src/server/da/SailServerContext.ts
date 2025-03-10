@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
 import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
-import { AppIdentifier } from "@finos/fdc3";
+import { AppIdentifier, ResolveError } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
@@ -210,6 +210,21 @@ export class SailServerContext implements ServerContext<SailData> {
             return details?.hosting == AppHosting.Tab
         }
 
+        function waitForCondition(conditionFn: () => boolean, timeout = 2000, interval = 100): Promise<void> {
+            return new Promise((resolve, reject) => {
+                const startTime = Date.now();
+                const timer = setInterval(() => {
+                    if (conditionFn()) {
+                        clearInterval(timer);
+                        resolve();
+                    } else if (Date.now() - startTime >= timeout) {
+                        clearInterval(timer);
+                        reject(new Error("SAIL Condition not met within timeout"));
+                    }
+                }, interval);
+            });
+        }
+
         const augmentedIntents = this.augmentIntents(incomingIntents)
 
         if (isRunningInTab(raiser)) {
@@ -227,7 +242,7 @@ export class SailServerContext implements ServerContext<SailData> {
             }
         }
 
-        return new Promise<AppIntent[]>((resolve, _reject) => {
+        return new Promise<AppIntent[]>((resolve, reject) => {
             console.log("SAIL Narrowing intents", augmentedIntents, context)
 
             this.socket.emit(SAIL_INTENT_RESOLVE, {
@@ -241,22 +256,28 @@ export class SailServerContext implements ServerContext<SailData> {
                     console.log("SAIL Narrowed intents", response)
 
                     if (appNeedsStarting(response.appIntents)) {
-                        // this overrides the fdc3-for-web-impl default behavior in order
-                        // that we can open the app in the right tab
-                        const theAppIntent = getSingleAppIntent(response.appIntents)
-                        const theApp = theAppIntent.apps[0]
-                        const instanceId = await this.openSail(theApp.appId, response.channel)
+                        try {
+                            // this overrides the fdc3-for-web-impl default behavior in order
+                            // that we can open the app in the right tab
+                            const theAppIntent = getSingleAppIntent(response.appIntents)
+                            const theApp = theAppIntent.apps[0]
+                            const instanceId = await this.openSail(theApp.appId, response.channel)
 
-                        const out: AppIntent[] = [
-                            {
-                                intent: theAppIntent.intent,
-                                apps: [{
-                                    appId: theApp.appId,
-                                    instanceId
-                                }]
-                            }
-                        ]
-                        resolve(out)
+                            await waitForCondition(() => this.getInstanceDetails(instanceId)?.state == State.Connected)
+                            const out: AppIntent[] = [
+                                {
+                                    intent: theAppIntent.intent,
+                                    apps: [{
+                                        appId: theApp.appId,
+                                        instanceId
+                                    }]
+                                }
+                            ]
+                            resolve(out)
+                        } catch (e) {
+                            console.error(e)
+                            reject(e)
+                        }
                     } else {
                         resolve(response.appIntents)
                     }
