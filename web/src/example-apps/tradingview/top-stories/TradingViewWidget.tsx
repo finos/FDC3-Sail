@@ -20,7 +20,7 @@ export const TradingViewWidget = () => {
   }, [])
 
   useEffect(() => {
-    var script: HTMLScriptElement | null = null
+    let script: HTMLScriptElement | null = null
 
     script = document.getElementById(
       "tradingview-widget-script",
@@ -33,7 +33,7 @@ export const TradingViewWidget = () => {
     script = document.createElement("script")
     container.current.appendChild(script)
 
-    script!!.id = "tradingview-widget-script"
+    script.id = "tradingview-widget-script"
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"
     script.type = "text/javascript"

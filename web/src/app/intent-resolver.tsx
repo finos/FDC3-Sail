@@ -32,8 +32,8 @@ const DEFAULT_EXPANDED_CSS = {
 }
 window.addEventListener("load", () => {
   const parent = window.parent
-  const container = document.getElementById("intentResolver")!!
-  const root = createRoot(container!)
+  const container = document.getElementById("intentResolver")!
+  const root = createRoot(container)
 
   const mc = new MessageChannel()
   const myPort = mc.port1
@@ -118,7 +118,7 @@ window.addEventListener("load", () => {
     }
   })
 
-  document.getElementById("cancel")!!.addEventListener("click", () => {
+  document.getElementById("cancel")!.addEventListener("click", () => {
     callback(null, null)
   })
 })

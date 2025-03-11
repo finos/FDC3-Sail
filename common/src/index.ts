@@ -11,9 +11,9 @@ export * from "./message-types"
 export * from "./AppState"
 export * from "./ServerState"
 
-var theServerState: ServerState | null = null
-var theClientState: ClientState | null = null
-var theAppState: DefaultAppState | null = null
+let theServerState: ServerState | null = null
+let theClientState: ClientState | null = null
+let theAppState: DefaultAppState | null = null
 
 function ensureSetup() {
 
@@ -29,15 +29,15 @@ function ensureSetup() {
 
 export function getServerState(): ServerState {
     ensureSetup()
-    return theServerState!!
+    return theServerState!
 }
 
 export function getAppState(): AppState {
     ensureSetup()
-    return theAppState!!
+    return theAppState!
 }
 
 export function getClientState(): ClientState {
     ensureSetup()
-    return theClientState!!
+    return theClientState!
 }

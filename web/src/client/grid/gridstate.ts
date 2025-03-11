@@ -67,7 +67,7 @@ export class GridsStateImpl implements GridsState {
         const grid = this.gridstacks[ap.tabId]
         const el = this.findChild(grid.el, ap.panelId)
         if (el) {
-            grid.removeWidget(el!!)
+            grid.removeWidget(el)
         }
     }
 
@@ -111,7 +111,7 @@ export class GridsStateImpl implements GridsState {
         grid.on("resizestop", (_event, element) => {
             const node = element.gridstackNode
             if (node) {
-                const panel = this.getPanel(node.id!!)
+                const panel = this.getPanel(node.id!)
                 if (panel) {
                     panel.w = node.w
                     panel.h = node.h
@@ -129,7 +129,7 @@ export class GridsStateImpl implements GridsState {
         grid.on("removed", (event, items) => {
             const targetId = (event.target as HTMLElement).getAttribute("id");
             if (targetId == TRASH_DROP) {
-                items.forEach((i) => this.cs.removePanel(i.id!!))
+                items.forEach((i) => this.cs.removePanel(i.id!))
             }
         })
 
@@ -139,10 +139,10 @@ export class GridsStateImpl implements GridsState {
         grid.on("dragstop", (_event, element) => {
             const node = element.gridstackNode
             if (node) {
-                const panel = this.getPanel(node.id!!)
+                const panel = this.getPanel(node.id!)
                 if (panel) {
                     if (this.newTabState) {
-                        const newTabId = this.newTabState.getAttribute("id")!!
+                        const newTabId = this.newTabState.getAttribute("id")!
                         const newGrid = this.gridstacks[newTabId]
                         this.findEmptyArea(panel, newGrid)
                         panel.tabId = newTabId
@@ -166,9 +166,9 @@ export class GridsStateImpl implements GridsState {
 
 
     ensureGrid(container: ShadowRoot, tabId: string): GridStack {
-        var gridEl = null
+        let gridEl = null
         const td = this.cs.getTabs().find(t => t.id == tabId)
-        var gs = this.gridstacks[tabId]
+        let gs = this.gridstacks[tabId]
         if (!gs) {
             gridEl = document.createElement("div")
             gridEl.setAttribute("id", gridIdforTab(tabId))
@@ -264,7 +264,7 @@ export class GridsStateImpl implements GridsState {
     updatePanels(): void {
         const container = document.getElementById(this.containerId)!
 
-        var shadowRoot = container.shadowRoot
+        let shadowRoot = container.shadowRoot
         if (!shadowRoot) {
             // this ensures styling of the contents of the grid
             shadowRoot = container.attachShadow({ mode: 'open' })
@@ -273,7 +273,7 @@ export class GridsStateImpl implements GridsState {
                 const clonedStyle = style.cloneNode(
                     true
                 ) as HTMLStyleElement;
-                shadowRoot!!.appendChild(clonedStyle);
+                shadowRoot!.appendChild(clonedStyle);
             });
         }
 
@@ -288,7 +288,7 @@ export class GridsStateImpl implements GridsState {
         this.newTabState = null
 
         // ensure all grids exist
-        this.cs.getTabs().forEach(t => this.ensureGrid(shadowRoot!!, t.id))
+        this.cs.getTabs().forEach(t => this.ensureGrid(shadowRoot, t.id))
 
         // unchanged panels
         this.panelsInGrid = this.panelsInGrid.filter(cp => {
@@ -313,7 +313,7 @@ export class GridsStateImpl implements GridsState {
             const cp = this.cs.getPanels().find(p => p.panelId == mp.panelId)
             if (cp) {
                 mp.tabId = cp.tabId
-                this.changeTab(shadowRoot!!, mp)
+                this.changeTab(shadowRoot, mp)
                 this.panelsInGrid.push({
                     ...mp,
                     mountedTab: mp.tabId
@@ -322,7 +322,7 @@ export class GridsStateImpl implements GridsState {
         })
 
         addedPanels.forEach(ap => {
-            const gs = this.ensureGrid(shadowRoot!!, ap.tabId)
+            const gs = this.ensureGrid(shadowRoot, ap.tabId)
             this.addPanel(gs, ap)
             this.panelsInGrid.push({
                 ...ap,

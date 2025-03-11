@@ -35,14 +35,14 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
     io.on('connection', (socket: Socket) => {
 
-        var fdc3ServerInstance: SailFDC3Server | undefined = undefined
-        var userSessionId: string | undefined
-        var appInstanceId: string | undefined
-        var type: SocketType | undefined = undefined
+        let fdc3ServerInstance: SailFDC3Server | undefined = undefined
+        let userSessionId: string | undefined
+        let appInstanceId: string | undefined
+        let type: SocketType | undefined = undefined
 
         socket.on(ELECTRON_HELLO, function (props: ElectronHelloArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL ELECTRON HELLO: " + JSON.stringify(props))
-            var fdc3Server = sessions.get(props.userSessionId)
+            let fdc3Server = sessions.get(props.userSessionId)
 
             if (fdc3Server) {
                 const allApps = fdc3Server.getDirectory().retrieveAppsByUrl(props.url)
@@ -82,7 +82,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             type = SocketType.DESKTOP_AGENT
             userSessionId = props.userSessionId
             console.log("SAIL Desktop Agent Connecting", userSessionId)
-            var fdc3Server = sessions.get(userSessionId)
+            let fdc3Server = sessions.get(userSessionId)
 
             if (fdc3Server) {
                 // reconfiguring current session
@@ -175,7 +175,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             if (fdc3Server != undefined) {
                 console.log("SAIL An app connected: ", userSessionId, appInstanceId)
                 const appInstance = fdc3Server.getServerContext().getInstanceDetails(appInstanceId)
-                const directoryItem = fdc3Server.getServerContext().directory.retrieveAppsById(props.appId) as DirectoryApp[]
+                const directoryItem = fdc3Server.getServerContext().directory.retrieveAppsById(props.appId)
                 if ((appInstance != undefined) && (appInstance.state == State.Pending)) {
                     appInstance.socket = socket
                     appInstance.url = (directoryItem[0].details as WebAppDetails).url
@@ -221,7 +221,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
 
             if (fdc3ServerInstance != undefined) {
                 try {
-                    fdc3ServerInstance!!.receive(data, from)
+                    fdc3ServerInstance.receive(data, from)
                 } catch (e) {
                     console.error("Error processing message", e)
                 }
@@ -240,12 +240,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         socket.on("disconnect", async function (): Promise<void> {
             if (fdc3ServerInstance) {
                 if (type == SocketType.APP) {
-                    await fdc3ServerInstance.serverContext.setAppState(appInstanceId!!, State.Terminated)
+                    await fdc3ServerInstance.serverContext.setAppState(appInstanceId!, State.Terminated)
                     const remaining = await fdc3ServerInstance.serverContext.getConnectedApps()
                     console.error(`Apparent disconnect: ${remaining.length} remaining`)
                 } else {
                     fdc3ServerInstance.shutdown()
-                    sessions.delete(userSessionId!!)
+                    sessions.delete(userSessionId!)
                     console.error("Desktop Agent Disconnected", userSessionId)
                 }
             } else {

@@ -26,10 +26,10 @@ export class ServerStateImpl implements ServerState {
             throw new Error("Desktop Agent not registered")
         }
 
-        const userSessionId = this.cs!!.getUserSessionID()
+        const userSessionId = this.cs!.getUserSessionID()
         const response = await this.socket.emitWithAck(DA_DIRECTORY_LISTING, { userSessionId } as DesktopAgentDirectoryListingArgs)
         const out = response as DirectoryApp[]
-        this.cs!!.setKnownApps(out)
+        this.cs!.setKnownApps(out)
         return out
     }
 
@@ -38,7 +38,7 @@ export class ServerStateImpl implements ServerState {
             throw new Error("Desktop Agent not registered")
         }
 
-        const userSessionId = this.cs!!.getUserSessionID()
+        const userSessionId = this.cs!.getUserSessionID()
         const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, { userSessionId, appId, hosting, channel, instanceTitle } as DesktopAgentRegisterAppLaunchArgs)
         return instanceId
     }
@@ -47,7 +47,7 @@ export class ServerStateImpl implements ServerState {
         if (!this.socket) {
             return
         }
-        const userSessionId = this.cs!!.getUserSessionID()
+        const userSessionId = this.cs!.getUserSessionID()
 
 
         await this.socket.emitWithAck(SAIL_CLIENT_STATE, { userSessionId, tabs, directories } as SailClientStateArgs)
@@ -60,7 +60,7 @@ export class ServerStateImpl implements ServerState {
         this.socket = io()
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props, () => {
-                this.sendClientState(this.cs!!.getTabs(), this.cs!!.getDirectories()).then(() => {
+                this.sendClientState(this.cs!.getTabs(), this.cs!.getDirectories()).then(() => {
                     this.getApplications()
                 })
             })
@@ -70,23 +70,23 @@ export class ServerStateImpl implements ServerState {
                 if (data.channel) {
                     // opening in a panel inside sail
                     this.cs?.setActiveTabId(data.channel)
-                    const openDetails = await this.as!!.open(data.appDRecord, AppHosting.Frame)
+                    const openDetails = await this.as!.open(data.appDRecord, AppHosting.Frame)
                     callback(openDetails)
                 } else {
                     // opening in a new tab
-                    const openDetails = await this.as!!.open(data.appDRecord, AppHosting.Tab)
+                    const openDetails = await this.as!.open(data.appDRecord, AppHosting.Tab)
                     callback(openDetails)
                 }
             })
 
             this.socket?.on(SAIL_APP_STATE, (data: SailAppStateArgs) => {
                 //console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
-                this.as!!.setAppState(data)
+                this.as!.setAppState(data)
             })
 
             this.socket?.on(SAIL_CHANNEL_SETUP, (instanceId: string) => {
                 //console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)
-                const panel = this.cs!!.getPanels().find(p => p.panelId === instanceId)
+                const panel = this.cs!.getPanels().find(p => p.panelId === instanceId)
                 if (panel) {
                     this.setUserChannel(instanceId, panel.tabId)
                 }
@@ -94,7 +94,7 @@ export class ServerStateImpl implements ServerState {
 
             this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
                 console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
-                this.cs!!.setIntentResolution({
+                this.cs!.setIntentResolution({
                     appIntents: data.appIntents,
                     context: data.context,
                     requestId: data.requestId
@@ -109,7 +109,7 @@ export class ServerStateImpl implements ServerState {
         await this.socket?.emitWithAck(SAIL_CHANNEL_CHANGE, {
             instanceId,
             channel: channelId,
-            userSessionId: this.cs!!.getUserSessionID()
+            userSessionId: this.cs!.getUserSessionID()
         } as SailChannelChangeArgs)
     }
 

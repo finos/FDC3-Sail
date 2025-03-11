@@ -21,7 +21,7 @@ export const Widget = () => {
   }, [])
 
   useEffect(() => {
-    var script: HTMLScriptElement | null = null
+    let script: HTMLScriptElement | null = null
 
     script = document.getElementById("widget-script") as HTMLScriptElement
 
@@ -37,7 +37,7 @@ export const Widget = () => {
     script = document.createElement("script")
     container.current.appendChild(script)
 
-    script!!.id = "widget-script"
+    script.id = "widget-script"
     script.src = "https://www.benzinga.com/widgets.js"
     script.type = "text/javascript"
     script.async = true

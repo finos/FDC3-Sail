@@ -9,14 +9,14 @@ import { InlineButton } from "./shared"
 function updateText(url: string, text: string) {
   const directories = getClientState().getDirectories()
   const d = directories.find((d) => d.url == url)
-  d!!.label = text
+  d!.label = text
   getClientState().setDirectories(directories)
 }
 
 function updateUrl(url: string, text: string) {
   const directories = getClientState().getDirectories()
   const d = directories.find((d) => d.url == url)
-  d!!.url = text
+  d!.url = text
   getClientState().setDirectories(directories)
 }
 
@@ -59,14 +59,14 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
         <div
           className={styles.name}
           contentEditable={true}
-          onBlur={(e) => updateText(d.url, e.currentTarget.textContent!!)}
+          onBlur={(e) => updateText(d.url, e.currentTarget.textContent!)}
         >
           {d.label}
         </div>
         <div
           className={styles.url}
           contentEditable={true}
-          onBlur={(e) => updateUrl(d.url, e.currentTarget.textContent!!)}
+          onBlur={(e) => updateUrl(d.url, e.currentTarget.textContent!)}
         >
           {d.url}
         </div>

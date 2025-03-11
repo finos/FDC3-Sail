@@ -60,7 +60,7 @@ function newBackgroundColour(): string {
 function updateBackground(id: string, background: string) {
   const tab = getClientState()
     .getTabs()
-    .find((t) => t.id == id)!!
+    .find((t) => t.id == id)!
   tab.background = background
   getClientState().updateTab(tab)
 }
@@ -68,7 +68,7 @@ function updateBackground(id: string, background: string) {
 function updateTitle(id: string, text: string) {
   const tab = getClientState()
     .getTabs()
-    .find((t) => t.id == id)!!
+    .find((t) => t.id == id)!
   tab.title = text
   getClientState().updateTab(tab)
 }
@@ -76,7 +76,7 @@ function updateTitle(id: string, text: string) {
 function updateIconUrl(id: string, url: string) {
   const tab = getClientState()
     .getTabs()
-    .find((t) => t.id == id)!!
+    .find((t) => t.id == id)!
   tab.icon = url
   getClientState().updateTab(tab)
 }
@@ -134,14 +134,14 @@ const TabItem = ({ d }: { d: TabDetail }) => {
         <div
           className={styles.name}
           contentEditable={true}
-          onBlur={(e) => updateTitle(d.id, e.currentTarget.textContent!!)}
+          onBlur={(e) => updateTitle(d.id, e.currentTarget.textContent!)}
         >
           {d.title}
         </div>
         <div
           className={styles.url}
           contentEditable={true}
-          onBlur={(e) => updateIconUrl(d.id, e.currentTarget.textContent!!)}
+          onBlur={(e) => updateIconUrl(d.id, e.currentTarget.textContent!)}
         >
           {d.icon}
         </div>

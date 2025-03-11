@@ -56,7 +56,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     async openSail(appId: string, channel: string | null | undefined): Promise<InstanceID> {
-        const app: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
+        const app: DirectoryApp[] = this.directory.retrieveAppsById(appId)
 
         if (app.length == 0) {
             throw new Error(OpenError.AppNotFound)
@@ -206,7 +206,7 @@ export class SailServerContext implements ServerContext<SailData> {
         }
 
         function isRunningInTab(arg0: AppIdentifier): boolean {
-            const details = sc.getInstanceDetails(arg0.instanceId!!)
+            const details = sc.getInstanceDetails(arg0.instanceId!)
             return details?.hosting == AppHosting.Tab
         }
 
@@ -288,7 +288,7 @@ export class SailServerContext implements ServerContext<SailData> {
 
     async userChannelChanged(app: AppIdentifier, channelId: string | null): Promise<void> {
         console.log("SAIL User channel changed", app, channelId)
-        const instance = this.getInstanceDetails(app.instanceId!!)
+        const instance = this.getInstanceDetails(app.instanceId!)
         if (instance) {
             instance.channel = channelId
         }

@@ -23,11 +23,11 @@ const prices: Price[] = [
     { ticker: "AAPL", price: calculateInitialPrice("APPL"), direction: Direction.NONE }
 ];
 
-var onScreenPrice: Price = prices[0]
+let onScreenPrice: Price = prices[0]
 
 function redrawChooser() {
 
-    const select = document.getElementById("chooser")!!
+    const select = document.getElementById("chooser")!
     while (select.lastElementChild) {
         select.removeChild(select.lastElementChild);
     }
@@ -42,7 +42,7 @@ function redrawChooser() {
 }
 
 function redrawPrice() {
-    const box = document.getElementById("price")!!
+    const box = document.getElementById("price")!
 
     while (box.lastElementChild) {
         box.removeChild(box.lastElementChild);

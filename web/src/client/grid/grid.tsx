@@ -46,8 +46,8 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
           // this is a bit hacky but we need to track the window objects
           // in the app state so we make sure we know who we're talking to
           if (ref) {
-            const contentWindow = (ref as HTMLIFrameElement).contentWindow
-            getAppState().registerAppWindow(contentWindow!!, panel.panelId)
+            const contentWindow = (ref).contentWindow
+            getAppState().registerAppWindow(contentWindow!, panel.panelId)
           }
         }, 10)
       }}

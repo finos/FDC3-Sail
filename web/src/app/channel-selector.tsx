@@ -13,8 +13,8 @@ type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
 type IframeRestyle = BrowserTypes.Fdc3UserInterfaceRestyle
 type IframeChannelSelected = BrowserTypes.Fdc3UserInterfaceChannelSelected
 
-var channels: TabDetail[] = []
-var channelId: string | null = null
+let channels: TabDetail[] = []
+let channelId: string | null = null
 
 const DEFAULT_COLLAPSED_CSS = {
   position: "fixed",
@@ -38,9 +38,9 @@ const DEFAULT_EXPANDED_CSS = {
 
 window.addEventListener("load", () => {
   const parent = window.parent
-  const container = document.getElementById("channelSelector")!!
-  const root = createRoot(container!)
-  var open: boolean = false
+  const container = document.getElementById("channelSelector")!
+  const root = createRoot(container)
+  let open: boolean = false
 
   const mc = new MessageChannel()
   const myPort = mc.port1
@@ -99,7 +99,7 @@ window.addEventListener("load", () => {
         payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
       } as IframeRestyle)
     } else if (isFdc3UserInterfaceChannels(e.data)) {
-      const details = e.data as IframeChannels
+      const details = e.data
       console.log(
         JSON.stringify("SAIL CHANNEL DETAILS: " + JSON.stringify(details)),
       )

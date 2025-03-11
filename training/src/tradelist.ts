@@ -69,7 +69,7 @@ function renderStock(si: StockItem): HTMLTableRowElement {
 }
 
 function render() {
-    const stockList = document.getElementById("stock-list")!!
+    const stockList = document.getElementById("stock-list")!
     while (stockList.lastElementChild) {
         stockList.removeChild(stockList.lastElementChild);
     }
@@ -83,7 +83,7 @@ function render() {
 
     const totalStr = "" + totalValue
 
-    document.getElementById("total")!!.textContent = totalStr;
+    document.getElementById("total")!.textContent = totalStr;
 }
 
 const theForm = document.getElementById("js-form") as HTMLFormElement;

@@ -30,7 +30,7 @@ export class DefaultAppState implements AppState {
 
     async getDirectoryAppForUrl(identityUrl: string): Promise<DirectoryApp | undefined> {
         const strippedIdentityUrl = identityUrl.replace(/\/$/, "")
-        const applications: DirectoryApp[] = this.cs!!.getKnownApps()
+        const applications: DirectoryApp[] = this.cs!.getKnownApps()
         const firstMatchingApp = applications.find(x => {
             const d = x.details as WebAppDetails
             return (d.url == strippedIdentityUrl) ||
@@ -45,9 +45,9 @@ export class DefaultAppState implements AppState {
             this.cs = cs;
             this.ss = ss;
             // sets up postMessage listener for new applications joining
-
+            // eslint-disable-next-line insufficient-postmessage-origin-validation
             window.addEventListener("message", async (e) => {
-                const event = e as MessageEvent
+                const event = e
                 const data = event.data;
                 const source = event.source as Window
                 const origin = event.origin;
@@ -115,7 +115,7 @@ export class DefaultAppState implements AppState {
      */
     createTitle(detail: DirectoryApp): string {
         // Get all existing panels
-        const existingPanels = this.cs!!.getPanels()
+        const existingPanels = this.cs!.getPanels()
 
         // Get all numbers currently in use for this app title
         const usedNumbers = new Set(
@@ -145,14 +145,14 @@ export class DefaultAppState implements AppState {
             const hosting: AppHosting = destination ?? (detail.hostManifests as any)?.sail?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame
             const instanceTitle = this.createTitle(detail)
             if (hosting == AppHosting.Tab) {
-                const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting, null, instanceTitle)
-                const w = window.open((detail.details as WebAppDetails).url, "_blank")!!;
+                const instanceId = await this.ss!.registerAppLaunch(detail.appId, hosting, null, instanceTitle)
+                const w = window.open((detail.details as WebAppDetails).url, "_blank")!;
                 this.registerAppWindow(w, instanceId)
                 return resolve({ instanceId, channel: null, instanceTitle })
             } else {
-                const channel = this.cs!!.getActiveTab().id
-                const instanceId = await this.ss!!.registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
-                this.cs!!.newPanel(detail, instanceId, instanceTitle)
+                const channel = this.cs!.getActiveTab().id
+                const instanceId = await this.ss!.registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
+                this.cs!.newPanel(detail, instanceId, instanceTitle)
                 return resolve({ instanceId, channel, instanceTitle })
             }
         })

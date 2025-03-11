@@ -67,7 +67,7 @@ export class Frame extends Component<FrameProps, FrameState> {
         </div>
         <div
           className={styles.main}
-          style={{ border: `1px solid ${activeTab!!.background}` }}
+          style={{ border: `1px solid ${activeTab.background}` }}
         >
           <Grids
             cs={this.props.cs}
@@ -100,10 +100,10 @@ export class Frame extends Component<FrameProps, FrameState> {
         {this.props.cs.getIntentResolution() ? (
           <ResolverPanel
             key="resolver"
-            appIntents={this.props.cs.getIntentResolution()!!.appIntents}
-            context={this.props.cs.getIntentResolution()!!.context}
+            appIntents={this.props.cs.getIntentResolution()!.appIntents}
+            context={this.props.cs.getIntentResolution()!.context}
             channelDetails={this.props.cs.getTabs()}
-            currentChannel={this.props.cs.getActiveTab()!!.id}
+            currentChannel={this.props.cs.getActiveTab().id}
             panelDetails={this.props.cs.getPanels()}
             appDetails={this.props.cs.getKnownApps()}
             closeAction={() => {
@@ -111,7 +111,7 @@ export class Frame extends Component<FrameProps, FrameState> {
             }}
             chooseAction={(chosenApp, chosenIntent, chosenChannel) => {
               getServerState().intentChosen(
-                this.props.cs.getIntentResolution()!!.requestId,
+                this.props.cs.getIntentResolution()!.requestId,
                 chosenApp,
                 chosenIntent,
                 chosenChannel,

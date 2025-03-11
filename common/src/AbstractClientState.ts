@@ -27,7 +27,7 @@ export abstract class AbstractClientState implements ClientState {
 
     /** Tabs */
     getActiveTab(): TabDetail {
-        return this.tabs.find(t => t.id == this.activeTabId)!!
+        return this.tabs.find(t => t.id == this.activeTabId)!
     }
 
     async setActiveTabId(id: string): Promise<void> {

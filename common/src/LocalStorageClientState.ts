@@ -33,7 +33,7 @@ export class LocalStorageClientState extends AbstractClientState {
         localStorage.setItem(STORAGE_KEY, data)
         console.log(`SAIL saved state: ${data}`)
         this.callbacks.forEach(cb => cb())
-        await this.ss!!.sendClientState(this.tabs, this.directories)
+        await this.ss!.sendClientState(this.tabs, this.directories)
     }
 }
 

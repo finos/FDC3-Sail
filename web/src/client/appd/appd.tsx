@@ -47,7 +47,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   }
 
   render() {
-    const app: DirectoryApp = this.state.chosen!!
+    const app: DirectoryApp = this.state.chosen!
 
     return (
       <Popup
