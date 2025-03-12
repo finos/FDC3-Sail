@@ -1,0 +1,18 @@
+{
+  "name": "training-course-developing-on-fdc3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist",
+    "web": "vite --port 5000"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "@finos/fdc3": "2.2.0-beta.3"
+  }
+}

@@ -10,11 +10,11 @@
     "lint": "eslint ."
   },
   "workspaces": [
-    "common",
-    "web",
-    "training",
-    "preload",
-    "electron"
+    "packages/common",
+    "packages/web",
+    "packages/training",
+    "packages/preload",
+    "packages/electron"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
