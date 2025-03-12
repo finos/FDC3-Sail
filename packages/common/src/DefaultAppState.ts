@@ -59,7 +59,7 @@ export class DefaultAppState implements AppState {
             this.cs = cs;
             this.ss = ss;
             // sets up postMessage listener for new applications joining
-            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-validation
             window.addEventListener("message", (e: MessageEvent) => {
                 const event = e
 
