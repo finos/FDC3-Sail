@@ -53,7 +53,7 @@ export class SailDirectory extends BasicDirectory {
                 }
             })
         } catch (e) {
-            console.error(`Error loading ${url}`, e)
+            console.error(`Error loading`, e)
         }
     }
 

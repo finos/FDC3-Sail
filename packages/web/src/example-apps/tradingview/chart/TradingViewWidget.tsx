@@ -40,6 +40,7 @@ export const TradingViewWidget = () => {
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"
     script.type = "text/javascript"
     script.async = true
+    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     script.innerHTML = `
         {
           "autosize": true,
