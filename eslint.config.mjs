@@ -23,20 +23,16 @@ export default tseslint.config(
         ignores: ["**/*.js", "**/*.mjs", "**/.next/", "**/.turbo/", "**/dist/"],
     },
     {
-        files: ["/*/src/**/*.{ts,tsx}"],
+        files: ["packages/*/src/**/*.{ts,tsx}"],
         extends: [
             eslint.configs.recommended,
             ...tseslint.configs.strictTypeChecked,
             ...tseslint.configs.stylisticTypeChecked,
-            jsdoc.configs["flat/recommended"],
         ],
-        plugins: {
-            jsdoc,
-        },
         languageOptions: {
             parserOptions: {
                 projectService: true,
                 tsconfigRootDir: import.meta.dirname,
             },
-        },
-        rules: {
+        }
+    })
