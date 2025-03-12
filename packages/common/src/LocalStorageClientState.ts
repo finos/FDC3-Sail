@@ -66,20 +66,17 @@ const DEFAULT_DIRECTORIES: Directory[] = [
 
 const DEFAULT_TABS: TabDetail[] = [
     {
-        title: "One",
-        id: "one",
+        id: "One",
         icon: "/static/icons/tabs/one.svg",
         background: '#123456',
     },
     {
-        title: "Two",
-        id: "two",
+        id: "Two",
         icon: "/static/icons/tabs/two.svg",
         background: '#564312',
     },
     {
-        title: "Three",
-        id: "three",
+        id: "Three",
         icon: "/static/icons/tabs/three.svg",
         background: '#125634',
     }

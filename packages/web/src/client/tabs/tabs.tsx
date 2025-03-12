@@ -22,7 +22,7 @@ const Tab = ({
         zIndex: active ? 100 : "none",
       }}
     >
-      <Icon text={td.title} image={td.icon} dark={true} />
+      <Icon text={td.id} image={td.icon} dark={true} />
     </div>
   )
 }

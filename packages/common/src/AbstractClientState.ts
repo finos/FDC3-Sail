@@ -29,7 +29,11 @@ export abstract class AbstractClientState implements ClientState {
     getActiveTab(): TabDetail {
         const out = this.tabs.find(t => t.id == this.activeTabId)
         if (!out) {
-            throw new Error("Active tab not found")
+            this.activeTabId = this.tabs[0].id
+            this.saveState().catch(() => {
+                console.error("Error saving state")
+            })
+            return this.tabs[0]
         }
         return out
     }
@@ -168,7 +172,6 @@ export abstract class AbstractClientState implements ClientState {
                     displayMetadata: {
                         color: t.background,
                         glyph: t.icon,
-                        name: t.title,
                     } as DisplayMetadata,
                     context: []
                 }

@@ -5,8 +5,7 @@ import styles from "./styles.module.css"
 const NO_CHANNEL: TabDetail = {
   background: "white",
   icon: "/static/icons/logo/logo.png",
-  id: "",
-  title: "No Channel",
+  id: "No Channel",
 }
 
 export const Channel = ({
@@ -24,7 +23,7 @@ export const Channel = ({
       style={{ backgroundColor: channel.background }}
       onClick={onClick}
     >
-      <Icon text={channel.title} image={channel.icon} />
+      <Icon text={channel.id} image={channel.icon} />
     </div>
   )
 }

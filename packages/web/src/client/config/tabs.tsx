@@ -36,9 +36,6 @@ const BACKGROUND_COLOURS = [
   "#4a5c7b", // dusty navy
   "#7a5f5f", // rustic rose
 ]
-function newTabId(): string {
-  return "tab-" + getClientState().getTabs().length
-}
 
 function newIconUrl(): string {
   return (
@@ -69,7 +66,7 @@ function updateTitle(id: string, text: string) {
   const tab = getClientState()
     .getTabs()
     .find((t) => t.id == id)!
-  tab.title = text
+  tab.id = text
   getClientState().updateTab(tab)
 }
 
@@ -118,7 +115,7 @@ const TabItem = ({ d }: { d: TabDetail }) => {
     <div key={d.id} className={styles.item}>
       <div className={styles.verticalControls}>
         <div className={styles.icon} style={{ backgroundColor: d.background }}>
-          <Icon text={d.title} image={d.icon} dark={true} />
+          <Icon text={d.id} image={d.icon} dark={true} />
         </div>
       </div>
       <div className={styles.verticalControls}>
@@ -136,7 +133,7 @@ const TabItem = ({ d }: { d: TabDetail }) => {
           contentEditable={true}
           onBlur={(e) => updateTitle(d.id, e.currentTarget.textContent!)}
         >
-          {d.title}
+          {d.id}
         </div>
         <div
           className={styles.url}
@@ -179,8 +176,7 @@ export const TabList = () => {
       <AddButton
         onClick={() => {
           getClientState().addTab({
-            title: newTabTitle(),
-            id: newTabId(),
+            id: newTabTitle(),
             icon: newIconUrl(),
             background: newBackgroundColour(),
           })

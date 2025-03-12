@@ -262,7 +262,7 @@ export const ResolverPanel = ({
                 <LineItemComponent
                   key={c.id}
                   li={c}
-                  text={c.title}
+                  text={c.id}
                   background={c.background}
                   icon={c.icon}
                   setState={() => {

@@ -4,7 +4,6 @@ import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
 
 export type TabDetail = {
-    title: string,
     id: string,
     icon: string,
     background: string,
