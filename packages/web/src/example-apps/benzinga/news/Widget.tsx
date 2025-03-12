@@ -2,6 +2,8 @@
 import { getAgent } from "@finos/fdc3"
 import { useEffect, useRef, useState } from "react"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 export const Widget = () => {
   const [state, setState] = useState("")
   const container: any = useRef()

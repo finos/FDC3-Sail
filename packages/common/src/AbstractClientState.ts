@@ -1,4 +1,4 @@
-import { ChannelType, ChannelState, DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
+import { ChannelType, DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
 import { DesktopAgentHelloArgs, Directory, TabDetail } from "./message-types";
 import { DisplayMetadata } from "@finos/fdc3-standard";
@@ -27,7 +27,11 @@ export abstract class AbstractClientState implements ClientState {
 
     /** Tabs */
     getActiveTab(): TabDetail {
-        return this.tabs.find(t => t.id == this.activeTabId)!
+        const out = this.tabs.find(t => t.id == this.activeTabId)
+        if (!out) {
+            throw new Error("Active tab not found")
+        }
+        return out
     }
 
     async setActiveTabId(id: string): Promise<void> {
@@ -98,7 +102,7 @@ export abstract class AbstractClientState implements ClientState {
         if (detail.type == 'web') {
             const url = (detail.details as WebAppDetails).url
 
-            const ap = {
+            const ap: AppPanel = {
                 x: -1,
                 y: -1,
                 w: 6,
@@ -109,10 +113,10 @@ export abstract class AbstractClientState implements ClientState {
                 url,
                 appId: detail.appId,
                 icon: detail.icons?.[0]?.src ?? null
-            } as AppPanel
+            }
 
             this.panels.push(ap)
-            this.saveState().catch(e => {
+            this.saveState().catch((e: unknown) => {
                 console.error("Error saving state", e)
             })
             return ap
@@ -167,7 +171,7 @@ export abstract class AbstractClientState implements ClientState {
                         name: t.title,
                     } as DisplayMetadata,
                     context: []
-                } as ChannelState
+                }
             }),
         }
     }
@@ -178,20 +182,20 @@ export abstract class AbstractClientState implements ClientState {
 
     setIntentResolution(ir: IntentResolution | null): void {
         this.intentResolution = ir
-        this.saveState().catch(e => {
+        this.saveState().catch((e: unknown) => {
             console.error("Error saving state", e)
         })
     }
 
 
     getKnownApps(): DirectoryApp[] {
-        console.log("SAIL Get Known Apps: " + this.knownApps.length)
+        console.log(`SAIL Get Known Apps: ${this.knownApps.length.toString()}`)
         return this.knownApps
     }
 
     async setKnownApps(apps: DirectoryApp[]): Promise<void> {
         this.knownApps = apps
-        console.log("SAIL Set Known Apps: " + this.knownApps.length)
+        console.log(`SAIL Set Known Apps: ${this.knownApps.length.toString()}`)
         await this.saveState()
     }
 

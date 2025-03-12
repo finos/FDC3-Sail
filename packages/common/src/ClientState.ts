@@ -12,9 +12,9 @@ export type AppPanel = GridStackPosition & {
     icon: string | null
 }
 
-export type IntentResolution = {
+export interface IntentResolution {
     appIntents: AugmentedAppIntent[]
-    requestId: string,
+    requestId: string
     context: Context
 }
 

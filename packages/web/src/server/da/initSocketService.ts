@@ -11,6 +11,8 @@ export const DEBUG_MODE = true
 
 enum SocketType { DESKTOP_AGENT, APP }
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 let debugReconnectionNumber = 0;
 
 export function getSailUrl(): string {

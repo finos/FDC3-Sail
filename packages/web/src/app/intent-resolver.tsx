@@ -39,24 +39,25 @@ window.addEventListener("load", () => {
   const myPort = mc.port1
   myPort.start()
 
-  parent.postMessage(
-    {
-      type: "Fdc3UserInterfaceHello",
-      payload: {
-        initialCSS: DEFAULT_COLLAPSED_CSS,
-        implementationDetails: "Sail Intent Resolver v1.0",
-      },
-    } as any as IframeHello,
-    "*",
-    [mc.port2],
-  )
+  const hello: IframeHello = {
+    type: "Fdc3UserInterfaceHello",
+    payload: {
+      initialCSS: DEFAULT_COLLAPSED_CSS,
+      implementationDetails: "Sail Intent Resolver v1.0",
+    },
+  }
+
+  parent.postMessage(hello, "*", [mc.port2])
 
   function renderIntentResolver(data: IframeResolvePayload | null) {
     if (data) {
-      myPort.postMessage({
+      const restyle: IframeRestyle = {
         type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_EXPANDED_CSS },
-      } as IframeRestyle)
+      }
+
+      myPort.postMessage(restyle)
+
       root.render(
         <ResolverPanel
           context={data.context}

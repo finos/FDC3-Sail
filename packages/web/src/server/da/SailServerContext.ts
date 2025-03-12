@@ -41,7 +41,7 @@ export class SailServerContext implements ServerContext<SailData> {
     post(message: object, instanceId: InstanceID): Promise<void> {
         const instance = this.instances.find(i => i.instanceId == instanceId)
         if (instance) {
-            if (!(message as any)?.type?.startsWith("heartbeat")) {
+            if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
                 this.log("Posting message to app: " + JSON.stringify(message))
             }
             instance.socket?.emit(FDC3_DA_EVENT, message)
@@ -62,9 +62,9 @@ export class SailServerContext implements ServerContext<SailData> {
             throw new Error(OpenError.AppNotFound)
         }
 
-        const url = (app[0].details as any)?.url ?? undefined
+        const url = (app[0].details as { url?: string })?.url ?? undefined
         if (url) {
-            const forceNewWindow = (app[0].hostManifests as any)?.sail?.forceNewWindow
+            const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail?.forceNewWindow
             const approach = forceNewWindow || (channel === null) ? AppHosting.Tab : AppHosting.Frame
 
             const details: SailAppOpenResponse = await this.socket.emitWithAck(SAIL_APP_OPEN, {
@@ -195,6 +195,7 @@ export class SailServerContext implements ServerContext<SailData> {
      * to running inside an iframe in the client app.
      */
     async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const sc = this
 
         function runningApps(arg0: AppIntent): number {

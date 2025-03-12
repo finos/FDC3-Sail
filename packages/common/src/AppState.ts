@@ -4,9 +4,9 @@ import { SailAppStateArgs } from "./message-types";
 import { ServerState } from "./ServerState";
 import { ClientState } from "./ClientState";
 
-export type AppOpenDetails = {
-    instanceId: string,
-    channel: string | null,
+export interface AppOpenDetails {
+    instanceId: string
+    channel: string | null
     instanceTitle: string
 }
 

@@ -75,12 +75,12 @@ export class GridsStateImpl implements GridsState {
         Array.from(document.querySelectorAll(".drop-tab")).forEach(t => {
             const tab = t as HTMLElement
             GridStack.getDD().droppable(tab, {
-                accept: (_el: GridItemHTMLElement) => {
+                accept: () => {
                     return true;
                 }
             })
-                .on(tab, 'dropover', (_event, _el) => { this.newTabState = tab })
-                .on(tab, 'dropout', (_event, _el) => { this.newTabState = null });
+                .on(tab, 'dropover', () => { this.newTabState = tab })
+                .on(tab, 'dropout', () => { this.newTabState = null });
         })
     }
 

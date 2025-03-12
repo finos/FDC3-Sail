@@ -5,7 +5,7 @@ import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
-import { AppMetadata } from "@finos/fdc3"
+import { AppMetadata, Image } from "@finos/fdc3"
 
 export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
 
@@ -72,9 +72,9 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                 <div className={styles.appDInfo}>
                   <h2>{app.title}</h2>
                   <p>{app.description}</p>
-                  <ul>{app.categories?.map((c: any) => <li>{c}</li>)}</ul>
+                  <ul>{app.categories?.map((c: string) => <li>{c}</li>)}</ul>
                   <div className={styles.appDScreenshots}>
-                    {app.screenshots?.map((s: any) => (
+                    {app.screenshots?.map((s: Image) => (
                       <img key={s.src} src={s.src} title={s.label} />
                     ))}
                   </div>
@@ -114,7 +114,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   }
 }
 function onlyRelevantApps(d: DirectoryApp): boolean {
-  const sail: any = d.hostManifests?.sail
+  const sail = d.hostManifests?.sail as { [key: string]: boolean }
   const show = sail ? sail.searchable != false : true
   const type = d.type == "web"
   const url = (d.details as WebAppDetails).url

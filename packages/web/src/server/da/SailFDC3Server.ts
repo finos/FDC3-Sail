@@ -21,10 +21,6 @@ export class SailFDC3Server extends DefaultFDC3Server {
         return this.serverContext.directory
     }
 
-    getBroadcastHandler() {
-        return null as any
-    }
-
     getServerContext() {
         return this.serverContext
     }

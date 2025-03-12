@@ -45,29 +45,28 @@ window.addEventListener("load", () => {
   const myPort = mc.port1
   myPort.start()
 
-  // ISSUE: 1302
-  parent.postMessage(
-    {
-      type: "Fdc3UserInterfaceHello",
-      payload: {
-        initialCSS: DEFAULT_COLLAPSED_CSS,
-        implementationDetails: "Sail Channel Selector v1.0",
-      },
-    } as any as IframeHello,
-    "*",
-    [mc.port2],
-  )
+  const hello: IframeHello = {
+    type: "Fdc3UserInterfaceHello",
+    payload: {
+      initialCSS: DEFAULT_COLLAPSED_CSS,
+      implementationDetails: "Sail Channel Selector v1.0",
+    },
+  }
+
+  parent.postMessage(hello, "*", [mc.port2])
 
   function changeSize(expanded: boolean) {
     open = expanded
     renderChannels(open)
     document.body.setAttribute("data-expanded", "" + expanded)
-    myPort.postMessage({
+    const restyle: IframeRestyle = {
       type: "Fdc3UserInterfaceRestyle",
       payload: {
         updatedCSS: expanded ? DEFAULT_EXPANDED_CSS : DEFAULT_COLLAPSED_CSS,
       },
-    } as IframeRestyle)
+    }
+
+    myPort.postMessage(restyle)
   }
 
   function activate(channelId: string | null) {

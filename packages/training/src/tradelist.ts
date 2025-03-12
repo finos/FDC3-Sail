@@ -97,7 +97,7 @@ theForm.addEventListener("submit", event => {
     }
 });
 
-window.addEventListener("load", _e => render());
+window.addEventListener("load", () => render());
 
 
 fdc3Ready().then(() => {

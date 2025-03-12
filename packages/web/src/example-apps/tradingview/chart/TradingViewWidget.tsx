@@ -2,6 +2,8 @@
 import { getAgent } from "@finos/fdc3"
 import { useEffect, useRef, memo, useState } from "react"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 export const TradingViewWidget = () => {
   const container: any = useRef()
 
@@ -38,7 +40,6 @@ export const TradingViewWidget = () => {
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"
     script.type = "text/javascript"
     script.async = true
-    // eslint-disable-next-line javascript.browser.security.insecure-document-method.insecure-document-method
     script.innerHTML = `
         {
           "autosize": true,

@@ -2,6 +2,7 @@
 import { getAgent } from "@finos/fdc3"
 import { useEffect, useRef, memo, useState } from "react"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const TradingViewWidget = () => {
   const container: any = useRef()
 

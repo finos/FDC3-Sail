@@ -27,12 +27,12 @@ const LineItemComponent = ({
   setState,
   isSelected,
 }: {
-  li: any
+  li: string | Intent | AppIdentifier | TabDetail
   text: string
   icon: string
   background: string | null
-  setState: (a: any) => void
-  isSelected: (a: any) => boolean
+  setState: (a: string | Intent | AppIdentifier | TabDetail) => void
+  isSelected: (a: string | Intent | AppIdentifier | TabDetail) => boolean
 }) => {
   const selected = isSelected(li)
   const lightBackground = background ? background + "44" : undefined
@@ -305,7 +305,7 @@ export const ResolverPanel = ({
                     if (state.chosenIntent != i) {
                       setState({
                         newApps: state.newApps,
-                        chosenIntent: a,
+                        chosenIntent: a as string,
                         chosenApp: null,
                         channelId: state.channelId,
                       })
@@ -328,7 +328,9 @@ export const ResolverPanel = ({
                     text={getAppTitle(i)}
                     icon={getFirstIcon(i)}
                     background={null}
-                    setState={(a) => setState({ ...state, chosenApp: a })}
+                    setState={(a) =>
+                      setState({ ...state, chosenApp: a as AppIdentifier })
+                    }
                     isSelected={(a) => a === state.chosenApp}
                   />
                 ))}
@@ -350,7 +352,8 @@ export const ResolverPanel = ({
         />,
       ]}
       closeAction={() => {
-        chooseAction(null, null, null), closeAction()
+        chooseAction(null, null, null)
+        closeAction()
       }}
       closeName="Cancel"
     />

@@ -6,9 +6,10 @@ import { getAgent as fdc3GetAgent } from "@finos/fdc3";
  * If any FDC3 function is called on it, it performs the getAgent process and acts as a proxy.
  * 
  */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const fdc3 = {
 
-    _agent: null as any,
+    _agent: null as unknown,
 
     getAgent(): Promise<DesktopAgent> {
         if (this._agent == null) {
@@ -16,7 +17,7 @@ export const fdc3 = {
             this._agent = fdc3GetAgent();
         }
 
-        return this._agent;
+        return this._agent as Promise<DesktopAgent>;
     },
 
 
