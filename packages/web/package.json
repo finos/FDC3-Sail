@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "web": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught"
   },
   "main": "dist/src/index.js",

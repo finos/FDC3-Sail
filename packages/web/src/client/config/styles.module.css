@@ -38,6 +38,11 @@
     padding: .5rem;
 }
 
+.colour {
+    width: 2rem;
+    height: 2rem;
+}
+
 .item {
     flex-grow: 0;
     flex-shrink: 0;

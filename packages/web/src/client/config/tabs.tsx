@@ -128,7 +128,7 @@ const TabItem = ({ d }: { d: TabDetail }) => {
       </div>
       <div className={styles.verticalControls}>
         <input
-          className={styles.color}
+          className={styles.colour}
           type="color"
           value={d.background}
           onChange={(e) => updateBackground(d.id, e.currentTarget.value)}
