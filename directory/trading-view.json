@@ -53,7 +53,7 @@
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/chart/chart.png",
+                    "src": "/static/example-apps/tradingview/chart.png",
                     "label": "Demo Screenshot"
                 }
             ],
