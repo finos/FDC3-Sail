@@ -6,7 +6,7 @@ import { newsMode } from "./modes/news"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-const API_KEY = "9FpXO2gTxbbtGsrmNk8dROv9H7zpDrYo"
+const API_KEY = await getApiKey()
 
 const MODES: PolygonMode[] = [newsMode]
 
@@ -65,3 +65,9 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
 }
 
 export default memo(PolygonWidget)
+
+async function getApiKey() {
+  const response = await fetch("/polygon-key")
+  const data = await response.json()
+  return data.key
+}
