@@ -1,5 +1,5 @@
 <p align="center">
-    <img height="300" src="./images/logo_bg_white_2x.png" alt="FDC3 Sail Icon">
+    <img height="300" src="./packages/web/images/logo_bg_white_2x.png" alt="FDC3 Sail Icon">
 </p>
 
 <h1 align="center">FDC3 Sail</h3>
