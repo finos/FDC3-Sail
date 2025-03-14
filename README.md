@@ -1,5 +1,5 @@
 <p align="center">
-    <img height="300" src="./images/logo_bg_white_2x.png" alt="FDC3 Sail Icon">
+    <img height="300" src="./packages/web/images/logo_bg_white_2x.png" alt="FDC3 Sail Icon">
 </p>
 
 <h1 align="center">FDC3 Sail</h3>
@@ -89,7 +89,7 @@ Once an application is opened, you'll be able to see it, and interact with it, i
 
 ![FDC3 Workbench](images/workbench.png)
 
-### Polygon
+### Polygon
 
 If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
 
