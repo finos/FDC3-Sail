@@ -21,7 +21,9 @@
     opacity: .4;
 }
 
-.activeTab:hover {}
+.activeTab {
+    opacity: 1;
+}
 
 .inactiveTab:hover {
     opacity: .7;
