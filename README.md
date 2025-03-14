@@ -66,7 +66,7 @@ npm run web
 
 Point your browser at http://localhost:8090/static/index.html
 
-![Sail Initial Screen](images/blank-screen.png)
+![Sail Initial Screen](./packages/web/images/blank-screen.png)
 
 ### Running The Project (For Electron)
 
@@ -83,13 +83,13 @@ The desktop app should load and you should see the same screen as above.
 
 This tutorial version of Sail contains several apps that you can open. To open an app, click the plus icon in the bottom left corner of the sail window. You'll be given a choice of applications to open like so:
 
-![Sail App Picker](images/open-app.png)
+![Sail App Picker](./packages/web/images/open-app.png)
 
 Once an application is opened, you'll be able to see it, and interact with it, in the main window.
 
-![FDC3 Workbench](images/workbench.png)
+![FDC3 Workbench](./packages/web/images/workbench.png)
 
-### Polygon
+### Polygon
 
 If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
 
