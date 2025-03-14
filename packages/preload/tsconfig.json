@@ -1,23 +1,9 @@
 {
+  "extends": "../../tsconfig.root.json",
+  "include": [
+    "src/**/*"
+  ],
   "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "sourceMap": false,
-    "moduleResolution": "Node",
-    "skipLibCheck": true,
-    "strict": true,
-    "isolatedModules": true,
-
-    // Don't automatically include anything.
-    // Only include `@types` packages that we need to import.
-    "types": [],
-
-    "baseUrl": ".",
-    "paths": {
-      "/@/*": ["./src/*"],
-      "/@main/*": ["../main/src/*"],
-    }
-  },
-  "include": ["src/**/*.ts", "../../types/**/*.d.ts"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+    "outDir": "dist",
+  }
 }

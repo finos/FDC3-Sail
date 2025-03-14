@@ -1,0 +1,634 @@
+{
+    "results": [
+        {
+            "id": "51619182f94cfa45af08faa7174413a65e7b5867bcc883050953a20f9ae7caee",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "1 Unstoppable Vanguard ETF to Buy With $550 During the S&P 500 Sell-Off",
+            "author": "Anthony Di Pizio",
+            "published_utc": "2025-03-14T08:49:00Z",
+            "article_url": "https://www.fool.com/investing/2025/03/14/1-vanguard-etf-buy-550-during-the-sp-500-sell-off/?source=iedfolrf0000001",
+            "tickers": [
+                "VGT",
+                "AAPL",
+                "MSFT",
+                "CRM"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810867/bronze-bear-and-bull-figurines-bear-market-bull-market-stock-market.jpg",
+            "description": "The Vanguard Information Technology ETF (VGT) has outperformed the S&P 500 over the long term, and with the recent market sell-off, it presents a unique opportunity for investors to buy it at a discount. The ETF holds a mix of hardware and software giants driving the AI boom, including Apple, Microsoft, and Salesforce.",
+            "keywords": [
+                "Vanguard Information Technology ETF",
+                "S&P 500",
+                "AI",
+                "Apple",
+                "Microsoft",
+                "Salesforce"
+            ],
+            "insights": [
+                {
+                    "ticker": "VGT",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article highlights that the Vanguard Information Technology ETF has outperformed the S&P 500 over the long term, and the recent market sell-off presents a unique opportunity for investors to buy it at a discount."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article mentions that Apple has been preparing for the AI revolution by designing new chips and launching AI-powered software, which are key holdings in the Vanguard Information Technology ETF."
+                },
+                {
+                    "ticker": "MSFT",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article notes that Microsoft has developed an AI assistant called Copilot, which is embedded in its popular software applications, and it also owns the Azure cloud platform that provides the infrastructure for AI development, making it a key holding in the Vanguard Information Technology ETF."
+                },
+                {
+                    "ticker": "CRM",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article explains that Salesforce has developed an AI-powered virtual agent layer in its customer relationship management (CRM) platform, which is a key holding in the Vanguard Information Technology ETF."
+                }
+            ]
+        },
+        {
+            "id": "bad86588af9b551972bb2747c3208a3bc10ccb9de5f77f24511bdcbe39a298ce",
+            "publisher": {
+                "name": "GlobeNewswire Inc.",
+                "homepage_url": "https://www.globenewswire.com",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+            },
+            "title": "Global Market for Micro and Mini LEDs 2025-2035: MicroLED Set to Surpass OLED and Mini-LED, Dominating Premium Display Market by Mid-2030s",
+            "author": "Researchandmarkets.Com",
+            "published_utc": "2025-03-13T15:57:00Z",
+            "article_url": "https://www.globenewswire.com/news-release/2025/03/13/3042399/28124/en/Global-Market-for-Micro-and-Mini-LEDs-2025-2035-MicroLED-Set-to-Surpass-OLED-and-Mini-LED-Dominating-Premium-Display-Market-by-Mid-2030s.html",
+            "tickers": [
+                "SSDIY",
+                "LPL",
+                "AAPL"
+            ],
+            "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+            "description": "The global market for Mini and MicroLED displays is set for substantial growth, driven by increasing adoption in consumer electronics, automotive, and AR/VR applications. Mini-LEDs are transforming LCD backlighting, while MicroLEDs represent the future of self-emissive displays with unmatched performance. Key challenges in MicroLED mass production are being addressed, paving the way for wider adoption.",
+            "keywords": [
+                "Mini-LED",
+                "MicroLED",
+                "OLED",
+                "LCD",
+                "consumer electronics",
+                "automotive",
+                "AR/VR"
+            ],
+            "insights": [
+                {
+                    "ticker": "SSDIY",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Samsung is integrating Mini-LED backlighting into its flagship products and developing MicroLED TVs, indicating its commitment to next-generation display technologies."
+                },
+                {
+                    "ticker": "LPL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "LG has also introduced Mini-LED and MicroLED products, such as the MAGNIT MicroLED TV, showcasing its advancements in these emerging display technologies."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Apple is mentioned as one of the leading manufacturers investing in next-generation display technologies, including Mini-LED and MicroLED, indicating its focus on improving display performance in its products."
+                }
+            ]
+        },
+        {
+            "id": "5ca2220ebf75125753b147a141bc8748b89f16bece62b580525b5559829fdac0",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "35.2% of Warren Buffett's $281 Billion Portfolio Is Invested in 3 Artificial Intelligence (AI) Stocks",
+            "author": "The Motley Fool",
+            "published_utc": "2025-03-13T08:26:00Z",
+            "article_url": "https://www.fool.com/investing/2025/03/13/352-warren-buffetts-281-billion-invest-3-ai-stocks/?source=iedfolrf0000001",
+            "tickers": [
+                "AMZN",
+                "KO",
+                "AAPL"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810710/a-candid-shot-of-warren-buffett-looking-away-from-the-camera.jpg",
+            "description": "Warren Buffett's Berkshire Hathaway holds significant investments in three companies - Amazon, Coca-Cola, and Apple - that are leveraging artificial intelligence to enhance their legacy businesses.",
+            "keywords": [
+                "Warren Buffett",
+                "Berkshire Hathaway",
+                "Artificial Intelligence",
+                "Amazon",
+                "Coca-Cola",
+                "Apple"
+            ],
+            "insights": [
+                {
+                    "ticker": "AMZN",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Amazon is using AI in its cloud computing platform AWS and its e-commerce business, which is helping to drive growth and profitability."
+                },
+                {
+                    "ticker": "KO",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Coca-Cola is investing heavily in AI to improve its marketing, productivity, and supply chain, which could help the company maintain its market dominance."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Apple is integrating AI capabilities into its products and services, which could drive increased demand for its devices and software, benefiting Berkshire Hathaway's substantial investment in the company."
+                }
+            ]
+        },
+        {
+            "id": "12932c72151eb68e3a619bdde6cd8d28f3a2097db58f80ca09b1141e216f3ee4",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "Is the Fidelity High Dividend ETF the Smartest Investment You Can Make Today?",
+            "author": "The Motley Fool",
+            "published_utc": "2025-03-12T10:22:00Z",
+            "article_url": "https://www.fool.com/investing/2025/03/12/is-the-fidelity-high-dividend-etf-the-smartest-inv/?source=iedfolrf0000001",
+            "tickers": [
+                "FDVV",
+                "AMJB",
+                "JPM",
+                "JPMpC",
+                "JPMpD",
+                "JPMpJ",
+                "JPMpK",
+                "JPMpL",
+                "JPMpM",
+                "AAPL",
+                "AVGO",
+                "MSFT",
+                "NVDA",
+                "PG",
+                "V",
+                "VOO",
+                "PM"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810689/getty-smiling-happy-blue-collar-worker-in-hard-hat.jpg",
+            "description": "The article discusses the benefits of investing in dividend-paying stocks during market pullbacks, highlighting the Fidelity High Dividend ETF as a potential option. It provides performance comparisons and details on the ETF's holdings and fees.",
+            "keywords": [
+                "dividend stocks",
+                "market pullback",
+                "Fidelity High Dividend ETF"
+            ],
+            "insights": [
+                {
+                    "ticker": "FDVV",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article presents the Fidelity High Dividend ETF as a favorable investment option during market pullbacks, highlighting its strong performance, diversified portfolio, and low expense ratio."
+                },
+                {
+                    "ticker": "AMJB",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPM",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpC",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpD",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpJ",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpK",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "JPMpM",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that JPMorgan Chase is an advertising partner of Motley Fool Money, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Apple, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "AVGO",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Broadcom, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "MSFT",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Microsoft, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "NVDA",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Nvidia, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "PG",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Procter & Gamble, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "V",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Selena Maranjian has positions in Visa, but this information is not directly relevant to the main content of the article."
+                },
+                {
+                    "ticker": "VOO",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions the Vanguard S&P 500 ETF as a comparison to the Fidelity High Dividend ETF, but does not provide a specific sentiment or recommendation."
+                },
+                {
+                    "ticker": "PM",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that The Motley Fool recommends Philip Morris International, but this information is not directly relevant to the main content of the article."
+                }
+            ]
+        },
+        {
+            "id": "adec175035890b6bdb77746e785633e47809fad24f37e5783b6e78d7e7035143",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "Move Over, Artificial Intelligence (AI) -- Businesses Are on Pace to Spend More Than $10 Trillion on This Trend Over the Next Decade",
+            "author": "Sean Williams",
+            "published_utc": "2025-03-12T09:06:00Z",
+            "article_url": "https://www.fool.com/investing/2025/03/12/move-over-ai-businesses-spend-10-trillion-on-trend/?source=iedfolrf0000001",
+            "tickers": [
+                "AAPL",
+                "BRK.A",
+                "BRK.B"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810520/buy-low-sell-high-stock-market-chart-investing-retirement-getty.jpg",
+            "description": "Businesses, especially S&P 500 companies, are expected to spend over $10 trillion on share buybacks over the next decade, dwarfing the investment in artificial intelligence. However, this massive buyback activity may not be able to mask the historically high valuation of the stock market indefinitely.",
+            "keywords": [
+                "artificial intelligence",
+                "share buybacks",
+                "S&P 500",
+                "valuation"
+            ],
+            "insights": [
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "Despite spending more on share repurchases than any other public company, Apple's earnings per share has been flat over the last couple of years, indicating the limitations of aggressive share buybacks."
+                },
+                {
+                    "ticker": "BRK.A",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Warren Buffett has spent close to $78 billion buying back shares of Berkshire Hathaway stock since mid-2018, which helps to incrementally increase the ownership stakes of existing shareholders and sends a strong message that the stock is undervalued."
+                },
+                {
+                    "ticker": "BRK.B",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Warren Buffett has spent close to $78 billion buying back shares of Berkshire Hathaway stock since mid-2018, which helps to incrementally increase the ownership stakes of existing shareholders and sends a strong message that the stock is undervalued."
+                }
+            ]
+        },
+        {
+            "id": "22b8a8d2634564ecb78d5df98930e9933e80db6dd46fa1a6b096af596fac7295",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "Nasdaq Correction: This Magnificent Stock Is a Rare Bargain",
+            "author": "Adria Cimino",
+            "published_utc": "2025-03-12T08:02:00Z",
+            "article_url": "https://www.fool.com/investing/2025/03/12/nasdaq-correction-stock-rare-bargain/?source=iedfolrf0000001",
+            "tickers": [
+                "NVDA",
+                "GOOG",
+                "GOOGL",
+                "META",
+                "MSFT",
+                "AMZN",
+                "AAPL",
+                "TSLA"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810728/gettyimages-woman-points-at-computer-with-a-pen-to-show-something-to-a-colleague.jpg",
+            "description": "Nvidia, a leading AI chip maker, has seen its stock price decline amid the Nasdaq correction, making it a rare bargain for investors. The company's strong performance, innovative products, and the continued growth of AI technology suggest a positive outlook for Nvidia's future.",
+            "keywords": [
+                "Nvidia",
+                "AI",
+                "Nasdaq correction",
+                "valuation"
+            ],
+            "insights": [
+                {
+                    "ticker": "NVDA",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article highlights Nvidia's strong performance, innovative products, and the continued growth of AI technology, which suggests a positive outlook for the company's future. Despite the recent market correction, the article suggests that Nvidia's stock is currently undervalued, making it a rare bargain for investors."
+                },
+                {
+                    "ticker": "GOOG",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article mentions that Alphabet (Google's parent company) has set out plans for tech spending to support its AI goals, which supports the idea of more growth ahead for Nvidia, a key supplier of AI chips."
+                },
+                {
+                    "ticker": "GOOGL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article mentions that Alphabet (Google's parent company) has set out plans for tech spending to support its AI goals, which supports the idea of more growth ahead for Nvidia, a key supplier of AI chips."
+                },
+                {
+                    "ticker": "META",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article states that Meta Platforms (Facebook's parent company) is one of the world's biggest tech companies that flocks to Nvidia for its powerful AI chips, indicating a strong demand for Nvidia's products."
+                },
+                {
+                    "ticker": "MSFT",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article mentions that Microsoft is one of the world's biggest tech companies that relies on Nvidia's AI chips, suggesting a positive outlook for Nvidia's business."
+                },
+                {
+                    "ticker": "AMZN",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article does not directly mention Amazon, so the sentiment is neutral."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article does not directly mention Apple, so the sentiment is neutral."
+                },
+                {
+                    "ticker": "TSLA",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article does not directly mention Tesla, so the sentiment is neutral."
+                }
+            ]
+        },
+        {
+            "id": "34d9db5ce6c18986986bd9978d138801d7ead546480ac02c45accf4b8b7a2d7a",
+            "publisher": {
+                "name": "Benzinga",
+                "homepage_url": "https://www.benzinga.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+            },
+            "title": "Apple's AR Glasses Approach Aside, Google Makes Its Move On Eye-Tracking Tech With $115 Million AdHawk Acquisition: Report",
+            "author": "Ananya Gairola",
+            "published_utc": "2025-03-12T02:20:36Z",
+            "article_url": "https://www.benzinga.com/25/03/44267530/while-apple-reportedly-mulls-over-ar-glasses-google-bets-big-on-eye-tracking-tech-with-115-million-adhawk-acquisi",
+            "tickers": [
+                "GOOG",
+                "GOOGL",
+                "AAPL"
+            ],
+            "image_url": "https://cdn.benzinga.com/files/images/story/2025/03/11/Former-Google-CEO-Eric-Schmidt-Warns-Of-.jpeg?width=1200&height=800&fit=crop",
+            "description": "Google is in final talks to acquire eye-tracking startup AdHawk Microsystems for $115 million, as the tech giant doubles down on augmented reality technology. This move comes as Apple reportedly rethinks its strategy for AR wearables.",
+            "keywords": [
+                "AR glasses",
+                "eye-tracking",
+                "Google",
+                "AdHawk Microsystems",
+                "Apple"
+            ],
+            "insights": [
+                {
+                    "ticker": "GOOG",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Google is acquiring AdHawk Microsystems, a startup specializing in eye-tracking hardware and software, for $115 million. This indicates Google's renewed focus on augmented reality technology."
+                },
+                {
+                    "ticker": "GOOGL",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "Google is acquiring AdHawk Microsystems, a startup specializing in eye-tracking hardware and software, for $115 million. This indicates Google's renewed focus on augmented reality technology."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Apple is reportedly rethinking its strategy for AR wearables, but does not provide a clear sentiment on the company's current position."
+                }
+            ]
+        },
+        {
+            "id": "c810a2aa21d9b2551c4d7b66f1da8742374c60359ed806ce602196c56f8fe453",
+            "publisher": {
+                "name": "Benzinga",
+                "homepage_url": "https://www.benzinga.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+            },
+            "title": "Traders Await Pivotal February Inflation Data As Stagflation Fears Weigh On Wall Street: What To Expect",
+            "author": "Piero Cingari",
+            "published_utc": "2025-03-11T13:28:28Z",
+            "article_url": "https://www.benzinga.com/25/03/44246635/traders-brace-for-pivotal-february-inflation-data-as-stagflation-fears-weigh-on-wall-street-what-to-expect",
+            "tickers": [
+                "AAPL",
+                "AMZN"
+            ],
+            "image_url": "https://cdn.benzinga.com/files/images/story/2025/03/11/inflation-ai2.png?width=1200&height=800&fit=crop",
+            "description": "Wall Street is anxiously awaiting the release of February inflation data, as traders hope for signs that price pressures are cooling. However, with inflation still running above the Fed's 2% target, the central bank's next move remains uncertain, and recession fears are mounting amid a sharp downgrade in U.S. growth forecasts.",
+            "keywords": [
+                "inflation",
+                "Federal Reserve",
+                "recession",
+                "economic growth"
+            ],
+            "insights": [
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "The article mentions that Apple is part of the 'Magnificent Seven' tech stocks that have entered correction territory, with the company's stock down 12.4% from its recent highs."
+                },
+                {
+                    "ticker": "AMZN",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "The article states that Amazon is part of the 'Magnificent Seven' tech stocks that have seen deep losses, with the company's stock down 19.5% from its recent highs."
+                },
+                {
+                    "ticker": "GOOG",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "Alphabet is included in the 'Magnificent Seven' tech stocks that have entered correction territory, with the company's stock down 19.5% from its recent highs."
+                },
+                {
+                    "ticker": "GOOGL",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "Alphabet is included in the 'Magnificent Seven' tech stocks that have entered correction territory, with the company's stock down 19.5% from its recent highs."
+                },
+                {
+                    "ticker": "META",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "The article mentions that Meta Platforms is one of the 'Magnificent Seven' tech stocks that have seen significant declines, with the company's stock down 18.9% from its recent highs."
+                },
+                {
+                    "ticker": "MSFT",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "Microsoft is part of the 'Magnificent Seven' tech stocks that have entered correction territory, with the company's stock down 18.8% from its recent highs."
+                },
+                {
+                    "ticker": "NVDA",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "The article states that NVIDIA is one of the 'Magnificent Seven' tech stocks that have seen deep losses, with the company's stock down 30.1% from its recent highs."
+                },
+                {
+                    "ticker": "TSLA",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "Tesla is included in the 'Magnificent Seven' tech stocks that have entered correction territory, with the company's stock plunging 53.9% from its recent highs."
+                },
+                {
+                    "ticker": "QQQ",
+                    "sentiment": "negative",
+                    "sentiment_reasoning": "The article mentions that the tech-heavy Nasdaq 100, as tracked by the Invesco QQQ Trust, has tumbled 13% in just three weeks, reflecting the broader market downturn."
+                }
+            ]
+        },
+        {
+            "id": "99f3f638fd4d47eff57e7f9f56d8b2106f947cc1725e32c32d57da2cdcdcd716",
+            "publisher": {
+                "name": "Benzinga",
+                "homepage_url": "https://www.benzinga.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+            },
+            "title": "Tesla Rival XPeng Eyes $13.8 Billion Investment In Humanoid Robots, Says Chinese State Media",
+            "author": "Rounak Jain",
+            "published_utc": "2025-03-11T06:02:59Z",
+            "article_url": "https://www.benzinga.com/25/03/44240449/tesla-rival-xpeng-eyes-138-billion-investment-in-humanoid-robots-says-chinese-state-media",
+            "tickers": [
+                "AAPL"
+            ],
+            "image_url": "https://cdn.benzinga.com/files/images/story/2025/03/11/Shanghai-china-april-27--2023-Xpeng-Car-.jpeg?width=1200&height=800&fit=crop",
+            "description": "XPeng, a Chinese electric vehicle manufacturer, is considering a significant investment of up to 100 billion yuan ($13.8 billion) in the development of humanoid robots, according to Chinese state media. This move highlights the growing interest in humanoid robots across the tech and automotive industries.",
+            "keywords": [
+                "XPeng",
+                "humanoid robots",
+                "Tesla",
+                "Stellantis",
+                "Meta Platforms",
+                "Apple"
+            ],
+            "insights": [
+                {
+                    "ticker": "XPEV",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "XPeng is considering a substantial investment in humanoid robots, indicating its commitment to this emerging technology."
+                },
+                {
+                    "ticker": "TSLA",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Tesla's Optimus bot, highlighting the growing competition in the humanoid robot market."
+                },
+                {
+                    "ticker": "STLA",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "Stellantis-backed Leapmotor has also initiated a robot team, indicating the broader industry interest in humanoid robots."
+                },
+                {
+                    "ticker": "META",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Meta Platforms is also planning a significant investment in AI-powered humanoid robots, showcasing the increasing interest in this field."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article notes that Apple is reportedly exploring both humanoid and non-humanoid robots for its smart home ecosystem, further highlighting the industry-wide focus on robotics."
+                }
+            ]
+        },
+        {
+            "id": "debec63f6efd5505b8a7bd6dfb3eb117e2cb697f24f3b8844675ba7fb33e6418",
+            "publisher": {
+                "name": "The Motley Fool",
+                "homepage_url": "https://www.fool.com/",
+                "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+                "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+            },
+            "title": "Nasdaq Sell-Off: It's Finally Time to Buy This Market Darling Again",
+            "author": "Anders Bylund",
+            "published_utc": "2025-03-10T18:34:06Z",
+            "article_url": "https://www.fool.com/investing/2025/03/10/nasdaq-sell-off-buy-market-soundhound-ai/?source=iedfolrf0000001",
+            "tickers": [
+                "SOUN",
+                "SOUNW",
+                "GOOG",
+                "GOOGL",
+                "AMZN",
+                "AAPL",
+                "MSFT",
+                "NVDA"
+            ],
+            "image_url": "https://g.foolcdn.com/editorial/images/810625/working-thinking-looking-at-screen.jpg",
+            "description": "SoundHound AI, an AI company with a song-identification app and voice assistant technology, is now a buy again after a long pause. The Nasdaq sell-off has made the stock more reasonably priced, and the company's business prospects remain promising despite a meme-stock surge and retreat in 2024.",
+            "keywords": [
+                "SoundHound AI",
+                "AI",
+                "Nasdaq",
+                "stock market"
+            ],
+            "insights": [
+                {
+                    "ticker": "SOUN",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article suggests that SoundHound AI is a promising AI company with a growing business and a reasonable valuation after the recent Nasdaq sell-off, making it a good investment opportunity."
+                },
+                {
+                    "ticker": "SOUNW",
+                    "sentiment": "positive",
+                    "sentiment_reasoning": "The article suggests that SoundHound AI is a promising AI company with a growing business and a reasonable valuation after the recent Nasdaq sell-off, making it a good investment opportunity."
+                },
+                {
+                    "ticker": "GOOG",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Alphabet as one of the role models for SoundHound AI, but does not provide a specific sentiment or evaluation of Alphabet's business."
+                },
+                {
+                    "ticker": "GOOGL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Alphabet as one of the role models for SoundHound AI, but does not provide a specific sentiment or evaluation of Alphabet's business."
+                },
+                {
+                    "ticker": "AMZN",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Amazon as one of the role models for SoundHound AI, but does not provide a specific sentiment or evaluation of Amazon's business."
+                },
+                {
+                    "ticker": "AAPL",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Apple as one of the role models for SoundHound AI, but does not provide a specific sentiment or evaluation of Apple's business."
+                },
+                {
+                    "ticker": "MSFT",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions Microsoft as one of the role models for SoundHound AI, but does not provide a specific sentiment or evaluation of Microsoft's business."
+                },
+                {
+                    "ticker": "NVDA",
+                    "sentiment": "neutral",
+                    "sentiment_reasoning": "The article mentions that Nvidia made a small investment in SoundHound AI's stock, but does not provide a specific sentiment or evaluation of Nvidia's business."
+                }
+            ]
+        }
+    ],
+    "status": "OK",
+    "request_id": "9af11b2823bf67d2be07fb37a607e808",
+    "count": 10,
+    "next_url": "https://api.polygon.io/v2/reference/news?cursor=YXA9MjAyNS0wMy0xMFQxOCUzQTM0JTNBMDZaJmFzPWRlYmVjNjNmNmVmZDU1MDViOGE3YmQ2ZGZiM2ViMTE3ZTJjYjY5N2YyNGYzYjg4NDQ2NzViYTdmYjMzZTY0MTgmb3JkZXI9ZGVzY2VuZGluZyZ0aWNrZXI9QUFQTA"
+}

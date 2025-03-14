@@ -1,0 +1,15 @@
+{
+  "name": "@finos/fdc3-sail-electron",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "electron": "tsc && electron ."
+  },
+  "devDependencies": {
+    "electron": "^34.0.1",
+    "rimraf": "^6.0.1"
+  },
+  "dependencies": {}
+}

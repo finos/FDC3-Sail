@@ -1,0 +1,18 @@
+{
+    "applications": [
+        {
+            "appId": "old-fdc3",
+            "name": "Old FDC3 2.0 App",
+            "title": "FDC3 2.0 Electron App",
+            "description": "Uses the old window.fdc3 approach.  Should work in electron",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/old/index.html"
+            },
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": []
+        }
+    ],
+    "message": "OK"
+}

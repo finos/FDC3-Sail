@@ -1,0 +1,41 @@
+{
+    "applications": [
+        {
+            "appId": "polygon-ticker-news-1",
+            "name": "Polygon Ticker News",
+            "title": "Polygon Ticker News",
+            "description": "Displays a ticker news of a given stock, using the Polygon applications",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/polygon/index.html"
+            },
+            "screenshots": [
+                {
+                    "src": "/static/example-apps/polygon/ticker-news.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [
+                {
+                    "src": "/static/example-apps/polygon/polygon-io-logo.webp"
+                }
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewNews": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View News"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "message": "OK"
+}
