@@ -51,6 +51,15 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
     <div id="polygon-widget" ref={container}>
       {modeProps.stateRenderer(state)}
       {modeProps.dataRenderer(data)}
+      <div className="polygon-widget-copyright">
+        <a
+          href="https://www.polygon.io/"
+          rel="noopener nofollow"
+          target="_blank"
+        >
+          <span className="blue-text"> Powered by Polygon </span>
+        </a>
+      </div>
     </div>
   )
 }
