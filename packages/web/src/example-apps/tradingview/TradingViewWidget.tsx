@@ -4,61 +4,12 @@ import { useEffect, useRef, memo, useState } from "react"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-interface TradingViewIntent {
-  name: string
-  function: (context: any, setState: React.Dispatch<any>) => void
-}
+import { TradingViewMode } from "./common"
+import { chartMode } from "./modes/chart"
+import { symbolInfoMode } from "./modes/symbol-info"
+import { fundamentalsMode } from "./modes/fundamentals"
 
-interface TradingViewListener {
-  name: string
-  function: (context: any, setState: React.Dispatch<any>) => void
-}
-
-interface TradingViewMode {
-  name: string
-  script: string
-  innerHTML: (state: object) => string
-  initialState: any
-  intents: TradingViewIntent[]
-  listeners: TradingViewListener[]
-}
-
-const MODES: TradingViewMode[] = [
-  {
-    name: "Chart",
-    script:
-      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js",
-    innerHTML: (state: object) => `{
-          "autosize": true,
-          "symbol": "NASDAQ:${state}",
-          "interval": "D",
-          "timezone": "Etc/UTC",
-          "theme": "light",
-          "style": "1",
-          "locale": "en",
-          "allow_symbol_change": false,
-          "calendar": false,
-          "support_host": "https://www.tradingview.com"
-        }`,
-    initialState: "TSLA",
-    intents: [
-      {
-        name: "ViewChart",
-        function: (context: any, setState: React.Dispatch<any>) => {
-          setState(context?.id?.ticker)
-        },
-      },
-    ],
-    listeners: [
-      {
-        name: "fdc3.instrument",
-        function: (context: any, setState: React.Dispatch<any>) => {
-          setState(context?.id?.ticker)
-        },
-      },
-    ],
-  },
-]
+const MODES: TradingViewMode[] = [chartMode, symbolInfoMode, fundamentalsMode]
 
 export const TradingViewWidget = ({ mode }: { mode: string }) => {
   const container: any = useRef()

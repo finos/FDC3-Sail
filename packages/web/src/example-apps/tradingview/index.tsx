@@ -4,4 +4,9 @@ import TradingViewWidget from "./TradingViewWidget"
 const container = document.getElementById("app")
 const root = createRoot(container!)
 
-root.render(<TradingViewWidget mode="chart" />)
+function getQueryParameterMode() {
+  const urlParams = new URLSearchParams(window.location.search)
+  return urlParams.get("mode") ?? "chart"
+}
+
+root.render(<TradingViewWidget mode={getQueryParameterMode()} />)
