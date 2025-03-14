@@ -54,6 +54,14 @@ function newBackgroundColour(): string {
   ]
 }
 
+function hasApps(id: string): boolean {
+  return (
+    getClientState()
+      .getPanels()
+      .find((p) => p.tabId == id) != null
+  )
+}
+
 function updateBackground(id: string, background: string) {
   const tab = getClientState()
     .getTabs()
@@ -126,11 +134,10 @@ const TabItem = ({ d }: { d: TabDetail }) => {
           onChange={(e) => updateBackground(d.id, e.currentTarget.value)}
         />
       </div>
-
       <div className={styles.verticalControlsGrow}>
         <div
           className={styles.name}
-          contentEditable={true}
+          contentEditable={!hasApps(d.id)}
           onBlur={(e) => updateTitle(d.id, e.currentTarget.textContent!)}
         >
           {d.id}
@@ -155,12 +162,19 @@ const TabItem = ({ d }: { d: TabDetail }) => {
           url="/static/icons/control/move-down.svg"
         />
       </div>
-
-      <InlineButton
-        onClick={() => removeTab(d.id)}
-        text="Remove This Tab"
-        url="/static/icons/control/bin.svg"
-      />
+      {!hasApps(d.id) ? (
+        <InlineButton
+          onClick={() => removeTab(d.id)}
+          text="Remove This Tab"
+          url="/static/icons/control/bin.svg"
+        />
+      ) : (
+        <InlineButton
+          onClick={() => {}}
+          text="Tab Can't Be Removed - Has Apps"
+          url="/static/icons/control/grey-bin.svg"
+        />
+      )}
     </div>
   )
 }

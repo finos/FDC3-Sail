@@ -19,16 +19,10 @@
 
 .inactiveTab {
     opacity: .4;
-    background: linear-gradient(90deg, rgba(0, 0, 0, .1) 90%, rgba(0, 0, 0, .7) 100%);
-}
-
-.activeTab {
-    background: linear-gradient(165deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, 0) 20%);
 }
 
 .activeTab:hover {}
 
 .inactiveTab:hover {
     opacity: .7;
-    background: linear-gradient(90deg, rgba(255, 255, 255, .1) 90%, rgba(0, 0, 0, .8) 100%);
 }

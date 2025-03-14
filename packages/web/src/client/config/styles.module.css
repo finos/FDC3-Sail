@@ -89,7 +89,9 @@
     overflow-wrap: anywhere;
 }
 
-.color {}
+.name[contenteditable="false"] {
+    color: #ccc;
+}
 
 .name img {
     width: 1rem;
