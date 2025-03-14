@@ -89,6 +89,15 @@ Once an application is opened, you'll be able to see it, and interact with it, i
 
 ![FDC3 Workbench](images/workbench.png)
 
+### Polygon
+
+If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
+
+```
+POLYGON_API_KEY=your_api_key
+npm run web
+```
+
 ## Tutorial Applications
 
 For the purposes of the training tutorial, Sail has been bundled with two toy applications:
