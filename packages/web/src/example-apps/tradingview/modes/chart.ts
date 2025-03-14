@@ -22,16 +22,16 @@ export const chartMode: TradingViewMode = {
     intents: [
         {
             name: "ViewChart",
-            function: (context: any, setState: React.Dispatch<any>) => {
-                setState(context?.id?.ticker)
+            function: (context: any) => {
+                return context?.id?.ticker
             },
         },
     ],
     listeners: [
         {
             name: "fdc3.instrument",
-            function: (context: any, setState: React.Dispatch<any>) => {
-                setState(context?.id?.ticker)
+            function: (context: any) => {
+                return context?.id?.ticker
             },
         },
     ],

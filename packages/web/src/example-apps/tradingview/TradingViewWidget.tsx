@@ -8,8 +8,16 @@ import { TradingViewMode } from "./common"
 import { chartMode } from "./modes/chart"
 import { symbolInfoMode } from "./modes/symbol-info"
 import { fundamentalsMode } from "./modes/fundamentals"
+import { tickersMode } from "./modes/tickers"
+import { marketDataMode } from "./modes/market-data"
 
-const MODES: TradingViewMode[] = [chartMode, symbolInfoMode, fundamentalsMode]
+const MODES: TradingViewMode[] = [
+  chartMode,
+  symbolInfoMode,
+  fundamentalsMode,
+  tickersMode,
+  marketDataMode,
+]
 
 export const TradingViewWidget = ({ mode }: { mode: string }) => {
   const container: any = useRef()
@@ -21,17 +29,21 @@ export const TradingViewWidget = ({ mode }: { mode: string }) => {
     getAgent().then((fdc3) => {
       modeProps.intents.forEach((intent) => {
         fdc3.addIntentListener(intent.name, (context) => {
-          intent.function(context, setState)
+          const newState = intent.function(context, state)
+          setState(() => newState)
+          console.log("new state", newState)
         })
       })
 
       modeProps.listeners.forEach((listener) => {
         fdc3.addContextListener(listener.name, (context) => {
-          listener.function(context, setState)
+          const newState = listener.function(context, state)
+          setState(() => newState)
+          console.log("new state", newState)
         })
       })
     })
-  }, [])
+  }, [state])
 
   useEffect(() => {
     let script: HTMLScriptElement | null = null

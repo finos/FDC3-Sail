@@ -89,7 +89,91 @@
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/symbol-info.png",
+                    "src": "/static/example-apps/tradingview/fundamentals.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [
+                {
+                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                }
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewInstrument": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Instrument"
+                        },
+                        "ViewChart": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Chart"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "appId": "trading-view-tickers-1",
+            "name": "Trading View Tickers",
+            "title": "Trading View Tickers",
+            "description": "Displays tickers of a given stock, using the TradingView applications",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/tradingview/index.html?mode=tickers"
+            },
+            "screenshots": [
+                {
+                    "src": "/static/example-apps/tradingview/tickers.png",
+                    "label": "Demo Screenshot"
+                }
+            ],
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [
+                {
+                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                }
+            ],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewInstrument": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Instrument"
+                        },
+                        "ViewChart": {
+                            "contexts": [
+                                "fdc3.instrument"
+                            ],
+                            "displayName": "View Chart"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "appId": "trading-view-market-data-1",
+            "name": "Trading View Market Data",
+            "title": "Trading View Market Data",
+            "description": "Displays market data of a given stock, using the TradingView applications",
+            "type": "web",
+            "details": {
+                "url": "/static/example-apps/tradingview/index.html?mode=market-data"
+            },
+            "screenshots": [
+                {
+                    "src": "/static/example-apps/tradingview/market-data.png",
                     "label": "Demo Screenshot"
                 }
             ],

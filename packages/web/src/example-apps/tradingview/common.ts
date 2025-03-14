@@ -5,12 +5,12 @@
 
 export interface TradingViewIntent {
     name: string
-    function: (context: any, setState: React.Dispatch<any>) => void
+    function: (context: any, state: any) => any // returns the new state
 }
 
 export interface TradingViewListener {
     name: string
-    function: (context: any, setState: React.Dispatch<any>) => void
+    function: (context: any, state: any) => any // returns the new state
 }
 
 export interface TradingViewMode {

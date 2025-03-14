@@ -19,22 +19,22 @@ export const fundamentalsMode: TradingViewMode = {
     intents: [
         {
             name: "ViewInstrument",
-            function: (context: any, setState: React.Dispatch<any>) => {
-                setState(context?.id?.ticker)
+            function: (context: any) => {
+                return context?.id?.ticker
             },
         },
         {
             name: "ViewChart",
-            function: (context: any, setState: React.Dispatch<any>) => {
-                setState(context?.id?.ticker)
+            function: (context: any) => {
+                return context?.id?.ticker
             },
         },
     ],
     listeners: [
         {
             name: "fdc3.instrument",
-            function: (context: any, setState: React.Dispatch<any>) => {
-                setState(context?.id?.ticker)
+            function: (context: any) => {
+                return context?.id?.ticker
             },
         },
     ],
