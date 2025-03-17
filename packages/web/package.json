@@ -6,7 +6,7 @@
     "clean": "rimraf dist",
     "build": "tsc && vite build",
     "web": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
-    "prod": "pm2 start --name sail-web tsx src/server/main.ts"
+    "prod": "pm2 start pm2.config.js"
   },
   "main": "src/server/main.js",
   "types": "src/server/main.d.ts",
