@@ -1,7 +1,6 @@
 import { BrowserTypes, AppIdentifier } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ResolverPanel } from "../client/resolver/resolver"
-import "/static/fonts/DM_Sans/DM_Sans.css"
 import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,

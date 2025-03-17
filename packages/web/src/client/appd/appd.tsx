@@ -7,7 +7,7 @@ import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
 import { AppMetadata, Image } from "@finos/fdc3"
 
-export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
+export const DEFAULT_ICON = "/icons/control/choose-app.svg"
 
 export function getIcon(a: DirectoryApp | AppMetadata | undefined): string {
   if (a) {

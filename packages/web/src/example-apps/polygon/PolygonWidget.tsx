@@ -6,8 +6,6 @@ import { newsMode } from "./modes/news"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-const API_KEY = await getApiKey()
-
 const MODES: PolygonMode[] = [newsMode]
 
 export const PolygonWidget = ({ mode }: { mode: string }) => {
@@ -16,6 +14,15 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
 
   const [state, setState] = useState(modeProps.initialState)
   const [data, setData] = useState(modeProps.initialData)
+  const [apiKey, setApiKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchApiKey() {
+      const key = await getApiKey()
+      setApiKey(key)
+    }
+    fetchApiKey()
+  }, [])
 
   useEffect(() => {
     getAgent().then((fdc3) => {
@@ -38,14 +45,16 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
   }, [state])
 
   useEffect(() => {
-    const call = modeProps.endpoint(state, API_KEY)
-    fetch(call).then(async (response) => {
-      console.log("response", response)
-      const data = await response.json()
-      console.log("data", data)
-      setData(() => data)
-    })
-  }, [state])
+    if (apiKey) {
+      const call = modeProps.endpoint(state, apiKey)
+      fetch(call).then(async (response) => {
+        console.log("response", response)
+        const data = await response.json()
+        console.log("data", data)
+        setData(() => data)
+      })
+    }
+  }, [state, apiKey])
 
   return (
     <div id="polygon-widget" ref={container}>

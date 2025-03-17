@@ -4,7 +4,7 @@ import styles from "./styles.module.css"
 
 const NO_CHANNEL: TabDetail = {
   background: "white",
-  icon: "/static/icons/logo/logo.png",
+  icon: "/icons/logo/logo.png",
   id: "No Channel",
 }
 

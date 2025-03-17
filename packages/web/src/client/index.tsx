@@ -5,7 +5,6 @@ import {
   getAppState,
   getServerState,
 } from "@finos/fdc3-sail-common"
-import "../../static/fonts/DM_Sans/DM_Sans.css"
 
 const container = document.getElementById("app")
 const root = createRoot(container!)

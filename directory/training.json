@@ -7,18 +7,18 @@
       "description": "A demo app for the FDC3 Developer Course",
       "icons": [
         {
-          "src": "/static/example-apps/training/pricer/icon.png"
+          "src": "/example-apps/training/pricer/icon.png"
         }
       ],
       "screenshots": [
         {
-          "src": "/static/example-apps/training/pricer/screenshot.png",
+          "src": "/example-apps/training/pricer/screenshot.png",
           "label": "Demo Screenshot"
         }
       ],
       "type": "web",
       "details": {
-        "url": "/static/example-apps/training/pricer/index.html"
+        "url": "/html/example-apps/training/pricer/index.html"
       },
       "interop": {
         "intents": {
@@ -51,18 +51,18 @@
       "description": "A demo app for the FDC3 Developer Course",
       "icons": [
         {
-          "src": "/static/example-apps/training/tradelist/icon.png"
+          "src": "/example-apps/training/tradelist/icon.png"
         }
       ],
       "screenshots": [
         {
-          "src": "/static/example-apps/training/tradelist/screenshot.png",
+          "src": "/example-apps/training/tradelist/screenshot.png",
           "label": "Demo Screenshot"
         }
       ],
       "type": "web",
       "details": {
-        "url": "/static/example-apps/training/tradelist/index.html"
+        "url": "/html/example-apps/training/tradelist/index.html"
       },
       "interop": {},
       "hostManifests": {

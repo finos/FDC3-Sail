@@ -3,7 +3,7 @@ import { BasicDirectory, DirectoryApp } from "@finos/fdc3-web-impl";
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-export const DEFAULT_ICON = "/static/icons/control/choose-app.svg"
+export const DEFAULT_ICON = "/icons/control/choose-app.svg"
 
 export function getIcon(a: DirectoryApp | undefined) {
     if (a) {

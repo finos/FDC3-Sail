@@ -2,7 +2,6 @@ import { BrowserTypes } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
 import { TabDetail } from "@finos/fdc3-sail-common"
-import "../../static/fonts/DM_Sans/DM_Sans.css"
 import {
   isFdc3UserInterfaceChannels,
   isFdc3UserInterfaceHandshake,
@@ -105,9 +104,7 @@ window.addEventListener("load", () => {
       channels = details.payload.userChannels.map((c) => {
         return {
           background: c.displayMetadata?.color ?? "white",
-          icon:
-            c.displayMetadata?.glyph ??
-            "/static/tabs/noun-airplane-3707662.svg",
+          icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",
           title: c.displayMetadata?.name ?? "Untitled",
           id: c.id,
         }

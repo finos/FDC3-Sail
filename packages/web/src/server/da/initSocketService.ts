@@ -16,7 +16,7 @@ enum SocketType { DESKTOP_AGENT, APP }
 let debugReconnectionNumber = 0;
 
 export function getSailUrl(): string {
-    return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
+    return process.env.SAIL_URL || "http://localhost:8090"
 }
 
 function getFdc3ServerInstance(sessions: Map<string, SailFDC3Server>, userSessionId: string): Promise<SailFDC3Server> {
