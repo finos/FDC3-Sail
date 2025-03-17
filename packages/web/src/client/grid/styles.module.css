@@ -1,3 +1,5 @@
+/** Grids */
+
 .grids {
     border-radius: .5rem;
     padding: .5rem;
@@ -39,6 +41,7 @@
     gap: .3rem;
     padding-left: .2rem;
     padding-right: .2rem;
+
 }
 
 .resizeBaffle {
