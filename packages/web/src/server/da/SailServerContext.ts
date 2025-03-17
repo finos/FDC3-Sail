@@ -4,7 +4,7 @@ import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, S
 import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
 
 
 /**
@@ -82,6 +82,10 @@ export class SailServerContext implements ServerContext<SailData> {
                 channel: channel ?? null,
                 instanceTitle: details.instanceTitle
             })
+
+            if (channel) {
+                this.notifyUserChannelsChanged(details.instanceId)
+            }
 
             return details.instanceId
         }
@@ -287,13 +291,19 @@ export class SailServerContext implements ServerContext<SailData> {
         })
     }
 
-    async userChannelChanged(app: AppIdentifier, channelId: string | null): Promise<void> {
-        console.log("SAIL User channel changed", app, channelId)
-        const instance = this.getInstanceDetails(app.instanceId!)
-        if (instance) {
-            instance.channel = channelId
-        }
-        await this.socket.emitWithAck(SAIL_CHANNEL_CHANGE, app, channelId)
+    async notifyUserChannelsChanged(instanceId: string): Promise<void> {
+        console.log("SAIL User channels changed", instanceId)
+        const instance = this.getInstanceDetails(instanceId!)
+        this.post({
+            type: 'channelChangedEvent',
+            payload: {
+                channelId: instance?.channel ?? null
+            },
+            meta: {
+                requestUuid: uuidv4(),
+                timestamp: new Date()
+            }
+        }, instanceId)
     }
 
     async reloadAppDirectories(d: Directory[]) {

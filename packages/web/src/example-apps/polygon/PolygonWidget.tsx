@@ -48,7 +48,7 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
     if (apiKey) {
       const call = modeProps.endpoint(state, apiKey)
       fetch(call).then(async (response) => {
-        console.log("response", response)
+        console.log("CALLING POLYGON", response)
         const data = await response.json()
         console.log("data", data)
         setData(() => data)
