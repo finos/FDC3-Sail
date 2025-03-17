@@ -268,13 +268,10 @@ export class GridsStateImpl implements GridsState {
         if (!shadowRoot) {
             // this ensures styling of the contents of the grid
             shadowRoot = container.attachShadow({ mode: 'open' })
-            const styles = document.querySelectorAll("style");
-            styles.forEach((style) => {
-                const clonedStyle = style.cloneNode(
-                    true
-                ) as HTMLStyleElement;
-                shadowRoot!.appendChild(clonedStyle);
-            });
+            const styles = Array.from(document.querySelectorAll("style"));
+            const links = Array.from(document.querySelectorAll("link")).filter(l => l.href.endsWith(".css"));
+            [...styles, ...links].map(el => el.cloneNode(true))
+                .forEach(el => shadowRoot!.appendChild(el))
         }
 
         // remove old panels
