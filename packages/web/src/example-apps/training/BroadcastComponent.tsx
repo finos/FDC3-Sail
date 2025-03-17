@@ -14,6 +14,7 @@ function createContext(i: number) {
 export const BroadcastComponent = () => {
   const [fdc3, setFdc3] = useState<DesktopAgent | null>(null)
   const [currentChannel, setCurrentChannel] = useState<string | null>(null)
+  const [channelList, setChannelList] = useState<Channel[]>([])
 
   useEffect(() => {
     console.log("starting...")
@@ -31,6 +32,8 @@ export const BroadcastComponent = () => {
     const channel = await fdc3.getCurrentChannel()
     console.log("changed channel", channel)
     setCurrentChannel(channel?.id || null)
+    const channels = await fdc3.getUserChannels()
+    setChannelList(channels)
   }
 
   const broadcastContexts = async () => {
@@ -49,6 +52,12 @@ export const BroadcastComponent = () => {
       <h2>Broadcast Component</h2>
       <div className={styles.channelInfo}>
         Current channel: {currentChannel}
+      </div>
+      <div className={styles.channelList}>
+        <p>User Channels Available:</p>
+        {channelList.map((channel) => (
+          <div key={channel.id}>{channel.id}</div>
+        ))}
       </div>
       <button className={styles.broadcast} onClick={broadcastContexts}>
         Broadcast Contexts

@@ -27,3 +27,11 @@
 .broadcast:hover {
   background-color: #0056b3;
 }
+
+.channelList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
