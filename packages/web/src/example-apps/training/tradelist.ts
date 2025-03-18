@@ -56,14 +56,14 @@ function renderStock(si: StockItem): HTMLTableRowElement {
 
 
     // training 4
-    if (fdc3) {
+    if (fdc3 != null) {
         // quote button
         const price: HTMLButtonElement = document.createElement("button");
         buttons.appendChild(price);
         price.textContent = "..."
         price.onclick = () => {
             const ctx = { type: "fdc3.instrument", id: { ticker: si.ticker } };
-            fdc3.raiseIntentForContext(ctx);
+            fdc3!.raiseIntentForContext(ctx);
         }
     }
 
