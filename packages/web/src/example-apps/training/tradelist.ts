@@ -1,6 +1,6 @@
-import { fdc3Ready, Channel, getAgent } from '@finos/fdc3'
+import { Channel, DesktopAgent, getAgent } from '@finos/fdc3'
 
-var fdc3: DesktopAgent | undefined
+let fdc3: DesktopAgent | undefined = undefined
 
 type StockItem = {
     ticker: string,
