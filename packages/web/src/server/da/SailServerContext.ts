@@ -5,6 +5,7 @@ import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
 import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
+import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 
 
 /**
@@ -84,7 +85,7 @@ export class SailServerContext implements ServerContext<SailData> {
             })
 
             if (channel) {
-                this.notifyUserChannelsChanged(details.instanceId)
+                this.notifyUserChannelsChanged(details.instanceId, channel)
             }
 
             return details.instanceId
@@ -291,19 +292,24 @@ export class SailServerContext implements ServerContext<SailData> {
         })
     }
 
-    async notifyUserChannelsChanged(instanceId: string): Promise<void> {
-        console.log("SAIL User channels changed", instanceId)
+    async notifyUserChannelsChanged(instanceId: string, channelId: string | null): Promise<void> {
+        console.log("SAIL User channels changed", instanceId, channelId)
         const instance = this.getInstanceDetails(instanceId!)
-        this.post({
-            type: 'channelChangedEvent',
-            payload: {
-                channelId: instance?.channel ?? null
-            },
-            meta: {
-                requestUuid: uuidv4(),
-                timestamp: new Date()
+        if (instance) {
+            instance.channel = channelId
+            const channelChangeEvent: ChannelChangedEvent = {
+                type: 'channelChangedEvent',
+                payload: {
+                    newChannelId: channelId,
+                    userChannels: 
+                },
+                meta: {
+                    eventUuid: uuidv4(),
+                    timestamp: new Date()
+                }
             }
-        }, instanceId)
+            this.post(channelChangeEvent, instanceId)
+        }
     }
 
     async reloadAppDirectories(d: Directory[]) {

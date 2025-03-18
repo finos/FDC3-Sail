@@ -146,7 +146,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 // tell each app to check for a channel change
                 session.serverContext.getConnectedApps().then((apps) => {
                     apps.forEach((app) => {
-                        session.serverContext.notifyUserChannelsChanged(app.instanceId)
+                        const ar = app as SailData
+                        session.serverContext.notifyUserChannelsChanged(app.instanceId, ar.channel)
                     })
                 })
                 callback(true)
@@ -166,8 +167,9 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     requestUuid: uuid(),
                     timestamp: new Date()
                 }
-            } as BrowserTypes.JoinUserChannelRequest, props.instanceId).then(async () => {
-                await session.serverContext.notifyUserChannelsChanged(props.instanceId)
+            } as BrowserTypes.JoinUserChannelRequest, props.instanceId).then(async (resp) => {
+                console.log("SAIL JOIN USER CHANNEL RESPONSE: " + JSON.stringify(resp))
+                await session.serverContext.notifyUserChannelsChanged(props.instanceId, props.channel)
                 callback(true)
             })
         })
