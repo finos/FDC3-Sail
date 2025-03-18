@@ -9,7 +9,7 @@ const WEB_PREFERENCES = {
 }
 
 function getSailUrl(): string {
-    return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
+    return process.env.SAIL_URL || "http://localhost:8090"
 }
 
 
@@ -20,7 +20,7 @@ async function createWindow() {
         webPreferences: WEB_PREFERENCES
     })
 
-    await win.loadFile('static/loading.html')
+    await win.loadFile('loading.html')
 
     await waitForServer()
 

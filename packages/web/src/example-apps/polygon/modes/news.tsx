@@ -17,7 +17,14 @@ export const newsMode: PolygonMode = {
       },
     },
   ],
-  listeners: [],
+  listeners: [
+    {
+      name: "fdc3.instrument",
+      function: (context: any) => {
+        return context?.id?.ticker
+      },
+    },
+  ],
   dataRenderer: (data: any) => {
     return <NewsComponent newsData={data.results ?? []} />
   },

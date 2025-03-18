@@ -82,7 +82,7 @@ export class DefaultAppState implements AppState {
                                     timestamp: new Date()
                                 },
                                 payload: {
-                                    iframeUrl: window.location.origin + `/static/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId ?? 'unknown'}`
+                                    iframeUrl: window.location.origin + `/html/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId ?? 'unknown'}`
                                 }
                             }, origin)
                         } else {

@@ -5,7 +5,7 @@ export const Bin = () => {
   return (
     <div className={styles.control} id="trash">
       <img
-        src="/static/icons/control/bin.svg"
+        src="/icons/control/bin.svg"
         title="Remove App"
         className={styles.controlImage}
       />
@@ -17,7 +17,7 @@ export const NewPanel = ({ onClick }: { onClick: () => void }) => {
   return (
     <div className={styles.control}>
       <img
-        src="/static/icons/control/add.svg"
+        src="/icons/control/add.svg"
         title="Add Tab"
         className={styles.controlImage}
         onClick={onClick}
@@ -30,7 +30,7 @@ export const Resolver = ({ onClick }: { onClick: () => void }) => {
   return (
     <div className={styles.control}>
       <img
-        src="/static/icons/control/resolver.svg"
+        src="/icons/control/resolver.svg"
         title="Add Tab"
         className={styles.controlImage}
         onClick={onClick}

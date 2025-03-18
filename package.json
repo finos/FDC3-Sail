@@ -12,7 +12,6 @@
   "workspaces": [
     "packages/common",
     "packages/web",
-    "packages/training",
     "packages/preload",
     "packages/electron"
   ],

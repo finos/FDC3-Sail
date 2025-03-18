@@ -7,7 +7,7 @@
             "description": "Uses the old window.fdc3 approach.  Should work in electron",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/old/index.html"
+                "url": "/html/example-apps/old/index.html"
             },
             "version": "1.0.0",
             "publisher": "FINOS",

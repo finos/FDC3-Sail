@@ -64,7 +64,7 @@ npm install
 npm run web
 ```
 
-Point your browser at http://localhost:8090/static/index.html
+Point your browser at http://localhost:8090
 
 ![Sail Initial Screen](./packages/web/images/blank-screen.png)
 
@@ -89,7 +89,19 @@ Once an application is opened, you'll be able to see it, and interact with it, i
 
 ![FDC3 Workbench](./packages/web/images/workbench.png)
 
-### Polygon
+### The FDC3 Workbench
+
+The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is bundled on the main FDC3 website at [https://fdc3.finos.org/toolbox/fdc3-workbench/](https://fdc3.finos.org/toolbox/fdc3-workbench/) and can be used within Sail. It's directory entry is in the `directory/workbench.json` file.
+
+**NOTE:** This answers a very commonly-asked question in FDC3: Can apps be hosted on different domains? Poeple believe this might be impossible due to browser sandboxing, but the answer is yes, and the Workbench is a good example of this.
+
+### Trading View Applications
+
+[TradingView](tradingview.com) provides a number of widgets that can be embedded in a web page. The `packages/web/public/example-apps/tradingview` directory contains a number of apps that use the TradingView widgets and respond to FDC3 broadcast and raise intent events. The AppD records for these are in the `directory/tradingview.json` file.
+
+### Polygon Applications
+
+The `packages/web/public/example-apps/polygon` directory contains a number of apps that use the [Polygon API](polygon.io) you can open. The AppD records for these are in the `directory/polygon.json` file.
 
 If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
 
@@ -98,18 +110,18 @@ POLYGON_API_KEY=your_api_key
 npm run web
 ```
 
-## Tutorial Applications
+## Training / Tutorial Applications
 
 For the purposes of the training tutorial, Sail has been bundled with two toy applications:
 
 - `Pricer`: A simple application that displays a price for a given instrument.
 - `TradeList`: A simple application that displays a list of trades.
+- `ChanelListener`: A simple application that listens for messages on a channel.
+- `ChannelBroadcaster`: A simple application that broadcasts messages on a channel.
 
 You can start these from the app picker.
 
-These applications are hed in the `training` folder within the Sail distribution that you downloaded and are run on their own web server on port 5000. You can access them directly by visiting http://localhost:5000/static/pricer/index.html or http://localhost:5000/static/tradelist/index.html.
-
-**Note**: If you want to run the training apps _without running Sail_ you can do this by running `npm run dev-training` instead of `npm run dev` as described above.
+These applications are hed in the `directories/training.json` app directory file within the Sail distribution that you downloaded and are run from within the Sail web server. You can access them directly by visiting http://localhost:8090/example-apps/training/pricer/index.html or http://localhost:8099/example-apps/training/tradelist/index.html.
 
 ## About Application Directories
 

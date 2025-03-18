@@ -83,12 +83,10 @@
     color: #555;
 }
 
-
-
 .newsAuthor {
-    /* Add your styles for the news author here */
+    font-size: 0.8rem;
 }
 
 .newsDate {
-    /* Add your styles for the news date here */
+    font-size: 0.8rem;
 }

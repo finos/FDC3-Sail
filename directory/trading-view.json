@@ -7,11 +7,11 @@
             "description": "Displays a symbol info of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/index.html?mode=symbol-info"
+                "url": "/html/example-apps/tradingview/index.html?mode=symbol-info"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/symbol-info.png",
+                    "src": "/example-apps/tradingview/symbol-info.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -20,7 +20,7 @@
             "publisher": "FINOS",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "/example-apps/tradingview/tradingview-icon.png"
                 }
             ],
             "interop": {
@@ -31,12 +31,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -49,11 +43,11 @@
             "description": "Displays a chart of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/index.html?mode=chart"
+                "url": "/html/example-apps/tradingview/index.html?mode=chart"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/chart.png",
+                    "src": "/example-apps/tradingview/chart.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -62,7 +56,7 @@
             "publisher": "FINOS",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "/example-apps/tradingview/tradingview-icon.png"
                 }
             ],
             "interop": {
@@ -85,11 +79,11 @@
             "description": "Displays fundamentals of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/index.html?mode=fundamentals"
+                "url": "/html/example-apps/tradingview/index.html?mode=fundamentals"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/fundamentals.png",
+                    "src": "/example-apps/tradingview/fundamentals.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -98,7 +92,7 @@
             "publisher": "FINOS",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "/example-apps/tradingview/tradingview-icon.png"
                 }
             ],
             "interop": {
@@ -109,12 +103,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -127,11 +115,11 @@
             "description": "Displays tickers of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/index.html?mode=tickers"
+                "url": "/html/example-apps/tradingview/index.html?mode=tickers"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/tickers.png",
+                    "src": "/example-apps/tradingview/tickers.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -140,7 +128,7 @@
             "publisher": "FINOS",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "/example-apps/tradingview/tradingview-icon.png"
                 }
             ],
             "interop": {
@@ -151,12 +139,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -169,11 +151,11 @@
             "description": "Displays market data of a given stock, using the TradingView applications",
             "type": "web",
             "details": {
-                "url": "/static/example-apps/tradingview/index.html?mode=market-data"
+                "url": "/html/example-apps/tradingview/index.html?mode=market-data"
             },
             "screenshots": [
                 {
-                    "src": "/static/example-apps/tradingview/market-data.png",
+                    "src": "/example-apps/tradingview/market-data.png",
                     "label": "Demo Screenshot"
                 }
             ],
@@ -182,7 +164,7 @@
             "publisher": "FINOS",
             "icons": [
                 {
-                    "src": "/static/example-apps/tradingview/tradingview-icon.png"
+                    "src": "/example-apps/tradingview/tradingview-icon.png"
                 }
             ],
             "interop": {
@@ -193,12 +175,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }

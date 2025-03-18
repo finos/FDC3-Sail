@@ -16,7 +16,7 @@ enum SocketType { DESKTOP_AGENT, APP }
 let debugReconnectionNumber = 0;
 
 export function getSailUrl(): string {
-    return process.env.SAIL_URL || "http://localhost:8090/static/index.html"
+    return process.env.SAIL_URL || "http://localhost:8090"
 }
 
 function getFdc3ServerInstance(sessions: Map<string, SailFDC3Server>, userSessionId: string): Promise<SailFDC3Server> {
@@ -143,6 +143,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             console.log("SAIL APP STATE: " + JSON.stringify(props))
             const session = await getFdc3ServerInstance(sessions, props.userSessionId)
             session?.serverContext.reloadAppDirectories(props.directories).then(() => {
+                // tell each app to check for a channel change
+                session.serverContext.getConnectedApps().then((apps) => {
+                    apps.forEach((app) => {
+                        session.serverContext.notifyUserChannelsChanged(app.instanceId)
+                    })
+                })
                 callback(true)
             })
         })
@@ -160,7 +166,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     requestUuid: uuid(),
                     timestamp: new Date()
                 }
-            } as BrowserTypes.JoinUserChannelRequest, props.instanceId).then(() => {
+            } as BrowserTypes.JoinUserChannelRequest, props.instanceId).then(async () => {
+                await session.serverContext.notifyUserChannelsChanged(props.instanceId)
                 callback(true)
             })
         })
