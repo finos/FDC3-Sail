@@ -1,34 +1,48 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { getAgent } from "@finos/fdc3-get-agent"
-import { DesktopAgent } from "@finos/fdc3"
+import { DesktopAgent, Listener } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import styles from "./receive.module.css"
 
 export const ReceiveComponent = () => {
   const [logMessages, setLogMessages] = useState<string[]>([])
   const [currentChannel, setCurrentChannel] = useState<string | null>(null)
+  const [listener, setListener] = useState<Promise<Listener> | null>(null)
 
   useEffect(() => {
     console.log("starting...")
     getAgent().then((agent) => {
       console.log("got api...")
       handleChannelChanged(agent)
+
       agent.addEventListener("userChannelChanged", () =>
         handleChannelChanged(agent),
       )
-      agent.addContextListener(null, (context) => {
-        setLogMessages((prev) => [
-          ...prev,
-          "Received: " + JSON.stringify(context),
-        ])
-      })
     })
   }, [])
 
   const handleChannelChanged = async (fdc3: DesktopAgent) => {
     const channel = await fdc3.getCurrentChannel()
-    console.log("changed channel", channel)
-    setCurrentChannel(channel?.id || null)
+    if (channel !== currentChannel) {
+      console.log("setting channel", channel)
+      setCurrentChannel(channel?.id || null)
+    }
+
+    setListener((l) => {
+      if (l == null && channel != null) {
+        console.log("setting listener", listener)
+        const lp = fdc3.addContextListener(null, (context) => {
+          setLogMessages((prev) => [
+            ...prev,
+            "Received: " + JSON.stringify(context),
+          ])
+        })
+
+        return lp
+      } else {
+        return l
+      }
+    })
   }
 
   return (

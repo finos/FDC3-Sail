@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { DesktopAgent } from "@finos/fdc3"
+import { Channel, DesktopAgent } from "@finos/fdc3"
 import { getAgent } from "@finos/fdc3-get-agent"
 import { createRoot } from "react-dom/client"
 import styles from "./broadcast.module.css"
@@ -50,13 +50,17 @@ export const BroadcastComponent = () => {
   return (
     <div className={styles.broadcastComponent}>
       <h2>Broadcast Component</h2>
-      <div className={styles.channelInfo}>
-        Current channel: {currentChannel}
-      </div>
       <div className={styles.channelList}>
-        <p>User Channels Available:</p>
         {channelList.map((channel) => (
-          <div key={channel.id}>{channel.id}</div>
+          <div
+            key={channel.id}
+            className={styles.channelItem}
+            style={
+              channel.id == currentChannel ? { backgroundColor: "green" } : {}
+            }
+          >
+            {channel.id}
+          </div>
         ))}
       </div>
       <button className={styles.broadcast} onClick={broadcastContexts}>
