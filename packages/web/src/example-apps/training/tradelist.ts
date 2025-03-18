@@ -1,4 +1,6 @@
-import { fdc3Ready, Channel } from '@finos/fdc3'
+import { fdc3Ready, Channel, getAgent } from '@finos/fdc3'
+
+var fdc3: DesktopAgent | undefined
 
 type StockItem = {
     ticker: string,
@@ -53,17 +55,17 @@ function renderStock(si: StockItem): HTMLTableRowElement {
     out.appendChild(buttons);
 
 
-    // // training 4
-    // if (window.fdc3) {
-    //     // quote button
-    //     const price: HTMLButtonElement = document.createElement("button");
-    //     buttons.appendChild(price);
-    //     price.textContent = "..."
-    //     price.onclick = () => {
-    //         const ctx = { type: "fdc3.instrument", id: { ticker: si.ticker } };
-    //         window.fdc3.raiseIntentForContext(ctx);
-    //     }
-    // }
+    // training 4
+    if (fdc3) {
+        // quote button
+        const price: HTMLButtonElement = document.createElement("button");
+        buttons.appendChild(price);
+        price.textContent = "..."
+        price.onclick = () => {
+            const ctx = { type: "fdc3.instrument", id: { ticker: si.ticker } };
+            fdc3.raiseIntentForContext(ctx);
+        }
+    }
 
     return out;
 }
@@ -100,7 +102,8 @@ theForm.addEventListener("submit", event => {
 window.addEventListener("load", () => render());
 
 
-fdc3Ready().then(() => {
+getAgent().then((fdc3_agent) => {
+    fdc3 = fdc3_agent
     // update the screen
     setInterval(render, 5000);
 })
