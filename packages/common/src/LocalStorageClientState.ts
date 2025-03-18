@@ -29,7 +29,7 @@ export class LocalStorageClientState extends AbstractClientState {
     async saveState(): Promise<void> {
         const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps })
         localStorage.setItem(STORAGE_KEY, data)
-        console.log(`SAIL saved state: ${data}`)
+        // console.log(`SAIL saved state: ${data}`)
         this.callbacks.forEach(cb => cb())
         await this.ss!.sendClientState(this.tabs, this.directories)
     }

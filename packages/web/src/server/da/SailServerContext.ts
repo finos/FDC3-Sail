@@ -268,7 +268,7 @@ export class SailServerContext implements ServerContext<SailData> {
                             const theApp = theAppIntent.apps[0]
                             const instanceId = await this.openSail(theApp.appId, response.channel)
 
-                            await waitForCondition(() => this.getInstanceDetails(instanceId)?.state == State.Connected)
+                            await waitForCondition(() => this.getInstanceDetails(instanceId)?.state == State.Connected)  // not enough! 
                             const out: AppIntent[] = [
                                 {
                                     intent: theAppIntent.intent,
