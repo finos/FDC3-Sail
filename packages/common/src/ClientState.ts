@@ -1,5 +1,5 @@
 import { GridStackPosition } from "gridstack"
-import { DesktopAgentHelloArgs, TabDetail, Directory, AugmentedAppIntent } from "./message-types";
+import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from "./message-types";
 import { Context } from "@finos/fdc3-context";
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 
@@ -55,7 +55,7 @@ export interface ClientState {
     /**
      * For connecting to the server
      */
-    createArgs(): DesktopAgentHelloArgs
+    createArgs(): SailClientStateArgs
 
     /**
      * Triggers intent resolution

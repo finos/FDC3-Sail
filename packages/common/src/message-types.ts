@@ -2,6 +2,7 @@ import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-imp
 import { AppHosting } from "./app-hosting"
 import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
+import { AppPanel } from "./ClientState"
 
 export type TabDetail = {
     id: string,
@@ -51,7 +52,15 @@ export type DesktopAgentHelloArgs = {
     userSessionId: string,
     directories: string[],
     channels: ChannelState[],
+    panels: AppPanel[]
 }
+
+/**
+ * Sent from the browser to the server to say that the client has updated state
+ */
+export const SAIL_CLIENT_STATE = 'sail-client-state'
+
+export type SailClientStateArgs = DesktopAgentHelloArgs
 
 /**
  * Sent when a browser app connects to the server
@@ -162,17 +171,6 @@ export type SailChannelChangeArgs = {
 export const SAIL_APP_STATE = 'sail-app-state'
 
 export type SailAppStateArgs = AppRegistration[]
-
-/**
- * Sent from the browser to the server to say that the client has updated state
- */
-export const SAIL_CLIENT_STATE = 'sail-client-state'
-
-export type SailClientStateArgs = {
-    userSessionId: string,
-    tabs: TabDetail[],
-    directories: Directory[]
-}
 
 /**
  * These two messages carry FDC3 Communication Protocol messages.

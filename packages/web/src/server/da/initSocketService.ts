@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, SailClientStateArgs, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SailClientStateArgs } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -140,19 +140,25 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs, callback: (success: any, err?: string) => void) {
-            console.log("SAIL APP STATE: " + JSON.stringify(props))
+            console.log("SAIL CLIENT STATE: " + JSON.stringify(props))
             const session = await getFdc3ServerInstance(sessions, props.userSessionId)
             session?.serverContext.reloadAppDirectories(props.directories).then(() => {
                 // tell each app to check for a channel change
-                session.serverContext.getConnectedApps().then((apps) => {
-                    apps.forEach((app) => {
-                        const ar = app as SailData
-                        session.serverContext.notifyUserChannelsChanged(app.instanceId, ar.channel)
-                    })
+                props.panels.forEach((panel) => {
+                    // make sure apps channels match to the client
+                    const state = session.serverContext.getInstanceDetails(panel.panelId)
+                    if (state) {
+                        const newChannel = panel.tabId
+                        const existingChannel = state.channel
+                        if (newChannel !== existingChannel) {
+                            session.serverContext.notifyUserChannelsChanged(panel.panelId, newChannel)
+                        }
+                    }
                 })
-                callback(true)
             })
+            callback(true)
         })
+
 
         socket.on(SAIL_CHANNEL_CHANGE, async function (props: SailChannelChangeArgs, callback: (success: any, err?: string) => void) {
             console.log("SAIL CHANNEL CHANGE: " + JSON.stringify(props))

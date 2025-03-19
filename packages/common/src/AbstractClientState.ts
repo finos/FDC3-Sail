@@ -1,6 +1,6 @@
 import { ChannelType, DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
-import { DesktopAgentHelloArgs, Directory, TabDetail } from "./message-types";
+import { Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { DisplayMetadata } from "@finos/fdc3-standard";
 
 export abstract class AbstractClientState implements ClientState {
@@ -161,7 +161,7 @@ export abstract class AbstractClientState implements ClientState {
         await this.saveState()
     }
 
-    createArgs(): DesktopAgentHelloArgs {
+    createArgs(): SailClientStateArgs {
         return {
             userSessionId: this.userSessionId,
             directories: this.directories.filter(d => d.active).map(d => d.url),
@@ -176,6 +176,7 @@ export abstract class AbstractClientState implements ClientState {
                     context: []
                 }
             }),
+            panels: this.panels
         }
     }
 
