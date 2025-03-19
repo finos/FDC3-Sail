@@ -122,21 +122,21 @@ window.addEventListener("load", () => {
 
 })
 
-getAgent().then(() => {
+getAgent().then((fdc3) => {
 
-    // // training 1
-    // window.fdc3.addContextListener("fdc3.instrument", (instrument) => {
-    //     if (instrument?.id?.ticker) {
-    //         changePrice(instrument.id.ticker);
-    //     }
-    // })
+    // training 1
+    fdc3.addContextListener("fdc3.instrument", (instrument) => {
+        if (instrument?.id?.ticker) {
+            changePrice(instrument.id.ticker);
+        }
+    })
 
-    // // training 3
-    // window.fdc3.addIntentListener("ViewQuote", (instrument) => {
-    //     if (instrument?.id?.ticker) {
-    //         changePrice(instrument.id.ticker);
-    //     }
-    // })
+    // training 3
+    fdc3.addIntentListener("ViewQuote", (instrument) => {
+        if (instrument?.id?.ticker) {
+            changePrice(instrument.id.ticker);
+        }
+    })
 
 });
 

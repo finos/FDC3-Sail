@@ -34,13 +34,15 @@ export const PolygonWidget = ({ mode }: { mode: string }) => {
         })
       })
 
-      modeProps.listeners.forEach((listener) => {
-        fdc3.addContextListener(listener.name, (context) => {
-          const newState = listener.function(context, state)
-          setState(() => newState)
-          console.log("new state", newState)
+      setTimeout(() => {
+        modeProps.listeners.forEach((listener) => {
+          fdc3.addContextListener(listener.name, (context) => {
+            const newState = listener.function(context, state)
+            setState(() => newState)
+            console.log("new state", newState)
+          })
         })
-      })
+      }, 2000)
     })
   }, [state])
 

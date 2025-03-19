@@ -50,8 +50,8 @@ function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId:
 
             console.log("SAIL Received: " + JSON.stringify(response));
 
-            const intentResolverUrl = response == AppHosting.Tab ? window.location.origin + "/ui/intent-resolver.html" : undefined
-            const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + "/ui/channel-selector.html" : undefined
+            const intentResolverUrl = response == AppHosting.Tab ? window.location.origin + "/html/ui/intent-resolver.html" : undefined
+            const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + "/html/ui/channel-selector.html" : undefined
 
             // send the other end of the channel to the app
             appWindow.postMessage({

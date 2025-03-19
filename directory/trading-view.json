@@ -31,12 +31,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -109,12 +103,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -151,12 +139,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
@@ -193,12 +175,6 @@
                                 "fdc3.instrument"
                             ],
                             "displayName": "View Instrument"
-                        },
-                        "ViewChart": {
-                            "contexts": [
-                                "fdc3.instrument"
-                            ],
-                            "displayName": "View Chart"
                         }
                     }
                 }
