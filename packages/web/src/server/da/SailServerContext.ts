@@ -17,6 +17,7 @@ import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/Brows
  */
 export type SailData = AppRegistration & {
     socket?: Socket,
+    channelSocket?: Socket,
     url?: string,
     hosting: AppHosting,
     channel: string | null,
