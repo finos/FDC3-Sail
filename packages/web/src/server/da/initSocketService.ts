@@ -153,6 +153,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     if (state) {
                         const newChannel = panel.tabId
                         const existingChannel = state.channel
+                        state.instanceTitle = panel.title
                         if (newChannel !== existingChannel) {
                             session.serverContext.notifyUserChannelsChanged(panel.panelId, newChannel)
                         }
