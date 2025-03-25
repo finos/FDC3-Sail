@@ -7,18 +7,18 @@
       "description": "A demo app for the FDC3 Developer Course",
       "icons": [
         {
-          "src": "http://localhost:5000/static/pricer/icon.png"
+          "src": "/example-apps/training/pricer/icon.png"
         }
       ],
       "screenshots": [
         {
-          "src": "http://localhost:5000/static/pricer/screenshot.png",
+          "src": "/example-apps/training/pricer/screenshot.png",
           "label": "Demo Screenshot"
         }
       ],
       "type": "web",
       "details": {
-        "url": "http://localhost:5000/static/pricer/index.html"
+        "url": "/html/example-apps/training/pricer/index.html"
       },
       "interop": {
         "intents": {
@@ -51,18 +51,18 @@
       "description": "A demo app for the FDC3 Developer Course",
       "icons": [
         {
-          "src": "http://localhost:5000/static/tradelist/icon.png"
+          "src": "/example-apps/training/tradelist/icon.png"
         }
       ],
       "screenshots": [
         {
-          "src": "http://localhost:5000/static/tradelist/screenshot.png",
+          "src": "/example-apps/training/tradelist/screenshot.png",
           "label": "Demo Screenshot"
         }
       ],
       "type": "web",
       "details": {
-        "url": "http://localhost:5000/static/tradelist/index.html"
+        "url": "/html/example-apps/training/tradelist/index.html"
       },
       "interop": {},
       "hostManifests": {
@@ -70,6 +70,54 @@
           "injectApi": "2.0"
         }
       }
+    },
+    {
+      "appId": "sail-training-broadcaster",
+      "name": "Sail Broadcaster",
+      "title": "Sail Broadcaster",
+      "description": "App will connect to the desktop agent and broadcast on the user channel when you hit the button",
+      "type": "web",
+      "details": {
+        "url": "/html/example-apps/training/broadcast/index.html"
+      },
+      "hostManifests": {},
+      "version": "1.0.0",
+      "publisher": "FINOS",
+      "icons": [
+        {
+          "src": "/example-apps/training/broadcast/icon.svg"
+        }
+      ],
+      "screenshots": [
+        {
+          "src": "/example-apps/training/broadcast/screenshot.png",
+          "label": "Demo Screenshot"
+        }
+      ]
+    },
+    {
+      "appId": "sail-training-receiver",
+      "name": "Sail Receiver",
+      "title": "Sail Receiver",
+      "description": "App will connect to the desktop agent on startup and listen to messages",
+      "type": "web",
+      "details": {
+        "url": "/html/example-apps/training/receive/index.html"
+      },
+      "icons": [
+        {
+          "src": "/example-apps/training/receive/icon.svg"
+        }
+      ],
+      "screenshots": [
+        {
+          "src": "/example-apps/training/receive/screenshot.png",
+          "label": "Demo Screenshot"
+        }
+      ],
+      "hostManifests": {},
+      "version": "1.0.0",
+      "publisher": "FINOS"
     }
   ],
   "message": "OK"

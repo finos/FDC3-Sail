@@ -1,7 +1,7 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, Directory, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse, TabDetail } from "./message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse } from "./message-types";
 import { AppHosting } from "./app-hosting";
 import { ServerState } from "./ServerState";
 import { AppState } from "./AppState";
@@ -45,14 +45,12 @@ export class ServerStateImpl implements ServerState {
         return instanceId
     }
 
-    async sendClientState(tabs: TabDetail[], directories: Directory[]): Promise<void> {
+    async sendClientState(cs: SailClientStateArgs): Promise<void> {
         if (!this.socket) {
             return
         }
-        const userSessionId = this.cs!.getUserSessionID()
 
-
-        await this.socket.emitWithAck(SAIL_CLIENT_STATE, { userSessionId, tabs, directories } as SailClientStateArgs)
+        await this.socket.emitWithAck(SAIL_CLIENT_STATE, cs)
     }
 
     registerDesktopAgent(props: DesktopAgentHelloArgs): Promise<void> {
@@ -62,7 +60,7 @@ export class ServerStateImpl implements ServerState {
         this.socket = io()
         this.socket.on("connect", () => {
             this.socket?.emit(DA_HELLO, props, () => {
-                this.sendClientState(this.cs!.getTabs(), this.cs!.getDirectories()).then(async () => {
+                this.sendClientState(this.cs!.createArgs()).then(async () => {
                     await this.getApplications()
                 }).catch(e => {
                     console.error("Error sending client state", e)

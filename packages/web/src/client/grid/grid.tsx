@@ -46,7 +46,7 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
           // this is a bit hacky but we need to track the window objects
           // in the app state so we make sure we know who we're talking to
           if (ref) {
-            const contentWindow = (ref).contentWindow
+            const contentWindow = ref.contentWindow
             getAppState().registerAppWindow(contentWindow!, panel.panelId)
           }
         }, 10)
@@ -55,16 +55,6 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
   )
 }
 
-// const LockIcon = () => {
-//   return (
-//     <img
-//       src="/static/icons/control/lock.svg"
-//       className={styles.contentTitleIcon}
-//       title="Lock"
-//     />
-//   )
-//}
-
 const AppStateIcon = ({
   instanceId,
   as,
@@ -72,7 +62,7 @@ const AppStateIcon = ({
   instanceId: string
   as: AppState
 }) => {
-  const D = "/static/icons/app-state/"
+  const D = "/icons/app-state/"
 
   function symbolForState(s: State | undefined): string[] {
     if (s == undefined) {
@@ -98,21 +88,10 @@ const AppStateIcon = ({
   )
 }
 
-// const PopOutIcon = ({ action }: { action: () => void }) => {
-//   return (
-//     <img
-//       src="/static/icons/control/pop-out.svg"
-//       className={styles.contentTitleIcon}
-//       title="Pop Out"
-//       onClick={() => action()}
-//     />
-//   )
-// }
-
 const CloseIcon = ({ action }: { action: () => void }) => {
   return (
     <img
-      src="/static/icons/control/close.svg"
+      src="/icons/control/close.svg"
       className={styles.contentTitleIcon}
       title="Pop Out"
       onClick={() => action()}

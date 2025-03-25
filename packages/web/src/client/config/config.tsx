@@ -4,8 +4,9 @@ import { ClientState } from "@finos/fdc3-sail-common"
 import { Popup } from "../popups/popup"
 import { DirectoryList } from "./directories"
 import { TabList } from "./tabs"
+import { CustomAppList } from "./customApps"
 
-const CONFIG_ITEMS = ["Directories", "Tabs"]
+const CONFIG_ITEMS = ["Directories", "Tabs", "Custom Apps"]
 
 type AppPanelProps = {
   closeAction: () => void
@@ -31,7 +32,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
         title="Sail Configuration"
         area={
           <div className={styles.configContent}>
-            <div className={styles.configChoice}>
+            <div className={styles.configChoiceLeft}>
               {CONFIG_ITEMS.map((a) => (
                 <div
                   key={a}
@@ -46,6 +47,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
             <div className={styles.configChoice}>
               {this.state.item == CONFIG_ITEMS[0] ? <DirectoryList /> : null}
               {this.state.item == CONFIG_ITEMS[1] ? <TabList /> : null}
+              {this.state.item == CONFIG_ITEMS[2] ? <CustomAppList /> : null}
             </div>
           </div>
         }

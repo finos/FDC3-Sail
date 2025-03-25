@@ -1,6 +1,6 @@
 import { ChannelType, DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
-import { DesktopAgentHelloArgs, Directory, TabDetail } from "./message-types";
+import { Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { DisplayMetadata } from "@finos/fdc3-standard";
 
 export abstract class AbstractClientState implements ClientState {
@@ -13,14 +13,16 @@ export abstract class AbstractClientState implements ClientState {
     callbacks: (() => void)[] = []
     protected intentResolution: IntentResolution | null = null
     protected knownApps: DirectoryApp[] = []
+    protected customApps: DirectoryApp[] = []
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[]) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[]) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
         this.userSessionId = userSessionId
         this.directories = directories
         this.knownApps = knownApps
+        this.customApps = customApps
     }
 
     abstract saveState(): Promise<void>
@@ -161,7 +163,7 @@ export abstract class AbstractClientState implements ClientState {
         await this.saveState()
     }
 
-    createArgs(): DesktopAgentHelloArgs {
+    createArgs(): SailClientStateArgs {
         return {
             userSessionId: this.userSessionId,
             directories: this.directories.filter(d => d.active).map(d => d.url),
@@ -176,6 +178,8 @@ export abstract class AbstractClientState implements ClientState {
                     context: []
                 }
             }),
+            panels: this.panels,
+            customApps: this.customApps
         }
     }
 
@@ -202,4 +206,12 @@ export abstract class AbstractClientState implements ClientState {
         await this.saveState()
     }
 
+    async setCustomApps(apps: DirectoryApp[]): Promise<void> {
+        this.customApps = apps
+        await this.saveState()
+    }
+
+    getCustomApps(): DirectoryApp[] {
+        return this.customApps
+    }
 }

@@ -3,7 +3,7 @@ import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
 import { Icon } from "../icon/icon"
 
-const ICON_PATH = "/static/icons/tabs/"
+const ICON_PATH = "/icons/tabs/"
 
 const BUILT_IN_TABS: string[] = [
   "noun-airplane-3707662.svg",
@@ -128,7 +128,7 @@ const TabItem = ({ d }: { d: TabDetail }) => {
       </div>
       <div className={styles.verticalControls}>
         <input
-          className={styles.color}
+          className={styles.colour}
           type="color"
           value={d.background}
           onChange={(e) => updateBackground(d.id, e.currentTarget.value)}
@@ -154,25 +154,29 @@ const TabItem = ({ d }: { d: TabDetail }) => {
         <InlineButton
           onClick={() => move(d.id, "up")}
           text="Move Tab Up"
-          url="/static/icons/control/move-up.svg"
+          url="/icons/control/move-up.svg"
+          className={styles.miniButton}
         />
         <InlineButton
           onClick={() => move(d.id, "down")}
           text="Move Tab Down"
-          url="/static/icons/control/move-down.svg"
+          url="/icons/control/move-down.svg"
+          className={styles.miniButton}
         />
       </div>
       {!hasApps(d.id) ? (
         <InlineButton
           onClick={() => removeTab(d.id)}
           text="Remove This Tab"
-          url="/static/icons/control/bin.svg"
+          url="/icons/control/bin.svg"
+          className={styles.actionButton}
         />
       ) : (
         <InlineButton
           onClick={() => {}}
           text="Tab Can't Be Removed - Has Apps"
-          url="/static/icons/control/grey-bin.svg"
+          url="/icons/control/grey-bin.svg"
+          className={styles.actionButton}
         />
       )}
     </div>

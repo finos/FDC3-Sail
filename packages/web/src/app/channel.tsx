@@ -4,7 +4,7 @@ import styles from "./styles.module.css"
 
 const NO_CHANNEL: TabDetail = {
   background: "white",
-  icon: "/static/icons/logo/logo.png",
+  icon: "/icons/logo/logo.png",
   id: "No Channel",
 }
 
@@ -72,7 +72,7 @@ export const ChannelPicker = ({
     const theChannel = channels.find((c) => c.id == selected) ?? NO_CHANNEL
     return (
       <div className={styles.channelBox}>
-        <Channel channel={theChannel} active={false} onClick={changeSize} />
+        <Channel channel={theChannel} active={true} onClick={changeSize} />
       </div>
     )
   }

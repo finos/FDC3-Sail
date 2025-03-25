@@ -15,7 +15,7 @@ const sessions = new Map<string, SailFDC3Server>()
 app.use(express.json())
 
 const httpServer = ViteExpress.listen(app, 8090, () => {
-  console.log(`SAIL Server is listening.  Head to ${getSailUrl()}`)
+  console.log(`SAIL Server is listening in ${process.env.NODE_ENV} mode.  Head to ${getSailUrl()}`)
 });
 
 initSocketService(httpServer, sessions)
@@ -26,6 +26,5 @@ app.get("/polygon-key", (_req, res) => {
 })
 
 app.get("/", (_req, res) => {
-  // redirect to /static/index.html
-  res.redirect("/static/index.html")
+  res.redirect("/html/index.html")
 })

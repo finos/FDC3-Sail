@@ -281,7 +281,7 @@ export const ResolverPanel = ({
                 li={"No Channel"}
                 text={"New Tab"}
                 background={null}
-                icon={"/static/icons/logo/logo.svg"}
+                icon={"/icons/logo/logo.svg"}
                 setState={() => {
                   setState({
                     newApps: state.newApps,
@@ -298,7 +298,7 @@ export const ResolverPanel = ({
                 <LineItemComponent
                   key={i}
                   li={i}
-                  icon={"/static/icons/control/intent.svg"}
+                  icon={"/icons/control/intent.svg"}
                   background={null}
                   text={i}
                   setState={(a) => {

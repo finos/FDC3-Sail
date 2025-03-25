@@ -4,7 +4,8 @@ import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, S
 import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, Directory, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
+import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 
 
 /**
@@ -16,6 +17,7 @@ import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, 
  */
 export type SailData = AppRegistration & {
     socket?: Socket,
+    channelSocket?: Socket,
     url?: string,
     hosting: AppHosting,
     channel: string | null,
@@ -24,10 +26,11 @@ export type SailData = AppRegistration & {
 
 export class SailServerContext implements ServerContext<SailData> {
 
-    private instances: SailData[] = []
     readonly directory: SailDirectory
-    private readonly socket: Socket
+    private instances: SailData[] = []
     private fdc3Server: FDC3Server | undefined
+    private readonly socket: Socket
+    private readonly appStartDestinations: Map<string, string | null> = new Map()
 
     constructor(directory: SailDirectory, socket: Socket) {
         this.directory = directory
@@ -52,7 +55,9 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     async open(appId: string): Promise<InstanceID> {
-        return this.openSail(appId, undefined)
+        const destination = this.appStartDestinations.get(appId)
+        this.appStartDestinations.delete(appId)
+        return this.openSail(appId, destination)
     }
 
     async openSail(appId: string, channel: string | null | undefined): Promise<InstanceID> {
@@ -82,6 +87,10 @@ export class SailServerContext implements ServerContext<SailData> {
                 channel: channel ?? null,
                 instanceTitle: details.instanceTitle
             })
+
+            if (channel) {
+                this.notifyUserChannelsChanged(details.instanceId, channel)
+            }
 
             return details.instanceId
         }
@@ -198,8 +207,8 @@ export class SailServerContext implements ServerContext<SailData> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const sc = this
 
-        function runningApps(arg0: AppIntent): number {
-            return arg0.apps.filter(a => a.instanceId).length
+        function runningAppsInChannel(arg0: AugmentedAppIntent, channel: string | null): number {
+            return arg0.apps.filter(a => a.instanceId && a.channel == channel).length
         }
 
         function uniqueApps(arg0: AppIntent): number {
@@ -211,19 +220,9 @@ export class SailServerContext implements ServerContext<SailData> {
             return details?.hosting == AppHosting.Tab
         }
 
-        function waitForCondition(conditionFn: () => boolean, timeout = 2000, interval = 100): Promise<void> {
-            return new Promise((resolve, reject) => {
-                const startTime = Date.now();
-                const timer = setInterval(() => {
-                    if (conditionFn()) {
-                        clearInterval(timer);
-                        resolve();
-                    } else if (Date.now() - startTime >= timeout) {
-                        clearInterval(timer);
-                        reject(new Error("SAIL Condition not met within timeout"));
-                    }
-                }, interval);
-            });
+        function raiserChannel(arg0: AppIdentifier): string | null {
+            const details = sc.getInstanceDetails(arg0.instanceId!)
+            return details?.channel ?? null
         }
 
         const augmentedIntents = this.augmentIntents(incomingIntents)
@@ -237,13 +236,20 @@ export class SailServerContext implements ServerContext<SailData> {
             return augmentedIntents
         }
 
-        if (augmentedIntents.length == 1) {
-            if ((uniqueApps(augmentedIntents[0]) == 1) && (runningApps(augmentedIntents[0]) <= 1)) {
+        if ((augmentedIntents.length == 1) && (uniqueApps(augmentedIntents[0]) == 1)) {
+            const channel = raiserChannel(raiser)
+            const runners = runningAppsInChannel(augmentedIntents[0], channel)
+            if (runners == 0) {
+                // we start a new app
+                this.appStartDestinations.set(augmentedIntents[0].apps[0].appId, channel)
+                return augmentedIntents
+            } else if (runners == 1) {
+                // we raise in the existing app
                 return augmentedIntents
             }
         }
 
-        return new Promise<AppIntent[]>((resolve, reject) => {
+        return new Promise<AppIntent[]>((resolve) => {
             console.log("SAIL Narrowing intents", augmentedIntents, context)
 
             this.socket.emit(SAIL_INTENT_RESOLVE, {
@@ -257,48 +263,40 @@ export class SailServerContext implements ServerContext<SailData> {
                     console.log("SAIL Narrowed intents", response)
 
                     if (appNeedsStarting(response.appIntents)) {
-                        try {
-                            // this overrides the fdc3-for-web-impl default behavior in order
-                            // that we can open the app in the right tab
-                            const theAppIntent = getSingleAppIntent(response.appIntents)
-                            const theApp = theAppIntent.apps[0]
-                            const instanceId = await this.openSail(theApp.appId, response.channel)
-
-                            await waitForCondition(() => this.getInstanceDetails(instanceId)?.state == State.Connected)
-                            const out: AppIntent[] = [
-                                {
-                                    intent: theAppIntent.intent,
-                                    apps: [{
-                                        appId: theApp.appId,
-                                        instanceId
-                                    }]
-                                }
-                            ]
-                            resolve(out)
-                        } catch (e) {
-                            console.error(e)
-                            reject(e)
-                        }
-                    } else {
-                        resolve(response.appIntents)
+                        // tell sail where to open the app
+                        const theAppIntent = getSingleAppIntent(response.appIntents)
+                        const theApp = theAppIntent.apps[0]
+                        this.appStartDestinations.set(theApp.appId, response.channel)
                     }
+
+                    resolve(response.appIntents)
                 }
             })
         })
     }
 
-    async userChannelChanged(app: AppIdentifier, channelId: string | null): Promise<void> {
-        console.log("SAIL User channel changed", app, channelId)
-        const instance = this.getInstanceDetails(app.instanceId!)
+    async notifyUserChannelsChanged(instanceId: string, channelId: string | null): Promise<void> {
+        console.log("SAIL User channels changed", instanceId, channelId)
+        const instance = this.getInstanceDetails(instanceId!)
         if (instance) {
             instance.channel = channelId
+            const channelChangeEvent: ChannelChangedEvent = {
+                type: 'channelChangedEvent',
+                payload: {
+                    newChannelId: channelId,
+                },
+                meta: {
+                    eventUuid: uuidv4(),
+                    timestamp: new Date()
+                }
+            }
+            this.post(channelChangeEvent, instanceId)
         }
-        await this.socket.emitWithAck(SAIL_CHANNEL_CHANGE, app, channelId)
     }
 
-    async reloadAppDirectories(d: Directory[]) {
-        const toLoad = d.filter(d => d.active).map(d => d.url)
-        await this.directory.replace(toLoad)
+    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]) {
+        await this.directory.replace(urls)
+        customApps.forEach(a => this.directory.add(a))
     }
 
 }

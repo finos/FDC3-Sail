@@ -1,12 +1,19 @@
 import { BrowserTypes } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
-import { TabDetail } from "@finos/fdc3-sail-common"
-import "../../static/fonts/DM_Sans/DM_Sans.css"
+import {
+  CHANNEL_SELECTOR_HELLO,
+  CHANNEL_SELECTOR_UPDATE,
+  ChannelSelectorHelloRequest,
+  ChannelSelectorUpdateRequest,
+  TabDetail,
+} from "@finos/fdc3-sail-common"
 import {
   isFdc3UserInterfaceChannels,
   isFdc3UserInterfaceHandshake,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { io, Socket } from "socket.io-client"
+import { getInstanceId, getUserSessionId } from "./util"
 
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
 type IframeRestyle = BrowserTypes.Fdc3UserInterfaceRestyle
@@ -20,8 +27,8 @@ const DEFAULT_COLLAPSED_CSS = {
   "z-index": 1000,
   right: "10px",
   bottom: "10px",
-  width: "55px",
-  height: "55px",
+  width: "65px",
+  height: "65px",
   transition: "all 0.5s ease-out allow-discrete",
 }
 
@@ -30,8 +37,7 @@ const DEFAULT_EXPANDED_CSS = {
   "z-index": 1000,
   right: "10px",
   bottom: "10px",
-  width: "250px",
-  height: "55px",
+  height: "65px",
   transition: "all 0.5s ease-out allow-discrete",
 }
 
@@ -62,7 +68,12 @@ window.addEventListener("load", () => {
     const restyle: IframeRestyle = {
       type: "Fdc3UserInterfaceRestyle",
       payload: {
-        updatedCSS: expanded ? DEFAULT_EXPANDED_CSS : DEFAULT_COLLAPSED_CSS,
+        updatedCSS: expanded
+          ? {
+              ...DEFAULT_EXPANDED_CSS,
+              width: `${55 * channels.length + 70}px`,
+            }
+          : DEFAULT_COLLAPSED_CSS,
       },
     }
 
@@ -88,10 +99,25 @@ window.addEventListener("load", () => {
     )
   }
 
+  function handleChannelUpdates(socket: Socket) {
+    socket.on("connect", async () => {
+      const msg: ChannelSelectorHelloRequest = {
+        userSessionId: getUserSessionId(),
+        instanceId: getInstanceId(),
+      }
+      socket.emitWithAck(CHANNEL_SELECTOR_HELLO, msg)
+    })
+
+    socket.on(CHANNEL_SELECTOR_UPDATE, (data: ChannelSelectorUpdateRequest) => {
+      channels = data.tabs
+      renderChannels(open)
+    })
+  }
+
   myPort.addEventListener("message", (e) => {
     console.log(e.data.type)
     if (isFdc3UserInterfaceHandshake(e.data)) {
-      // ok, port is ready, send the iframe position detials
+      // ok, port is ready, send the iframe position details
       myPort.postMessage({
         type: "Fdc3UserInterfaceRestyle",
         payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
@@ -105,9 +131,7 @@ window.addEventListener("load", () => {
       channels = details.payload.userChannels.map((c) => {
         return {
           background: c.displayMetadata?.color ?? "white",
-          icon:
-            c.displayMetadata?.glyph ??
-            "/static/tabs/noun-airplane-3707662.svg",
+          icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",
           title: c.displayMetadata?.name ?? "Untitled",
           id: c.id,
         }
@@ -116,6 +140,10 @@ window.addEventListener("load", () => {
       renderChannels(false)
     }
   })
+
+  const socket = io()
+
+  handleChannelUpdates(socket)
 
   renderChannels(false)
 })

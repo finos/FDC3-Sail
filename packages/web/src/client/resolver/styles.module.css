@@ -56,7 +56,9 @@
     background-color: #EEEEFF;
 }
 
-.activeChoiceBox {}
+.activeChoiceBox {
+    opacity: 1;
+}
 
 .inactiveChoiceBox {
     background-color: #EEEEEE;

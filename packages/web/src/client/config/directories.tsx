@@ -77,15 +77,17 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
         text="Toggle Use Of Directory"
         url={
           d.active
-            ? "/static/icons/control/switched-on.svg"
-            : "/static/icons/control/switched-off.svg"
+            ? "/icons/control/switched-on.svg"
+            : "/icons/control/switched-off.svg"
         }
+        className={styles.actionButton}
       />
 
       <InlineButton
         onClick={() => removeDirectory(d)}
         text="Remove This Directory"
-        url="/static/icons/control/bin.svg"
+        url="/icons/control/bin.svg"
+        className={styles.actionButton}
       />
     </div>
   )

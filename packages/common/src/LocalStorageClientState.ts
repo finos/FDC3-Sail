@@ -13,10 +13,10 @@ export class LocalStorageClientState extends AbstractClientState {
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
         if (theState) {
-            const { tabs, panels, activeTabId, userSessionId, directories, knownApps } = JSON.parse(theState)
-            super(tabs, panels, activeTabId, userSessionId, directories, knownApps)
+            const { tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps } = JSON.parse(theState)
+            super(tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps)
         } else {
-            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [])
+            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [], [])
         }
     }
 
@@ -27,11 +27,11 @@ export class LocalStorageClientState extends AbstractClientState {
     }
 
     async saveState(): Promise<void> {
-        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps })
+        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps, customApps: this.customApps })
         localStorage.setItem(STORAGE_KEY, data)
-        console.log(`SAIL saved state: ${data}`)
+        // console.log(`SAIL saved state: ${data}`)
         this.callbacks.forEach(cb => cb())
-        await this.ss!.sendClientState(this.tabs, this.directories)
+        await this.ss!.sendClientState(this.createArgs())
     }
 }
 
@@ -82,17 +82,17 @@ const DEFAULT_DIRECTORIES: Directory[] = [
 const DEFAULT_TABS: TabDetail[] = [
     {
         id: "One",
-        icon: "/static/icons/tabs/one.svg",
+        icon: "/icons/tabs/one.svg",
         background: '#123456',
     },
     {
         id: "Two",
-        icon: "/static/icons/tabs/two.svg",
+        icon: "/icons/tabs/two.svg",
         background: '#564312',
     },
     {
         id: "Three",
-        icon: "/static/icons/tabs/three.svg",
+        icon: "/icons/tabs/three.svg",
         background: '#125634',
     }
 ]
