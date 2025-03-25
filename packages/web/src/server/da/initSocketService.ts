@@ -144,7 +144,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             const session = await getFdc3ServerInstance(sessions, props.userSessionId)
             if (session) {
                 const sc = session.serverContext;
-                sc.reloadAppDirectories(props.directories);
+                sc.reloadAppDirectories(props.directories, props.customApps);
 
                 // tell each app to check for a channel change
                 props.panels.forEach((panel) => {

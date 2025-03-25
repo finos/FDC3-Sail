@@ -52,7 +52,8 @@ export type DesktopAgentHelloArgs = {
     userSessionId: string,
     directories: string[],
     channels: ChannelState[],
-    panels: AppPanel[]
+    panels: AppPanel[],
+    customApps: DirectoryApp[]
 }
 
 /**

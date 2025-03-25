@@ -46,8 +46,14 @@ export interface ClientState {
     setDirectories(d: Directory[]): Promise<void>
     getDirectories(): Directory[]
     updateDirectory(din: Directory): Promise<void>
+
+    /** Provided by the server as a view of the apps within the directories */
     getKnownApps(): DirectoryApp[]
     setKnownApps(apps: DirectoryApp[]): Promise<void>
+
+    /** Custom Apps, configured by the user  */
+    setCustomApps(apps: DirectoryApp[]): Promise<void>
+    getCustomApps(): DirectoryApp[]
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void

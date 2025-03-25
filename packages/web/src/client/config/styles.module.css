@@ -14,6 +14,15 @@
     overflow: scroll;
 }
 
+.configChoiceLeft {
+    flex-basis: 10rem;
+    flex-grow: .5;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: scroll;
+}
+
 .list {
     display: flex;
     flex-direction: column;
@@ -94,6 +103,17 @@
     overflow-wrap: anywhere;
 }
 
+.description {
+    padding: .5rem;
+    font-weight: regular;
+    display: flex;
+    flex-grow: 0;
+    margin: 0;
+    height: 3rem;
+    overflow-wrap: anywhere;
+    background-color: #e5e5e5;
+}
+
 .name[contenteditable="false"] {
     color: #ccc;
 }
@@ -117,10 +137,9 @@
     gap: 1rem;
     flex-basis: 2rem;
     background-color: #fafafa;
-    border: 1px solid grey;
-    border-radius: .5rem;
     padding: .5rem;
     border-width: .25rem;
+    text-align: center;
 }
 
 .actionButton {
@@ -132,4 +151,52 @@
 .verticalControlsSlim .actionButton {
     width: 2rem;
     height: 2rem;
+}
+
+.intent {
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    padding: .5rem;
+    background-color: #fafafa;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: .5rem;
+}
+
+.picker {
+    grid-column: 1;
+}
+
+.contexts {
+    grid-column: 2;
+}
+
+.rowicon {
+    grid-column: 3;
+}
+
+.miniButton {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: .1rem
+}
+
+.interop {
+    border: 1px solid #ddd;
+    padding: 3px;
+    border-radius: .5rem;
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: 3fr 5fr .5fr;
+}
+
+.addIntent {
+    font-weight: bold;
+    text-align: center;
+    grid-column-start: 1;
+    grid-column-end: 3;
 }

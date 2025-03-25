@@ -294,8 +294,9 @@ export class SailServerContext implements ServerContext<SailData> {
         }
     }
 
-    async reloadAppDirectories(urls: string[]) {
+    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]) {
         await this.directory.replace(urls)
+        customApps.forEach(a => this.directory.add(a))
     }
 
 }

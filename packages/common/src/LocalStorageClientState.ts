@@ -13,10 +13,10 @@ export class LocalStorageClientState extends AbstractClientState {
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
         if (theState) {
-            const { tabs, panels, activeTabId, userSessionId, directories, knownApps } = JSON.parse(theState)
-            super(tabs, panels, activeTabId, userSessionId, directories, knownApps)
+            const { tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps } = JSON.parse(theState)
+            super(tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps)
         } else {
-            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [])
+            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [], [])
         }
     }
 
@@ -27,7 +27,7 @@ export class LocalStorageClientState extends AbstractClientState {
     }
 
     async saveState(): Promise<void> {
-        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps })
+        const data = JSON.stringify({ tabs: this.tabs, panels: this.panels, activeTabId: this.activeTabId, userSessionId: this.userSessionId, directories: this.directories, knownApps: this.knownApps, customApps: this.customApps })
         localStorage.setItem(STORAGE_KEY, data)
         // console.log(`SAIL saved state: ${data}`)
         this.callbacks.forEach(cb => cb())
