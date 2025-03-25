@@ -128,14 +128,17 @@ window.addEventListener("load", () => {
         JSON.stringify("SAIL CHANNEL DETAILS: " + JSON.stringify(details)),
       )
 
-      channels = details.payload.userChannels.map((c) => {
-        return {
-          background: c.displayMetadata?.color ?? "white",
-          icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",
-          title: c.displayMetadata?.name ?? "Untitled",
-          id: c.id,
-        }
-      })
+      if (channels.length == 0) {
+        channels = details.payload.userChannels.map((c) => {
+          const out: TabDetail = {
+            background: c.displayMetadata?.color ?? "white",
+            icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",
+            id: c.id,
+          }
+          return out
+        })
+      }
+
       channelId = details.payload.selected
       renderChannels(false)
     }

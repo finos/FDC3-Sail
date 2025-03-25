@@ -1,7 +1,6 @@
-import { ChannelType, DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
 import { Directory, SailClientStateArgs, TabDetail } from "./message-types";
-import { DisplayMetadata } from "@finos/fdc3-standard";
 
 export abstract class AbstractClientState implements ClientState {
 
@@ -167,17 +166,7 @@ export abstract class AbstractClientState implements ClientState {
         return {
             userSessionId: this.userSessionId,
             directories: this.directories.filter(d => d.active).map(d => d.url),
-            channels: this.tabs.map(t => {
-                return {
-                    id: t.id,
-                    type: ChannelType.user,
-                    displayMetadata: {
-                        color: t.background,
-                        glyph: t.icon,
-                    } as DisplayMetadata,
-                    context: []
-                }
-            }),
+            channels: this.tabs,
             panels: this.panels,
             customApps: this.customApps
         }

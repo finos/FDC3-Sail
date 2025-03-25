@@ -5,7 +5,7 @@ import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { AugmentedAppIntent, getClientState } from "@finos/fdc3-sail-common"
+import { AugmentedAppIntent } from "@finos/fdc3-sail-common"
 
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
@@ -61,18 +61,13 @@ window.addEventListener("load", () => {
         <ResolverPanel
           context={data.context}
           appIntents={data.appIntents as AugmentedAppIntent[]}
-          channelDetails={getClientState().getTabs()}
           currentChannel={null}
-          appDetails={getClientState().getKnownApps()}
-          panelDetails={getClientState().getPanels()}
           closeAction={() => {
             renderIntentResolver(null)
           }}
           chooseAction={(app, intent, channel) => {
-            if (channel) {
-              getClientState().setActiveTabId(channel)
-            }
-            callback(intent, app)
+            console.log("chooseAction", app, intent, channel)
+            callback(intent, app, channel)
             renderIntentResolver(null)
           }}
         />,
@@ -85,11 +80,18 @@ window.addEventListener("load", () => {
     }
   }
 
-  function callback(intent: string | null, app: AppIdentifier | null) {
+  function callback(
+    intent: string | null,
+    app: AppIdentifier | null,
+    channel: string | null,
+  ) {
     myPort.postMessage({
       type: "Fdc3UserInterfaceRestyle",
       payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
     } as IframeRestyle)
+
+    // TODO - we need to send the channel to the server
+    console.log("CHANGE CHANNEL HERE", intent, app, channel)
 
     if (intent && app) {
       myPort.postMessage({
@@ -116,9 +118,5 @@ window.addEventListener("load", () => {
     } else if (isFdc3UserInterfaceResolve(e.data)) {
       renderIntentResolver(e.data.payload)
     }
-  })
-
-  document.getElementById("cancel")!.addEventListener("click", () => {
-    callback(null, null)
   })
 })

@@ -1,4 +1,4 @@
-import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
+import { AppRegistration, DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppHosting } from "./app-hosting"
 import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
@@ -51,7 +51,7 @@ export const DA_HELLO = 'da-hello'
 export type DesktopAgentHelloArgs = {
     userSessionId: string,
     directories: string[],
-    channels: ChannelState[],
+    channels: TabDetail[],
     panels: AppPanel[],
     customApps: DirectoryApp[]
 }
@@ -115,8 +115,8 @@ export const SAIL_INTENT_RESOLVE = 'sail-intent-resolve'
  * information about the apps it is showing.
  */
 export type AugmentedAppMetadata = AppMetadata & {
-    channel?: string | null
-    instanceTitle?: string
+    channelData: TabDetail | null
+    instanceTitle?: string,
 }
 
 export type AugmentedAppIntent = {

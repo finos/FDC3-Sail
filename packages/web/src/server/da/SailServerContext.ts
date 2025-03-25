@@ -1,11 +1,12 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { AppRegistration, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
+import { AppRegistration, ChannelState, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse } from "@finos/fdc3-sail-common";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse, TabDetail } from "@finos/fdc3-sail-common";
 import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
+import { mapChannels } from "./SailFDC3Server";
 
 
 /**
@@ -181,9 +182,14 @@ export class SailServerContext implements ServerContext<SailData> {
 
                 if (a.instanceId) {
                     const instance = this.getInstanceDetails(a.instanceId)
+                    const channel = this.getChannelDetails().find(c => c.id == instance?.channel)
                     return {
                         ...a,
-                        channel: instance?.channel ?? null,
+                        channelData: channel ? {
+                            id: channel.id,
+                            icon: channel.displayMetadata?.glyph,
+                            background: channel.displayMetadata?.color
+                        } : null,
                         instanceTitle: instance?.instanceTitle ?? undefined,
                         icons: [{ src: iconSrc }],
                         title
@@ -208,7 +214,7 @@ export class SailServerContext implements ServerContext<SailData> {
         const sc = this
 
         function runningAppsInChannel(arg0: AugmentedAppIntent, channel: string | null): number {
-            return arg0.apps.filter(a => a.instanceId && a.channel == channel).length
+            return arg0.apps.filter(a => a.instanceId && a.channelData?.id == channel).length
         }
 
         function uniqueApps(arg0: AppIntent): number {
@@ -297,6 +303,25 @@ export class SailServerContext implements ServerContext<SailData> {
     async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]) {
         await this.directory.replace(urls)
         customApps.forEach(a => this.directory.add(a))
+    }
+
+    private getChannelDetails(): ChannelState[] {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return ((this.fdc3Server as any).handlers[0].state as ChannelState[])
+    }
+
+    updateChannelData(channelData: TabDetail[]): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const channelState = ((this.fdc3Server as any).handlers[0].state as ChannelState[])
+        channelState.length = 0;
+        const newState = mapChannels(channelData).map(c => {
+            return {
+                ...c,
+                context: channelState.find(cs => cs.id == c.id)?.context ?? []
+            }
+        })
+        channelState.push(...newState)
+        console.log("SAIL Updated channel data", channelState)
     }
 
 }

@@ -45,7 +45,15 @@ function newIconUrl(): string {
 }
 
 function newTabTitle(): string {
-  return "Tab " + (getClientState().getTabs().length + 1)
+  let i = 1
+  while (
+    getClientState()
+      .getTabs()
+      .find((t) => t.id == "New Tab " + i)
+  ) {
+    i++
+  }
+  return "New Tab " + i
 }
 
 function newBackgroundColour(): string {

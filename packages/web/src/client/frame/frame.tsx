@@ -102,10 +102,7 @@ export class Frame extends Component<FrameProps, FrameState> {
             key="resolver"
             appIntents={this.props.cs.getIntentResolution()!.appIntents}
             context={this.props.cs.getIntentResolution()!.context}
-            channelDetails={this.props.cs.getTabs()}
             currentChannel={this.props.cs.getActiveTab().id}
-            panelDetails={this.props.cs.getPanels()}
-            appDetails={this.props.cs.getKnownApps()}
             closeAction={() => {
               this.props.cs.setIntentResolution(null)
             }}

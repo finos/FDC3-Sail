@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SailClientStateArgs, CHANNEL_SELECTOR_UPDATE, ChannelSelectorUpdateRequest, TabDetail, CHANNEL_SELECTOR_HELLO, ChannelSelectorHelloRequest } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SailClientStateArgs, CHANNEL_SELECTOR_UPDATE, ChannelSelectorUpdateRequest, CHANNEL_SELECTOR_HELLO, ChannelSelectorHelloRequest } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -145,6 +145,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
             if (session) {
                 const sc = session.serverContext;
                 sc.reloadAppDirectories(props.directories, props.customApps);
+                sc.updateChannelData(props.channels)
 
                 // tell each app to check for a channel change
                 props.panels.forEach((panel) => {
@@ -168,15 +169,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                         if (state && state.channelSocket) {
                             // make sure we update the channel state
                             const ur: ChannelSelectorUpdateRequest = {
-                                tabs: props.channels.map(cs => {
-                                    const out: TabDetail = {
-                                        id: cs.id,
-                                        icon: cs.displayMetadata.glyph ?? 'none',
-                                        background: cs.displayMetadata.color ?? 'red'
-                                    }
-
-                                    return out
-                                })
+                                tabs: props.channels
                             }
                             state.channelSocket.emit(CHANNEL_SELECTOR_UPDATE, ur)
                         }
