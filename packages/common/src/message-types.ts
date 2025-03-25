@@ -2,6 +2,7 @@ import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-imp
 import { AppHosting } from "./app-hosting"
 import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
+import { AppPanel } from "./ClientState"
 
 export type TabDetail = {
     id: string,
@@ -51,10 +52,19 @@ export type DesktopAgentHelloArgs = {
     userSessionId: string,
     directories: string[],
     channels: ChannelState[],
+    panels: AppPanel[],
+    customApps: DirectoryApp[]
 }
 
 /**
- * Sent when a browser app connects to the server
+ * Sent from the Desktop Agent to the server to say that the client has updated state
+ */
+export const SAIL_CLIENT_STATE = 'sail-client-state'
+
+export type SailClientStateArgs = DesktopAgentHelloArgs
+
+/**
+ * Sent when an App connects to the server
  */
 export const APP_HELLO = 'app-hello'
 
@@ -88,7 +98,7 @@ export type DesktopAgentDirectoryListingArgs = {
 }
 
 /**
- * Sent by the server after the app has completed the FDC3 handshake.  This is a request 
+ * Sent by the server to the browser desktop agent after the app has completed the FDC3 handshake.  This is a request 
  * to know which channel the app should be placed in. 
  */
 export const SAIL_CHANNEL_SETUP = 'sail-channel-setup'
@@ -146,7 +156,7 @@ export type SailAppOpenResponse = {
 
 
 /**
- * A message from the browser to the server to say that it wants to change the user channel of the app.
+ * A message from the desktop agent browser to the server to say that it wants to change the user channel of the app.
  */
 export const SAIL_CHANNEL_CHANGE = 'sail-channel-change'
 
@@ -157,26 +167,36 @@ export type SailChannelChangeArgs = {
 }
 
 /**
- * A message from the server to the browser to tell it what state the apps are in.
+ * A message from the server to the browser desktop agent to tell it what state the apps are in.
  */
 export const SAIL_APP_STATE = 'sail-app-state'
 
 export type SailAppStateArgs = AppRegistration[]
 
 /**
- * Sent from the browser to the server to say that the client has updated state
+ * These two messages carry FDC3 Communication Protocol messages.  
  */
-export const SAIL_CLIENT_STATE = 'sail-client-state'
-
-export type SailClientStateArgs = {
-    userSessionId: string,
-    tabs: TabDetail[],
-    directories: Directory[]
-}
+export const FDC3_APP_EVENT = 'fdc3-app-event'  // from the app to the server
+export const FDC3_DA_EVENT = 'fdc3-da-event'    // from the server to the app
 
 /**
- * These two messages carry FDC3 Communication Protocol messages.
+ * From the channel selector UI to the server to tell it that it is performing
+ * channel selection duties on behalf of an app running in a browser tab.
  */
-export const FDC3_APP_EVENT = 'fdc3-app-event'
-export const FDC3_DA_EVENT = 'fdc3-da-event'
+export const CHANNEL_SELECTOR_HELLO = 'channel-selector-hello'
+
+export type ChannelSelectorHelloRequest = {
+    userSessionId: string,
+    instanceId: string
+}
+
+/** 
+ * From the server to the channel selector to tell it that the channels 
+ * have changed.
+ */
+export const CHANNEL_SELECTOR_UPDATE = 'channel-selector-update'
+
+export type ChannelSelectorUpdateRequest = {
+    tabs: TabDetail[]
+}
 

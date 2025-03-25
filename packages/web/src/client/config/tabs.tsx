@@ -155,11 +155,13 @@ const TabItem = ({ d }: { d: TabDetail }) => {
           onClick={() => move(d.id, "up")}
           text="Move Tab Up"
           url="/icons/control/move-up.svg"
+          className={styles.miniButton}
         />
         <InlineButton
           onClick={() => move(d.id, "down")}
           text="Move Tab Down"
           url="/icons/control/move-down.svg"
+          className={styles.miniButton}
         />
       </div>
       {!hasApps(d.id) ? (
@@ -167,12 +169,14 @@ const TabItem = ({ d }: { d: TabDetail }) => {
           onClick={() => removeTab(d.id)}
           text="Remove This Tab"
           url="/icons/control/bin.svg"
+          className={styles.actionButton}
         />
       ) : (
         <InlineButton
           onClick={() => {}}
           text="Tab Can't Be Removed - Has Apps"
           url="/icons/control/grey-bin.svg"
+          className={styles.actionButton}
         />
       )}
     </div>

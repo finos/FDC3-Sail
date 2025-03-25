@@ -1,5 +1,5 @@
 import { GridStackPosition } from "gridstack"
-import { DesktopAgentHelloArgs, TabDetail, Directory, AugmentedAppIntent } from "./message-types";
+import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from "./message-types";
 import { Context } from "@finos/fdc3-context";
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 
@@ -46,8 +46,14 @@ export interface ClientState {
     setDirectories(d: Directory[]): Promise<void>
     getDirectories(): Directory[]
     updateDirectory(din: Directory): Promise<void>
+
+    /** Provided by the server as a view of the apps within the directories */
     getKnownApps(): DirectoryApp[]
     setKnownApps(apps: DirectoryApp[]): Promise<void>
+
+    /** Custom Apps, configured by the user  */
+    setCustomApps(apps: DirectoryApp[]): Promise<void>
+    getCustomApps(): DirectoryApp[]
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void
@@ -55,7 +61,7 @@ export interface ClientState {
     /**
      * For connecting to the server
      */
-    createArgs(): DesktopAgentHelloArgs
+    createArgs(): SailClientStateArgs
 
     /**
      * Triggers intent resolution
