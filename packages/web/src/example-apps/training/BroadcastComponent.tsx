@@ -8,6 +8,7 @@ function createContext(i: number) {
   return {
     type: "demo.counter",
     count: i,
+    name: "Counter " + i,
   }
 }
 

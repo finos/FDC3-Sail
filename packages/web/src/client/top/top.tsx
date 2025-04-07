@@ -1,3 +1,4 @@
+import { Context } from "@finos/fdc3-context"
 import styles from "./styles.module.css"
 
 export const Empty = () => {
@@ -22,6 +23,25 @@ export const Settings = ({ onClick }: { onClick: () => void }) => {
         className={styles.settingsControl}
         onClick={onClick}
       />
+    </div>
+  )
+}
+
+export const ContextHistory = ({
+  onClick,
+  contextHistory,
+}: {
+  onClick: () => void
+  contextHistory: Context[]
+}) => {
+  return contextHistory.length == 0 ? null : (
+    <div className={styles.contextHistoryClosed} onClick={onClick}>
+      <div className={styles.contextHistoryItem}>
+        <div className={styles.contextType}>{contextHistory[0].type}</div>
+        <div className={styles.contextData}>
+          {contextHistory[0].name ?? "No Name"}
+        </div>
+      </div>
     </div>
   )
 }

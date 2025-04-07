@@ -1,5 +1,5 @@
 import { Bin, Controls, NewPanel } from "../controls/controls"
-import { Logo, Settings } from "../top/top"
+import { ContextHistory, Logo, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
 import styles from "./styles.module.css"
 import {
@@ -14,12 +14,14 @@ import { Content, Grids } from "../grid/grid"
 import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
+import { ContextHistoryPanel } from "../context/ContextHistory"
 
 enum Popup {
   NONE,
   APPD,
   SETTINGS,
   RESOLVER,
+  CONTEXT_HISTORY,
 }
 
 interface FrameProps {
@@ -56,6 +58,10 @@ export class Frame extends Component<FrameProps, FrameState> {
       <div className={styles.outer}>
         <div className={styles.top}>
           <Logo />
+          <ContextHistory
+            onClick={() => this.setState({ popup: Popup.CONTEXT_HISTORY })}
+            contextHistory={this.props.cs.getContextHistory(activeTab.id)}
+          />
           <Settings onClick={() => this.setState({ popup: Popup.SETTINGS })} />
         </div>
         <div className={styles.left}>
@@ -97,15 +103,21 @@ export class Frame extends Component<FrameProps, FrameState> {
             }
           />
         ) : null}
+        {this.state.popup == Popup.CONTEXT_HISTORY ? (
+          <ContextHistoryPanel
+            key="context-history"
+            history={this.props.cs.getContextHistory(activeTab.id)}
+            currentChannel={activeTab.id}
+            closeAction={() => this.setState({ popup: Popup.NONE })}
+          />
+        ) : null}
         {this.props.cs.getIntentResolution() ? (
           <ResolverPanel
             key="resolver"
             appIntents={this.props.cs.getIntentResolution()!.appIntents}
             context={this.props.cs.getIntentResolution()!.context}
-            channelDetails={this.props.cs.getTabs()}
             currentChannel={this.props.cs.getActiveTab().id}
-            panelDetails={this.props.cs.getPanels()}
-            appDetails={this.props.cs.getKnownApps()}
+            channelDetails={this.props.cs.getTabs()}
             closeAction={() => {
               this.props.cs.setIntentResolution(null)
             }}

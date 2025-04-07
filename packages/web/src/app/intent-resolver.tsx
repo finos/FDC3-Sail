@@ -5,8 +5,8 @@ import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { AugmentedAppIntent, getClientState } from "@finos/fdc3-sail-common"
-
+import { AugmentedAppIntent } from "@finos/fdc3-sail-common"
+import { channels, handleChannelUpdates, setAppChannel } from "./util"
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
@@ -61,18 +61,14 @@ window.addEventListener("load", () => {
         <ResolverPanel
           context={data.context}
           appIntents={data.appIntents as AugmentedAppIntent[]}
-          channelDetails={getClientState().getTabs()}
           currentChannel={null}
-          appDetails={getClientState().getKnownApps()}
-          panelDetails={getClientState().getPanels()}
           closeAction={() => {
             renderIntentResolver(null)
           }}
-          chooseAction={(app, intent, channel) => {
-            if (channel) {
-              getClientState().setActiveTabId(channel)
-            }
-            callback(intent, app)
+          channelDetails={channels}
+          chooseAction={async (app, intent, channel) => {
+            console.log("chooseAction", app, intent, channel)
+            callback(intent, app, channel)
             renderIntentResolver(null)
           }}
         />,
@@ -85,13 +81,22 @@ window.addEventListener("load", () => {
     }
   }
 
-  function callback(intent: string | null, app: AppIdentifier | null) {
+  async function callback(
+    intent: string | null,
+    app: AppIdentifier | null,
+    channel: string | null,
+  ) {
     myPort.postMessage({
       type: "Fdc3UserInterfaceRestyle",
       payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
     } as IframeRestyle)
 
-    if (intent && app) {
+    if (intent && app && app.instanceId == undefined) {
+      if (channel) {
+        // need to set the channel on the server
+        await setAppChannel(app?.appId ?? null, channel)
+      }
+
       myPort.postMessage({
         type: "Fdc3UserInterfaceResolveAction",
         payload: {
@@ -118,7 +123,6 @@ window.addEventListener("load", () => {
     }
   })
 
-  document.getElementById("cancel")!.addEventListener("click", () => {
-    callback(null, null)
-  })
+  // listen for channel updates so we can show these in the intent resolver
+  handleChannelUpdates(() => {})
 })

@@ -1,14 +1,12 @@
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { AppIdentifier, AppIntent, Context, Intent } from "@finos/fdc3"
+import { AppIdentifier, Context, Intent } from "@finos/fdc3"
 import { useState } from "react"
 import {
-  AppPanel,
   AugmentedAppIntent,
   AugmentedAppMetadata,
   TabDetail,
 } from "@finos/fdc3-sail-common"
-import { DirectoryApp } from "@finos/fdc3-web-impl"
 import { selectHighestContrast } from "../../util/contrast"
 import { DEFAULT_ICON, getIcon } from "../appd/appd"
 
@@ -79,7 +77,7 @@ function relevantApps(
       .filter((x) => {
         if (!newApps) {
           // only show apps that are in the current channel
-          return x.channel === currentChannel
+          return x.channelData?.id === currentChannel
         } else {
           return true
         }
@@ -128,7 +126,7 @@ function generateUniqueExistingAppIntents(
 }
 
 function generateUniqueNewAppIntents(
-  appIntents: AppIntent[],
+  appIntents: AugmentedAppIntent[],
   currentChannel: string | null,
 ): Intent[] {
   return appIntents
@@ -181,17 +179,15 @@ function generateStartState(
 export const ResolverPanel = ({
   context,
   appIntents,
-  channelDetails,
   currentChannel,
+  channelDetails,
   closeAction,
   chooseAction,
 }: {
   context: Context
   appIntents: AugmentedAppIntent[]
-  channelDetails: TabDetail[]
-  panelDetails: AppPanel[]
-  appDetails: DirectoryApp[]
   currentChannel: string | null
+  channelDetails: TabDetail[]
   closeAction: () => void
   chooseAction: (
     chosenApp: AppIdentifier | null,
@@ -202,6 +198,8 @@ export const ResolverPanel = ({
   const [state, setState]: [State, (x: State) => void] = useState(
     generateStartState(appIntents, currentChannel),
   )
+
+  const uniqueChannelDetails = [...new Set(channelDetails)]
 
   const uniqueExistingAppIntents = generateUniqueExistingAppIntents(
     appIntents,
@@ -258,7 +256,7 @@ export const ResolverPanel = ({
           </div>
           <div className={styles.resolverPanesContainer}>
             <div className={styles.resolverPane}>
-              {channelDetails.map((c) => (
+              {uniqueChannelDetails.map((c) => (
                 <LineItemComponent
                   key={c.id}
                   li={c}

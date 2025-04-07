@@ -49,3 +49,44 @@
     height: 1.3rem;
 
 }
+
+.contextHistoryClosed {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    flex-basis: 20rem;
+}
+
+.contextHistoryItem {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-basis: 4rem;
+    flex-grow: 1;
+    max-height: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #777;
+    padding: 0.4rem;
+    gap: .5rem;
+}
+
+.contextType {
+    flex-basis: 1rem;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.8rem;
+}
+
+.contextData {
+    flex-basis: 1rem;
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.8rem;
+}

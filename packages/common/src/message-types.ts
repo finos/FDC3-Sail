@@ -1,4 +1,4 @@
-import { AppRegistration, ChannelState, DirectoryApp } from "@finos/fdc3-web-impl"
+import { AppRegistration, DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppHosting } from "./app-hosting"
 import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
@@ -48,12 +48,15 @@ export type ElectronHelloResponse = ElectronAppResponse | ElectronDAResponse
  */
 export const DA_HELLO = 'da-hello'
 
+export type ContextHistory = { [id: string]: Context[] }
+
 export type DesktopAgentHelloArgs = {
     userSessionId: string,
     directories: string[],
-    channels: ChannelState[],
+    channels: TabDetail[],
     panels: AppPanel[],
-    customApps: DirectoryApp[]
+    customApps: DirectoryApp[],
+    contextHistory: ContextHistory
 }
 
 /**
@@ -115,8 +118,8 @@ export const SAIL_INTENT_RESOLVE = 'sail-intent-resolve'
  * information about the apps it is showing.
  */
 export type AugmentedAppMetadata = AppMetadata & {
-    channel?: string | null
-    instanceTitle?: string
+    channelData: TabDetail | null
+    instanceTitle?: string,
 }
 
 export type AugmentedAppIntent = {
@@ -180,23 +183,42 @@ export const FDC3_APP_EVENT = 'fdc3-app-event'  // from the app to the server
 export const FDC3_DA_EVENT = 'fdc3-da-event'    // from the server to the app
 
 /**
- * From the channel selector UI to the server to tell it that it is performing
- * channel selection duties on behalf of an app running in a browser tab.
+ * From the channel selector and intent resolver  UIs to the server to tell it that it 
+ * needs to be kept up to date with the user channel details.
  */
-export const CHANNEL_SELECTOR_HELLO = 'channel-selector-hello'
+export const CHANNEL_RECEIVER_HELLO = 'channel-receiver-hello'
 
-export type ChannelSelectorHelloRequest = {
+export type ChannelReceiverHelloRequest = {
     userSessionId: string,
     instanceId: string
 }
 
 /** 
- * From the server to the channel selector to tell it that the channels 
+ * From the server to the channel selector/intent resolver to tell it that the channels 
  * have changed.
  */
-export const CHANNEL_SELECTOR_UPDATE = 'channel-selector-update'
+export const CHANNEL_RECEIVER_UPDATE = 'channel-receiver-update'
 
-export type ChannelSelectorUpdateRequest = {
+export type ChannelReceiverUpdate = {
     tabs: TabDetail[]
 }
 
+/**
+ * Sent by the intent resolver to the server to tell it that the user wants to open an app in a specific channel.
+ */
+export const SAIL_INTENT_RESOLVE_ON_CHANNEL = 'sail-intent-resolve-open-channel'
+
+export type SailIntentResolveOpenChannelArgs = {
+    channel: string
+    appId: string
+}
+
+/**
+ * Sent from the server to the browser desktop agent to tell it that an app has broadcast a context.
+ */
+export const SAIL_BROADCAST_CONTEXT = 'sail-broadcast-context'
+
+export type SailBroadcastContextArgs = {
+    context: Context,
+    channelId: string
+}

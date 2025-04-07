@@ -21,8 +21,9 @@ function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId:
 
             console.log("SAIL Received: " + JSON.stringify(response));
 
-            const intentResolverUrl = response == AppHosting.Tab ? window.location.origin + "/html/ui/intent-resolver.html" : undefined
-            const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + `/html/ui/channel-selector.html?desktopAgentId=${sessionId}&instanceId=${instanceId}` : undefined
+            const suffix = `?desktopAgentId=${sessionId}&instanceId=${instanceId}`
+            const intentResolverUrl = response == AppHosting.Tab ? window.location.origin + `/html/ui/intent-resolver.html${suffix}` : undefined
+            const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + `/html/ui/channel-selector.html${suffix}` : undefined
 
             // send the other end of the channel to the app
             appWindow.postMessage({

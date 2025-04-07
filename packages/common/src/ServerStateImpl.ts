@@ -1,7 +1,7 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard";
-import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse } from "./message-types";
+import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_BROADCAST_CONTEXT, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailBroadcastContextArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse } from "./message-types";
 import { AppHosting } from "./app-hosting";
 import { ServerState } from "./ServerState";
 import { AppState } from "./AppState";
@@ -103,6 +103,11 @@ export class ServerStateImpl implements ServerState {
                 })
 
                 this.resolveCallback = callback
+            })
+
+            this.socket?.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
+                console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
+                this.cs!.appendContextHistory(data.channelId, data.context)
             })
         })
 
