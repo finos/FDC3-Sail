@@ -1,0 +1,73 @@
+.contextContent {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    flex-grow: 1;
+}
+
+.contextArea {
+    flex-basis: 40rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    max-height: 40rem;
+    overflow-y: scroll;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+.contextItem {
+    flex-basis: 7.5rem;
+    flex-grow: 1;
+    flex-shrink: 1;
+    max-height: 7.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    background-color: #fafafa;
+    border-radius: .5rem;
+    align-items: center;
+    max-height: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #777;
+    padding: 0.5rem;
+    gap: .5rem;
+}
+
+.contextItem:hover {
+    background-color: #69451244;
+}
+
+.selected {
+    background-color: #cdcdcd;
+}
+
+.contextDetail {
+    flex-grow: 1;
+    flex-basis: 40rem;
+    background-color: #fafafa;
+    overflow-y: scroll;
+    max-height: 40rem;
+    padding: 1rem;
+}
+
+
+.contextType {
+    flex-basis: 1rem;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.8rem;
+}
+
+.contextData {
+    flex-basis: 1rem;
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.8rem;
+}

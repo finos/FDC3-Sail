@@ -6,7 +6,7 @@ import {
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AugmentedAppIntent } from "@finos/fdc3-sail-common"
-
+import { channels, handleChannelUpdates, setAppChannel } from "./util"
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
@@ -65,7 +65,8 @@ window.addEventListener("load", () => {
           closeAction={() => {
             renderIntentResolver(null)
           }}
-          chooseAction={(app, intent, channel) => {
+          channelDetails={channels}
+          chooseAction={async (app, intent, channel) => {
             console.log("chooseAction", app, intent, channel)
             callback(intent, app, channel)
             renderIntentResolver(null)
@@ -80,7 +81,7 @@ window.addEventListener("load", () => {
     }
   }
 
-  function callback(
+  async function callback(
     intent: string | null,
     app: AppIdentifier | null,
     channel: string | null,
@@ -90,10 +91,12 @@ window.addEventListener("load", () => {
       payload: { updatedCSS: DEFAULT_COLLAPSED_CSS },
     } as IframeRestyle)
 
-    // TODO - we need to send the channel to the server
-    console.log("CHANGE CHANNEL HERE", intent, app, channel)
+    if (intent && app && app.instanceId == undefined) {
+      if (channel) {
+        // need to set the channel on the server
+        await setAppChannel(app?.appId ?? null, channel)
+      }
 
-    if (intent && app) {
       myPort.postMessage({
         type: "Fdc3UserInterfaceResolveAction",
         payload: {
@@ -119,4 +122,7 @@ window.addEventListener("load", () => {
       renderIntentResolver(e.data.payload)
     }
   })
+
+  // listen for channel updates so we can show these in the intent resolver
+  handleChannelUpdates(() => {})
 })

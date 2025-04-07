@@ -1,4 +1,4 @@
-import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SailClientStateArgs, CHANNEL_SELECTOR_UPDATE, ChannelSelectorUpdateRequest, CHANNEL_SELECTOR_HELLO, ChannelSelectorHelloRequest } from "@finos/fdc3-sail-common";
+import { AppHosting, DA_DIRECTORY_LISTING, APP_HELLO, DesktopAgentDirectoryListingArgs, AppHelloArgs, DA_HELLO, DesktopAgentHelloArgs, FDC3_APP_EVENT, SAIL_CHANNEL_CHANGE, SailChannelChangeArgs, SAIL_APP_STATE, SAIL_CLIENT_STATE, DesktopAgentRegisterAppLaunchArgs, DA_REGISTER_APP_LAUNCH, SailHostManifest, ELECTRON_HELLO, ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse, SailClientStateArgs, CHANNEL_RECEIVER_UPDATE, ChannelReceiverUpdate, CHANNEL_RECEIVER_HELLO, ChannelReceiverHelloRequest, SAIL_INTENT_RESOLVE_ON_CHANNEL, SailIntentResolveOpenChannelArgs } from "@finos/fdc3-sail-common";
 import { Socket, Server } from "socket.io";
 import { SailFDC3Server } from "./SailFDC3Server";
 import { SailData, SailServerContext } from "./SailServerContext";
@@ -6,6 +6,7 @@ import { SailDirectory } from "../appd/SailDirectory";
 import { v4 as uuid } from 'uuid'
 import { State, WebAppDetails } from "@finos/fdc3-web-impl";
 import { BrowserTypes } from "@finos/fdc3";
+import { BroadcastRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 
 export const DEBUG_MODE = true
 
@@ -129,7 +130,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     appId,
                     hosting: props.hosting,
                     channel: props.channel,
-                    instanceTitle: props.instanceTitle
+                    instanceTitle: props.instanceTitle,
+                    channelSockets: []
                 })
                 console.log("SAIL Registered app", appId, instanceId)
                 callback(instanceId)
@@ -166,12 +168,12 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     connectedApps.forEach(app => {
                         const state = sc.getInstanceDetails(app.instanceId)
 
-                        if (state && state.channelSocket) {
+                        if (state) {
                             // make sure we update the channel state
-                            const ur: ChannelSelectorUpdateRequest = {
+                            const ur: ChannelReceiverUpdate = {
                                 tabs: props.channels
                             }
-                            state.channelSocket.emit(CHANNEL_SELECTOR_UPDATE, ur)
+                            state.channelSockets.forEach(socket => socket.emit(CHANNEL_RECEIVER_UPDATE, ur))
                         }
                     })
                 })
@@ -234,7 +236,8 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                         url: (directoryItem[0].details as WebAppDetails).url,
                         hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
                         channel: null,
-                        instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++
+                        instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++,
+                        channelSockets: []
                     }
 
                     fdc3Server?.serverContext.setInstanceDetails(appInstanceId, instanceDetails)
@@ -264,25 +267,38 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                 } catch (e) {
                     console.error("Error processing message", e)
                 }
+
+                if (data.type == "broadcastRequest") {
+                    fdc3ServerInstance!.serverContext.notifyBroadcastContext(data as BroadcastRequest)
+                }
+
             } else {
                 console.error("No Server instance")
             }
         })
 
-        socket.on(CHANNEL_SELECTOR_HELLO, async function (props: ChannelSelectorHelloRequest, callback: (success: void, err?: string) => void) {
+        socket.on(CHANNEL_RECEIVER_HELLO, async function (props: ChannelReceiverHelloRequest, callback: (success: ChannelReceiverUpdate | undefined, err?: string) => void) {
             userSessionId = props.userSessionId
             appInstanceId = props.instanceId
             type = SocketType.CHANNEL
 
-            const fdc3Server = await getFdc3ServerInstance(sessions, userSessionId)
-            const appInstance = fdc3Server.getServerContext().getInstanceDetails(props.instanceId)
+            fdc3ServerInstance = await getFdc3ServerInstance(sessions, userSessionId)
+            const appInstance = fdc3ServerInstance.getServerContext().getInstanceDetails(props.instanceId)
             if (appInstance) {
-                appInstance.channelSocket = socket
-                callback()
+                appInstance.channelSockets.push(socket)
+                callback({
+                    tabs: fdc3ServerInstance.getServerContext().getTabs()
+                })
             } else {
                 callback(undefined, "No app found")
             }
 
+        })
+
+        socket.on(SAIL_INTENT_RESOLVE_ON_CHANNEL, function (props: SailIntentResolveOpenChannelArgs, callback: (success: void, err?: string) => void) {
+            console.log("SAIL INTENT RESOLVE ON CHANNEL: " + JSON.stringify(props))
+            fdc3ServerInstance!.serverContext.openOnChannel(props.appId, props.channel)
+            callback(undefined)
         })
 
         const reporter = setInterval(async () => {
@@ -302,7 +318,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
                     const appId = appInstanceId!
                     const details = fdc3ServerInstance.getServerContext().getInstanceDetails(appId!)
                     if (details) {
-                        details.channelSocket = undefined
+                        details.channelSockets = []
                         fdc3ServerInstance.getServerContext().setInstanceDetails(appId, details)
                         console.error(`Channel Selector Disconnect`, appInstanceId, userSessionId)
                     }

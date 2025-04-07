@@ -4,8 +4,8 @@ import { AppRegistration, ChannelState, DirectoryApp, FDC3Server, InstanceID, Se
 import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse, TabDetail } from "@finos/fdc3-sail-common";
-import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
+import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse, TabDetail, ContextHistory, SAIL_BROADCAST_CONTEXT } from "@finos/fdc3-sail-common";
+import { BroadcastRequest, ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 import { mapChannels } from "./SailFDC3Server";
 
 
@@ -18,7 +18,7 @@ import { mapChannels } from "./SailFDC3Server";
  */
 export type SailData = AppRegistration & {
     socket?: Socket,
-    channelSocket?: Socket,
+    channelSockets: Socket[],
     url?: string,
     hosting: AppHosting,
     channel: string | null,
@@ -55,13 +55,26 @@ export class SailServerContext implements ServerContext<SailData> {
         return Promise.resolve()
     }
 
+    notifyBroadcastContext(broadcastEvent: BroadcastRequest) {
+        const channel = broadcastEvent.payload.channelId
+        const context = broadcastEvent.payload.context
+        this.socket.emit(SAIL_BROADCAST_CONTEXT, {
+            channelId: channel,
+            context: context
+        })
+    }
+
     async open(appId: string): Promise<InstanceID> {
         const destination = this.appStartDestinations.get(appId)
         this.appStartDestinations.delete(appId)
-        return this.openSail(appId, destination)
+        return this.openSail(appId, destination ?? null)
     }
 
-    async openSail(appId: string, channel: string | null | undefined): Promise<InstanceID> {
+    async openOnChannel(appId: string, channel: string): Promise<void> {
+        this.appStartDestinations.set(appId, channel)
+    }
+
+    async openSail(appId: string, channel: string | null): Promise<InstanceID> {
         const app: DirectoryApp[] = this.directory.retrieveAppsById(appId)
 
         if (app.length == 0) {
@@ -86,7 +99,8 @@ export class SailServerContext implements ServerContext<SailData> {
                 state: State.Pending,
                 hosting: approach,
                 channel: channel ?? null,
-                instanceTitle: details.instanceTitle
+                instanceTitle: details.instanceTitle,
+                channelSockets: []
             })
 
             if (channel) {
@@ -172,6 +186,14 @@ export class SailServerContext implements ServerContext<SailData> {
         return "2.0"
     }
 
+    convertToTabDetail(channel: ChannelState): TabDetail {
+        return {
+            id: channel.id,
+            icon: channel.displayMetadata?.glyph ?? "",
+            background: channel.displayMetadata?.color ?? ""
+        }
+    }
+
     augmentIntents(appIntents: AppIntent[]): AugmentedAppIntent[] {
         return appIntents.map(a => ({
             intent: a.intent,
@@ -185,11 +207,7 @@ export class SailServerContext implements ServerContext<SailData> {
                     const channel = this.getChannelDetails().find(c => c.id == instance?.channel)
                     return {
                         ...a,
-                        channelData: channel ? {
-                            id: channel.id,
-                            icon: channel.displayMetadata?.glyph,
-                            background: channel.displayMetadata?.color
-                        } : null,
+                        channelData: channel ? this.convertToTabDetail(channel) : null,
                         instanceTitle: instance?.instanceTitle ?? undefined,
                         icons: [{ src: iconSrc }],
                         title
@@ -310,14 +328,29 @@ export class SailServerContext implements ServerContext<SailData> {
         return ((this.fdc3Server as any).handlers[0].state as ChannelState[])
     }
 
-    updateChannelData(channelData: TabDetail[]): void {
+    getTabs(): TabDetail[] {
+        return this.getChannelDetails().map(c => this.convertToTabDetail(c))
+    }
+
+    updateChannelData(channelData: TabDetail[], history?: ContextHistory): void {
+
+        function relevantHistory(id: string, history?: ContextHistory,): undefined | Context[] {
+            if (history) {
+                const basicHistory = history[id]
+                // just the first item of each unique type
+                const relevantHistory = basicHistory.filter((h, i, a) => a.findIndex(h2 => h2.type == h.type) == i)
+                return relevantHistory
+            }
+            return undefined
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const channelState = ((this.fdc3Server as any).handlers[0].state as ChannelState[])
         channelState.length = 0;
         const newState = mapChannels(channelData).map(c => {
             return {
                 ...c,
-                context: channelState.find(cs => cs.id == c.id)?.context ?? []
+                context: relevantHistory(c.id, history) ?? channelState.find(cs => cs.id == c.id)?.context ?? []
             }
         })
         channelState.push(...newState)

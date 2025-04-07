@@ -69,4 +69,9 @@ export interface ClientState {
     getIntentResolution(): IntentResolution | null
     setIntentResolution(ir: IntentResolution | null): void
 
+    /**
+     * Context History
+     */
+    getContextHistory(tabId: string): Context[]
+    appendContextHistory(tabId: string, item: Context): Promise<void>
 }

@@ -1,6 +1,7 @@
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
-import { Directory, SailClientStateArgs, TabDetail } from "./message-types";
+import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
+import { Context } from "@finos/fdc3-context";
 
 export abstract class AbstractClientState implements ClientState {
 
@@ -13,8 +14,9 @@ export abstract class AbstractClientState implements ClientState {
     protected intentResolution: IntentResolution | null = null
     protected knownApps: DirectoryApp[] = []
     protected customApps: DirectoryApp[] = []
+    protected contextHistory: ContextHistory = {}
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[]) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[], history: ContextHistory) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
@@ -22,6 +24,7 @@ export abstract class AbstractClientState implements ClientState {
         this.directories = directories
         this.knownApps = knownApps
         this.customApps = customApps
+        this.contextHistory = history
     }
 
     abstract saveState(): Promise<void>
@@ -168,7 +171,8 @@ export abstract class AbstractClientState implements ClientState {
             directories: this.directories.filter(d => d.active).map(d => d.url),
             channels: this.tabs,
             panels: this.panels,
-            customApps: this.customApps
+            customApps: this.customApps,
+            contextHistory: this.contextHistory
         }
     }
 
@@ -202,5 +206,24 @@ export abstract class AbstractClientState implements ClientState {
 
     getCustomApps(): DirectoryApp[] {
         return this.customApps
+    }
+
+    getContextHistory(tabId: string): Context[] {
+        return this.contextHistory[tabId] ?? []
+    }
+
+    async appendContextHistory(tabId: string, item: Context): Promise<void> {
+        const items = this.contextHistory[tabId] ?? []
+
+        // add to the front of the array
+        items.unshift(item)
+
+        // limit to 10 items
+        if (items.length > 10) {
+            items.pop()
+        }
+
+        this.contextHistory[tabId] = items
+        await this.saveState()
     }
 }

@@ -1,6 +1,42 @@
 import { InstanceID } from "@finos/fdc3-web-impl"
-import { Socket } from "socket.io-client"
-import { FDC3_APP_EVENT, FDC3_DA_EVENT } from "@finos/fdc3-sail-common"
+import { io, Socket } from "socket.io-client"
+import { CHANNEL_RECEIVER_HELLO, CHANNEL_RECEIVER_UPDATE, ChannelReceiverHelloRequest, ChannelReceiverUpdate, FDC3_APP_EVENT, FDC3_DA_EVENT, SAIL_INTENT_RESOLVE_ON_CHANNEL, SailIntentResolveOpenChannelArgs, TabDetail } from "@finos/fdc3-sail-common"
+
+
+export const channels: TabDetail[] = []
+const socket = io()
+
+export function handleChannelUpdates(renderChannels: () => void) {
+    socket.on("connect", async () => {
+        const msg: ChannelReceiverHelloRequest = {
+            userSessionId: getUserSessionId(),
+            instanceId: getInstanceId(),
+        }
+        const result: ChannelReceiverUpdate | undefined = await socket.emitWithAck(CHANNEL_RECEIVER_HELLO, msg)
+        if (result) {
+            channels.length = 0;
+            channels.push(...result.tabs)
+            renderChannels()
+        }
+    })
+
+    socket.on(CHANNEL_RECEIVER_UPDATE, (data: ChannelReceiverUpdate) => {
+        channels.length = 0;
+        channels.push(...data.tabs)
+        renderChannels()
+    })
+}
+
+export async function setAppChannel(appId: string, channel: string): Promise<void> {
+
+    const msg: SailIntentResolveOpenChannelArgs = {
+        appId,
+        channel
+    }
+
+    await socket.emitWithAck(SAIL_INTENT_RESOLVE_ON_CHANNEL, msg)
+    console.log("SET APP CHANNEL: " + JSON.stringify(msg))
+}
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export function link(socket: Socket, channel: MessageChannel, source: InstanceID) {

@@ -180,12 +180,14 @@ export const ResolverPanel = ({
   context,
   appIntents,
   currentChannel,
+  channelDetails,
   closeAction,
   chooseAction,
 }: {
   context: Context
   appIntents: AugmentedAppIntent[]
   currentChannel: string | null
+  channelDetails: TabDetail[]
   closeAction: () => void
   chooseAction: (
     chosenApp: AppIdentifier | null,
@@ -196,10 +198,6 @@ export const ResolverPanel = ({
   const [state, setState]: [State, (x: State) => void] = useState(
     generateStartState(appIntents, currentChannel),
   )
-
-  const channelDetails = appIntents
-    .flatMap((a) => a.apps.flatMap((b) => b.channelData))
-    .filter((x) => x != null)
 
   const uniqueChannelDetails = [...new Set(channelDetails)]
 

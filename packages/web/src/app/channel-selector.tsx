@@ -1,25 +1,16 @@
 import { BrowserTypes } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
-import {
-  CHANNEL_SELECTOR_HELLO,
-  CHANNEL_SELECTOR_UPDATE,
-  ChannelSelectorHelloRequest,
-  ChannelSelectorUpdateRequest,
-  TabDetail,
-} from "@finos/fdc3-sail-common"
+import { TabDetail } from "@finos/fdc3-sail-common"
 import {
   isFdc3UserInterfaceChannels,
   isFdc3UserInterfaceHandshake,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { io, Socket } from "socket.io-client"
-import { getInstanceId, getUserSessionId } from "./util"
-
+import { handleChannelUpdates, channels } from "./util"
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
 type IframeRestyle = BrowserTypes.Fdc3UserInterfaceRestyle
 type IframeChannelSelected = BrowserTypes.Fdc3UserInterfaceChannelSelected
 
-let channels: TabDetail[] = []
 let channelId: string | null = null
 
 const DEFAULT_COLLAPSED_CSS = {
@@ -99,21 +90,6 @@ window.addEventListener("load", () => {
     )
   }
 
-  function handleChannelUpdates(socket: Socket) {
-    socket.on("connect", async () => {
-      const msg: ChannelSelectorHelloRequest = {
-        userSessionId: getUserSessionId(),
-        instanceId: getInstanceId(),
-      }
-      socket.emitWithAck(CHANNEL_SELECTOR_HELLO, msg)
-    })
-
-    socket.on(CHANNEL_SELECTOR_UPDATE, (data: ChannelSelectorUpdateRequest) => {
-      channels = data.tabs
-      renderChannels(open)
-    })
-  }
-
   myPort.addEventListener("message", (e) => {
     console.log(e.data.type)
     if (isFdc3UserInterfaceHandshake(e.data)) {
@@ -129,7 +105,7 @@ window.addEventListener("load", () => {
       )
 
       if (channels.length == 0) {
-        channels = details.payload.userChannels.map((c) => {
+        const tabDetails = details.payload.userChannels.map((c) => {
           const out: TabDetail = {
             background: c.displayMetadata?.color ?? "white",
             icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",
@@ -137,6 +113,7 @@ window.addEventListener("load", () => {
           }
           return out
         })
+        channels.push(...tabDetails)
       }
 
       channelId = details.payload.selected
@@ -144,9 +121,9 @@ window.addEventListener("load", () => {
     }
   })
 
-  const socket = io()
+  handleChannelUpdates(() => {
+    renderChannels(open)
+  })
 
-  handleChannelUpdates(socket)
-
-  renderChannels(false)
+  renderChannels(open)
 })

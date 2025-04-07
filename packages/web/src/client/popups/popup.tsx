@@ -28,13 +28,13 @@ export class Popup extends Component<PopupProps> {
             </div>
             <div className={styles.popupArea}>{this.props.area}</div>
             <div className={styles.popupButtons}>
+              {this.props.buttons}
               <PopupButton
                 key="cancel"
                 onClick={() => this.props.closeAction()}
                 text={this.props.closeName}
                 disabled={false}
               />
-              {this.props.buttons}
             </div>
           </div>
         </div>

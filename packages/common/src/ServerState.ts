@@ -1,6 +1,6 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppHosting } from "./app-hosting"
-import { SailClientStateArgs } from "./message-types"
+import { SailClientStateArgs, SailRebroadcastContextArgs } from "./message-types"
 import { AppIdentifier } from "@finos/fdc3-standard"
 import { ClientState } from "./ClientState"
 import { AppState } from "./AppState"
@@ -49,4 +49,9 @@ export interface ServerState {
      * of avaiiable apps or user channels.
      */
     sendClientState(cs: SailClientStateArgs): Promise<void>
+
+    /**
+     * Ask the server to Rebroadcast a context.
+     */
+    rebroadcastContext(args: SailRebroadcastContextArgs): Promise<void>
 }
