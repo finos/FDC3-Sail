@@ -36,7 +36,6 @@ export const ContextHistory = ({
 }) => {
   return contextHistory.length == 0 ? null : (
     <div className={styles.contextHistoryClosed} onClick={onClick}>
-      <p>Last Broadcast: </p>
       <div className={styles.contextHistoryItem}>
         <div className={styles.contextType}>{contextHistory[0].type}</div>
         <div className={styles.contextData}>

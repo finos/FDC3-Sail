@@ -356,7 +356,6 @@ export class SailServerContext implements ServerContext<SailData> {
         channelState.push(...newState)
         console.log("SAIL Updated channel data", channelState)
     }
-
 }
 
 function appNeedsStarting(appIntents: AppIntent[]) {

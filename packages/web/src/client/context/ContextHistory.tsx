@@ -1,8 +1,7 @@
 import { Component } from "react"
-import { Popup, PopupButton } from "../popups/popup"
+import { Popup } from "../popups/popup"
 import styles from "./styles.module.css"
 import { prettyPrintJson } from "pretty-print-json"
-import { getServerState } from "@finos/fdc3-sail-common"
 import { Context } from "@finos/fdc3-context"
 
 type ContextHistoryPanelProps = {
@@ -47,7 +46,12 @@ export class ContextHistoryPanel extends Component<
   }
 
   render() {
-    const json = prettyPrintJson.toHtml(this.props.history[this.state.chosen])
+    const json = prettyPrintJson.toHtml(this.props.history[this.state.chosen], {
+      indent: 2,
+      linkUrls: false,
+      trailingCommas: false,
+      quoteKeys: true,
+    })
 
     return (
       <Popup
@@ -70,22 +74,7 @@ export class ContextHistoryPanel extends Component<
             </div>
           </div>
         }
-        buttons={[
-          <PopupButton
-            key="rebroadcast"
-            text="Rebroadcast Context"
-            disabled={false}
-            onClick={async () => {
-              if (this.state.chosen) {
-                getServerState().rebroadcastContext({
-                  channelId: this.props.currentChannel,
-                  context: this.props.history[this.state.chosen],
-                })
-                this.props.closeAction()
-              }
-            }}
-          />,
-        ]}
+        buttons={[]}
         closeAction={() => this.props.closeAction()}
         closeName="Close"
       />

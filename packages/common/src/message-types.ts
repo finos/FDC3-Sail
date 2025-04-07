@@ -222,11 +222,3 @@ export type SailBroadcastContextArgs = {
     context: Context,
     channelId: string
 }
-
-/**
- * Sent from the browser desktop agent to the server to tell it to rebroadcast a context.
- */
-export const SAIL_REBROADCAST_CONTEXT = 'sail-rebroadcast-context'
-
-export type SailRebroadcastContextArgs = SailBroadcastContextArgs & {
-}
