@@ -4,8 +4,6 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc && vite build",
-    "web": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
-    "prod": "pm2 start pm2.config.js",
     "dev": "vite",
     "dev:watch": "vite --watch",
     "build:watch": "tsc --watch & vite build --watch",
@@ -32,8 +30,6 @@
     "@vitejs/plugin-react": "^4.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "socket.io": "^4.7.5",
-    "socket.io-client": "^4.7.5",
     "tsx": "^4.5.0",
     "typescript": "^5.3.2"
   }
