@@ -141,10 +141,8 @@ With associated assets in the `dist/assets` directory.
 ## Best Practices
 
 1. **Keep apps independent**: Each app should function as a standalone application.
-2. **Share common code**: Place shared components, utilities, and hooks in a central location (e.g., `src/shared/`).
-3. **Consistent naming**: Use kebab-case for app directory names.
-4. **TypeScript**: Utilize TypeScript for type safety.
-5. **Lazy loading**: For larger apps, consider using React.lazy() to split code.
+2. **Consistent naming**: Use kebab-case for app directory names.
+3. **TypeScript**: Utilize TypeScript for type safety.
 
 ## Troubleshooting
 
