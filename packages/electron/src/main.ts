@@ -23,6 +23,10 @@ async function createWindow() {
     width: 800,
     height: 600,
     webPreferences: WEB_PREFERENCES,
+    // remove the default titlebar
+    titleBarStyle: "hidden",
+    // expose window controls in Windows/Linux
+    ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
   })
 
   await win.loadFile(path.join(__dirname, "..", "static", "loading.html"))
