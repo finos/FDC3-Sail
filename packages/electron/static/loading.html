@@ -1,14 +1,80 @@
+<!doctype html>
 <html>
+  <head>
+    <title>Loading FDC3 Sail</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #1e1e1e;
+        color: #eaeaea;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      h2 {
+        margin-top: 0;
+        color: #4db6ac;
+      }
+      .status-container {
+        margin: 20px 0;
+        text-align: center;
+      }
+      #status {
+        margin: 10px 0;
+      }
+      .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #4db6ac;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        animation: rotation 1s linear infinite;
+        margin-bottom: 15px;
+      }
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
   <body>
+    <h2>FDC3 Sail</h2>
     <img
       src="logo_bg_white_2x.png"
-      style="
-        margin: auto;
-        width: 200px;
-        margin-left: 300px;
-        margin-right: 300px;
-        margin-top: 50px;
-      "
+      style="margin: auto; width: 200px; margin-top: 50px"
     />
+    <div class="loader"></div>
+    <div class="status-container">
+      <div id="status">Connecting to application server...</div>
+      <div id="preload-status">Checking preload status...</div>
+    </div>
+
+    <script>
+      // Check if preload is working
+      window.addEventListener("DOMContentLoaded", () => {
+        const preloadStatus = document.getElementById("preload-status")
+        if (window.sailTest) {
+          preloadStatus.textContent = `Preload working: ${window.sailTest.ping()}`
+          preloadStatus.style.color = "#4db6ac"
+        } else {
+          preloadStatus.textContent = "Preload script not loaded!"
+          preloadStatus.style.color = "#ff5252"
+        }
+      })
+    </script>
   </body>
 </html>
