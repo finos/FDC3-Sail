@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron"
+import { app, BaseWindow, WebContentsView } from "electron"
 import * as http from "http"
 import * as path from "path"
 import * as fs from "fs"
@@ -17,40 +17,190 @@ const WEB_PREFERENCES = {
 }
 
 const SAIL_URL = process.env.SAIL_URL || "http://localhost:8090"
+const TITLEBAR_HEIGHT = 32 // Height in pixels for the titlebar area
+
+// Define path to titlebar HTML in static folder
+const titlebarHtmlPath = path.join(__dirname, "..", "static", "titlebar.html")
 
 async function createWindow() {
-  const win = new BrowserWindow({
+  // Create the main window with hidden titlebar but visible native controls
+  const win = new BaseWindow({
     width: 800,
     height: 600,
-    webPreferences: WEB_PREFERENCES,
     // remove the default titlebar
     titleBarStyle: "hidden",
     // expose window controls in Windows/Linux
     ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
+    show: false, // Don't show until everything is loaded,
+    titleBarOverlay: {
+      //color: "#2e2c29", // Background color
+      // symbolColor: "#ffffff", // Color of window controls
+      height: 32, // Height of the title bar area
+    },
+    backgroundColor: "#ffffff",
   })
 
-  await win.loadFile(path.join(__dirname, "..", "static", "loading.html"))
+  // Create titlebar view
+  const titlebarView = new WebContentsView({
+    webPreferences: {
+      // No preload needed for titlebar
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  })
 
+  // Create main content view
+  const contentView = new WebContentsView({
+    webPreferences: WEB_PREFERENCES,
+  })
+
+  // Add views to the window content view
+  win.contentView.addChildView(titlebarView)
+  win.contentView.addChildView(contentView)
+
+  // Add these functions to your main.ts file
+  function openTitlebarDevTools(
+    win: Electron.BaseWindow,
+    titlebarView: WebContentsView,
+  ) {
+    titlebarView.webContents.openDevTools({ mode: "detach" })
+  }
+
+  function openContentDevTools(
+    win: Electron.BaseWindow,
+    contentView: WebContentsView,
+  ) {
+    contentView.webContents.openDevTools()
+  }
+
+  // Register keyboard shortcuts for DevTools
+  contentView.webContents.on("before-input-event", (event, input) => {
+    // Ctrl+Shift+T for titlebar DevTools
+    if (input.control && input.shift && input.key === "T") {
+      openTitlebarDevTools(win, titlebarView)
+    }
+
+    // Ctrl+Shift+I for content DevTools (standard shortcut)
+    if (input.control && input.shift && input.key === "I") {
+      openContentDevTools(win, contentView)
+    }
+
+    // Ctrl+Shift+R to reload the page
+    if (input.control && input.shift && input.key === "R") {
+      contentView.webContents.reload()
+    }
+  })
+
+  // Set initial bounds for both views
+  function updateViewBounds() {
+    const winBounds = {
+      width: win.getBounds().width,
+      height: win.getBounds().height,
+    }
+
+    // Set titlebar view bounds
+    titlebarView.setBounds({
+      x: 0,
+      y: 0,
+      width: winBounds.width,
+      height: TITLEBAR_HEIGHT,
+    })
+
+    // Set content view bounds
+    contentView.setBounds({
+      x: 0,
+      y: TITLEBAR_HEIGHT,
+      width: winBounds.width,
+      height: winBounds.height - TITLEBAR_HEIGHT,
+    })
+  }
+
+  // Initially set the bounds
+  updateViewBounds()
+
+  // Update bounds when window is resized
+  win.on("resize", updateViewBounds)
+
+  // Load titlebar HTML and wait for it to finish loading
+  await titlebarView.webContents.loadFile(titlebarHtmlPath)
+
+  // Show loading screen in the main content area
+  await contentView.webContents.loadFile(
+    path.join(__dirname, "..", "static", "loading.html"),
+  )
+
+  // Wait for the server to be ready
   await waitForServer()
 
-  await win.loadURL(SAIL_URL)
+  // Now load the main content
+  await contentView.webContents.loadURL(SAIL_URL)
 
-  // Ensures the preload gets run in tabs
-  win.webContents.setWindowOpenHandler((hd) => {
+  // Make the window visible after everything is loaded
+  win.show()
+
+  // Ensures the preload gets run in tabs and new windows
+  contentView.webContents.setWindowOpenHandler((hd) => {
     console.log("SAIL Window open handler", hd)
     return {
       action: "allow",
-      createWindow: (options: Electron.BrowserWindowConstructorOptions) => {
-        const win2 = new BrowserWindow({
+      createWindow: (options) => {
+        const win2 = new BaseWindow({
           ...options,
           width: 600,
           height: 400,
+          // remove the default titlebar
+          titleBarStyle: "hidden",
+          // expose window controls in Windows/Linux
+          ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
+        })
+
+        // Create titlebar and content views for new window
+        const newTitlebarView = new WebContentsView({
+          webPreferences: { contextIsolation: true, nodeIntegration: false },
+        })
+
+        const newContentView = new WebContentsView({
           webPreferences: WEB_PREFERENCES,
         })
-        return win2.webContents
+
+        // Add views to the new window
+        win2.contentView.addChildView(newTitlebarView)
+        win2.contentView.addChildView(newContentView)
+
+        // Set bounds for new window views
+        function updateNewViewBounds() {
+          const winBounds = {
+            width: win2.getBounds().width,
+            height: win2.getBounds().height,
+          }
+
+          newTitlebarView.setBounds({
+            x: 0,
+            y: 0,
+            width: winBounds.width,
+            height: TITLEBAR_HEIGHT,
+          })
+
+          newContentView.setBounds({
+            x: 0,
+            y: TITLEBAR_HEIGHT,
+            width: winBounds.width,
+            height: winBounds.height - TITLEBAR_HEIGHT,
+          })
+        }
+
+        updateNewViewBounds()
+        win2.on("resize", updateNewViewBounds)
+
+        // Load titlebar
+        newTitlebarView.webContents.loadFile(titlebarHtmlPath)
+
+        return newContentView.webContents
       },
     }
   })
+
+  return win
 }
 
 app
