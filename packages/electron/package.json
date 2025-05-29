@@ -5,11 +5,21 @@
   "main": "dist/main.js",
   "scripts": {
     "clean": "rimraf dist",
-    "electron": "tsc && electron ."
+    "build": "rollup -c rollup.config.mjs",
+    "watch": "rollup -c rollup.config.mjs -w",
+    "dev": "npm run build && electron ."
   },
   "devDependencies": {
-    "electron": "^34.0.1",
-    "rimraf": "^6.0.1"
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.32.1",
+    "typescript": "^5.7.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@finos/fdc3": "2.2.0-beta.4",
+    "electron": "^36.2.1"
+  }
 }

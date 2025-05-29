@@ -5,14 +5,14 @@
   "scripts": {
     "clean": "npm run clean --workspaces",
     "build": "npm run build --workspaces --if-present",
-    "web": "npm run build && npm run web --workspaces --if-present",
-    "electron": "concurrently \"npm run web\" \"npm run electron --workspaces --if-present \"",
-    "lint": "eslint ."
+    "web:dev": "npm run dev -w packages/web",
+    "electron:start": "npm run dev -w packages/electron",
+    "lint": "eslint .",
+    "start": "concurrently -n \"WEB,ELECTRON\" -c \"blue,green\" \"npm run web:dev\" \"wait-on -l -i 1000 -t 60000 -w 1000 tcp:localhost:8090 && npm run electron:start\""
   },
   "workspaces": [
     "packages/common",
     "packages/web",
-    "packages/preload",
     "packages/electron"
   ],
   "devDependencies": {
@@ -21,5 +21,8 @@
     "eslint": "^9.22.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1"
+  },
+  "dependencies": {
+    "wait-on": "^8.0.3"
   }
 }

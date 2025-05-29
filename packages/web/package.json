@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc && vite build",
-    "web": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
+    "dev": "nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
     "prod": "pm2 start pm2.config.js"
   },
   "main": "src/server/main.js",
