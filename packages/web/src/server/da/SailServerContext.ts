@@ -344,11 +344,11 @@ export class SailServerContext implements ServerContext<SailData> {
             return undefined
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // todo: refactor BroadcastHandler to store state in the ServerCo
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const broadcastHandler = (this.fdc3Server as any).handlers[0] as BroadcastHandler
 
-        // @ts-ignore See above refactoring
+        // @ts-expect-error above refactoring
         const channelState = broadcastHandler.state as ChannelState[]
         const newUserState = mapChannels(channelData).map(c => {
             return {
@@ -358,9 +358,8 @@ export class SailServerContext implements ServerContext<SailData> {
         })
         const newAppAndPrivateState = channelState.filter(c => c.type != ChannelType.user)
 
-        // @ts-ignore See above refactoring
+        // @ts-expect-error See above refactoring
         broadcastHandler.state = [...newUserState, ...newAppAndPrivateState]
-        // @ts-ignore See above refactoring
         // console.log("SAIL Updated channel data", broadcastHandler.state)
     }
 }
