@@ -8,3 +8,5 @@ packages/preload/exposedInMainWorld.d.ts
 build
 .rollup.cache
 FDC3-Sail.pem
+tsconfig.tsbuildinfo
+packages/tsconfig.tsbuildinfo

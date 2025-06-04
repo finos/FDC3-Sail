@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid'
-import { AppRegistration, ChannelState, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
+import { AppRegistration, BroadcastHandler, ChannelState, ChannelType, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3";
 import { getIcon, SailDirectory } from "../appd/SailDirectory";
 import { AppIntent, Context, OpenError } from "@finos/fdc3";
@@ -345,16 +345,23 @@ export class SailServerContext implements ServerContext<SailData> {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const channelState = ((this.fdc3Server as any).handlers[0].state as ChannelState[])
-        channelState.length = 0;
-        const newState = mapChannels(channelData).map(c => {
+        // todo: refactor BroadcastHandler to store state in the ServerCo
+        const broadcastHandler = (this.fdc3Server as any).handlers[0] as BroadcastHandler
+
+        // @ts-ignore See above refactoring
+        const channelState = broadcastHandler.state as ChannelState[]
+        const newUserState = mapChannels(channelData).map(c => {
             return {
                 ...c,
                 context: relevantHistory(c.id, history) ?? channelState.find(cs => cs.id == c.id)?.context ?? []
             }
         })
-        channelState.push(...newState)
-        console.log("SAIL Updated channel data", channelState)
+        const newAppAndPrivateState = channelState.filter(c => c.type != ChannelType.user)
+
+        // @ts-ignore See above refactoring
+        broadcastHandler.state = [...newUserState, ...newAppAndPrivateState]
+        // @ts-ignore See above refactoring
+        // console.log("SAIL Updated channel data", broadcastHandler.state)
     }
 }
 
