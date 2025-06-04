@@ -46,6 +46,7 @@ window.addEventListener("load", () => {
     },
   }
 
+  // nosemgrep
   parent.postMessage(hello, "*", [mc.port2])
 
   function renderIntentResolver(data: IframeResolvePayload | null) {

@@ -142,7 +142,7 @@ export function initSocketService(httpServer: any, sessions: Map<string, SailFDC
         })
 
         socket.on(SAIL_CLIENT_STATE, async function (props: SailClientStateArgs, callback: (success: any, err?: string) => void) {
-            console.log("SAIL CLIENT STATE: " + JSON.stringify(props))
+            //console.log("SAIL CLIENT STATE: " + JSON.stringify(props))
             const session = await getFdc3ServerInstance(sessions, props.userSessionId)
             if (session) {
                 const sc = session.serverContext;

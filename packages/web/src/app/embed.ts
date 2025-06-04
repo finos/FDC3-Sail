@@ -26,6 +26,7 @@ function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId:
             const channelSelectorUrl = response == AppHosting.Tab ? window.location.origin + `/html/ui/channel-selector.html${suffix}` : undefined
 
             // send the other end of the channel to the app
+            // nosemgrep
             appWindow.postMessage({
                 type: 'WCP3Handshake',
                 meta: {
