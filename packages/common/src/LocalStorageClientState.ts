@@ -84,6 +84,11 @@ const DEFAULT_DIRECTORIES: Directory[] = [
         label: "FDC3 Workbench",
         url: "../../directory/workbench.json",
         active: true
+    },
+    {
+        label: "Symphony Chat Platform",
+        url: "../../directory/symphony.json",
+        active: false
     }
 ]
 
