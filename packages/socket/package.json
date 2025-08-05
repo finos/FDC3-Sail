@@ -1,0 +1,24 @@
+{
+  "name": "@finos/fdc3-sail-socket",
+  "version": "0.0.1",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "nodemon -w src -x tsx src/main.ts --trace-uncaught",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.3",
+    "nodemon": "^3.0.1",
+    "tsx": "^4.5.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "@finos/fdc3-sail-common": "0.0.0",
+    "dotenv": "^16.0.0",
+    "socket.io": "^4.7.5"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "FDC3 Sail Socket Server"
+}

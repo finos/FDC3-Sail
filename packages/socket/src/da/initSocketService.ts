@@ -32,9 +32,7 @@ function getFdc3ServerInstance(sessions: Map<string, SailFDC3Server>, userSessio
     })
 }
 
-export function initSocketService(httpServer: any, sessions: Map<string, SailFDC3Server>): Server {
-
-    const io = new Server(httpServer)
+export function initSocketService(io: Server, sessions: Map<string, SailFDC3Server>): Server {
 
     io.on('connection', (socket: Socket) => {
 
