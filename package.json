@@ -15,7 +15,8 @@
     "packages/web",
     "packages/preload",
     "packages/electron",
-    "packages/socket"
+    "packages/socket",
+    "packages/node-client"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",

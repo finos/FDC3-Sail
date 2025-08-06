@@ -1,0 +1,36 @@
+{
+  "applications": [
+    {
+      "appId": "native-app-1",
+      "name": "Native App 1",
+      "title": "Test Native Application",
+      "type": "native",
+      "details": {
+        "path": "/path/to/native/app"
+      },
+      "icons": [
+        {
+          "src": "/icons/native-app-1.png"
+        }
+      ]
+    },
+    {
+      "appId": "citrix-app-1",
+      "name": "Citrix App 1",
+      "title": "Test Citrix Application",
+      "type": "citrix",
+      "details": {
+        "alias": "citrix-app-alias"
+      }
+    },
+    {
+      "appId": "other-app-1",
+      "name": "Other App 1",
+      "title": "Test Other Application",
+      "type": "other",
+      "details": {
+        "customProperty": "value"
+      }
+    }
+  ]
+}

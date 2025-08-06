@@ -1,0 +1,27 @@
+{
+  "applications": [
+    {
+      "appId": "web-app-1",
+      "name": "Web App 1",
+      "title": "Test Web Application",
+      "type": "web",
+      "details": {
+        "url": "https://example.com/app1"
+      },
+      "icons": [
+        {
+          "src": "/icons/web-app-1.png"
+        }
+      ]
+    },
+    {
+      "appId": "web-app-2",
+      "name": "Web App 2",
+      "title": "Another Web App",
+      "type": "web",
+      "details": {
+        "url": "https://example.com/app2"
+      }
+    }
+  ]
+}
