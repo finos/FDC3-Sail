@@ -1,44 +1,41 @@
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
-import { ChannelState, ChannelType, DefaultFDC3Server } from "@finos/fdc3-web-impl"
-import { SailServerContext } from "./SailServerContext";
+import {
+  ChannelState,
+  ChannelType,
+  DefaultFDC3Server,
+} from "@finos/fdc3-web-impl"
+import { SailServerContext } from "./SailServerContext"
 
-
-export function mapChannels(channels: TabDetail[]): ChannelState[] {
-    const out = channels.map((c) => {
-        return {
-            id: c.id,
-            type: ChannelType.user,
-            displayMetadata: {
-                name: c.id,
-                glyph: c.icon,
-                color: c.background,
-            },
-            context: []
-        }
-    })
-
-    return out
-}
+export const mapChannels = (channels: TabDetail[]): ChannelState[] =>
+  channels.map((channel) => ({
+    id: channel.id,
+    type: ChannelType.user,
+    displayMetadata: {
+      name: channel.id,
+      glyph: channel.icon,
+      color: channel.background,
+    },
+    context: [],
+  }))
 
 /**
  * Extends BasicFDC3Server to allow for more detailed (and changeable) user channel metadata
  * as well as user-configurable SailDirectory.
  */
 export class SailFDC3Server extends DefaultFDC3Server {
+  readonly serverContext: SailServerContext
 
-    readonly serverContext: SailServerContext
+  constructor(sc: SailServerContext, helloArgs: DesktopAgentHelloArgs) {
+    super(sc, sc.directory, mapChannels(helloArgs.channels), true, 60000, 20000)
+    sc.directory.replace(helloArgs.directories)
+    this.serverContext = sc
+  }
 
-    constructor(sc: SailServerContext, helloArgs: DesktopAgentHelloArgs) {
-        super(sc, sc.directory, mapChannels(helloArgs.channels), true, 60000, 20000)
-        sc.directory.replace(helloArgs.directories)
-        this.serverContext = sc
-    }
+  getDirectory() {
+    return this.serverContext.directory
+  }
 
-    getDirectory() {
-        return this.serverContext.directory
-    }
-
-    getServerContext() {
-        return this.serverContext
-    }
+  getServerContext() {
+    return this.serverContext
+  }
 }
