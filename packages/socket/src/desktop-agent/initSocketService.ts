@@ -46,5 +46,3 @@ export function initSocketService(
   return io;
 }
 
-// Re-export the getSailUrl function for backward compatibility
-export { getSailUrl } from './handlers';

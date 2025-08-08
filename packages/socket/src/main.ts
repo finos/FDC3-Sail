@@ -2,6 +2,7 @@ import { Server } from "socket.io"
 import { createServer } from "http"
 import { SailFDC3Server } from "./desktop-agent/SailFDC3Server"
 import { initSocketService } from "./desktop-agent/initSocketService"
+import { APP_CONFIG } from "./constants"
 import dotenv from "dotenv"
 
 // Load environment variables from .env file
@@ -16,17 +17,13 @@ const httpServer = createServer()
 // Create Socket.IO server with CORS for localhost
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:5173",
-    ],
+    origin: APP_CONFIG.CORS_ORIGINS,
     methods: ["GET", "POST"],
     credentials: true,
   },
 })
 
-const port = process.env.PORT || 8090
+const port = process.env.PORT || APP_CONFIG.DEFAULT_PORT
 
 httpServer.listen(port, () => {
   console.log(`SAIL Socket Server is listening on port ${port}`)

@@ -7,8 +7,22 @@ import {
   HandlerContext,
   SocketType,
   CONFIG,
-  clearChannelSocketsFromInstance,
+  AppInstance,
 } from "./types"
+
+/**
+ * Removes all channel sockets from an app instance
+ * @param appInstance - The app instance to update
+ * @returns Updated app instance with cleared sockets
+ */
+function clearChannelSocketsFromInstance(
+  appInstance: AppInstance,
+): AppInstance {
+  return {
+    ...appInstance,
+    channelSockets: [],
+  }
+}
 
 /**
  * Handles app disconnection by updating state and logging remaining apps
@@ -126,7 +140,7 @@ async function handleDisconnect(
  * @param context - Handler context with socket and connection state
  * @returns Timer handle for the state reporter interval
  */
-export function setupStateReporter(context: HandlerContext): NodeJS.Timeout {
+function setupStateReporter(context: HandlerContext): NodeJS.Timeout {
   const { socket, connectionState } = context
 
   return setInterval(async () => {

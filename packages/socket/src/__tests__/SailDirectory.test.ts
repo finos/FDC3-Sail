@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { DirectoryApp } from "@finos/fdc3-web-impl"
-import { SailDirectory, getIcon, DEFAULT_ICON } from "../appd/SailDirectory"
+import { SailDirectory } from "../appd/SailDirectory"
 import { resolve } from "path"
 import { writeFileSync, unlinkSync } from "fs"
 
@@ -54,19 +54,6 @@ describe("SailDirectory", () => {
     directory = new SailDirectory()
   })
 
-  describe("getIcon utility", () => {
-    it("should return app icon if available", () => {
-      expect(getIcon(webApp1)).toBe("/icons/web-app-1.png")
-    })
-
-    it("should return default icon if no icons", () => {
-      expect(getIcon(webApp2)).toBe(DEFAULT_ICON)
-    })
-
-    it("should return default icon if app is undefined", () => {
-      expect(getIcon(undefined)).toBe(DEFAULT_ICON)
-    })
-  })
 
   describe("app management", () => {
     it("should start with empty directory", () => {

@@ -12,9 +12,15 @@ import {
   SocketIOCallback, 
   HandlerContext, 
   CONFIG, 
-  getSailUrl,
   handleCallbackError 
 } from './types';
+
+/**
+ * Gets the Sail URL from environment variables or returns default
+ */
+function getSailUrl(): string {
+  return process.env.SAIL_URL || "http://localhost:8090"
+}
 
 /**
  * Handles Electron hello messages for app discovery and Desktop Agent initialization
@@ -22,7 +28,7 @@ import {
  * @param callback - Socket callback to return app or DA response
  * @param context - Handler context with socket, connection state, and sessions
  */
-export function handleElectronHello(
+function handleElectronHello(
   electronHelloArgs: ElectronHelloArgs,
   callback: SocketIOCallback<ElectronAppResponse | ElectronDAResponse>,
   { socket, connectionState, sessions }: HandlerContext,

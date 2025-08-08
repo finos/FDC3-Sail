@@ -20,26 +20,6 @@ interface DirectoryData {
   applications: DirectoryApp[]
 }
 
-/** Default icon path used when applications don't specify their own icon */
-export const DEFAULT_ICON = "/icons/control/choose-app.svg"
-
-/**
- * Retrieves the icon URL for an application directory entry
- *
- * @param appDirectory - The directory app entry to get icon for
- * @returns The icon source URL or default icon if none found
- */
-export function getIcon(appDirectory: DirectoryApp | undefined): string {
-  if (appDirectory) {
-    const icons = appDirectory.icons ?? []
-    if (icons.length > 0) {
-      return icons[0].src
-    }
-  }
-
-  return DEFAULT_ICON
-}
-
 /**
  * SailDirectory - Extended FDC3 application directory with enhanced loading capabilities
  *
@@ -170,7 +150,7 @@ export class SailDirectory extends BasicDirectory {
 
       // Determine resource type and validate accordingly
       let apps: DirectoryApp[]
-      
+
       if (this.isValidUrl(uri)) {
         // Handle as remote URL
         apps = await this.fetchRemoteAppDirectory(uri)
@@ -184,8 +164,8 @@ export class SailDirectory extends BasicDirectory {
       }
 
       // Add non-duplicate apps based on appId
-      const existingAppIds = new Set(this.allApps.map(app => app.appId))
-      const newApps = apps.filter(app => !existingAppIds.has(app.appId))
+      const existingAppIds = new Set(this.allApps.map((app) => app.appId))
+      const newApps = apps.filter((app) => !existingAppIds.has(app.appId))
       this.allApps.push(...newApps)
     } catch (error) {
       const errorMessage = `Failed to load applications from ${uri}: ${
@@ -208,7 +188,7 @@ export class SailDirectory extends BasicDirectory {
     if (!Array.isArray(urls)) {
       throw new Error("URLs must be an array")
     }
-    
+
     if (urls.length === 0) {
       this.allApps = []
       console.log("No sources provided - cleared all applications")
@@ -226,19 +206,21 @@ export class SailDirectory extends BasicDirectory {
 
     // Collect errors using filter + map (more functional approach)
     const errors = results
-      .map((result, index) => 
-        result.status === "rejected" 
+      .map((result, index) =>
+        result.status === "rejected"
           ? `Failed to load ${urls[index]}: ${result.reason?.message || result.reason}`
-          : null
+          : null,
       )
       .filter((error): error is string => error !== null)
 
     // Log results summary
-    const successCount = results.filter(result => result.status === "fulfilled").length
+    const successCount = results.filter(
+      (result) => result.status === "fulfilled",
+    ).length
     console.log(
       `Loaded ${this.allApps.length} apps from ${successCount}/${urls.length} sources`,
     )
-    
+
     if (errors.length > 0) {
       console.warn("Some sources failed to load:", errors)
     }

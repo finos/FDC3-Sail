@@ -15,8 +15,25 @@ import {
   SocketType,
   getFdc3ServerInstance,
   handleCallbackError,
-  addChannelSocketToInstance,
+  AppInstance,
 } from "./types"
+import { Socket } from "socket.io"
+
+/**
+ * Adds a channel socket to an existing app instance
+ * @param appInstance - The app instance to update
+ * @param socket - The socket to add
+ * @returns Updated app instance with the new socket
+ */
+function addChannelSocketToInstance(
+  appInstance: AppInstance,
+  socket: Socket,
+): AppInstance {
+  return {
+    ...appInstance,
+    channelSockets: [...appInstance.channelSockets, socket],
+  }
+}
 
 /**
  * Handles channel change requests for app instances
@@ -24,7 +41,7 @@ import {
  * @param callback - Socket callback to confirm success or return error
  * @param context - Handler context with sessions map
  */
-export async function handleChannelChange(
+async function handleChannelChange(
   channelChangeArgs: SailChannelChangeArgs,
   callback: SocketIOCallback<boolean>,
   { sessions }: HandlerContext,
@@ -72,7 +89,7 @@ export async function handleChannelChange(
  * @param callback - Socket callback to return channel update or error
  * @param context - Handler context with socket, connection state, and sessions
  */
-export async function handleChannelReceiverHello(
+async function handleChannelReceiverHello(
   receiverHelloRequest: ChannelReceiverHelloRequest,
   callback: SocketIOCallback<ChannelReceiverUpdate>,
   { socket, connectionState, sessions }: HandlerContext,
@@ -128,7 +145,7 @@ export async function handleChannelReceiverHello(
  * @param callback - Socket callback to confirm completion or return error
  * @param context - Handler context containing connection state
  */
-export function handleIntentResolveOnChannel(
+function handleIntentResolveOnChannel(
   intentResolveArgs: SailIntentResolveOpenChannelArgs,
   callback: SocketIOCallback<void>,
   { connectionState }: HandlerContext,

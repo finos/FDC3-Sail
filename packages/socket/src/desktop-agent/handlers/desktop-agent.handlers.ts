@@ -33,7 +33,7 @@ import {
  * @param callback - Socket callback to confirm session creation
  * @param context - Handler context with socket, connection state, and sessions
  */
-export function handleDesktopAgentHello(
+function handleDesktopAgentHello(
   desktopAgentHelloArgs: DesktopAgentHelloArgs,
   callback: SocketIOCallback<boolean>,
   { socket, connectionState, sessions }: HandlerContext,
@@ -79,7 +79,7 @@ export function handleDesktopAgentHello(
  * @param callback - Socket callback to return directory apps or error
  * @param context - Handler context with sessions map
  */
-export async function handleDirectoryListing(
+async function handleDirectoryListing(
   directoryListingArgs: DesktopAgentDirectoryListingArgs,
   callback: SocketIOCallback<unknown>,
   { sessions }: HandlerContext,
@@ -101,7 +101,7 @@ export async function handleDirectoryListing(
  * @param callback - Socket callback to return instance ID or error
  * @param context - Handler context with sessions map
  */
-export async function handleRegisterAppLaunch(
+async function handleRegisterAppLaunch(
   appLaunchArgs: DesktopAgentRegisterAppLaunchArgs,
   callback: SocketIOCallback<string>,
   { sessions }: HandlerContext,
@@ -192,7 +192,7 @@ async function updateConnectedAppsChannels(
  * @param callback - Socket callback to confirm update success
  * @param context - Handler context with sessions map
  */
-export async function handleClientState(
+async function handleClientState(
   clientStateArgs: SailClientStateArgs,
   callback: SocketIOCallback<boolean>,
   { sessions }: HandlerContext,

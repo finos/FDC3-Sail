@@ -20,10 +20,39 @@ import {
   CONFIG,
   DirectoryAppEntry,
   getFdc3ServerInstance,
-  getNextDebugReconnectionNumber,
   handleCallbackError,
-  logger,
+  LogLevel,
 } from "./types"
+
+/** Global state for debug reconnections */
+let debugReconnectionNumber = 0
+
+/**
+ * Increments and returns the debug reconnection number
+ */
+function getNextDebugReconnectionNumber(): number {
+  return ++debugReconnectionNumber
+}
+
+/**
+ * Simple structured logger with configurable log levels
+ */
+const logger = {
+  error: (message: string, ...args: unknown[]) => {
+    console.error(`[${LogLevel.ERROR}] ${message}`, ...args)
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    console.warn(`[${LogLevel.WARN}] ${message}`, ...args)
+  },
+  info: (message: string, ...args: unknown[]) => {
+    console.log(`[${LogLevel.INFO}] ${message}`, ...args)
+  },
+  debug: (message: string, ...args: unknown[]) => {
+    if (CONFIG.DEBUG_MODE) {
+      console.log(`[${LogLevel.DEBUG}] ${message}`, ...args)
+    }
+  },
+}
 
 /**
  * Creates a recovery instance for debug mode when an app connects with invalid instance ID
@@ -61,7 +90,7 @@ function createRecoveryInstance(
  * @param callback - Socket callback to return hosting type or error
  * @param context - Handler context with socket, connection state, and sessions
  */
-export async function handleAppHello(
+async function handleAppHello(
   appHelloArgs: AppHelloArgs,
   callback: SocketIOCallback<AppHosting>,
   { socket, connectionState, sessions }: HandlerContext,
@@ -157,7 +186,7 @@ export async function handleAppHello(
  * @param sourceId - Source identifier for the event
  * @param context - Handler context containing connection state
  */
-export function handleFdc3AppEvent(
+function handleFdc3AppEvent(
   eventData:
     | AppRequestMessage
     | WebConnectionProtocol4ValidateAppIdentity

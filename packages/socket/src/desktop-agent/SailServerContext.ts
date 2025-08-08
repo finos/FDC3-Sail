@@ -10,7 +10,7 @@ import {
 } from "@finos/fdc3-web-impl";
 import type { FDC3Server } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3"
-import { getIcon, SailDirectory } from "../appd/SailDirectory"
+import { SailDirectory } from "../appd/SailDirectory"
 import { AppIntent, Context, OpenError } from "@finos/fdc3"
 import {
   FDC3_DA_EVENT,
@@ -32,11 +32,23 @@ import {
   ChannelChangedEvent,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { mapChannels } from "./SailFDC3Server"
+import { APP_CONFIG } from "../constants"
 
-/** Version constants */
-const PROVIDER_VERSION = "2.0" as const
-const FDC3_VERSION = "2.0" as const
-const PROVIDER_NAME = "FDC3 Sail" as const
+/**
+ * Retrieves the icon URL for an application directory entry
+ * @param appDirectory - The directory app entry to get icon for
+ * @returns The icon source URL or default icon if none found
+ */
+function getIcon(appDirectory: DirectoryApp | undefined): string {
+  if (appDirectory) {
+    const icons = appDirectory.icons ?? []
+    if (icons.length > 0) {
+      return icons[0].src
+    }
+  }
+
+  return APP_CONFIG.DEFAULT_ICON
+}
 
 /** Type for FDC3Server handlers to safely access channel state */
 interface FDC3ServerWithHandlers {
@@ -329,7 +341,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * @returns The FDC3 provider name
    */
   provider(): string {
-    return PROVIDER_NAME
+    return APP_CONFIG.PROVIDER_NAME
   }
 
   /**
@@ -337,7 +349,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * @returns The provider version string
    */
   providerVersion(): string {
-    return PROVIDER_VERSION
+    return APP_CONFIG.PROVIDER_VERSION
   }
 
   /**
@@ -345,7 +357,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * @returns The FDC3 version string
    */
   fdc3Version(): string {
-    return FDC3_VERSION
+    return APP_CONFIG.FDC3_VERSION
   }
 
   /**
