@@ -21,46 +21,51 @@ import {
   SocketIOCallback, 
   HandlerContext, 
   SocketType,
-  APP_INSTANCE_PREFIX,
-  getFdc3ServerInstance 
+  CONFIG,
+  PanelData,
+  getFdc3ServerInstance,
+  handleCallbackError 
 } from './types';
 
 /**
- * Handles Desktop Agent hello messages for session setup
+ * Handles Desktop Agent hello messages for session setup and management
+ * @param desktopAgentHelloArgs - Desktop agent hello arguments with session configuration
+ * @param callback - Socket callback to confirm session creation
+ * @param context - Handler context with socket, connection state, and sessions
  */
 export function handleDesktopAgentHello(
-  props: DesktopAgentHelloArgs,
+  desktopAgentHelloArgs: DesktopAgentHelloArgs,
   callback: SocketIOCallback<boolean>,
   { socket, connectionState, sessions }: HandlerContext,
 ): void {
-  console.log(`SAIL DA HELLO: ${JSON.stringify(props)}`);
+  console.log(`SAIL DA HELLO: ${JSON.stringify(desktopAgentHelloArgs)}`);
 
   connectionState.socketType = SocketType.DESKTOP_AGENT;
-  connectionState.userSessionId = props.userSessionId;
+  connectionState.userSessionId = desktopAgentHelloArgs.userSessionId;
   console.log('SAIL Desktop Agent Connecting', connectionState.userSessionId);
   
-  const existingServer = sessions.get(props.userSessionId);
+  const existingServer = sessions.get(desktopAgentHelloArgs.userSessionId);
 
   let fdc3Server: SailFDC3Server;
   if (existingServer) {
     // Reconfigure existing session
-    fdc3Server = new SailFDC3Server(existingServer.serverContext, props);
-    sessions.set(props.userSessionId, fdc3Server);
+    fdc3Server = new SailFDC3Server(existingServer.serverContext, desktopAgentHelloArgs);
+    sessions.set(desktopAgentHelloArgs.userSessionId, fdc3Server);
     console.log(
       'SAIL updated desktop agent channels and directories',
       sessions.size,
-      props.userSessionId,
+      desktopAgentHelloArgs.userSessionId,
     );
   } else {
     // Create new session
     const serverContext = new SailServerContext(new SailDirectory(), socket);
-    fdc3Server = new SailFDC3Server(serverContext, props);
+    fdc3Server = new SailFDC3Server(serverContext, desktopAgentHelloArgs);
     serverContext.setFDC3Server(fdc3Server);
-    sessions.set(props.userSessionId, fdc3Server);
+    sessions.set(desktopAgentHelloArgs.userSessionId, fdc3Server);
     console.log(
       'SAIL created agent session. Running sessions:',
       sessions.size,
-      props.userSessionId,
+      desktopAgentHelloArgs.userSessionId,
     );
   }
 
@@ -69,38 +74,44 @@ export function handleDesktopAgentHello(
 }
 
 /**
- * Handles directory listing requests
+ * Handles directory listing requests to retrieve available applications
+ * @param directoryListingArgs - Directory listing arguments with user session ID
+ * @param callback - Socket callback to return directory apps or error
+ * @param context - Handler context with sessions map
  */
 export async function handleDirectoryListing(
-  props: DesktopAgentDirectoryListingArgs,
+  directoryListingArgs: DesktopAgentDirectoryListingArgs,
   callback: SocketIOCallback<unknown>,
   { sessions }: HandlerContext,
 ): Promise<void> {
-  const { userSessionId } = props;
+  const { userSessionId } = directoryListingArgs;
   try {
-    const session = await getFdc3ServerInstance(sessions, userSessionId);
-    const directoryApps = session.getDirectory().allApps;
-    callback(directoryApps);
+    const fdc3Server = await getFdc3ServerInstance(sessions, userSessionId);
+    const directoryAppList = fdc3Server.getDirectory().allApps;
+    callback(directoryAppList);
   } catch (error) {
     console.error('Session not found', userSessionId, error);
-    callback(null, 'Session not found');
+    handleCallbackError(callback, 'Session not found');
   }
 }
 
 /**
- * Handles app launch registration requests
+ * Handles app launch registration requests to prepare app instances
+ * @param appLaunchArgs - App launch registration arguments with app and hosting info
+ * @param callback - Socket callback to return instance ID or error
+ * @param context - Handler context with sessions map
  */
 export async function handleRegisterAppLaunch(
-  props: DesktopAgentRegisterAppLaunchArgs,
+  appLaunchArgs: DesktopAgentRegisterAppLaunchArgs,
   callback: SocketIOCallback<string>,
   { sessions }: HandlerContext,
 ): Promise<void> {
-  console.log(`SAIL DA REGISTER APP LAUNCH: ${JSON.stringify(props)}`);
+  console.log(`SAIL DA REGISTER APP LAUNCH: ${JSON.stringify(appLaunchArgs)}`);
 
-  const { appId, userSessionId, hosting, channel, instanceTitle } = props;
+  const { appId, userSessionId, hosting, channel, instanceTitle } = appLaunchArgs;
   try {
-    const session = await getFdc3ServerInstance(sessions, userSessionId);
-    const instanceId = `${APP_INSTANCE_PREFIX}${uuid()}`;
+    const fdc3Server = await getFdc3ServerInstance(sessions, userSessionId);
+    const instanceId = `${CONFIG.APP_INSTANCE_PREFIX}${uuid()}`;
     
     const instanceDetails: SailData = {
       instanceId,
@@ -112,23 +123,25 @@ export async function handleRegisterAppLaunch(
       channelSockets: [],
     };
     
-    session.serverContext.setInstanceDetails(instanceId, instanceDetails);
+    fdc3Server.serverContext.setInstanceDetails(instanceId, instanceDetails);
     console.log('SAIL Registered app', appId, instanceId);
     callback(instanceId);
   } catch (error) {
     console.error('SAIL Session not found', userSessionId, error);
-    callback(null, 'Session not found');
+    handleCallbackError(callback, 'Session not found');
   }
 }
 
 /**
- * Updates panel channel assignments
+ * Updates panel channel assignments and notifies of changes
+ * @param serverContext - Server context for managing instance details
+ * @param panelList - List of panels with their channel assignments
  */
 function updatePanelChannels(
   serverContext: SailServerContext,
-  panels: Array<{ panelId: string; tabId: string; title: string }>,
+  panelList: PanelData[],
 ): void {
-  panels.forEach(({ panelId, tabId: newChannel, title }) => {
+  panelList.forEach(({ panelId, tabId: newChannel, title }) => {
     const instanceDetails = serverContext.getInstanceDetails(panelId);
     if (!instanceDetails) return;
 
@@ -149,11 +162,13 @@ function updatePanelChannels(
 }
 
 /**
- * Updates channel data for connected apps
+ * Updates channel data for all connected apps by broadcasting channel updates
+ * @param serverContext - Server context for managing app connections
+ * @param channelList - List of available channels/tabs
  */
 async function updateConnectedAppsChannels(
   serverContext: SailServerContext,
-  channels: TabDetail[],
+  channelList: TabDetail[],
 ): Promise<void> {
   const connectedApps = await serverContext.getConnectedApps();
   
@@ -162,7 +177,7 @@ async function updateConnectedAppsChannels(
     if (!instanceDetails) return;
 
     const channelUpdate: ChannelReceiverUpdate = {
-      tabs: channels,
+      tabs: channelList,
     };
     
     instanceDetails.channelSockets.forEach((channelSocket) => {
@@ -172,33 +187,36 @@ async function updateConnectedAppsChannels(
 }
 
 /**
- * Handles client state updates
+ * Handles client state updates including directories, channels, and panels
+ * @param clientStateArgs - Client state arguments with updated configuration
+ * @param callback - Socket callback to confirm update success
+ * @param context - Handler context with sessions map
  */
 export async function handleClientState(
-  props: SailClientStateArgs,
+  clientStateArgs: SailClientStateArgs,
   callback: SocketIOCallback<boolean>,
   { sessions }: HandlerContext,
 ): Promise<void> {
-  console.log(`SAIL CLIENT STATE: ${JSON.stringify(props)}`);
+  console.log(`SAIL CLIENT STATE: ${JSON.stringify(clientStateArgs)}`);
   
   try {
-    const session = await getFdc3ServerInstance(sessions, props.userSessionId);
-    const { serverContext } = session;
+    const fdc3Server = await getFdc3ServerInstance(sessions, clientStateArgs.userSessionId);
+    const { serverContext } = fdc3Server;
     
     // Update directories and channels
-    await serverContext.reloadAppDirectories(props.directories, props.customApps);
-    serverContext.updateChannelData(props.channels);
+    await serverContext.reloadAppDirectories(clientStateArgs.directories, clientStateArgs.customApps);
+    serverContext.updateChannelData(clientStateArgs.channels);
 
     // Update panel channels
-    updatePanelChannels(serverContext, props.panels);
+    updatePanelChannels(serverContext, clientStateArgs.panels);
 
     // Update channel data for connected apps
-    await updateConnectedAppsChannels(serverContext, props.channels);
+    await updateConnectedAppsChannels(serverContext, clientStateArgs.channels);
 
     callback(true);
   } catch (error) {
     console.error('SAIL Client state update failed:', error);
-    callback(null, 'Session not found');
+    handleCallbackError(callback, 'Session not found');
   }
 }
 
@@ -208,19 +226,19 @@ export async function handleClientState(
 export function registerDesktopAgentHandlers(context: HandlerContext): void {
   const { socket } = context;
 
-  socket.on(DA_HELLO, (props: DesktopAgentHelloArgs, callback: SocketIOCallback<boolean>) => {
-    handleDesktopAgentHello(props, callback, context);
+  socket.on(DA_HELLO, (desktopAgentHelloArgs: DesktopAgentHelloArgs, callback: SocketIOCallback<boolean>) => {
+    handleDesktopAgentHello(desktopAgentHelloArgs, callback, context);
   });
 
-  socket.on(DA_DIRECTORY_LISTING, (props: DesktopAgentDirectoryListingArgs, callback: SocketIOCallback<unknown>) => {
-    handleDirectoryListing(props, callback, context);
+  socket.on(DA_DIRECTORY_LISTING, (directoryListingArgs: DesktopAgentDirectoryListingArgs, callback: SocketIOCallback<unknown>) => {
+    handleDirectoryListing(directoryListingArgs, callback, context);
   });
 
-  socket.on(DA_REGISTER_APP_LAUNCH, (props: DesktopAgentRegisterAppLaunchArgs, callback: SocketIOCallback<string>) => {
-    handleRegisterAppLaunch(props, callback, context);
+  socket.on(DA_REGISTER_APP_LAUNCH, (appLaunchArgs: DesktopAgentRegisterAppLaunchArgs, callback: SocketIOCallback<string>) => {
+    handleRegisterAppLaunch(appLaunchArgs, callback, context);
   });
 
-  socket.on(SAIL_CLIENT_STATE, (props: SailClientStateArgs, callback: SocketIOCallback<boolean>) => {
-    handleClientState(props, callback, context);
+  socket.on(SAIL_CLIENT_STATE, (clientStateArgs: SailClientStateArgs, callback: SocketIOCallback<boolean>) => {
+    handleClientState(clientStateArgs, callback, context);
   });
 }

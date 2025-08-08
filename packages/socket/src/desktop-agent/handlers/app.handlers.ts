@@ -4,143 +4,187 @@ import {
   AppHelloArgs,
   AppHosting,
   SailHostManifest,
-} from '@finos/fdc3-sail-common';
-import { State, WebAppDetails } from '@finos/fdc3-web-impl';
-import { BroadcastRequest } from '@finos/fdc3-schema/dist/generated/api/BrowserTypes';
-import { SailData } from '../SailServerContext';
-import { 
-  SocketIOCallback, 
-  HandlerContext, 
+} from "@finos/fdc3-sail-common"
+import { State, WebAppDetails } from "@finos/fdc3-web-impl"
+import {
+  AppRequestMessage,
+  BroadcastRequest,
+  WebConnectionProtocol4ValidateAppIdentity,
+  WebConnectionProtocol6Goodbye,
+} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { SailData } from "../SailServerContext"
+import {
+  SocketIOCallback,
+  HandlerContext,
   SocketType,
-  DEBUG_RECONNECTION_SUFFIX,
+  CONFIG,
+  DirectoryAppEntry,
   getFdc3ServerInstance,
-  getNextDebugReconnectionNumber 
-} from './types';
-
-/** Debug mode flag */
-const DEBUG_MODE = true;
+  getNextDebugReconnectionNumber,
+  handleCallbackError,
+  logger,
+} from "./types"
 
 /**
- * Creates a recovery instance for debug mode
+ * Creates a recovery instance for debug mode when an app connects with invalid instance ID
+ * @param appHelloArgs - App hello arguments
+ * @param directoryAppList - List of directory apps matching the app ID
+ * @param socket - Socket connection
+ * @returns Recovery instance data
  */
 function createRecoveryInstance(
-  props: AppHelloArgs,
-  directoryApps: Array<{ title: string; hostManifests?: { sail?: SailHostManifest }; details: unknown }>,
-  socket: any,
+  appHelloArgs: AppHelloArgs,
+  directoryAppList: DirectoryAppEntry[],
+  socket: import("socket.io").Socket,
 ): SailData {
-  const [directoryApp] = directoryApps;
-  const sailManifest = directoryApp.hostManifests?.sail;
-  
+  const [directoryApp] = directoryAppList
+  const sailManifest = directoryApp.hostManifests?.sail as
+    | SailHostManifest
+    | undefined
+
   return {
-    appId: props.appId,
-    instanceId: props.instanceId,
+    appId: appHelloArgs.appId,
+    instanceId: appHelloArgs.instanceId,
     state: State.Pending,
     socket,
     url: (directoryApp.details as WebAppDetails).url,
     hosting: sailManifest?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
     channel: null,
-    instanceTitle: `${directoryApp.title}${DEBUG_RECONNECTION_SUFFIX}${getNextDebugReconnectionNumber()}`,
+    instanceTitle: `${directoryApp.title}${CONFIG.DEBUG_RECONNECTION_SUFFIX}${getNextDebugReconnectionNumber()}`,
     channelSockets: [],
-  };
+  }
 }
 
 /**
  * Handles app hello messages for connection establishment
+ * @param appHelloArgs - App hello arguments containing app and instance information
+ * @param callback - Socket callback to return hosting type or error
+ * @param context - Handler context with socket, connection state, and sessions
  */
 export async function handleAppHello(
-  props: AppHelloArgs,
+  appHelloArgs: AppHelloArgs,
   callback: SocketIOCallback<AppHosting>,
   { socket, connectionState, sessions }: HandlerContext,
 ): Promise<void> {
-  console.log(`SAIL APP HELLO: ${JSON.stringify(props)}`);
+  logger.info("SAIL APP HELLO", appHelloArgs)
 
-  connectionState.appInstanceId = props.instanceId;
-  connectionState.userSessionId = props.userSessionId;
-  connectionState.socketType = SocketType.APP;
-  
+  connectionState.appInstanceId = appHelloArgs.instanceId
+  connectionState.userSessionId = appHelloArgs.userSessionId
+  connectionState.socketType = SocketType.APP
+
   try {
-    const fdc3Server = await getFdc3ServerInstance(sessions, props.userSessionId);
-    
+    const fdc3Server = await getFdc3ServerInstance(
+      sessions,
+      appHelloArgs.userSessionId,
+    )
+
     if (!fdc3Server) {
-      console.error(
-        'App tried connecting to non-existent DA instance:',
-        props.userSessionId,
-        props.instanceId,
-      );
-      callback(null, 'App tried connecting to non-existent DA instance');
-      return;
+      logger.error("App tried connecting to non-existent DA instance", {
+        userSessionId: appHelloArgs.userSessionId,
+        instanceId: appHelloArgs.instanceId,
+      })
+      handleCallbackError(
+        callback,
+        "App tried connecting to non-existent DA instance",
+      )
+      return
     }
 
-    console.log('SAIL App connected:', props.userSessionId, props.instanceId);
-    const serverContext = fdc3Server.getServerContext();
-    const existingInstance = serverContext.getInstanceDetails(props.instanceId);
-    const directoryApps = serverContext.directory.retrieveAppsById(props.appId);
+    logger.info("SAIL App connected", {
+      userSessionId: appHelloArgs.userSessionId,
+      instanceId: appHelloArgs.instanceId,
+    })
+    const serverContext = fdc3Server.getServerContext()
+    const existingInstance = serverContext.getInstanceDetails(
+      appHelloArgs.instanceId,
+    )
+    const directoryAppList = serverContext.directory.retrieveAppsById(
+      appHelloArgs.appId,
+    )
 
     // Handle existing pending instance
     if (existingInstance?.state === State.Pending) {
       const updatedInstance: SailData = {
         ...existingInstance,
         socket,
-        url: directoryApps.length > 0 ? (directoryApps[0].details as WebAppDetails).url : existingInstance.url,
-      };
-      
-      connectionState.fdc3ServerInstance = fdc3Server;
-      serverContext.setInstanceDetails(props.instanceId, updatedInstance);
-      callback(updatedInstance.hosting);
-      return;
+        url:
+          directoryAppList.length > 0
+            ? (directoryAppList[0].details as WebAppDetails).url
+            : existingInstance.url,
+      }
+
+      connectionState.fdc3ServerInstance = fdc3Server
+      serverContext.setInstanceDetails(appHelloArgs.instanceId, updatedInstance)
+      callback(updatedInstance.hosting)
+      return
     }
 
     // Handle debug mode recovery
-    if (DEBUG_MODE && directoryApps.length > 0) {
-      console.error(
-        'App tried to connect with invalid instance ID, allowing connection in debug mode:',
-        props.instanceId,
-      );
+    if (CONFIG.DEBUG_MODE && directoryAppList.length > 0) {
+      logger.warn(
+        "App tried to connect with invalid instance ID, allowing connection in debug mode",
+        { instanceId: appHelloArgs.instanceId },
+      )
 
-      const recoveryInstance = createRecoveryInstance(props, directoryApps, socket);
-      serverContext.setInstanceDetails(props.instanceId, recoveryInstance);
-      connectionState.fdc3ServerInstance = fdc3Server;
-      callback(recoveryInstance.hosting);
-      return;
+      const recoveryInstance = createRecoveryInstance(
+        appHelloArgs,
+        directoryAppList,
+        socket,
+      )
+      serverContext.setInstanceDetails(
+        appHelloArgs.instanceId,
+        recoveryInstance,
+      )
+      connectionState.fdc3ServerInstance = fdc3Server
+      callback(recoveryInstance.hosting)
+      return
     }
 
-    console.error('App tried to connect with invalid instance ID');
-    callback(null, 'Invalid instance ID');
+    logger.error("App tried to connect with invalid instance ID", {
+      instanceId: appHelloArgs.instanceId,
+    })
+    handleCallbackError(callback, "Invalid instance ID")
   } catch (error) {
-    console.error('Error handling app hello:', error);
-    callback(null, 'Connection error');
+    logger.error("Error handling app hello", error)
+    handleCallbackError(callback, "Connection error")
   }
 }
 
 /**
- * Handles FDC3 app events
+/**
+ * Handles FDC3 app events and forwards them to the server instance
+ * @param eventData - FDC3 event data containing type and payload
+ * @param sourceId - Source identifier for the event
+ * @param context - Handler context containing connection state
  */
 export function handleFdc3AppEvent(
-  data: Record<string, unknown> & { type: string },
-  from: string,
+  eventData:
+    | AppRequestMessage
+    | WebConnectionProtocol4ValidateAppIdentity
+    | WebConnectionProtocol6Goodbye,
+  sourceId: string,
   { connectionState }: HandlerContext,
 ): void {
-  // Log non-heartbeat messages
-  if (!data.type.startsWith('heartbeat')) {
-    console.log(`SAIL FDC3_APP_EVENT: ${JSON.stringify(data)} from ${from}`);
+  if (!eventData.type.startsWith("heartbeat")) {
+    logger.debug("SAIL FDC3_APP_EVENT", { eventData, sourceId })
   }
 
-  const { fdc3ServerInstance } = connectionState;
+  const { fdc3ServerInstance } = connectionState
   if (!fdc3ServerInstance) {
-    console.error('No server instance available');
-    return;
+    logger.error("No server instance available for FDC3 event")
+    return
   }
-
+  fdc3ServerInstance.receive(eventData, sourceId)
   try {
-    fdc3ServerInstance.receive(data as any, from);
+    fdc3ServerInstance.receive(eventData, sourceId)
 
-    if (data.type === 'broadcastRequest') {
+    if (eventData.type === "broadcastRequest") {
       fdc3ServerInstance.serverContext.notifyBroadcastContext(
-        data as unknown as BroadcastRequest,
-      );
+        eventData as unknown as BroadcastRequest,
+      )
     }
   } catch (error) {
-    console.error('Error processing FDC3 message:', error);
+    logger.error("Error processing FDC3 message", error)
   }
 }
 
@@ -148,13 +192,25 @@ export function handleFdc3AppEvent(
  * Registers app-specific socket handlers
  */
 export function registerAppHandlers(context: HandlerContext): void {
-  const { socket } = context;
+  const { socket } = context
 
-  socket.on(APP_HELLO, (props: AppHelloArgs, callback: SocketIOCallback<AppHosting>) => {
-    handleAppHello(props, callback, context);
-  });
+  socket.on(
+    APP_HELLO,
+    (appHelloArgs: AppHelloArgs, callback: SocketIOCallback<AppHosting>) => {
+      handleAppHello(appHelloArgs, callback, context)
+    },
+  )
 
-  socket.on(FDC3_APP_EVENT, (data: Record<string, unknown> & { type: string }, from: string) => {
-    handleFdc3AppEvent(data, from, context);
-  });
+  socket.on(
+    FDC3_APP_EVENT,
+    (
+      eventData:
+        | AppRequestMessage
+        | WebConnectionProtocol4ValidateAppIdentity
+        | WebConnectionProtocol6Goodbye,
+      sourceId: string,
+    ) => {
+      handleFdc3AppEvent(eventData, sourceId, context)
+    },
+  )
 }

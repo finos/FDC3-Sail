@@ -11,53 +11,57 @@ import { SailFDC3Server } from '../SailFDC3Server';
 import { 
   SocketIOCallback, 
   HandlerContext, 
-  APP_INSTANCE_PREFIX, 
-  getSailUrl 
+  CONFIG, 
+  getSailUrl,
+  handleCallbackError 
 } from './types';
 
 /**
- * Handles Electron hello messages for app discovery and DA initialization
+ * Handles Electron hello messages for app discovery and Desktop Agent initialization
+ * @param electronHelloArgs - Electron hello arguments with URL and session info
+ * @param callback - Socket callback to return app or DA response
+ * @param context - Handler context with socket, connection state, and sessions
  */
 export function handleElectronHello(
-  props: ElectronHelloArgs,
+  electronHelloArgs: ElectronHelloArgs,
   callback: SocketIOCallback<ElectronAppResponse | ElectronDAResponse>,
   { socket, connectionState, sessions }: HandlerContext,
 ): void {
-  console.log(`SAIL ELECTRON HELLO: ${JSON.stringify(props)}`);
-  const existingServer = sessions.get(props.userSessionId);
+  console.log(`SAIL ELECTRON HELLO: ${JSON.stringify(electronHelloArgs)}`);
+  const existingServer = sessions.get(electronHelloArgs.userSessionId);
 
   if (existingServer) {
-    const matchingApps = existingServer.getDirectory().retrieveAppsByUrl(props.url);
+    const matchingAppList = existingServer.getDirectory().retrieveAppsByUrl(electronHelloArgs.url);
 
-    if (matchingApps.length > 0) {
-      const [firstApp] = matchingApps;
+    if (matchingAppList.length > 0) {
+      const [firstApp] = matchingAppList;
       console.log('SAIL Found app', firstApp.appId);
       
       const response: ElectronAppResponse = {
         type: 'app',
-        userSessionId: props.userSessionId,
+        userSessionId: electronHelloArgs.userSessionId,
         appId: firstApp.appId,
-        instanceId: `${APP_INSTANCE_PREFIX}${uuid()}`,
+        instanceId: `${CONFIG.APP_INSTANCE_PREFIX}${uuid()}`,
         intentResolver: null,
         channelSelector: null,
       };
       callback(response);
     } else {
-      console.error('App not found', props.url);
-      callback(null, 'App not found');
+      console.error('App not found', electronHelloArgs.url);
+      handleCallbackError(callback, 'App not found');
     }
-  } else if (props.url === getSailUrl()) {
-    connectionState.userSessionId = props.userSessionId;
+  } else if (electronHelloArgs.url === getSailUrl()) {
+    connectionState.userSessionId = electronHelloArgs.userSessionId;
     const serverContext = new SailServerContext(new SailDirectory(), socket);
-    const newServer = new SailFDC3Server(serverContext, props);
+    const newServer = new SailFDC3Server(serverContext, electronHelloArgs);
     serverContext.setFDC3Server(newServer);
-    sessions.set(props.userSessionId, newServer);
+    sessions.set(electronHelloArgs.userSessionId, newServer);
 
     const response: ElectronDAResponse = { type: 'da' };
     callback(response);
   } else {
     console.error('Session not found', connectionState.userSessionId);
-    callback(null, 'Session not found');
+    handleCallbackError(callback, 'Session not found');
   }
 }
 
@@ -67,7 +71,7 @@ export function handleElectronHello(
 export function registerElectronHandlers(context: HandlerContext): void {
   const { socket } = context;
   
-  socket.on(ELECTRON_HELLO, (props: ElectronHelloArgs, callback: SocketIOCallback<ElectronAppResponse | ElectronDAResponse>) => {
-    handleElectronHello(props, callback, context);
+  socket.on(ELECTRON_HELLO, (electronHelloArgs: ElectronHelloArgs, callback: SocketIOCallback<ElectronAppResponse | ElectronDAResponse>) => {
+    handleElectronHello(electronHelloArgs, callback, context);
   });
 }

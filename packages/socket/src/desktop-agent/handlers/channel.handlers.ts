@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid } from "uuid"
 import {
   SAIL_CHANNEL_CHANGE,
   CHANNEL_RECEIVER_HELLO,
@@ -7,130 +7,182 @@ import {
   ChannelReceiverHelloRequest,
   ChannelReceiverUpdate,
   SailIntentResolveOpenChannelArgs,
-} from '@finos/fdc3-sail-common';
-import { BrowserTypes } from '@finos/fdc3';
-import { SailData } from '../SailServerContext';
-import { 
-  SocketIOCallback, 
-  HandlerContext, 
+} from "@finos/fdc3-sail-common"
+import { BrowserTypes } from "@finos/fdc3"
+import {
+  SocketIOCallback,
+  HandlerContext,
   SocketType,
-  getFdc3ServerInstance 
-} from './types';
+  getFdc3ServerInstance,
+  handleCallbackError,
+  addChannelSocketToInstance,
+} from "./types"
 
 /**
- * Handles channel change requests
+ * Handles channel change requests for app instances
+ * @param channelChangeArgs - Channel change arguments containing user session and instance info
+ * @param callback - Socket callback to confirm success or return error
+ * @param context - Handler context with sessions map
  */
 export async function handleChannelChange(
-  props: SailChannelChangeArgs,
+  channelChangeArgs: SailChannelChangeArgs,
   callback: SocketIOCallback<boolean>,
   { sessions }: HandlerContext,
 ): Promise<void> {
-  console.log(`SAIL CHANNEL CHANGE: ${JSON.stringify(props)}`);
-  
+  console.log(`SAIL CHANNEL CHANGE: ${JSON.stringify(channelChangeArgs)}`)
+
   try {
-    const session = await getFdc3ServerInstance(sessions, props.userSessionId);
-    
+    const fdc3Server = await getFdc3ServerInstance(
+      sessions,
+      channelChangeArgs.userSessionId,
+    )
+
     const joinChannelRequest: BrowserTypes.JoinUserChannelRequest = {
-      type: 'joinUserChannelRequest',
+      type: "joinUserChannelRequest",
       payload: {
-        channelId: props.channel || '',
+        channelId: channelChangeArgs.channel || "",
       },
       meta: {
         requestUuid: uuid(),
         timestamp: new Date(),
       },
-    };
+    }
 
-    const response = await session.receive(joinChannelRequest, props.instanceId);
-    console.log(`SAIL JOIN USER CHANNEL RESPONSE: ${JSON.stringify(response)}`);
-    
-    await session.serverContext.notifyUserChannelsChanged(
-      props.instanceId,
-      props.channel,
-    );
-    
-    callback(true);
+    const response = await fdc3Server.receive(
+      joinChannelRequest,
+      channelChangeArgs.instanceId,
+    )
+    console.log(`SAIL JOIN USER CHANNEL RESPONSE: ${JSON.stringify(response)}`)
+
+    await fdc3Server.serverContext.notifyUserChannelsChanged(
+      channelChangeArgs.instanceId,
+      channelChangeArgs.channel,
+    )
+
+    callback(true)
   } catch (error) {
-    console.error('SAIL Channel change failed:', error);
-    callback(null, 'Channel change failed');
+    console.error("SAIL Channel change failed:", error)
+    handleCallbackError(callback, "Channel change failed")
   }
 }
 
 /**
- * Handles channel receiver hello messages
+ * Handles channel receiver hello messages to establish channel communication
+ * @param receiverHelloRequest - Channel receiver hello request with session and instance info
+ * @param callback - Socket callback to return channel update or error
+ * @param context - Handler context with socket, connection state, and sessions
  */
 export async function handleChannelReceiverHello(
-  props: ChannelReceiverHelloRequest,
+  receiverHelloRequest: ChannelReceiverHelloRequest,
   callback: SocketIOCallback<ChannelReceiverUpdate>,
   { socket, connectionState, sessions }: HandlerContext,
 ): Promise<void> {
-  connectionState.userSessionId = props.userSessionId;
-  connectionState.appInstanceId = props.instanceId;
-  connectionState.socketType = SocketType.CHANNEL;
+  connectionState.userSessionId = receiverHelloRequest.userSessionId
+  connectionState.appInstanceId = receiverHelloRequest.instanceId
+  connectionState.socketType = SocketType.CHANNEL
 
   try {
-    const fdc3Server = await getFdc3ServerInstance(sessions, props.userSessionId);
-    const serverContext = fdc3Server.getServerContext();
-    const appInstance = serverContext.getInstanceDetails(props.instanceId);
-    
+    const fdc3Server = await getFdc3ServerInstance(
+      sessions,
+      receiverHelloRequest.userSessionId,
+    )
+    const serverContext = fdc3Server.getServerContext()
+    const appInstance = serverContext.getInstanceDetails(
+      receiverHelloRequest.instanceId,
+    )
+
     if (!appInstance) {
-      callback(null, 'No app found');
-      return;
+      handleCallbackError(callback, "No app found")
+      return
     }
 
     // Add this socket to the app's channel sockets
-    const updatedInstance: SailData = {
+    const mutableAppInstance = {
       ...appInstance,
-      channelSockets: [...appInstance.channelSockets, socket],
-    };
-    serverContext.setInstanceDetails(props.instanceId, updatedInstance);
-    connectionState.fdc3ServerInstance = fdc3Server;
+      channelSockets: [...appInstance.channelSockets],
+    }
+    const updatedInstance = addChannelSocketToInstance(
+      mutableAppInstance,
+      socket,
+    )
+    // Ensure updatedInstance is typed as SailData
+    serverContext.setInstanceDetails(receiverHelloRequest.instanceId, {
+      ...appInstance,
+      ...updatedInstance,
+    })
+    connectionState.fdc3ServerInstance = fdc3Server
 
     const channelUpdate: ChannelReceiverUpdate = {
       tabs: serverContext.getTabs(),
-    };
-    callback(channelUpdate);
+    }
+    callback(channelUpdate)
   } catch (error) {
-    console.error('Error handling channel receiver hello:', error);
-    callback(null, 'Server error');
+    console.error("Error handling channel receiver hello:", error)
+    handleCallbackError(callback, "Server error")
   }
 }
 
 /**
- * Handles intent resolution on specific channels
+ * Handles intent resolution on specific channels by opening apps on designated channels
+ * @param intentResolveArgs - Intent resolve arguments containing app ID and channel
+ * @param callback - Socket callback to confirm completion or return error
+ * @param context - Handler context containing connection state
  */
 export function handleIntentResolveOnChannel(
-  props: SailIntentResolveOpenChannelArgs,
+  intentResolveArgs: SailIntentResolveOpenChannelArgs,
   callback: SocketIOCallback<void>,
   { connectionState }: HandlerContext,
 ): void {
-  console.log(`SAIL INTENT RESOLVE ON CHANNEL: ${JSON.stringify(props)}`);
-  
-  const { fdc3ServerInstance } = connectionState;
+  console.log(
+    `SAIL INTENT RESOLVE ON CHANNEL: ${JSON.stringify(intentResolveArgs)}`,
+  )
+
+  const { fdc3ServerInstance } = connectionState
   if (!fdc3ServerInstance) {
-    callback(null, 'No server instance available');
-    return;
+    handleCallbackError(callback, "No server instance available")
+    return
   }
 
-  fdc3ServerInstance.serverContext.openOnChannel(props.appId, props.channel);
-  callback(null);
+  fdc3ServerInstance.serverContext.openOnChannel(
+    intentResolveArgs.appId,
+    intentResolveArgs.channel,
+  )
+  callback(null)
 }
 
 /**
  * Registers channel-specific socket handlers
  */
 export function registerChannelHandlers(context: HandlerContext): void {
-  const { socket } = context;
+  const { socket } = context
 
-  socket.on(SAIL_CHANNEL_CHANGE, (props: SailChannelChangeArgs, callback: SocketIOCallback<boolean>) => {
-    handleChannelChange(props, callback, context);
-  });
+  socket.on(
+    SAIL_CHANNEL_CHANGE,
+    (
+      channelChangeArgs: SailChannelChangeArgs,
+      callback: SocketIOCallback<boolean>,
+    ) => {
+      handleChannelChange(channelChangeArgs, callback, context)
+    },
+  )
 
-  socket.on(CHANNEL_RECEIVER_HELLO, (props: ChannelReceiverHelloRequest, callback: SocketIOCallback<ChannelReceiverUpdate>) => {
-    handleChannelReceiverHello(props, callback, context);
-  });
+  socket.on(
+    CHANNEL_RECEIVER_HELLO,
+    (
+      receiverHelloRequest: ChannelReceiverHelloRequest,
+      callback: SocketIOCallback<ChannelReceiverUpdate>,
+    ) => {
+      handleChannelReceiverHello(receiverHelloRequest, callback, context)
+    },
+  )
 
-  socket.on(SAIL_INTENT_RESOLVE_ON_CHANNEL, (props: SailIntentResolveOpenChannelArgs, callback: SocketIOCallback<void>) => {
-    handleIntentResolveOnChannel(props, callback, context);
-  });
+  socket.on(
+    SAIL_INTENT_RESOLVE_ON_CHANNEL,
+    (
+      intentResolveArgs: SailIntentResolveOpenChannelArgs,
+      callback: SocketIOCallback<void>,
+    ) => {
+      handleIntentResolveOnChannel(intentResolveArgs, callback, context)
+    },
+  )
 }
