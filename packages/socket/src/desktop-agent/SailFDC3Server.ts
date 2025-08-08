@@ -4,7 +4,7 @@ import {
   ChannelType,
   DefaultFDC3Server,
 } from "@finos/fdc3-web-impl"
-import { SailServerContext } from "./sailServerContext"
+import { SailAppInstanceManager } from "./sailAppInstanceManager"
 
 export const mapChannels = (channels: TabDetail[]): ChannelState[] =>
   channels.map((channel) => ({
@@ -23,19 +23,19 @@ export const mapChannels = (channels: TabDetail[]): ChannelState[] =>
  * as well as user-configurable SailDirectory.
  */
 export class SailFDC3Server extends DefaultFDC3Server {
-  readonly serverContext: SailServerContext
+  readonly serverContext: SailAppInstanceManager
 
-  constructor(sc: SailServerContext, helloArgs: DesktopAgentHelloArgs) {
+  constructor(sc: SailAppInstanceManager, helloArgs: DesktopAgentHelloArgs) {
     super(sc, sc.directory, mapChannels(helloArgs.channels), true, 60000, 20000)
     this.serverContext = sc
     // Note: Directory loading is now handled async in the handler
   }
 
   /**
-   * Initializes the directory with the provided directories
+   * Loads the directory with the provided directories
    * @param directories - Array of directory URLs or file paths
    */
-  async initializeDirectories(directories: string[]): Promise<void> {
+  async loadDirectories(directories: string[]): Promise<void> {
     await this.serverContext.directory.replace(directories)
   }
 

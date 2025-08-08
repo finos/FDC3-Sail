@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { io as Client, Socket as ClientSocket } from "socket.io-client"
 import { SailFDC3Server, mapChannels } from "../desktop-agent/sailFDC3Server"
-import { SailServerContext } from "../desktop-agent/sailServerContext"
+import { SailAppInstanceManager } from "../desktop-agent/sailAppInstanceManager"
 import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
 import { ChannelType } from "@finos/fdc3-web-impl"

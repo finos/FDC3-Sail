@@ -1,8 +1,8 @@
 import { State } from "@finos/fdc3-web-impl"
 import { SAIL_APP_STATE } from "@finos/fdc3-sail-common"
-import { SailServerContext } from "../sailServerContext"
+import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { SailFDC3Server } from "../sailFDC3Server"
-import { SailData } from "../sailServerContext"
+import { SailData } from "../sailAppInstanceManager"
 import { HandlerContext, SocketType, CONFIG, AppInstance } from "./types"
 
 /**

@@ -5,7 +5,7 @@ import {
   ElectronAppResponse,
   ElectronDAResponse,
 } from "@finos/fdc3-sail-common"
-import { SailServerContext } from "../sailServerContext"
+import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
 import { SailFDC3Server } from "../sailFDC3Server"
 import {

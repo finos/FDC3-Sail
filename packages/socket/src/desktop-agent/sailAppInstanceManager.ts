@@ -20,7 +20,7 @@ import {
   SailAppOpenArgs,
   AppHosting,
   SailIntentResolveResponse,
-  AugmentedAppIntent,
+  EnrichedAppIntent,
   AugmentedAppMetadata,
   SailAppOpenResponse,
   TabDetail,
@@ -75,10 +75,10 @@ export interface SailData extends AppRegistration {
 }
 
 /**
- * Server context implementation for FDC3 Sail desktop agent.
+ * App instance manager implementation for FDC3 Sail desktop agent.
  * Manages app instances, channels, and communication between client apps and the desktop agent.
  */
-export class SailServerContext implements ServerContext<SailData> {
+export class SailAppInstanceManager implements ServerContext<SailData> {
   public readonly directory: AppDirectoryManager
   private readonly instances: SailData[] = []
   private fdc3Server: FDC3ServerWithHandlers | undefined
@@ -141,7 +141,7 @@ export class SailServerContext implements ServerContext<SailData> {
   async open(appId: string): Promise<InstanceID> {
     const destination = this.appStartDestinations.get(appId)
     this.appStartDestinations.delete(appId)
-    return this.openSail(appId, destination ?? null)
+    return this.openAppInSail(appId, destination ?? null)
   }
 
   /**
@@ -160,7 +160,10 @@ export class SailServerContext implements ServerContext<SailData> {
    * @returns Promise resolving to the new instance ID
    * @throws Error if app is not found or has no URL
    */
-  async openSail(appId: string, channel: string | null): Promise<InstanceID> {
+  async openAppInSail(
+    appId: string,
+    channel: string | null,
+  ): Promise<InstanceID> {
     const applications = this.directory.retrieveAppsById(appId)
 
     if (applications.length === 0) {
@@ -378,7 +381,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * @param appIntents - The base app intents to augment
    * @returns Augmented app intents with additional metadata
    */
-  augmentIntents(appIntents: AppIntent[]): AugmentedAppIntent[] {
+  enrichIntentsWithMetadata(appIntents: AppIntent[]): EnrichedAppIntent[] {
     return appIntents.map((appIntent) => ({
       intent: appIntent.intent,
       apps: appIntent.apps.map((app) => {
@@ -414,7 +417,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * Helper methods for intent narrowing
    */
   private countRunningAppsInChannel(
-    appIntent: AugmentedAppIntent,
+    appIntent: EnrichedAppIntent,
     channel: string | null,
   ): number {
     return appIntent.apps.filter(
@@ -440,16 +443,16 @@ export class SailServerContext implements ServerContext<SailData> {
   }
 
   private async handleIntentResolverPromise(
-    augmentedIntents: AugmentedAppIntent[],
+    enrichedIntents: EnrichedAppIntent[],
     context: Context,
   ): Promise<AppIntent[]> {
     return new Promise<AppIntent[]>((resolve) => {
-      console.log("SAIL Narrowing intents", augmentedIntents, context)
+      console.log("SAIL Narrowing intents", enrichedIntents, context)
 
       this.socket.emit(
         SAIL_INTENT_RESOLVE,
         {
-          appIntents: augmentedIntents,
+          appIntents: enrichedIntents,
           context,
         },
         async (response: SailIntentResolveResponse, err: string) => {
@@ -488,44 +491,44 @@ export class SailServerContext implements ServerContext<SailData> {
     incomingIntents: AppIntent[],
     context: Context,
   ): Promise<AppIntent[]> {
-    const augmentedIntents = this.augmentIntents(incomingIntents)
+    const enrichedIntents = this.enrichIntentsWithMetadata(incomingIntents)
 
     // If raiser is in a tab, it needs the intent resolver
     if (this.isAppRunningInTab(raiser)) {
-      return augmentedIntents
+      return enrichedIntents
     }
 
     // No intents available
-    if (augmentedIntents.length === 0) {
-      return augmentedIntents
+    if (enrichedIntents.length === 0) {
+      return enrichedIntents
     }
 
     // Single intent with single app - check if we need to start or raise
     if (
-      augmentedIntents.length === 1 &&
-      this.countUniqueApps(augmentedIntents[0]) === 1
+      enrichedIntents.length === 1 &&
+      this.countUniqueApps(enrichedIntents[0]) === 1
     ) {
       const raiserChannel = this.getRaiserChannel(raiser)
       const runningApps = this.countRunningAppsInChannel(
-        augmentedIntents[0],
+        enrichedIntents[0],
         raiserChannel,
       )
 
       if (runningApps === 0) {
         // Start a new app in the same channel as the raiser
         this.appStartDestinations.set(
-          augmentedIntents[0].apps[0].appId,
+          enrichedIntents[0].apps[0].appId,
           raiserChannel,
         )
-        return augmentedIntents
+        return enrichedIntents
       } else if (runningApps === 1) {
         // Raise the existing app
-        return augmentedIntents
+        return enrichedIntents
       }
     }
 
     // Multiple options - need user to choose
-    return this.handleIntentResolverPromise(augmentedIntents, context)
+    return this.handleIntentResolverPromise(enrichedIntents, context)
   }
 
   /**

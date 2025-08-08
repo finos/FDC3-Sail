@@ -13,10 +13,10 @@ import {
   TabDetail,
 } from "@finos/fdc3-sail-common"
 import { State } from "@finos/fdc3-web-impl"
-import { SailServerContext } from "../sailServerContext"
+import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
 import { SailFDC3Server } from "../sailFDC3Server"
-import { SailData } from "../sailServerContext"
+import { SailData } from "../sailAppInstanceManager"
 import {
   SocketIOCallback,
   HandlerContext,
@@ -53,7 +53,7 @@ async function handleDesktopAgentHello(
       existingServer.serverContext,
       desktopAgentHelloArgs,
     )
-    await fdc3Server.initializeDirectories(desktopAgentHelloArgs.directories)
+    await fdc3Server.loadDirectories(desktopAgentHelloArgs.directories)
     sessions.set(desktopAgentHelloArgs.userSessionId, fdc3Server)
     console.log(
       "SAIL updated desktop agent channels and directories",
@@ -62,13 +62,13 @@ async function handleDesktopAgentHello(
     )
   } else {
     // Create new session
-    const serverContext = new SailServerContext(
+    const serverContext = new SailAppInstanceManager(
       new AppDirectoryManager(),
       socket,
     )
     fdc3Server = new SailFDC3Server(serverContext, desktopAgentHelloArgs)
     serverContext.setFDC3Server(fdc3Server)
-    await fdc3Server.initializeDirectories(desktopAgentHelloArgs.directories)
+    await fdc3Server.loadDirectories(desktopAgentHelloArgs.directories)
     sessions.set(desktopAgentHelloArgs.userSessionId, fdc3Server)
     console.log(
       "SAIL created agent session. Running sessions:",

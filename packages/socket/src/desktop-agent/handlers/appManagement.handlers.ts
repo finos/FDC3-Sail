@@ -12,7 +12,7 @@ import {
   WebConnectionProtocol4ValidateAppIdentity,
   WebConnectionProtocol6Goodbye,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { SailData } from "../sailServerContext"
+import { SailData } from "../sailAppInstanceManager"
 import {
   SocketIOCallback,
   HandlerContext,
