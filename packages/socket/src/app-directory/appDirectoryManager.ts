@@ -29,7 +29,7 @@ interface DirectoryData {
  * - Duplicate application prevention
  * - URL-based application filtering
  */
-export class SailDirectory extends BasicDirectory {
+export class AppDirectoryManager extends BasicDirectory {
   /**
    * Creates a new SailDirectory instance with empty application list
    */

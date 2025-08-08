@@ -6,7 +6,7 @@ import {
   ElectronDAResponse,
 } from "@finos/fdc3-sail-common"
 import { SailServerContext } from "../sailServerContext"
-import { SailDirectory } from "../../app-directory/sailDirectory"
+import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
 import { SailFDC3Server } from "../sailFDC3Server"
 import {
   SocketIOCallback,
@@ -60,7 +60,10 @@ function handleElectronHello(
     }
   } else if (electronHelloArgs.url === getSailUrl()) {
     connectionState.userSessionId = electronHelloArgs.userSessionId
-    const serverContext = new SailServerContext(new SailDirectory(), socket)
+    const serverContext = new SailServerContext(
+      new AppDirectoryManager(),
+      socket,
+    )
     const newServer = new SailFDC3Server(serverContext, electronHelloArgs)
     serverContext.setFDC3Server(newServer)
     sessions.set(electronHelloArgs.userSessionId, newServer)

@@ -10,7 +10,7 @@ import {
 } from "@finos/fdc3-web-impl"
 import type { FDC3Server } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3"
-import { SailDirectory } from "../app-directory/sailDirectory"
+import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
 import { AppIntent, Context, OpenError } from "@finos/fdc3"
 import {
   FDC3_DA_EVENT,
@@ -79,7 +79,7 @@ export interface SailData extends AppRegistration {
  * Manages app instances, channels, and communication between client apps and the desktop agent.
  */
 export class SailServerContext implements ServerContext<SailData> {
-  public readonly directory: SailDirectory
+  public readonly directory: AppDirectoryManager
   private readonly instances: SailData[] = []
   private fdc3Server: FDC3ServerWithHandlers | undefined
   private readonly socket: Socket
@@ -90,7 +90,7 @@ export class SailServerContext implements ServerContext<SailData> {
    * @param directory - The application directory service
    * @param socket - Socket.io socket for communication with the client
    */
-  constructor(directory: SailDirectory, socket: Socket) {
+  constructor(directory: AppDirectoryManager, socket: Socket) {
     this.directory = directory
     this.socket = socket
   }

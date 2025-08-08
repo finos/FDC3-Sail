@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { io as Client, Socket as ClientSocket } from "socket.io-client"
 import { SailFDC3Server, mapChannels } from "../desktop-agent/sailFDC3Server"
 import { SailServerContext } from "../desktop-agent/sailServerContext"
-import { SailDirectory } from "../app-directory/sailDirectory"
+import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
 import { ChannelType } from "@finos/fdc3-web-impl"
 import { getTestServer, clearSessions } from "./setup/setupTests"
@@ -10,7 +10,7 @@ import { resolve } from "path"
 
 describe("SailFDC3Server", () => {
   let clientSocket: ClientSocket
-  let directory: SailDirectory
+  let directory: AppDirectoryManager
   let serverContext: SailServerContext
   let helloArgs: DesktopAgentHelloArgs
   let port: number
@@ -29,7 +29,7 @@ describe("SailFDC3Server", () => {
     })
 
     // Create real instances with actual test data files
-    directory = new SailDirectory()
+    directory = new AppDirectoryManager()
     serverContext = new SailServerContext(directory, clientSocket)
 
     helloArgs = {

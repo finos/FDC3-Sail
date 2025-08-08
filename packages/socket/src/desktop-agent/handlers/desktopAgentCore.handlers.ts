@@ -14,7 +14,7 @@ import {
 } from "@finos/fdc3-sail-common"
 import { State } from "@finos/fdc3-web-impl"
 import { SailServerContext } from "../sailServerContext"
-import { SailDirectory } from "../../app-directory/sailDirectory"
+import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
 import { SailFDC3Server } from "../sailFDC3Server"
 import { SailData } from "../sailServerContext"
 import {
@@ -62,7 +62,10 @@ async function handleDesktopAgentHello(
     )
   } else {
     // Create new session
-    const serverContext = new SailServerContext(new SailDirectory(), socket)
+    const serverContext = new SailServerContext(
+      new AppDirectoryManager(),
+      socket,
+    )
     fdc3Server = new SailFDC3Server(serverContext, desktopAgentHelloArgs)
     serverContext.setFDC3Server(fdc3Server)
     await fdc3Server.initializeDirectories(desktopAgentHelloArgs.directories)
