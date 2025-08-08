@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { DirectoryApp } from "@finos/fdc3-web-impl"
-import { SailDirectory } from "../appd/SailDirectory"
+import { SailDirectory } from "../app-directory/sailDirectory"
 import { resolve } from "path"
 import { writeFileSync, unlinkSync } from "fs"
 
@@ -53,7 +53,6 @@ describe("SailDirectory", () => {
   beforeEach(() => {
     directory = new SailDirectory()
   })
-
 
   describe("app management", () => {
     it("should start with empty directory", () => {
@@ -118,17 +117,17 @@ describe("SailDirectory", () => {
 
     it("should load apps from real JSON files", async () => {
       const directory = new SailDirectory()
-      
+
       await directory.replace([webAppsPath, nativeAppsPath])
-      
+
       const apps = directory.retrieveAllApps()
       expect(apps.length).toBeGreaterThan(0)
-      
+
       // Verify we have apps from both files
-      const webApps = apps.filter(app => app.type === "web")
-      const nativeApps = apps.filter(app => app.type === "native")
-      const citrixApps = apps.filter(app => app.type === "citrix")
-      
+      const webApps = apps.filter((app) => app.type === "web")
+      const nativeApps = apps.filter((app) => app.type === "native")
+      const citrixApps = apps.filter((app) => app.type === "citrix")
+
       expect(webApps.length).toBeGreaterThan(0)
       expect(nativeApps.length).toBeGreaterThan(0)
       expect(citrixApps.length).toBeGreaterThan(0)
@@ -136,18 +135,18 @@ describe("SailDirectory", () => {
 
     it("should load realistic FDC3 apps with intents and contexts", async () => {
       const directory = new SailDirectory()
-      
+
       await directory.replace([webAppsPath])
-      
+
       const apps = directory.retrieveAllApps()
-      const marketTerminal = apps.find(app => app.appId === "market-terminal")
-      
+      const marketTerminal = apps.find((app) => app.appId === "market-terminal")
+
       expect(marketTerminal).toBeDefined()
       expect(marketTerminal?.intents).toBeDefined()
       expect(marketTerminal?.intents?.length).toBeGreaterThan(0)
-      
+
       const viewInstrumentIntent = marketTerminal?.intents?.find(
-        intent => intent.name === "ViewInstrument"
+        (intent) => intent.name === "ViewInstrument",
       )
       expect(viewInstrumentIntent).toBeDefined()
       expect(viewInstrumentIntent?.contexts).toContain("fdc3.instrument")
@@ -155,9 +154,9 @@ describe("SailDirectory", () => {
 
     it("should handle URL filtering with realistic web apps", async () => {
       const directory = new SailDirectory()
-      
+
       await directory.replace([webAppsPath])
-      
+
       const apps = directory.retrieveAppsByUrl("https://terminal.example.com")
       expect(apps).toHaveLength(1)
       expect(apps[0].appId).toBe("market-terminal")
@@ -166,12 +165,12 @@ describe("SailDirectory", () => {
 
     it("should load native apps with proper path and arguments", async () => {
       const directory = new SailDirectory()
-      
+
       await directory.replace([nativeAppsPath])
-      
+
       const apps = directory.retrieveAllApps()
-      const excelAddin = apps.find(app => app.appId === "excel-addin")
-      
+      const excelAddin = apps.find((app) => app.appId === "excel-addin")
+
       expect(excelAddin).toBeDefined()
       expect(excelAddin?.type).toBe("native")
       expect(excelAddin?.details?.path).toContain(".exe")
@@ -184,10 +183,10 @@ describe("SailDirectory", () => {
     it("should handle malformed JSON gracefully", async () => {
       const directory = new SailDirectory()
       const malformedPath = resolve(__dirname, "testData/malformed.json")
-      
+
       // Create malformed JSON file
       writeFileSync(malformedPath, '{"applications": [{"appId": "broken"')
-      
+
       try {
         await expect(directory.replace([malformedPath])).rejects.toThrow()
       } finally {
@@ -199,20 +198,20 @@ describe("SailDirectory", () => {
     it("should handle missing files gracefully", async () => {
       const directory = new SailDirectory()
       const nonExistentPath = resolve(__dirname, "testData/nonexistent.json")
-      
+
       await expect(directory.replace([nonExistentPath])).rejects.toThrow()
     })
 
     it("should handle empty applications array", async () => {
       const directory = new SailDirectory()
       const emptyPath = resolve(__dirname, "testData/empty.json")
-      
+
       // Create empty applications file
       writeFileSync(emptyPath, '{"applications": []}')
-      
+
       try {
         await directory.replace([emptyPath])
-        
+
         const apps = directory.retrieveAllApps()
         expect(apps).toHaveLength(0)
       } finally {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { io as Client, Socket as ClientSocket } from "socket.io-client"
 import { getTestServer, clearSessions } from "./setup/setupTests"
-import { SailFDC3Server } from "../desktop-agent/SailFDC3Server"
+import { SailFDC3Server } from "../desktop-agent/sailFDC3Server"
 import {
   DA_HELLO,
   APP_HELLO,
@@ -381,7 +381,7 @@ describe("initSocketService Integration Tests", () => {
           CHANNEL_RECEIVER_HELLO,
           channelHelloArgs,
           (update: any, error?: string) => {
-            expect(update).toBeUndefined()
+            expect(update).toBeNull()
             expect(error).toBe("No app found")
             resolve()
           },

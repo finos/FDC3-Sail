@@ -87,6 +87,26 @@ describe("End-to-End Integration Tests", () => {
           (apps: any[], error?: string) => {
             expect(error).toBeUndefined()
             expect(Array.isArray(apps)).toBe(true)
+            
+            // Test data validation with better error messages
+            if (apps.length === 0) {
+              throw new Error(
+                "No apps loaded from directory. This indicates test data files are missing or invalid.\n" +
+                `Expected files:\n` +
+                `- ${resolve(__dirname, "testData/webApps.json")}\n` +
+                `- ${resolve(__dirname, "testData/nativeApps.json")}`
+              )
+            }
+            
+            // Validate expected test apps are present
+            const expectedApps = ['market-terminal', 'excel-addin']
+            const appIds = apps.map(app => app.appId)
+            expectedApps.forEach(expectedApp => {
+              if (!appIds.includes(expectedApp)) {
+                throw new Error(`Expected test app '${expectedApp}' not found in loaded apps: ${appIds.join(', ')}`)
+              }
+            })
+            
             expect(apps.length).toBeGreaterThan(0)
             resolve(apps)
           }

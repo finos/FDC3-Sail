@@ -1,14 +1,9 @@
 import { State } from "@finos/fdc3-web-impl"
 import { SAIL_APP_STATE } from "@finos/fdc3-sail-common"
-import { SailServerContext } from "../SailServerContext"
-import { SailFDC3Server } from "../SailFDC3Server"
-import { SailData } from "../SailServerContext"
-import {
-  HandlerContext,
-  SocketType,
-  CONFIG,
-  AppInstance,
-} from "./types"
+import { SailServerContext } from "../sailServerContext"
+import { SailFDC3Server } from "../sailFDC3Server"
+import { SailData } from "../sailServerContext"
+import { HandlerContext, SocketType, CONFIG, AppInstance } from "./types"
 
 /**
  * Removes all channel sockets from an app instance

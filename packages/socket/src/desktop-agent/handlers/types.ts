@@ -1,5 +1,5 @@
 import { Socket } from "socket.io"
-import { SailFDC3Server } from "../SailFDC3Server"
+import { SailFDC3Server } from "../sailFDC3Server"
 import { SOCKET_CONFIG } from "../../constants"
 
 /** Socket.IO callback types */
@@ -32,22 +32,32 @@ export const DEBUG_RECONNECTION_SUFFIX = CONFIG.DEBUG_RECONNECTION_SUFFIX
 export const POLLING_INTERVAL_MS = CONFIG.POLLING_INTERVAL_MS
 export const STATE_REPORT_INTERVAL_MS = CONFIG.STATE_REPORT_INTERVAL_MS
 
-
 /**
  * Waits for an FDC3 server instance to become available for a session
  * @param sessions - Map of active FDC3 server sessions
  * @param userSessionId - The session ID to wait for
+ * @param timeoutMs - Maximum time to wait before giving up (default 5000ms)
  * @returns Promise that resolves when the server instance is available
+ * @throws Error if session is not found within timeout period
  */
 export function getFdc3ServerInstance(
   sessions: Map<string, SailFDC3Server>,
   userSessionId: string,
+  timeoutMs: number = 5000,
 ): Promise<SailFDC3Server> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now()
+
     const pollForServer = () => {
       const fdc3Server = sessions.get(userSessionId)
       if (fdc3Server) {
         resolve(fdc3Server)
+      } else if (Date.now() - startTime > timeoutMs) {
+        reject(
+          new Error(
+            `Session '${userSessionId}' not found within ${timeoutMs}ms`,
+          ),
+        )
       } else {
         setTimeout(pollForServer, CONFIG.POLLING_INTERVAL_MS)
       }
@@ -73,7 +83,6 @@ export interface AppInstance {
   channelSockets: Socket[]
   [key: string]: unknown
 }
-
 
 /** Log levels for structured logging */
 export enum LogLevel {

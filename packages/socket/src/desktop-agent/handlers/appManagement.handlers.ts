@@ -12,7 +12,7 @@ import {
   WebConnectionProtocol4ValidateAppIdentity,
   WebConnectionProtocol6Goodbye,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { SailData } from "../SailServerContext"
+import { SailData } from "../sailServerContext"
 import {
   SocketIOCallback,
   HandlerContext,
@@ -172,7 +172,7 @@ async function handleAppHello(
     logger.error("App tried to connect with invalid instance ID", {
       instanceId: appHelloArgs.instanceId,
     })
-    handleCallbackError(callback, "Invalid instance ID")
+    handleCallbackError(callback, "Invalid instance id")
   } catch (error) {
     logger.error("Error handling app hello", error)
     handleCallbackError(callback, "Connection error")

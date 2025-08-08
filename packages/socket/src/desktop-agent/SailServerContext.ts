@@ -7,10 +7,10 @@ import {
   InstanceID,
   ServerContext,
   State,
-} from "@finos/fdc3-web-impl";
+} from "@finos/fdc3-web-impl"
 import type { FDC3Server } from "@finos/fdc3-web-impl"
 import { AppIdentifier } from "@finos/fdc3"
-import { SailDirectory } from "../appd/SailDirectory"
+import { SailDirectory } from "../app-directory/sailDirectory"
 import { AppIntent, Context, OpenError } from "@finos/fdc3"
 import {
   FDC3_DA_EVENT,
@@ -31,7 +31,7 @@ import {
   BroadcastRequest,
   ChannelChangedEvent,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { mapChannels } from "./SailFDC3Server"
+import { mapChannels } from "./sailFDC3Server"
 import { APP_CONFIG } from "../constants"
 
 /**

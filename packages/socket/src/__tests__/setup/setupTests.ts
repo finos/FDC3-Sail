@@ -1,9 +1,9 @@
-import { beforeAll, afterAll } from "vitest"
+import { beforeAll, afterAll, beforeEach, afterEach } from "vitest"
 import { Server } from "socket.io"
 import { createServer, Server as NodeServer } from "http"
 import { AddressInfo } from "net"
 import { initSocketService } from "../../desktop-agent/initSocketService"
-import { SailFDC3Server } from "../../desktop-agent/SailFDC3Server"
+import { SailFDC3Server } from "../../desktop-agent/sailFDC3Server"
 
 export interface TestServerContext {
   io: Server
@@ -57,15 +57,57 @@ export function getTestServer(): TestServerContext {
 
 export function clearSessions(): void {
   if (testServer) {
+    // Clear all active sessions
     testServer.sessions.clear()
+    console.log("Test sessions cleared")
+  }
+}
+
+/**
+ * Enhanced cleanup that ensures all resources are properly released
+ */
+export async function cleanupTestResources(): Promise<void> {
+  if (!testServer) return
+
+  try {
+    // Close all active FDC3 server sessions
+    for (const [sessionId, fdc3Server] of testServer.sessions) {
+      try {
+        fdc3Server.shutdown()
+      } catch (error) {
+        console.warn(`Error shutting down session ${sessionId}:`, error)
+      }
+    }
+
+    // Clear sessions map
+    testServer.sessions.clear()
+
+    // Disconnect all sockets
+    testServer.io.disconnectSockets(true)
+
+    // Small delay to allow cleanup to complete
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  } catch (error) {
+    console.warn("Error during test resource cleanup:", error)
   }
 }
 
 // Vitest setup hooks
 beforeAll(async () => {
   await setupTestServer()
+  console.log("Test server initialized")
 })
 
 afterAll(async () => {
   await teardownTestServer()
+  console.log("Test server shut down")
+})
+
+// Clean up between each test to prevent interference
+beforeEach(async () => {
+  await cleanupTestResources()
+})
+
+afterEach(async () => {
+  await cleanupTestResources()
 })
