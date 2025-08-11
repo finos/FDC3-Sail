@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FDC3 Sail Titlebar</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Oxygen,
+          Ubuntu,
+          Cantarell,
+          "Open Sans",
+          "Helvetica Neue",
+          sans-serif;
+        background-color: #eeeeee;
+        border-bottom: 1px solid #000000;
+        color: rgb(40, 40, 40);
+        user-select: none;
+        overflow: hidden;
+        height: 32px;
+        display: flex;
+        align-items: center;
+      }
+
+      .titlebar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .drag-region {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        -webkit-app-region: drag;
+        padding-left: 10px;
+        pointer-events: auto;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Space for window controls on Windows/Linux */
+      .control-space {
+        width: 138px; /* Approximate width of the window controls on Windows */
+        height: 100%;
+      }
+
+      /* Adjust space for macOS */
+      @media (platform: mac) {
+        .control-space {
+          width: 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="titlebar">
+      <div class="drag-region">
+        <h1 class="title">FDC3 Sail</h1>
+      </div>
+      <div class="control-space"></div>
+    </div>
+  </body>
+</html>

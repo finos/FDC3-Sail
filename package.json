@@ -18,8 +18,7 @@
     "packages/web",
     "packages/preload",
     "packages/electron",
-    "packages/socket",
-    "packages/node-client"
+    "packages/socket"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -27,5 +26,8 @@
     "eslint": "^9.22.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1"
+  },
+  "dependencies": {
+    "wait-on": "^8.0.3"
   }
 }
