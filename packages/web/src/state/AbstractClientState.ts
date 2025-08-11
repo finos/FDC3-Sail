@@ -1,9 +1,10 @@
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
-import { AppPanel, ClientState, IntentResolution } from "./ClientState";
-import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
+// ClientState interface imported via WebClientState
+import { AppPanel, IntentResolution, WebClientState } from "../types";
+import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "@finos/fdc3-sail-shared";
 import { Context } from "@finos/fdc3-context";
 
-export abstract class AbstractClientState implements ClientState {
+export abstract class AbstractClientState implements WebClientState {
 
     protected tabs: TabDetail[] = []
     protected panels: AppPanel[] = []

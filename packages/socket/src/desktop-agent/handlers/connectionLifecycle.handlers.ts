@@ -1,5 +1,5 @@
 import { State } from "@finos/fdc3-web-impl"
-import { SAIL_APP_STATE } from "@finos/fdc3-sail-common"
+import { AppManagementMessages } from "@finos/fdc3-sail-shared"
 import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { SailFDC3Server } from "../sailFDC3Server"
 import { SailData } from "../sailAppInstanceManager"
@@ -143,7 +143,7 @@ function setupStateReporter(context: HandlerContext): NodeJS.Timeout {
     if (fdc3ServerInstance) {
       try {
         const appStates = await fdc3ServerInstance.serverContext.getAllApps()
-        socket.emit(SAIL_APP_STATE, appStates)
+        socket.emit(AppManagementMessages.SAIL_APP_STATE, appStates)
       } catch (error) {
         console.error("Error reporting app state:", error)
       }

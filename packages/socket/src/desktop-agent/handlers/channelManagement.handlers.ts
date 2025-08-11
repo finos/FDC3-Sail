@@ -1,13 +1,12 @@
 import { v4 as uuid } from "uuid"
 import {
-  SAIL_CHANNEL_CHANGE,
-  CHANNEL_RECEIVER_HELLO,
-  SAIL_INTENT_RESOLVE_ON_CHANNEL,
+  ChannelMessages,
+  IntentMessages,
   SailChannelChangeArgs,
   ChannelReceiverHelloRequest,
   ChannelReceiverUpdate,
   SailIntentResolveOpenChannelArgs,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 import { BrowserTypes } from "@finos/fdc3"
 import {
   SocketIOCallback,
@@ -174,7 +173,7 @@ export function registerChannelHandlers(context: HandlerContext): void {
   const { socket } = context
 
   socket.on(
-    SAIL_CHANNEL_CHANGE,
+    ChannelMessages.SAIL_CHANNEL_CHANGE,
     (
       channelChangeArgs: SailChannelChangeArgs,
       callback: SocketIOCallback<boolean>,
@@ -184,7 +183,7 @@ export function registerChannelHandlers(context: HandlerContext): void {
   )
 
   socket.on(
-    CHANNEL_RECEIVER_HELLO,
+    ChannelMessages.CHANNEL_RECEIVER_HELLO,
     (
       receiverHelloRequest: ChannelReceiverHelloRequest,
       callback: SocketIOCallback<ChannelReceiverUpdate>,
@@ -194,7 +193,7 @@ export function registerChannelHandlers(context: HandlerContext): void {
   )
 
   socket.on(
-    SAIL_INTENT_RESOLVE_ON_CHANNEL,
+    IntentMessages.SAIL_INTENT_RESOLVE_ON_CHANNEL,
     (
       intentResolveArgs: SailIntentResolveOpenChannelArgs,
       callback: SocketIOCallback<void>,

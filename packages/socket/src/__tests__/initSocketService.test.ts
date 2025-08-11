@@ -15,7 +15,7 @@ import {
   ChannelReceiverHelloRequest,
   ChannelReceiverUpdate,
   AppHosting,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 
 describe("initSocketService Integration Tests", () => {
   let clientSocket: ClientSocket

@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client"
 import { getAppId, getInstanceId, getUserSessionId, link } from "./util";
-import { AppHosting, APP_HELLO, AppHelloArgs } from "@finos/fdc3-sail-common";
+import { AppHosting, HandshakeMessages, AppHelloArgs } from "@finos/fdc3-sail-shared";
 import { BrowserTypes } from "@finos/fdc3";
 import { isWebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 
@@ -13,7 +13,7 @@ function doSocketConnection(socket: Socket, channel: MessageChannel, instanceId:
             link(socket, channel, instanceId)
             const sessionId = getUserSessionId()
 
-            const response = await socket.emitWithAck(APP_HELLO, {
+            const response = await socket.emitWithAck(HandshakeMessages.APP_HELLO, {
                 userSessionId: sessionId,
                 instanceId,
                 appId

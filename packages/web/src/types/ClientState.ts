@@ -1,22 +1,6 @@
-import { GridStackPosition } from "gridstack"
-import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from "./message-types";
+import { TabDetail, Directory, SailClientStateArgs } from "@finos/fdc3-sail-shared";
 import { Context } from "@finos/fdc3-context";
 import { DirectoryApp } from "@finos/fdc3-web-impl";
-
-export type AppPanel = GridStackPosition & {
-    title: string
-    url: string,
-    tabId: string
-    panelId: string,  // the instanceId of the app
-    appId: string,
-    icon: string | null
-}
-
-export interface IntentResolution {
-    appIntents: AugmentedAppIntent[]
-    requestId: string
-    context: Context
-}
 
 /**
  * This stores the state of the DesktopAgent on the client.
@@ -35,12 +19,6 @@ export interface ClientState {
     removeTab(id: string): Promise<void>
     updateTab(td: TabDetail): Promise<void>
     moveTab(id: string, delta: "up" | "down"): Promise<void>
-
-    /** Panel State */
-    updatePanel(ap: AppPanel): Promise<void>
-    removePanel(id: string): Promise<void>
-    getPanels(): AppPanel[]
-    newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel
 
     /** App Directory */
     setDirectories(d: Directory[]): Promise<void>
@@ -63,11 +41,7 @@ export interface ClientState {
      */
     createArgs(): SailClientStateArgs
 
-    /**
-     * Triggers intent resolution
-     */
-    getIntentResolution(): IntentResolution | null
-    setIntentResolution(ir: IntentResolution | null): void
+    // Intent resolution methods moved to web package implementation
 
     /**
      * Context History

@@ -1,7 +1,7 @@
 {
-    "name": "@finos/fdc3-sail-common",
+    "name": "@finos/fdc3-sail-shared",
     "version": "0.0.0",
-    "description": "",
+    "description": "Shared constants and message types for FDC3-Sail inter-package communication",
     "scripts": {
         "clean": "npx rimraf dist",
         "build": "tsc"
@@ -19,8 +19,6 @@
         "@finos/fdc3-agent-proxy": "2.2.0-beta.4",
         "@finos/fdc3-schema": "2.2.0-beta.4",
         "@finos/fdc3-web-impl": "2.2.0-beta.4",
-        "socket.io-client": "^4.7.5",
-        "typescript": "^5.7.3",
-        "uuid": "^11.0.5"
+        "typescript": "^5.7.3"
     }
 }

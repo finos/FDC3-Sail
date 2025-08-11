@@ -1,8 +1,5 @@
-import {
-  Directory,
-  getClientState,
-  getServerState,
-} from "@finos/fdc3-sail-common"
+import { Directory } from "@finos/fdc3-sail-shared"
+import { getClientState, getServerState } from "../../state"
 import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
 

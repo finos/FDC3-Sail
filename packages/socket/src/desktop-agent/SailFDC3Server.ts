@@ -1,4 +1,4 @@
-import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
+import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-shared"
 import {
   ChannelState,
   ChannelType,

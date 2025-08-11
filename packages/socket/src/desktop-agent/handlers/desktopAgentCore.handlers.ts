@@ -1,17 +1,15 @@
 import { v4 as uuid } from "uuid"
 import {
-  DA_HELLO,
-  DA_DIRECTORY_LISTING,
-  DA_REGISTER_APP_LAUNCH,
-  SAIL_CLIENT_STATE,
+  HandshakeMessages,
+  AppManagementMessages,
+  ChannelMessages,
   DesktopAgentHelloArgs,
   DesktopAgentDirectoryListingArgs,
   DesktopAgentRegisterAppLaunchArgs,
   SailClientStateArgs,
-  CHANNEL_RECEIVER_UPDATE,
   ChannelReceiverUpdate,
   TabDetail,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 import { State } from "@finos/fdc3-web-impl"
 import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
@@ -190,7 +188,7 @@ async function updateConnectedAppsChannels(
     }
 
     instanceDetails.channelSockets.forEach((channelSocket) => {
-      channelSocket.emit(CHANNEL_RECEIVER_UPDATE, channelUpdate)
+      channelSocket.emit(ChannelMessages.CHANNEL_RECEIVER_UPDATE, channelUpdate)
     })
   })
 }
@@ -242,7 +240,7 @@ export function registerDesktopAgentHandlers(context: HandlerContext): void {
   const { socket } = context
 
   socket.on(
-    DA_HELLO,
+    HandshakeMessages.DA_HELLO,
     (
       desktopAgentHelloArgs: DesktopAgentHelloArgs,
       callback: SocketIOCallback<boolean>,
@@ -257,7 +255,7 @@ export function registerDesktopAgentHandlers(context: HandlerContext): void {
   )
 
   socket.on(
-    DA_DIRECTORY_LISTING,
+    AppManagementMessages.DA_DIRECTORY_LISTING,
     (
       directoryListingArgs: DesktopAgentDirectoryListingArgs,
       callback: SocketIOCallback<unknown>,
@@ -267,7 +265,7 @@ export function registerDesktopAgentHandlers(context: HandlerContext): void {
   )
 
   socket.on(
-    DA_REGISTER_APP_LAUNCH,
+    AppManagementMessages.DA_REGISTER_APP_LAUNCH,
     (
       appLaunchArgs: DesktopAgentRegisterAppLaunchArgs,
       callback: SocketIOCallback<string>,
@@ -277,7 +275,7 @@ export function registerDesktopAgentHandlers(context: HandlerContext): void {
   )
 
   socket.on(
-    SAIL_CLIENT_STATE,
+    HandshakeMessages.SAIL_CLIENT_STATE,
     (
       clientStateArgs: SailClientStateArgs,
       callback: SocketIOCallback<boolean>,

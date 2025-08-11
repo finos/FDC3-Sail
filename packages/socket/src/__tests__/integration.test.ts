@@ -16,7 +16,7 @@ import {
   AppHosting,
   AugmentedAppMetadata,
   ChannelReceiverUpdate,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 import { IntentMetadata } from "@finos/fdc3-standard"
 import path from "path"
 

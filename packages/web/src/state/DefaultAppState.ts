@@ -1,10 +1,10 @@
-import { AppOpenDetails, AppState } from "./AppState"
-import { AppHosting } from "./app-hosting"
+import { AppOpenDetails, AppState } from "../types"
+import { AppHosting } from "@finos/fdc3-sail-shared"
 import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
-import { SailAppStateArgs } from "./message-types";
+import { SailAppStateArgs } from "@finos/fdc3-sail-shared";
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
-import { ServerState } from "./ServerState";
-import { ClientState } from "./ClientState";
+import { ServerState } from "../types";
+import { ClientState } from "../types";
 
 export class DefaultAppState implements AppState {
 
