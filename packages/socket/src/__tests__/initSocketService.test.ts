@@ -13,6 +13,7 @@ import {
   DesktopAgentDirectoryListingArgs,
   DesktopAgentRegisterAppLaunchArgs,
   ChannelReceiverHelloRequest,
+  ChannelReceiverUpdate,
   AppHosting,
 } from "@finos/fdc3-sail-common"
 
@@ -359,7 +360,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           CHANNEL_RECEIVER_HELLO,
           channelHelloArgs,
-          (update: unknown, error?: string) => {
+          (update: ChannelReceiverUpdate, error?: string) => {
             expect(error).toBeUndefined()
             expect(update).toBeDefined()
             expect(update.tabs).toBeDefined()
@@ -380,7 +381,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           CHANNEL_RECEIVER_HELLO,
           channelHelloArgs,
-          (update: unknown, error?: string) => {
+          (update: ChannelReceiverUpdate | null, error?: string) => {
             expect(update).toBeNull()
             expect(error).toBe("No app found")
             resolve()

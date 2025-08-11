@@ -31,7 +31,7 @@ describe("SailFDC3Server", () => {
 
     // Create real instances with actual test data files
     directory = new AppDirectoryManager()
-    serverContext = new SailAppInstanceManager(directory, clientSocket as Socket)
+    serverContext = new SailAppInstanceManager(directory, clientSocket as any)
 
     helloArgs = {
       userSessionId: "test-session-123",
@@ -186,14 +186,14 @@ describe("SailFDC3Server", () => {
       const excelAddin = apps.find((app) => app.appId === "excel-addin")
 
       expect(marketTerminal).toBeDefined()
-      expect(marketTerminal?.intents?.length).toBeGreaterThan(0)
-      expect(marketTerminal?.intents?.[0].contexts).toContain(
+      expect((marketTerminal as any)?.intents?.length).toBeGreaterThan(0)
+      expect((marketTerminal as any)?.intents?.[0].contexts).toContain(
         "fdc3.instrument",
       )
 
       expect(excelAddin).toBeDefined()
-      expect(excelAddin?.type).toBe("native")
-      expect(excelAddin?.details?.path).toContain(".exe")
+      expect((excelAddin as any)?.type).toBe("native")
+      expect((excelAddin as any)?.details?.path).toContain(".exe")
     })
 
     it("should handle apps with different intent configurations", async () => {
@@ -204,13 +204,13 @@ describe("SailFDC3Server", () => {
 
       // Check variety of intent support
       const appsWithViewInstrument = apps.filter((app) =>
-        app.intents?.some(
-          (intent) => intent.name === "ViewInstrument",
+        (app as any).intents?.some(
+          (intent: any) => intent.name === "ViewInstrument",
         ),
       )
       const appsWithViewPortfolio = apps.filter((app) =>
-        app.intents?.some(
-          (intent) => intent.name === "ViewPortfolio",
+        (app as any).intents?.some(
+          (intent: any) => intent.name === "ViewPortfolio",
         ),
       )
 

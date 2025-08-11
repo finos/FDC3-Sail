@@ -142,14 +142,14 @@ describe("SailDirectory", () => {
       const marketTerminal = apps.find((app) => app.appId === "market-terminal")
 
       expect(marketTerminal).toBeDefined()
-      expect(marketTerminal?.intents).toBeDefined()
-      expect(marketTerminal?.intents?.length).toBeGreaterThan(0)
+      expect((marketTerminal as any)?.intents).toBeDefined()
+      expect((marketTerminal as any)?.intents?.length).toBeGreaterThan(0)
 
-      const viewInstrumentIntent = marketTerminal?.intents?.find(
-        (intent) => intent.name === "ViewInstrument",
+      const viewInstrumentIntent = (marketTerminal as any)?.intents?.find(
+        (intent: any) => intent.name === "ViewInstrument",
       )
       expect(viewInstrumentIntent).toBeDefined()
-      expect(viewInstrumentIntent?.contexts).toContain("fdc3.instrument")
+      expect((viewInstrumentIntent as any)?.contexts).toContain("fdc3.instrument")
     })
 
     it("should handle URL filtering with realistic web apps", async () => {
@@ -172,10 +172,10 @@ describe("SailDirectory", () => {
       const excelAddin = apps.find((app) => app.appId === "excel-addin")
 
       expect(excelAddin).toBeDefined()
-      expect(excelAddin?.type).toBe("native")
-      expect(excelAddin?.details?.path).toContain(".exe")
-      expect(excelAddin?.details?.arguments).toBeDefined()
-      expect(Array.isArray(excelAddin?.details?.arguments)).toBe(true)
+      expect((excelAddin as any)?.type).toBe("native")
+      expect((excelAddin as any)?.details?.path).toContain(".exe")
+      expect((excelAddin as any)?.details?.arguments).toBeDefined()
+      expect(Array.isArray((excelAddin as any)?.details?.arguments)).toBe(true)
     })
   })
 
