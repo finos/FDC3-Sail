@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { io as Client, Socket as ClientSocket } from "socket.io-client"
+import { Socket } from "socket.io"
 import { SailFDC3Server, mapChannels } from "../desktop-agent/sailFDC3Server"
 import { SailAppInstanceManager } from "../desktop-agent/sailAppInstanceManager"
 import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
 import { ChannelType } from "@finos/fdc3-web-impl"
 import { getTestServer, clearSessions } from "./setup/setupTests"
-import { resolve } from "path"
+import path from "path"
 
 describe("SailFDC3Server", () => {
   let clientSocket: ClientSocket
   let directory: AppDirectoryManager
-  let serverContext: SailServerContext
+  let serverContext: SailAppInstanceManager
   let helloArgs: DesktopAgentHelloArgs
   let port: number
 
@@ -30,7 +31,7 @@ describe("SailFDC3Server", () => {
 
     // Create real instances with actual test data files
     directory = new AppDirectoryManager()
-    serverContext = new SailServerContext(directory, clientSocket)
+    serverContext = new SailAppInstanceManager(directory, clientSocket as Socket)
 
     helloArgs = {
       userSessionId: "test-session-123",
@@ -47,8 +48,8 @@ describe("SailFDC3Server", () => {
         },
       ] as TabDetail[],
       directories: [
-        resolve(__dirname, "testData/webApps.json"),
-        resolve(__dirname, "testData/nativeApps.json"),
+        path.resolve(__dirname, "testData/webApps.json"),
+        path.resolve(__dirname, "testData/nativeApps.json"),
       ],
       panels: [],
       customApps: [],
@@ -159,7 +160,7 @@ describe("SailFDC3Server", () => {
 
       const directory = server.getDirectory()
 
-      expect(directory).toBe(server.serverContext.getDirectory())
+      expect(directory).toBe(server.serverContext.directory)
     })
   })
 
@@ -186,7 +187,9 @@ describe("SailFDC3Server", () => {
 
       expect(marketTerminal).toBeDefined()
       expect(marketTerminal?.intents?.length).toBeGreaterThan(0)
-      expect(marketTerminal?.intents?.[0].contexts).toContain("fdc3.instrument")
+      expect(marketTerminal?.intents?.[0].contexts).toContain(
+        "fdc3.instrument",
+      )
 
       expect(excelAddin).toBeDefined()
       expect(excelAddin?.type).toBe("native")
@@ -201,10 +204,14 @@ describe("SailFDC3Server", () => {
 
       // Check variety of intent support
       const appsWithViewInstrument = apps.filter((app) =>
-        app.intents?.some((intent) => intent.name === "ViewInstrument"),
+        app.intents?.some(
+          (intent) => intent.name === "ViewInstrument",
+        ),
       )
       const appsWithViewPortfolio = apps.filter((app) =>
-        app.intents?.some((intent) => intent.name === "ViewPortfolio"),
+        app.intents?.some(
+          (intent) => intent.name === "ViewPortfolio",
+        ),
       )
 
       expect(appsWithViewInstrument.length).toBeGreaterThan(1)

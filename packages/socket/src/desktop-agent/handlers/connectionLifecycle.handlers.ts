@@ -25,7 +25,7 @@ function clearChannelSocketsFromInstance(
  * @param appInstanceId - ID of the app instance being disconnected
  */
 async function handleAppDisconnect(
-  serverContext: SailServerContext,
+  serverContext: SailAppInstanceManager,
   appInstanceId: string,
 ): Promise<void> {
   await serverContext.setAppState(appInstanceId, State.Terminated)
@@ -39,7 +39,7 @@ async function handleAppDisconnect(
  * @param appInstanceId - ID of the app instance losing channel connection
  */
 function handleChannelDisconnect(
-  serverContext: SailServerContext,
+  serverContext: SailAppInstanceManager,
   appInstanceId: string,
 ): void {
   const instanceDetails = serverContext.getInstanceDetails(appInstanceId)

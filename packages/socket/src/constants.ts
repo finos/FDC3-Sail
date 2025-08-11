@@ -6,7 +6,7 @@
 /** FDC3 and Provider Configuration */
 export const APP_CONFIG = {
   PROVIDER_VERSION: "2.0",
-  FDC3_VERSION: "2.0", 
+  FDC3_VERSION: "2.0",
   PROVIDER_NAME: "FDC3 Sail",
   DEFAULT_PORT: 8090,
   DEFAULT_ICON: "/icons/control/choose-app.svg",

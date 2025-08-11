@@ -60,7 +60,7 @@ function handleElectronHello(
     }
   } else if (electronHelloArgs.url === getSailUrl()) {
     connectionState.userSessionId = electronHelloArgs.userSessionId
-    const serverContext = new SailServerContext(
+    const serverContext = new SailAppInstanceManager(
       new AppDirectoryManager(),
       socket,
     )

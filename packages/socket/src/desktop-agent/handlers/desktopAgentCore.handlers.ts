@@ -147,7 +147,7 @@ async function handleRegisterAppLaunch(
  * @param panelList - List of panels with their channel assignments
  */
 function updatePanelChannels(
-  serverContext: SailServerContext,
+  serverContext: SailAppInstanceManager,
   panelList: PanelData[],
 ): void {
   panelList.forEach(({ panelId, tabId: newChannel, title }) => {
@@ -176,7 +176,7 @@ function updatePanelChannels(
  * @param channelList - List of available channels/tabs
  */
 async function updateConnectedAppsChannels(
-  serverContext: SailServerContext,
+  serverContext: SailAppInstanceManager,
   channelList: TabDetail[],
 ): Promise<void> {
   const connectedApps = await serverContext.getConnectedApps()

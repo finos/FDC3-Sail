@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { DirectoryApp } from "@finos/fdc3-web-impl"
 import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
-import { resolve } from "path"
+import path from "path"
 import { writeFileSync, unlinkSync } from "fs"
 
 // Test apps for direct testing
@@ -112,8 +112,8 @@ describe("SailDirectory", () => {
 
   describe("Real File Loading", () => {
     const testDataDir = __dirname
-    const webAppsPath = resolve(testDataDir, "testData/webApps.json")
-    const nativeAppsPath = resolve(testDataDir, "testData/nativeApps.json")
+    const webAppsPath = path.resolve(testDataDir, "testData/webApps.json")
+    const nativeAppsPath = path.resolve(testDataDir, "testData/nativeApps.json")
 
     it("should load apps from real JSON files", async () => {
       const directory = new AppDirectoryManager()
@@ -182,7 +182,7 @@ describe("SailDirectory", () => {
   describe("Error Handling", () => {
     it("should handle malformed JSON gracefully", async () => {
       const directory = new AppDirectoryManager()
-      const malformedPath = resolve(__dirname, "testData/malformed.json")
+      const malformedPath = path.resolve(__dirname, "testData/malformed.json")
 
       // Create malformed JSON file
       writeFileSync(malformedPath, '{"applications": [{"appId": "broken"')
@@ -197,14 +197,17 @@ describe("SailDirectory", () => {
 
     it("should handle missing files gracefully", async () => {
       const directory = new AppDirectoryManager()
-      const nonExistentPath = resolve(__dirname, "testData/nonexistent.json")
+      const nonExistentPath = path.resolve(
+        __dirname,
+        "testData/nonexistent.json",
+      )
 
       await expect(directory.replace([nonExistentPath])).rejects.toThrow()
     })
 
     it("should handle empty applications array", async () => {
       const directory = new AppDirectoryManager()
-      const emptyPath = resolve(__dirname, "testData/empty.json")
+      const emptyPath = path.resolve(__dirname, "testData/empty.json")
 
       // Create empty applications file
       writeFileSync(emptyPath, '{"applications": []}')

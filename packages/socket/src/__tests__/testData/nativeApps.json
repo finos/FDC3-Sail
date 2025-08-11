@@ -27,7 +27,11 @@
         {
           "name": "ViewInstrument",
           "displayName": "Open in Excel",
-          "contexts": ["fdc3.instrument", "fdc3.instrumentList", "fdc3.portfolio"]
+          "contexts": [
+            "fdc3.instrument",
+            "fdc3.instrumentList",
+            "fdc3.portfolio"
+          ]
         },
         {
           "name": "ViewAnalysis",

@@ -228,7 +228,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           DA_DIRECTORY_LISTING,
           listingArgs,
-          (apps: any[], error?: string) => {
+          (apps: unknown[], error?: string) => {
             expect(error).toBeUndefined()
             expect(Array.isArray(apps)).toBe(true)
             expect(apps).toHaveLength(0)
@@ -277,7 +277,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           DA_DIRECTORY_LISTING,
           listingArgs,
-          (apps: any[], error?: string) => {
+          (apps: unknown[], error?: string) => {
             expect(error).toBeUndefined()
             expect(Array.isArray(apps)).toBe(true)
             expect(apps).toHaveLength(0)
@@ -296,7 +296,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           DA_DIRECTORY_LISTING,
           listingArgs,
-          (apps: any, error?: string) => {
+          (apps: unknown, error?: string) => {
             expect(apps).toBeNull()
             expect(error).toBe("Session not found")
             resolve()
@@ -359,7 +359,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           CHANNEL_RECEIVER_HELLO,
           channelHelloArgs,
-          (update: any, error?: string) => {
+          (update: unknown, error?: string) => {
             expect(error).toBeUndefined()
             expect(update).toBeDefined()
             expect(update.tabs).toBeDefined()
@@ -380,7 +380,7 @@ describe("initSocketService Integration Tests", () => {
         clientSocket.emit(
           CHANNEL_RECEIVER_HELLO,
           channelHelloArgs,
-          (update: any, error?: string) => {
+          (update: unknown, error?: string) => {
             expect(update).toBeNull()
             expect(error).toBe("No app found")
             resolve()

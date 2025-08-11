@@ -20,7 +20,7 @@ import {
   SailAppOpenArgs,
   AppHosting,
   SailIntentResolveResponse,
-  EnrichedAppIntent,
+  AugmentedAppIntent,
   AugmentedAppMetadata,
   SailAppOpenResponse,
   TabDetail,
@@ -381,7 +381,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
    * @param appIntents - The base app intents to augment
    * @returns Augmented app intents with additional metadata
    */
-  enrichIntentsWithMetadata(appIntents: AppIntent[]): EnrichedAppIntent[] {
+  enrichIntentsWithMetadata(appIntents: AppIntent[]): AugmentedAppIntent[] {
     return appIntents.map((appIntent) => ({
       intent: appIntent.intent,
       apps: appIntent.apps.map((app) => {
@@ -417,7 +417,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
    * Helper methods for intent narrowing
    */
   private countRunningAppsInChannel(
-    appIntent: EnrichedAppIntent,
+    appIntent: AugmentedAppIntent,
     channel: string | null,
   ): number {
     return appIntent.apps.filter(
@@ -443,7 +443,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
   }
 
   private async handleIntentResolverPromise(
-    enrichedIntents: EnrichedAppIntent[],
+    enrichedIntents: AugmentedAppIntent[],
     context: Context,
   ): Promise<AppIntent[]> {
     return new Promise<AppIntent[]>((resolve) => {
