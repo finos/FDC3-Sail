@@ -133,7 +133,9 @@ describe("End-to-End Integration Tests", () => {
 
       expect(marketTerminal).toBeDefined()
       expect((marketTerminal as any)!.intents?.length).toBeGreaterThan(0)
-      expect((marketTerminal as any)!.intents![0].contexts).toContain("fdc3.instrument")
+      expect((marketTerminal as any)!.intents![0].contexts).toContain(
+        "fdc3.instrument",
+      )
 
       expect(excelAddin).toBeDefined()
       expect((excelAddin as any).type).toBe("native")
@@ -272,11 +274,15 @@ describe("End-to-End Integration Tests", () => {
 
       // Verify intent distribution across apps
       const viewInstrumentApps = apps.filter((app) =>
-        (app as any).intents?.some((intent: IntentMetadata) => intent.name === "ViewInstrument"),
+        (app as any).intents?.some(
+          (intent: IntentMetadata) => intent.name === "ViewInstrument",
+        ),
       )
 
       const viewPortfolioApps = apps.filter((app) =>
-        (app as any).intents?.some((intent: IntentMetadata) => intent.name === "ViewPortfolio"),
+        (app as any).intents?.some(
+          (intent: IntentMetadata) => intent.name === "ViewPortfolio",
+        ),
       )
 
       expect(viewInstrumentApps.length).toBeGreaterThan(1)
@@ -410,20 +416,27 @@ describe("End-to-End Integration Tests", () => {
       expect(viewInstrumentApps.length).toBeGreaterThan(1)
 
       // Verify different app types support the same intent
-      const webApp = viewInstrumentApps.find((app) => (app as any).type === "web")
-      const nativeApp = viewInstrumentApps.find((app) => (app as any).type === "native")
+      const webApp = viewInstrumentApps.find(
+        (app) => (app as any).type === "web",
+      )
+      const nativeApp = viewInstrumentApps.find(
+        (app) => (app as any).type === "native",
+      )
 
       expect(webApp).toBeDefined()
       expect(nativeApp).toBeDefined()
 
       // Both should support fdc3.instrument context
       expect(
-        (webApp as any).intents.find((i: IntentMetadata) => i.name === "ViewInstrument").contexts,
+        (webApp as any).intents.find(
+          (i: IntentMetadata) => i.name === "ViewInstrument",
+        ).contexts,
       ).toContain("fdc3.instrument")
 
       expect(
-        (nativeApp as any).intents.find((i: IntentMetadata) => i.name === "ViewInstrument")
-          .contexts,
+        (nativeApp as any).intents.find(
+          (i: IntentMetadata) => i.name === "ViewInstrument",
+        ).contexts,
       ).toContain("fdc3.instrument")
     })
   })
@@ -482,16 +495,12 @@ describe("End-to-End Integration Tests", () => {
       }
 
       await new Promise<void>((resolve) => {
-        clientSocket.emit(
-          DA_HELLO,
-          helloArgs,
-          (response: boolean) => {
-            // Should still create session even if directory loading fails
-            expect(response).toBe(true)
-            expect(sessions.has(sessionId)).toBe(true)
-            resolve()
-          },
-        )
+        clientSocket.emit(DA_HELLO, helloArgs, (response: boolean) => {
+          // Should still create session even if directory loading fails
+          expect(response).toBe(true)
+          expect(sessions.has(sessionId)).toBe(true)
+          resolve()
+        })
       })
 
       // Directory listing should return empty array
