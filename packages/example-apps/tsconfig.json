@@ -1,10 +1,7 @@
 {
   "extends": "../../tsconfig.root.json",
   "compilerOptions": {
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
+    "lib": ["ESNext", "DOM"],
     "jsx": "react-jsx",
     "plugins": [
       {
@@ -12,19 +9,12 @@
       }
     ],
     "outDir": "dist",
-    "rootDirs": [
-      "src"
-    ],
+    "rootDirs": ["src"]
   },
-  "include": [
-    "src/**/*.tsx",
-    "src/**/*.ts",
-    "types.d.ts",
-    "src/**/*.css"
-  ],
+  "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
   "references": [
     {
-      "path": "../common"
+      "path": "../shared"
     }
   ]
 }

@@ -4,7 +4,7 @@ import {
   ElectronHelloArgs,
   ElectronAppResponse,
   ElectronDAResponse,
-} from "@finos/fdc3-sail-common"
+} from "../types/sail-types"
 import { SailAppInstanceManager } from "../sailAppInstanceManager"
 import { AppDirectoryManager } from "../../app-directory/appDirectoryManager"
 import { SailFDC3Server } from "../sailFDC3Server"

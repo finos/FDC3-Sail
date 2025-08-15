@@ -1,10 +1,10 @@
 import {
-  APP_HELLO,
-  FDC3_APP_EVENT,
+  HandshakeMessages,
+  AppManagementMessages,
   AppHelloArgs,
   AppHosting,
-  SailHostManifest,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
+import { SailHostManifest } from "../../types"
 import { State, WebAppDetails } from "@finos/fdc3-web-impl"
 import {
   AppRequestMessage,
@@ -224,14 +224,14 @@ export function registerAppHandlers(context: HandlerContext): void {
   const { socket } = context
 
   socket.on(
-    APP_HELLO,
+    HandshakeMessages.APP_HELLO,
     (appHelloArgs: AppHelloArgs, callback: SocketIOCallback<AppHosting>) => {
       handleAppHello(appHelloArgs, callback, context)
     },
   )
 
   socket.on(
-    FDC3_APP_EVENT,
+    AppManagementMessages.FDC3_APP_EVENT,
     (
       eventData:
         | AppRequestMessage

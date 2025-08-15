@@ -2,12 +2,9 @@ import { Bin, Controls, NewPanel } from "../controls/controls"
 import { ContextHistory, Logo, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
 import styles from "./styles.module.css"
-import {
-  ClientState,
-  getClientState,
-  AppState,
-  getServerState,
-} from "@finos/fdc3-sail-common"
+import { AppState } from "../../types"
+import { getClientState, getServerState } from "../../state"
+import { WebClientState } from "../../types"
 import { Component } from "react"
 import { AppDPanel } from "../appd/appd"
 import { Content, Grids } from "../grid/grid"
@@ -25,7 +22,7 @@ enum Popup {
 }
 
 interface FrameProps {
-  cs: ClientState
+  cs: WebClientState
   as: AppState
 }
 

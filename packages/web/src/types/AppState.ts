@@ -1,6 +1,6 @@
 import { DirectoryApp, State } from "@finos/fdc3-web-impl";
-import { AppHosting } from "./app-hosting";
-import { SailAppStateArgs } from "./message-types";
+import { AppHosting } from "@finos/fdc3-sail-shared";
+import { SailAppStateArgs } from "@finos/fdc3-sail-shared";
 import { ServerState } from "./ServerState";
 import { ClientState } from "./ClientState";
 

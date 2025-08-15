@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AppPanel } from "./ClientState";
+import { AppPanel } from "../types";
 import { AbstractClientState } from "./AbstractClientState";
-import { Directory, TabDetail } from "./message-types";
-import { ServerState } from './ServerState';
+import { Directory, TabDetail } from "@finos/fdc3-sail-shared";
+import { ServerState } from '@finos/fdc3-sail-shared';
 
 const STORAGE_KEY = "sail-client-state"
 

@@ -1,10 +1,10 @@
 import { Component } from "react"
 import { Icon } from "../icon/icon"
-import { getAppState, getClientState } from "@finos/fdc3-sail-common"
+import { getAppState, getClientState } from "../../state"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
-import { AppHosting } from "@finos/fdc3-sail-common"
+import { AppHosting } from "@finos/fdc3-sail-shared"
 import { AppMetadata, Image } from "@finos/fdc3"
 
 export const DEFAULT_ICON = "/icons/control/choose-app.svg"

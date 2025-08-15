@@ -4,7 +4,7 @@ import {
   getClientState,
   getAppState,
   getServerState,
-} from "@finos/fdc3-sail-common"
+} from "../state"
 
 const container = document.getElementById("app")
 const root = createRoot(container!)

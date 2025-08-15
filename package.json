@@ -16,7 +16,7 @@
     "format:fix": "prettier --write ."
   },
   "workspaces": [
-    "packages/common",
+    "packages/shared",
     "packages/web",
     "packages/preload",
     "packages/electron",

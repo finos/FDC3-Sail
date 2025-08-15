@@ -1,0 +1,4 @@
+export enum AppHosting {
+  Frame,
+  Tab,
+}

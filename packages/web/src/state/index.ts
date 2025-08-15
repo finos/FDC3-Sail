@@ -1,22 +1,16 @@
-import { AppState } from "./AppState"
-import { ClientState } from "./ClientState"
+import { AppState } from "../types"
+import { ServerState } from "../types"
+import { WebClientState } from "../types"
 import { DefaultAppState } from "./DefaultAppState"
 import { LocalStorageClientState } from "./LocalStorageClientState"
-import { ServerState } from "./ServerState"
 import { ServerStateImpl } from "./ServerStateImpl"
 
-export * from "./app-hosting"
-export * from "./ClientState"
-export * from "./message-types"
-export * from "./AppState"
-export * from "./ServerState"
-
+// Web-specific state management (browser environment)
 let theServerState: ServerState | null = null
-let theClientState: ClientState | null = null
+let theClientState: WebClientState | null = null
 let theAppState: DefaultAppState | null = null
 
 function ensureSetup() {
-
     theServerState = theServerState ?? new ServerStateImpl();
     theAppState = theAppState ?? new DefaultAppState();
     theClientState = theClientState ?? new LocalStorageClientState();
@@ -24,7 +18,6 @@ function ensureSetup() {
     (theClientState as LocalStorageClientState).init(theServerState)
     theServerState.init(theClientState, theAppState)
     theAppState.init(theServerState, theClientState)
-
 }
 
 export function getServerState(): ServerState {
@@ -37,7 +30,7 @@ export function getAppState(): AppState {
     return theAppState!
 }
 
-export function getClientState(): ClientState {
+export function getClientState(): WebClientState {
     ensureSetup()
     return theClientState!
 }

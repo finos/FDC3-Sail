@@ -13,10 +13,10 @@ import { AppIdentifier } from "@finos/fdc3"
 import { AppDirectoryManager } from "../app-directory/appDirectoryManager"
 import { AppIntent, Context, OpenError } from "@finos/fdc3"
 import {
-  FDC3_DA_EVENT,
-  SAIL_APP_OPEN,
-  SAIL_CHANNEL_SETUP,
-  SAIL_INTENT_RESOLVE,
+  AppManagementMessages,
+  ChannelMessages,
+  IntentMessages,
+  ContextMessages,
   SailAppOpenArgs,
   AppHosting,
   SailIntentResolveResponse,
@@ -25,8 +25,7 @@ import {
   SailAppOpenResponse,
   TabDetail,
   ContextHistory,
-  SAIL_BROADCAST_CONTEXT,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 import {
   BroadcastRequest,
   ChannelChangedEvent,
@@ -115,7 +114,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
       if (!messageWithType?.type?.startsWith("heartbeat")) {
         this.log(`Posting message to app: ${JSON.stringify(message)}`)
       }
-      instance.socket?.emit(FDC3_DA_EVENT, message)
+      instance.socket?.emit(AppManagementMessages.FDC3_DA_EVENT, message)
     } else {
       this.log(`Cannot find app with instanceId: ${JSON.stringify(instanceId)}`)
     }
@@ -127,7 +126,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
    */
   notifyBroadcastContext(broadcastEvent: BroadcastRequest): void {
     const { channelId, context } = broadcastEvent.payload
-    this.socket.emit(SAIL_BROADCAST_CONTEXT, {
+    this.socket.emit(ContextMessages.SAIL_BROADCAST_CONTEXT, {
       channelId,
       context,
     })
@@ -184,7 +183,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
       forceNewWindow || channel === null ? AppHosting.Tab : AppHosting.Frame
 
     const openResponse: SailAppOpenResponse = await this.socket.emitWithAck(
-      SAIL_APP_OPEN,
+      AppManagementMessages.SAIL_APP_OPEN,
       {
         appDRecord: firstApp,
         approach: hosting,
@@ -255,7 +254,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
    * @param app - The app identifier containing instance ID
    */
   async setInitialChannel(app: AppIdentifier): Promise<void> {
-    this.socket.emit(SAIL_CHANNEL_SETUP, app.instanceId)
+    this.socket.emit(ChannelMessages.SAIL_CHANNEL_SETUP, app.instanceId)
   }
 
   /**
@@ -450,7 +449,7 @@ export class SailAppInstanceManager implements ServerContext<SailData> {
       console.log("SAIL Narrowing intents", enrichedIntents, context)
 
       this.socket.emit(
-        SAIL_INTENT_RESOLVE,
+        IntentMessages.SAIL_INTENT_RESOLVE,
         {
           appIntents: enrichedIntents,
           context,

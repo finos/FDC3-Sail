@@ -1,4 +1,5 @@
-import { getClientState, TabDetail } from "@finos/fdc3-sail-common"
+import { getClientState } from "../../state"
+import { TabDetail } from "@finos/fdc3-sail-shared"
 import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
 import { Icon } from "../icon/icon"

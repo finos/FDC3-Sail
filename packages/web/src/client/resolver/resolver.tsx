@@ -6,7 +6,7 @@ import {
   AugmentedAppIntent,
   AugmentedAppMetadata,
   TabDetail,
-} from "@finos/fdc3-sail-common"
+} from "@finos/fdc3-sail-shared"
 import { selectHighestContrast } from "../../util/contrast"
 import { DEFAULT_ICON, getIcon } from "../appd/appd"
 

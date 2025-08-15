@@ -1,6 +1,6 @@
 import { Component } from "react"
 import styles from "./styles.module.css"
-import { ClientState } from "@finos/fdc3-sail-common"
+import { ClientState } from "../../types"
 import { Popup } from "../popups/popup"
 import { DirectoryList } from "./directories"
 import { TabList } from "./tabs"

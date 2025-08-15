@@ -23,7 +23,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@finos/fdc3-sail-common": "0.0.0",
+    "@finos/fdc3-sail-shared": "0.0.0",
     "dotenv": "^16.0.0",
     "socket.io": "^4.7.5"
   },

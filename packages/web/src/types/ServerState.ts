@@ -1,6 +1,5 @@
 import { DirectoryApp } from "@finos/fdc3-web-impl"
-import { AppHosting } from "./app-hosting"
-import { SailClientStateArgs } from "./message-types"
+import { AppHosting, SailClientStateArgs } from "@finos/fdc3-sail-shared"
 import { AppIdentifier } from "@finos/fdc3-standard"
 import { ClientState } from "./ClientState"
 import { AppState } from "./AppState"
