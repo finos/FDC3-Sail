@@ -1,0 +1,118 @@
+{
+  "applications": [
+    {
+      "appId": "excel-addin",
+      "name": "Excel Trading Add-in",
+      "title": "Spreadsheet Trading Tools",
+      "type": "native",
+      "description": "Excel add-in for trade analysis and portfolio modeling",
+      "version": "4.1.2",
+      "details": {
+        "path": "C:\\Program Files\\TradingTools\\ExcelAddin\\TradingAddin.exe",
+        "arguments": ["--mode=addin", "--workspace=trading"]
+      },
+      "icons": [
+        {
+          "src": "/icons/excel-addin-32.png",
+          "size": "32x32",
+          "type": "image/png"
+        },
+        {
+          "src": "/icons/excel-addin-48.png",
+          "size": "48x48",
+          "type": "image/png"
+        }
+      ],
+      "intents": [
+        {
+          "name": "ViewInstrument",
+          "displayName": "Open in Excel",
+          "contexts": [
+            "fdc3.instrument",
+            "fdc3.instrumentList",
+            "fdc3.portfolio"
+          ]
+        },
+        {
+          "name": "ViewAnalysis",
+          "displayName": "Analyze Data",
+          "contexts": ["fdc3.trade", "fdc3.position"]
+        }
+      ],
+      "customConfig": {
+        "officeVersion": "365",
+        "enableMacros": true
+      }
+    },
+    {
+      "appId": "risk-calculator",
+      "name": "Risk Calculator",
+      "title": "Portfolio Risk Analysis Tool",
+      "type": "citrix",
+      "description": "Desktop application for risk analysis and VaR calculations",
+      "version": "2.3.1",
+      "details": {
+        "alias": "risk-calc-v2",
+        "publishedName": "RiskAnalyzer.exe"
+      },
+      "icons": [
+        {
+          "src": "/icons/risk-calc.ico",
+          "type": "image/vnd.microsoft.icon"
+        }
+      ],
+      "intents": [
+        {
+          "name": "ViewPortfolio",
+          "displayName": "Calculate Risk",
+          "contexts": ["fdc3.portfolio", "fdc3.position"]
+        },
+        {
+          "name": "ViewInstrument",
+          "displayName": "Risk Analysis",
+          "contexts": ["fdc3.instrument", "fdc3.trade"]
+        }
+      ],
+      "customConfig": {
+        "citrixServer": "risk-apps.example.com",
+        "memoryLimit": "2048MB"
+      }
+    },
+    {
+      "appId": "research-terminal",
+      "name": "Research Terminal",
+      "title": "Equity Research Platform",
+      "type": "other",
+      "description": "Third-party research and analysis platform",
+      "version": "1.5.0",
+      "details": {
+        "customProperty": "research-integration",
+        "launchType": "api-integration",
+        "endpoint": "https://api.research.example.com/launch"
+      },
+      "icons": [
+        {
+          "src": "/icons/research-terminal.svg",
+          "type": "image/svg+xml"
+        }
+      ],
+      "intents": [
+        {
+          "name": "ViewNews",
+          "displayName": "View Research",
+          "contexts": ["fdc3.instrument", "fdc3.organization"]
+        },
+        {
+          "name": "ViewInstrument",
+          "displayName": "Research Analysis",
+          "contexts": ["fdc3.instrument", "fdc3.instrumentList"]
+        }
+      ],
+      "customConfig": {
+        "apiKey": "research-api-key-123",
+        "region": "US",
+        "dataFeeds": ["equity", "fixed-income", "commodities"]
+      }
+    }
+  ]
+}

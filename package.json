@@ -5,15 +5,20 @@
   "scripts": {
     "clean": "npm run clean --workspaces",
     "build": "npm run build --workspaces --if-present",
-    "web:dev": "npm run dev -w packages/web",
-    "electron:start": "npm run dev -w packages/electron",
+    "dev": "concurrently \"npm run dev -w @finos/fdc3-sail-socket\" \"npm run dev -w @finos/fdc3-sail-web\"",
+    "web": "npm run build && npm run web --workspaces --if-present",
+    "electron": "concurrently \"npm run web\" \"npm run electron --workspaces --if-present \"",
     "lint": "eslint .",
-    "start": "concurrently -n \"WEB,ELECTRON\" -c \"blue,green\" \"npm run web:dev\" \"wait-on -l -i 1000 -t 60000 -w 1000 tcp:localhost:8090 && npm run electron:start\""
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "workspaces": [
     "packages/common",
     "packages/web",
-    "packages/electron"
+    "packages/preload",
+    "packages/electron",
+    "packages/socket"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
