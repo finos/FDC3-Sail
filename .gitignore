@@ -7,4 +7,5 @@ thumbs.db
 packages/preload/exposedInMainWorld.d.ts
 build
 .rollup.cache
+tsconfig.tsbuildinfo
 FDC3-Sail.pem
