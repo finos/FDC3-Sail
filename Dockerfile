@@ -1,44 +1,46 @@
-# Use Ubuntu as the base image
-FROM ubuntu:22.04
+# Use Node.js Alpine image for smaller size and faster downloads
+FROM node:20.11.0-alpine
 
-# Avoid prompts from apt
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install dependencies for nvm
-RUN apt-get update && apt-get install -y curl build-essential libssl-dev && rm -rf /var/lib/apt/lists/*
-
-# Install nvm
-ENV NVM_DIR /root/.nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-
-# Install Node.js and npm using nvm
-ENV NODE_VERSION 20.11.0
-# Activate nvm and install node
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION} && nvm use --delete-prefix ${NODE_VERSION}
-
-# Add node and npm to the PATH for subsequent commands
-ENV PATH $NVM_DIR/versions/node/v${NODE_VERSION}/bin:$PATH
+# Install basic build tools needed for native dependencies
+RUN apk add --no-cache python3 make g++
 
 # Set the working directory
 WORKDIR /app
 
 # Copy package manifests for layer caching
-COPY package.json package-lock.json ./
+COPY package.json ./
 COPY packages/ ./packages/
 
-# Install all dependencies
-RUN npm install
+# Debug: Show what we're working with
+RUN echo "=== DEBUG INFO ===" && \
+    echo "Node version: $(node --version)" && \
+    echo "NPM version: $(npm --version)" && \
+    echo "Current directory: $(pwd)" && \
+    echo "Files in current directory:" && \
+    ls -la && \
+    echo "Package.json exists: $(test -f package.json && echo 'YES' || echo 'NO')" && \
+    echo "Package-lock.json exists: $(test -f package-lock.json && echo 'YES' || echo 'NO')" && \
+    echo "Packages directory contents:" && \
+    ls -la packages/ && \
+    echo "=== END DEBUG INFO ==="
+
+# Configure npm for more reliable installs - include optional deps for Rollup
+RUN npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm config set audit false && \
+    npm config set fund false && \
+    echo "Starting npm install (including optional dependencies for Rollup)..." && \
+    npm install --verbose
 
 # Copy the rest of the application source code
 COPY . .
 
 # Build the entire project
-#RUN npm run build
 RUN npm run build --workspaces --if-present
 
 # Expose the application port
 EXPOSE 8090
 
 # Command to run the web application
-#CMD ["npm", "run", "web", "--workspaces", "--if-present"]
 CMD ["npm", "run", "web:dev"]
