@@ -40,4 +40,5 @@ RUN npm run build --workspaces --if-present
 EXPOSE 8090
 
 # Command to run the web application
-CMD ["npm", "run", "web", "--workspaces", "--if-present"]
+#CMD ["npm", "run", "web", "--workspaces", "--if-present"]
+CMD ["npm", "run", "web:dev"]
