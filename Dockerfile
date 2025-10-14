@@ -33,7 +33,8 @@ RUN npm install
 COPY . .
 
 # Build the entire project
-RUN npm run build
+#RUN npm run build
+RUN npm run build --workspaces --if-present
 
 # Expose the application port
 EXPOSE 8090
