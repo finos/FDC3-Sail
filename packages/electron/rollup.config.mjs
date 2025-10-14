@@ -12,10 +12,9 @@ const mainPlugins = [
   json(),
   typescript({
     tsconfig: "./tsconfig.json",
-    sourceMap: true,
-    outputToFilesystem: true,
-    rootDir: "src",
-    declaration: false, // Disable declaration file generation
+    compilerOptions: {
+      declaration: true,
+    },
   }),
 ]
 
@@ -28,10 +27,9 @@ const preloadPlugins = [
   json(),
   typescript({
     tsconfig: "./tsconfig.json",
-    sourceMap: true,
-    outputToFilesystem: true,
-    rootDir: "src/preload",
-    declaration: false, // Disable declaration file generation
+    compilerOptions: {
+      declaration: true,
+    },
   }),
 ]
 
