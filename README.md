@@ -61,6 +61,7 @@ From the terminal in Visual Studio Code (and assuming your current directory is 
 
 ```
 npm install
+npm run build
 npm run web
 ```
 
@@ -74,6 +75,7 @@ From the terminal in Visual Studio Code (and assuming your current directory is 
 
 ```bash
 npm install
+npm run build
 npm run electron
 ```
 
