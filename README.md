@@ -155,7 +155,7 @@ _Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@fin
 ### Emeritus Contributors
 
 - [Nick Kolba](@nkolba) contributed the first version of FDC3-Sail, initially called "FDC3 Electron", in 2022.
-- [Seb M'Barek](@sebbenmbarek) and Nick Kolba renamed the project to FDC3-Sail and presented it at [OSFF New York in 2022](https://www.youtube.com/watch?v=dKDkOk3btWU)
+- [Seb M'Barek](@sebbenmbarek) and Nick Kolba renamed the project to FDC3-Sail and presented it at [OSFF New York in 2023](https://www.youtube.com/watch?v=dKDkOk3btWU)
 
 ### Design Decisions
 
