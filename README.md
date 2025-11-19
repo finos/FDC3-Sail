@@ -152,6 +152,11 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 _Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
 
+### Emeritus Contributors
+
+- [Nick Kolba](@nkolba) contributed the first version of FDC3-Sail, initially called "FDC3 Electron", in 2022.
+- [Seb M'Barek](@sebbenmbarek) and Nick Kolba renamed the project to FDC3-Sail and presented it at [OSFF New York in 2022](https://www.youtube.com/watch?v=dKDkOk3btWU)
+
 ### Design Decisions
 
 1.  We should support multiple app directories.
