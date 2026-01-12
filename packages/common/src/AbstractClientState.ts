@@ -1,5 +1,5 @@
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
-import { AppPanel, ClientState, IntentResolution } from "./ClientState";
+import { AppPanel, ClientState, IntentResolution, RemoteApp } from "./ClientState";
 import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { Context } from "@finos/fdc3-context";
 
@@ -14,9 +14,10 @@ export abstract class AbstractClientState implements ClientState {
     protected intentResolution: IntentResolution | null = null
     protected knownApps: DirectoryApp[] = []
     protected customApps: DirectoryApp[] = []
+    protected remoteApps: RemoteApp[] = []
     protected contextHistory: ContextHistory = {}
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[], history: ContextHistory) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[], remoteApps: RemoteApp[], history: ContextHistory) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
@@ -24,6 +25,7 @@ export abstract class AbstractClientState implements ClientState {
         this.directories = directories
         this.knownApps = knownApps
         this.customApps = customApps
+        this.remoteApps = remoteApps
         this.contextHistory = history
     }
 
@@ -206,6 +208,15 @@ export abstract class AbstractClientState implements ClientState {
 
     getCustomApps(): DirectoryApp[] {
         return this.customApps
+    }
+
+    async setRemoteApps(apps: RemoteApp[]): Promise<void> {
+        this.remoteApps = apps
+        await this.saveState()
+    }
+
+    getRemoteApps(): RemoteApp[] {
+        return this.remoteApps
     }
 
     getContextHistory(tabId: string): Context[] {

@@ -19,6 +19,18 @@ export interface IntentResolution {
 }
 
 /**
+ * Configuration for a remote/native application that connects via WebSocket.
+ * This allows native apps (like Java apps) to connect to Sail.
+ */
+export interface RemoteApp {
+    /** The appId from the directory that this remote app represents */
+    appId: string
+
+    /** The path that instances of this application connect on. */
+    websocketPath: string
+}
+
+/**
  * This stores the state of the DesktopAgent on the client.
  * That is, positions of panels, tabs, details of directories set up, active tab etc.
  */
@@ -54,6 +66,10 @@ export interface ClientState {
     /** Custom Apps, configured by the user  */
     setCustomApps(apps: DirectoryApp[]): Promise<void>
     getCustomApps(): DirectoryApp[]
+
+    /** Remote Apps - native apps that connect via WebSocket */
+    setRemoteApps(apps: RemoteApp[]): Promise<void>
+    getRemoteApps(): RemoteApp[]
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void

@@ -13,10 +13,10 @@ export class LocalStorageClientState extends AbstractClientState {
     constructor() {
         const theState = localStorage.getItem(STORAGE_KEY)
         if (theState) {
-            const { tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps, contextHistory } = JSON.parse(theState)
-            super(tabs, panels, activeTabId, userSessionId, directories ?? [], knownApps ?? [], customApps ?? [], contextHistory ?? {})
+            const { tabs, panels, activeTabId, userSessionId, directories, knownApps, customApps, remoteApps, contextHistory } = JSON.parse(theState)
+            super(tabs, panels, activeTabId, userSessionId, directories ?? [], knownApps ?? [], customApps ?? [], remoteApps ?? [], contextHistory ?? {})
         } else {
-            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [], [], {})
+            super(DEFAULT_TABS, DEFAULT_PANELS, DEFAULT_TABS[0].id, "user-" + uuidv4(), DEFAULT_DIRECTORIES, [], [], [], {})
         }
     }
 
@@ -35,6 +35,7 @@ export class LocalStorageClientState extends AbstractClientState {
             directories: this.directories,
             knownApps: this.knownApps,
             customApps: this.customApps,
+            remoteApps: this.remoteApps,
             contextHistory: this.contextHistory
         })
         localStorage.setItem(STORAGE_KEY, data)
