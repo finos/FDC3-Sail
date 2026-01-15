@@ -1,6 +1,6 @@
 import { getClientState, RemoteApp } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
-import { DirectoryApp } from "@finos/fdc3-web-impl"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from "uuid"
 import { InlineButton } from "./shared"
 import Combobox from "react-widgets/Combobox"
@@ -173,14 +173,14 @@ export const RemoteAppList = () => {
           update={(updatedApp) => {
             if (updatedApp) {
               const idx = apps.findIndex(
-                (a) => a.websocketPath === app.websocketPath
+                (a) => a.websocketPath === app.websocketPath,
               )
               const newApps = [...apps]
               newApps[idx] = updatedApp
               updateApps(newApps)
             } else {
               const idx = apps.findIndex(
-                (a) => a.websocketPath === app.websocketPath
+                (a) => a.websocketPath === app.websocketPath,
               )
               const newApps = [...apps]
               newApps.splice(idx, 1)

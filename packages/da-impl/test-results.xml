@@ -1,0 +1,1162 @@
+<?xml version="1.0"?>
+<testsuite failures="0" skipped="0" name="cucumber-js" time="18.08777274199999" tests="88">
+  <testcase classname="Opening and Requesting App Details" name="Looking up app metadata" time="0.036978787">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" requests metadata for "storageApp"...................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Looking up app metadata from missing app" time="0.013247535000000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" requests metadata for "unknownApp"...................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Looking up DesktopAgent metadata" time="0.024952498000000004">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" requests info on the DesktopAgent....................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Opening An App" time="0.029227996">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" opens app "storageApp"...............................passed
+And "uuid-0" sends validate...............................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Storage App Reconnects" time="0.129726701">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" opens app "storageApp"...............................passed
+And "uuid-0" sends validate...............................................passed
+And we wait for a period of "100" ms......................................passed
+And "uuid-0" revalidates..................................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Opening An App With Context" time="0.141514574">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" opens app "storageApp" with context data "fdc3.ins...passed
+And "uuid-0" sends validate...............................................passed
+And we wait for a period of "100" ms......................................passed
+And "storageApp/uuid-0" adds a context listener on "{null}" with type "...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Opening An App With Context, But No Listener Added" time="3.1151252859999996">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" opens app "storageApp" with context data "fdc3.ins...passed
+And "uuid-0" sends validate...............................................passed
+And we wait for the listener timeout......................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Opening A Missing App" time="0.014452455000000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "libraryApp/a1" opens app "missingApp"...............................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Find Instances with No Apps Running" time="0.022077704">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+And "libraryApp/a1" findsInstances of "App1"..............................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Find Instances with Some Apps Running" time="0.121763452">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "storageApp/b1" is opened with connection id "b1"....................passed
+And "storageApp/b2" is opened with connection id "b2".....................passed
+And "libraryApp/a1" findsInstances of "storageApp"........................passed
+And we wait for a period of "100" ms......................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Opening and Requesting App Details" name="Unknown App Attempts Reconnect" time="0.015073123">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "storageApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "libraryApp/a1" is opened with connection id "a1".....................passed
+When "uuid-0" revalidates.................................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Broadcast messages" name="Broadcast message to no-one" time="0.020827327">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App1/a1" broadcasts "fdc3.instrument" on "one"......................passed
+Then messaging will have outgoing posts...................................passed
+And messaging will have 1 posts...........................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Broadcast messages" name="Broadcast message sent to one listener" time="0.12264191700000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App2/a2" adds a context listener on "one" with type "fdc3.instrum...passed
+And we wait for a period of "100" ms......................................passed
+And "App1/a1" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Broadcast messages" name="Broadcast message sent but listener has unsubscribed" time="0.02062562">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App2/a2" adds a context listener on "one" with type "fdc3.instrum...passed
+And "App2/a2" removes context listener with id "uuid3"....................passed
+And "App1/a1" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Broadcast messages" name="Get The Latest Context From A Channel" time="0.017608495000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+Given "App1/a1" broadcasts "fdc3.instrument" on "one".....................passed
+And "App1/a1" asks for the latest context on "one" with type "fdc3.inst...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="App Disconnection and Cleanup" name="Apps that disconnect and reconnect to the DA should receive one copy of a broadcast message from an app channel as state was cleaned up" time="0.22533987100000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+Given A newly instantiated FDC3 Server....................................passed
+When "App1/a1" is opened with connection id "a1"..........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a2" adds a context listener on "one" with type "fdc3.instrume...passed
+And we wait for a period of "100" ms......................................passed
+And "App1/a1" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed
+And "App2/a2" is closed...................................................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a2" adds a context listener on "one" with type "fdc3.instrume...passed
+And we wait for a period of "100" ms......................................passed
+And "App1/a1" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="App Disconnection and Cleanup" name="Apps that disconnect and reconnect to the DA should NOT receive intent results from the previous connection as state was cleaned up" time="0.24094166">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+Given "libraryApp" is an app with the following intents...................passed
+And "App1" is an app with the following intents...........................passed
+And A newly instantiated FDC3 Server......................................passed
+When "LibraryApp/l1" is opened with connection id "l1"....................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "LibraryApp/l1" registers an intent listener for "returnBook".........passed
+And "App1/a1" raises an intent for "returnBook" with contextType "fdc3....passed
+And we wait for a period of "100" ms......................................passed
+And "App1/a1" is closed...................................................passed
+And we wait for a period of "100" ms......................................passed
+And "LibraryApp/l1" sends a intentResultRequest with eventUuid "uuid7" ...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="App Disconnection and Cleanup" name="Disconnecting from the DA when subscribed to a private channel channel sends unsubscribe and disconnect messages" time="0.024236742">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds an "disconnect" event listener on "{channel1Id}"......passed
+And "App1/a1" adds a context listener on "{channel1Id}" with type "fdc3...passed
+And "App2/a2" adds an "unsubscribe" event listener on "{channel1Id}"......passed
+And "App1/a1" is closed...................................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Client can add an event Listener" name="App Adds A typed Event Listener" time="0.22568444999999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+When "App1/a1" adds an event listener for "USER_CHANNEL_CHANGED"..........passed
+And we wait for a period of "100" ms......................................passed
+And "App1/a1" removes event listener with id "uuid2"......................passed
+And we wait for a period of "100" ms......................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Client can add an event Listener" name="App Adds An Untyped Event Listener" time="0.22714800100000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+When "App1/a1" adds an event listener for "{null}"........................passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" removes event listener with id "uuid2".....................passed
+And we wait for a period of "100" ms......................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Client can add an event Listener" name="Unsubscribe a non-existent Event Listener" time="0.017088581">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+When "App1/a1" removes event listener with id "uuid-na"...................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Unsuccessful Find Intents Request" time="0.125062656">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "loanBook" and contextType "fd...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Unsuccessful Find Intents Request With Result Type" time="0.120627497">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "loanBook" and contextType "{e...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Successful Find Intents Request" time="0.127206954">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "loanBook" and contextType "{e...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intents Requests should include both the app and running instances of it" time="0.128450991">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "viewStock" and contextType "f...passed
+Then messaging will have outgoing posts...................................passed
+When "butcherApp/b2" is closed............................................passed
+And "App1/a1" finds intents with intent "viewStock" and contextType "fd...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intents by Context Request" time="0.127390367">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App/a1" finds intents with contextType "fdc3.book"..................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intents by Context Request with multiple results" time="0.128822993">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App/a1" finds intents with contextType "fdc3.product"...............passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intents by Context Request with multiple results which should not include an instance that has closed" time="0.12719661300000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "butcherApp/b2" is closed............................................passed
+When "App/a1" finds intents with contextType "fdc3.product"...............passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Successful Find Intents Request With Channel" time="0.125022203">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "streamBook" and contextType "...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Successful Find Intents Request With A Typed Channel" time="0.12360207299999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "streamBook" and contextType "...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Unsuccessful Find Intents Request With an untyped Channel" time="0.124045487">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "streamAny" and contextType "{...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intent includes results for a running app with intent listener" time="0.12559540500000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/a1" finds intents with intent "returnBook" and contextType "...passed
+Then messaging will have outgoing posts...................................passed
+And messaging will have outgoing posts....................................passed
+And messaging will have outgoing posts....................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Disconnecting The Intent Listener" time="0.12396015699999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/b1" unsubscribes an intent listener with id "uuid3"............passed
+And "App1/a1" finds intents with intent "returnBook" and contextType "f...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Find Intent API" name="Find Intent excludes results for a closed app with intent listener" time="0.12122612">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "bakeryApp" is an app with the following intents......................passed
+And "butcherApp" is an app with the following intents.....................passed
+And "chandlerApp" is an app with the following intents....................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App1/b1" is opened with connection id "b1"...........................passed
+And "App1/b1" registers an intent listener for "returnBook"...............passed
+And "butcherApp/b2" is opened with connection id "b2".....................passed
+And "butcherApp/b2" registers an intent listener for "viewStock"..........passed
+And "bakeryApp/b3" is opened with connection id "b3"......................passed
+And "bakeryApp/b3" registers an intent listener for "viewStock"...........passed
+And we wait for a period of "100" ms......................................passed
+When "App1/b1" is closed..................................................passed
+And "App1/a1" finds intents with intent "returnBook" and contextType "f...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Heartbeat Messages Between Apps and Server" name="App Responds to heartbeats" time="3.0218096139999995">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server with heartbeat checking..............passed
+When "libraryApp/a1" is opened with connection id "a1"....................passed
+And "a1" sends validate...................................................passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a heartbeat response to eventUuid "a1_1"........passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a heartbeat response to eventUuid "a1_2"........passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a heartbeat response to eventUuid "a1_3"........passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a heartbeat response to eventUuid "a1_4"........passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a heartbeat response to eventUuid "a1_5"........passed
+And we wait for a period of "500" ms......................................passed
+Then I test the liveness of "libraryApp/a1"...............................passed
+Then "{result}" is true...................................................passed
+And messaging will have outgoing posts....................................passed
+And I shutdown the server.................................................passed
+And I get the heartbeat times.............................................passed
+Then "{result}" is an array of objects with the following contents........passed]]></system-out>
+  </testcase>
+  <testcase classname="Heartbeat Messages Between Apps and Server" name="App Doesn't Respond to heartbeats" time="3.014881204">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server with heartbeat checking..............passed
+When "libraryApp/a1" is opened with connection id "a1"....................passed
+And "a1" sends validate...................................................passed
+And we wait for a period of "3000" ms.....................................passed
+Then I test the liveness of "libraryApp/a1"...............................passed
+Then "{result}" is false..................................................passed
+And messaging will have outgoing posts....................................passed
+And I shutdown the server.................................................passed
+And I get the heartbeat times.............................................passed
+Then "{result}" is empty..................................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Heartbeat Messages Between Apps and Server" name="App says Goodbye" time="0.513398826">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And A newly instantiated FDC3 Server with heartbeat checking..............passed
+When "libraryApp/a1" is opened with connection id "a1"....................passed
+And "a1" sends validate...................................................passed
+And we wait for a period of "500" ms......................................passed
+And "libraryApp/a1" sends a goodbye message...............................passed
+Then I test the liveness of "libraryApp/a1"...............................passed
+Then "{result}" is false..................................................passed
+And I shutdown the server.................................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Intent Results Are Correctly Delivered" name="Waiting for an intent listener to be Added" time="0.040258119">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "App1" is an app with the following intents...........................passed
+And A newly instantiated FDC3 Server......................................passed
+And "LibraryApp/l1" is opened with connection id "l1".....................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "LibraryApp/l1" registers an intent listener for "returnBook".........passed
+When "LibraryApp/l1" raises an intent for "viewNews" with contextType "...passed
+And "App1/a1" registers an intent listener for "viewNews".................passed
+And "App1/a1" sends a intentResultRequest with eventUuid "uuid10" and v...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Intent Results Are Correctly Delivered" name="App Returns An Intent Response" time="0.029024618">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "App1" is an app with the following intents...........................passed
+And A newly instantiated FDC3 Server......................................passed
+And "LibraryApp/l1" is opened with connection id "l1".....................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "LibraryApp/l1" registers an intent listener for "returnBook".........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+When "LibraryApp/l1" sends a intentResultRequest with eventUuid "uuid7"...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Intent Results Are Correctly Delivered" name="App Returns An Intent Result" time="0.031427997">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "App1" is an app with the following intents...........................passed
+And A newly instantiated FDC3 Server......................................passed
+And "LibraryApp/l1" is opened with connection id "l1".....................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "LibraryApp/l1" registers an intent listener for "returnBook".........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+When "LibraryApp/l1" sends a intentResultRequest with eventUuid "uuid7"...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Intent Results Are Correctly Delivered" name="App Returns A Void Intent Result" time="0.029630699999999996">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "App1" is an app with the following intents...........................passed
+And A newly instantiated FDC3 Server......................................passed
+And "LibraryApp/l1" is opened with connection id "l1".....................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "LibraryApp/l1" registers an intent listener for "returnBook".........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+When "LibraryApp/l1" sends a intentResultRequest with eventUuid "uuid7"...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Creating a new private channel" time="0.017799787">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a1" creates a private channel..................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Broadcast message to no-one" time="0.01496229">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App1/a1" broadcasts "fdc3.instrument" on "{channel1Id}".............passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Broadcast message sent to one listener" time="0.022299871000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds a context listener on "{channel1Id}" with type "fdc...passed
+And "App1/a1" broadcasts "fdc3.instrument" on "{channel1Id}"..............passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Event Listener created for addContextListener and unsubscribe" time="0.03577441200000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds an "addContextListener" event listener on "{channel...passed
+And "App2/a2" adds an "unsubscribe" event listener on "{channel1Id}"......passed
+And "App1/a1" adds a context listener on "{channel1Id}" with type "fdc3...passed
+And we wait for a period of "10" ms.......................................passed
+Then messaging will have outgoing posts...................................passed
+And "App1/a1" removes context listener with id "uuid12"...................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Disconnecting from a channel sends unsubscribe and disconnect messages" time="0.020368202000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds an "disconnect" event listener on "{channel1Id}"......passed
+And "App1/a1" adds a context listener on "{channel1Id}" with type "fdc3...passed
+And "App2/a2" adds an "unsubscribe" event listener on "{channel1Id}"......passed
+And "App1/a1" disconnects from private channel "{channel1Id}".............passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="addContextListener Event Listener add and removed, shouldn't fire when addContextListener called." time="0.020054579">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds an "addContextListener" event listener on "{channel...passed
+And "App2/a2" removes event listener "uuid6"..............................passed
+And "App1/a1" adds a context listener on "{channel1Id}" with type "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="I can't register an app channel with the same ID as a private channel" time="0.011370659000000003">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" creates or gets an app channel called "{channel1Id}".......passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Subscribe to a non-existent channel" time="0.010593579000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds a context listener on "IDontExist" with type "fdc3....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Can't unsubscribe an unconnected listener" time="0.010632367">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds a context listener on "{channelId}" with type "fdc3...passed
+And "App2/a2" removes context listener with id "uuid6"....................passed
+And "App2/a2" removes context listener with id "uuid6"....................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Can't unsubscribe an someone else's listener" time="0.011428372999999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+And "App2/a1" creates a private channel...................................passed
+And I refer to "uuid3" as "channel1Id"....................................passed
+When "App2/a2" adds a context listener on "{channelId}" with type "fdc3...passed
+And "App1/a1" removes context listener with id "uuid6"....................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising an Intent With Context to a Non-Existent App" time="0.010289910999999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent with contextType "fdc3.magazine" on app ...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising An Intent With Context To A Non-Existent App Instance" time="0.009900953000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.book" on app "li...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising An Intent With Context To An Invalid Instance" time="0.009850246">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.book" on an inva...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising An Intent With Context To A Running App" time="0.025284455">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.book" on app "li...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising An Intent With Context To A Non-Running App" time="0.028045289">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.magazine" on app...passed
+And "uuid-0" sends validate...............................................passed
+And "libraryApp/0" registers an intent listener for "borrowMagazine"......passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising an Intent With Context to a Non-Existent App Instance" time="0.010340033999999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent with contextType "fdc3.book" on app "unu...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="Raising An Intent With Context To A Broken App that doesn't add an intent listener" time="2.1109182049999995">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.magazine" on app...passed
+And "uuid-0" sends validate...............................................passed
+And we wait for the intent timeout........................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents For Context" name="User Must Choose An Intent using The Intent Resolver" time="0.014406908000000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent with contextType "fdc3.book"..............passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Context Not Handled By App" time="0.012567449999999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "borrowBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising an Intent that should auto-resolve (only one option)" time="0.024305867000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent for "uniqueIntent" with contextType "fdc...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising an Intent to a Non-Existent App" time="0.011998033">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent for "returnBook" with contextType "fdc3....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent To A Non-Existent App Instance" time="0.012901282000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent To A Running App instance by instanceId" time="0.022434783">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent To A Non-Running App" time="0.026516707">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+And "uuid-0" sends validate...............................................passed
+And "libraryApp/0" registers an intent listener for "returnBook"..........passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent That Appplies to A Non-Running But Uniquely Identifiable App" time="0.023827993999999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "sleepyIntent" with contextType "fd...passed
+And "uuid-0" sends validate...............................................passed
+And "libraryApp/0" registers an intent listener for "sleepyIntent"........passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising an Intent to a Non-Existent App Instance" time="0.010407242999999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent for "returnBook" with contextType "fdc3....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising an Intent to an invalid App Instance" time="0.010930866999999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+And "App1/a1" raises an intent for "returnBook" with contextType "fdc3....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent To A Non-Running App without A Context Type in the listener" time="0.010425371999999999">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "stampBook" with contextType "fdc3....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Intent To A Broken App that doesn't add an intent listener" time="2.112795992">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "returnBook" with contextType "fdc3...passed
+And "uuid-0" sends validate...............................................passed
+And we wait for the intent timeout........................................passed
+Then running apps will be.................................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="User Must Choose An Intent using The Intent Resolver" time="0.012366240000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "borrowBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Invalid Intent to the server (no instance)" time="0.013175118">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "borrowBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Invalid Intent (no app)" time="0.013355866999999997">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "borrowBook" with contextType "fdc3...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Invalid Intent (non existent intent)" time="0.011613664">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "nonExistentIntent" with contextTyp...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Raising Intents" name="Raising An Invalid Intent (non existent intent but valid app)" time="0.011662162999999996">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And "libraryApp" is an app with the following intents.....................passed
+And "listenerApp" is an app with the following intents....................passed
+And "uniqueIntentApp" is an app with the following intents................passed
+And "unusedApp" is an app with the following intents......................passed
+And A newly instantiated FDC3 Server......................................passed
+And "uniqueIntentApp/c1" is opened with connection id "c1"................passed
+And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent...passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "listenerApp/b1" is opened with connection id "b1"....................passed
+And "listenerApp/b1" registers an intent listener for "returnBook"........passed
+When "App1/a1" raises an intent for "nonExistentIntent" with contextTyp...passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="List User Channels" time="0.017888829000000002">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App1/a1" gets the list of user channels.............................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Initial User Channel" time="0.018479916">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App1/a1" gets the current user channel..............................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Changing Channel" time="0.021275203">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App1/a1" gets the current user channel...............................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Adding a Typed Listener on a given User Channel" time="0.019812620000000003">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "fdc3.instrumen...passed
+And "App2/a2" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Adding an Un-Typed Listener on a given User Channel" time="0.02189808">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "{null}"..........passed
+And "App2/a2" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="If you haven't joined a channel, your listener receives nothing" time="0.020168454">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "{null}"..........passed
+And "App2/a2" broadcasts "fdc3.instrument" on "two".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="After unsubscribing, my listener shouldn't receive any more messages" time="0.023409034999999998">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "{null}"..........passed
+And "App/a1" removes context listener with id "uuid5".....................passed
+And "App2/a2" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="I should be able to leave a user channel, and not receive messages on it" time="0.023049621">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "{null}"..........passed
+And "App/a1" leaves the current user channel..............................passed
+And "App2/a2" broadcasts "fdc3.instrument" on "one".......................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Joining a user channel that doesn't exist throws an error" time="0.010124286">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "four"...................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Joining an app channel throws an error" time="0.009932373000000001">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a2" creates or gets an app channel called "bizboz"..............passed
+When "App/a1" joins user channel "bizboz".................................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="You can get the details of the last context type sent" time="0.017289452">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App2/a2" broadcasts "fdc3.instrument" on "one".......................passed
+And "App2/a2" broadcasts "fdc3.country" on "one"..........................passed
+And "App/a1" gets the latest context on "one" with type "fdc3.instrumen...passed
+And "App/a1" gets the latest context on "one" with type "fdc3.country"....passed
+And "App/a1" gets the latest context on "one" with type "{null}"..........passed
+And "App/a1" gets the latest context on "one" with type "fdc3.sausage"....passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="Changing channel changes the listener channels too" time="0.018381913">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" adds a context listener on "one" with type "{null}"..........passed
+And "App/a1" joins user channel "two".....................................passed
+And "App2/a2" broadcasts "fdc3.instrument" on "two".......................passed
+And "App2/a2" broadcasts "fdc3.country" on "one"..........................passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Relaying Private Channel Broadcast messages" name="You can get the details of the last context type when none is set" time="0.015534829">
+    <system-out><![CDATA[Given schemas loaded......................................................passed
+And A newly instantiated FDC3 Server......................................passed
+And "App1/a1" is opened with connection id "a1"...........................passed
+And "App2/a2" is opened with connection id "a2"...........................passed
+When "App/a1" joins user channel "one"....................................passed
+And "App/a1" gets the latest context on "one" with type "fdc3.instrumen...passed
+And "App/a1" gets the latest context on "one" with type "{null}"..........passed
+Then messaging will have outgoing posts...................................passed]]></system-out>
+  </testcase>
+</testsuite>

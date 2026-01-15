@@ -1,6 +1,6 @@
 import { getClientState, getServerState } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from "uuid"
 import { InlineButton } from "./shared"
 import { intentTypes } from "./intentTypes"

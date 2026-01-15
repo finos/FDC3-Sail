@@ -1,7 +1,7 @@
 import { GridStackPosition } from "gridstack"
 import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from "./message-types";
 import { Context } from "@finos/fdc3-context";
-import { DirectoryApp } from "@finos/fdc3-web-impl";
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl";
 
 export type AppPanel = GridStackPosition & {
     title: string

@@ -1,6 +1,6 @@
 import express from "express";
 import ViteExpress from "vite-express";
-import { SailFDC3Server } from "./da/SailFDC3Server";
+import { SailFDC3ServerFactory } from "./da/SailFDC3ServerFactory";
 import { getSailUrl, initSocketService } from "./da/initSocketService";
 import dotenv from "dotenv";
 
@@ -9,16 +9,13 @@ dotenv.config();
 
 const app = express();
 
-// running sesssions - the server state
-const sessions = new Map<string, SailFDC3Server>()
-
 app.use(express.json())
 
 const httpServer = ViteExpress.listen(app, 8090, () => {
   console.log(`SAIL Server is listening in ${process.env.NODE_ENV} mode.  Head to ${getSailUrl()}`)
 });
 
-initSocketService(httpServer, sessions)
+initSocketService(httpServer, new SailFDC3ServerFactory(true))
 
 
 app.get("/polygon-key", (_req, res) => {

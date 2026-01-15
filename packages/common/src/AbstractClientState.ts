@@ -1,4 +1,4 @@
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl";
 import { AppPanel, ClientState, IntentResolution, RemoteApp } from "./ClientState";
 import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { Context } from "@finos/fdc3-context";
@@ -25,8 +25,8 @@ export abstract class AbstractClientState implements ClientState {
         this.directories = directories
         this.knownApps = knownApps
         this.customApps = customApps
-        this.remoteApps = remoteApps
         this.contextHistory = history
+        this.remoteApps = remoteApps
     }
 
     abstract saveState(): Promise<void>
@@ -210,17 +210,17 @@ export abstract class AbstractClientState implements ClientState {
         return this.customApps
     }
 
-    async setRemoteApps(apps: RemoteApp[]): Promise<void> {
+    getContextHistory(tabId: string): Context[] {
+        return this.contextHistory[tabId] ?? []
+    }
+
+    setRemoteApps(apps: RemoteApp[]): Promise<void> {
         this.remoteApps = apps
-        await this.saveState()
+        return this.saveState()
     }
 
     getRemoteApps(): RemoteApp[] {
         return this.remoteApps
-    }
-
-    getContextHistory(tabId: string): Context[] {
-        return this.contextHistory[tabId] ?? []
     }
 
     async appendContextHistory(tabId: string, item: Context): Promise<void> {

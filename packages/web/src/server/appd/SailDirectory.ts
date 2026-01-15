@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { BasicDirectory, DirectoryApp } from "@finos/fdc3-web-impl";
+import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl";
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 

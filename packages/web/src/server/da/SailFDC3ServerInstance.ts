@@ -1,14 +1,12 @@
-import { Socket } from "socket.io";
+import { AbstractFDC3ServerInstance, AppRegistration, ChannelState, DirectoryApp, InstanceID, MessageHandler, State } from "@finos/fdc3-sail-da-impl"
+import { getIcon, SailDirectory } from "../appd/SailDirectory"
+import { Socket } from "socket.io"
+import { AppHosting, AugmentedAppIntent, AugmentedAppMetadata, ContextHistory, FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_BROADCAST_CONTEXT, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailIntentResolveResponse, TabDetail } from "@finos/fdc3-sail-common"
+import { BrowserTypes } from "@finos/fdc3-schema"
+import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
 import { v4 as uuidv4 } from 'uuid'
-import { AppRegistration, ChannelState, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
-import { AppIdentifier } from "@finos/fdc3";
-import { getIcon, SailDirectory } from "../appd/SailDirectory";
-import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse, TabDetail, ContextHistory, SAIL_BROADCAST_CONTEXT } from "@finos/fdc3-sail-common";
-import { BroadcastRequest, ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
-import { mapChannels } from "./SailFDC3Server";
-
-
+import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { mapChannels } from "./SailFDC3ServerFactory"
 /**
  * Represents the state of a Sail app.
  * Pending: App has a window, but isn't connected to FDC3
@@ -25,21 +23,24 @@ export type SailData = AppRegistration & {
     instanceTitle: string
 }
 
-export class SailServerContext implements ServerContext<SailData> {
+
+/**
+ * Extends BasicFDC3Server to allow for more detailed (and changeable) user channel metadata
+ * as well as user-configurable SailDirectory.
+ */
+export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     readonly directory: SailDirectory
     private instances: SailData[] = []
-    private fdc3Server: FDC3Server | undefined
     private readonly socket: Socket
+    private readonly channelState: ChannelState[] = []
     private readonly appStartDestinations: Map<string, string | null> = new Map()
 
-    constructor(directory: SailDirectory, socket: Socket) {
+    constructor(directory: SailDirectory, socket: Socket, handlers: MessageHandler[], channels: ChannelState[]) {
+        super(handlers, channels)
         this.directory = directory
         this.socket = socket
-    }
-
-    setFDC3Server(server: FDC3Server): void {
-        this.fdc3Server = server
+        this.channelState = channels
     }
 
     post(message: object, instanceId: InstanceID): Promise<void> {
@@ -55,7 +56,7 @@ export class SailServerContext implements ServerContext<SailData> {
         return Promise.resolve()
     }
 
-    notifyBroadcastContext(broadcastEvent: BroadcastRequest) {
+    notifyBroadcastContext(broadcastEvent: BrowserTypes.BroadcastRequest) {
         const channel = broadcastEvent.payload.channelId
         const context = broadcastEvent.payload.context
         this.socket.emit(SAIL_BROADCAST_CONTEXT, {
@@ -150,7 +151,6 @@ export class SailServerContext implements ServerContext<SailData> {
 
             if (state == State.Terminated) {
                 this.instances = this.instances.filter(a => (a.instanceId !== app))
-                this.fdc3Server?.cleanup(found.instanceId)
             }
         }
     }
@@ -227,7 +227,7 @@ export class SailServerContext implements ServerContext<SailData> {
      * This is used when the intent resolver is managed by the desktop agent as opposed
      * to running inside an iframe in the client app.
      */
-    async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+    async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: BrowserTypes.Context): Promise<AppIntent[]> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const sc = this
 
@@ -324,8 +324,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     private getChannelDetails(): ChannelState[] {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return ((this.fdc3Server as any).handlers[0].state as ChannelState[])
+        return this.channelState
     }
 
     getTabs(): TabDetail[] {
@@ -334,7 +333,7 @@ export class SailServerContext implements ServerContext<SailData> {
 
     updateChannelData(channelData: TabDetail[], history?: ContextHistory): void {
 
-        function relevantHistory(id: string, history?: ContextHistory,): undefined | Context[] {
+        function relevantHistory(id: string, history?: ContextHistory): undefined | BrowserTypes.Context[] {
             if (history) {
                 const basicHistory = history[id]
                 // just the first item of each unique type
@@ -344,17 +343,19 @@ export class SailServerContext implements ServerContext<SailData> {
             return undefined
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const channelState = ((this.fdc3Server as any).handlers[0].state as ChannelState[])
-        channelState.length = 0;
         const newState = mapChannels(channelData).map(c => {
             return {
                 ...c,
-                context: relevantHistory(c.id, history) ?? channelState.find(cs => cs.id == c.id)?.context ?? []
+                context: relevantHistory(c.id, history) ?? this.channelState.find(cs => cs.id == c.id)?.context ?? []
             }
         })
-        channelState.push(...newState)
-        console.log("SAIL Updated channel data", channelState)
+        this.channelState.length = 0;
+        this.channelState.push(...newState)
+        console.log("SAIL Updated channel data", this.channelState)
+    }
+
+    getDirectory(): SailDirectory {
+        return this.directory
     }
 }
 

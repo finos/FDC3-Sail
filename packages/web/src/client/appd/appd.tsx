@@ -3,7 +3,7 @@ import { Icon } from "../icon/icon"
 import { getAppState, getClientState } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
 import { AppMetadata, Image } from "@finos/fdc3"
 

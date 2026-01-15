@@ -11,6 +11,7 @@
     "start": "concurrently -n \"WEB,ELECTRON\" -c \"blue,green\" \"npm run web:dev\" \"wait-on -l -i 1000 -t 60000 -w 1000 tcp:localhost:8090 && npm run electron:start\""
   },
   "workspaces": [
+    "packages/da-impl",
     "packages/common",
     "packages/web",
     "packages/electron"
