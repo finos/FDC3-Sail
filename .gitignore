@@ -9,3 +9,7 @@ build
 .rollup.cache
 tsconfig.tsbuildinfo
 FDC3-Sail.pem
+
+packages/da-impl/coverage
+test-results.xml
+cucumber-report.html

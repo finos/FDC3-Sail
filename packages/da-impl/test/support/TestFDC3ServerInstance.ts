@@ -6,7 +6,10 @@ import { Context } from '@finos/fdc3-context';
 import { OpenError, AppIdentifier, AppIntent } from '@finos/fdc3-standard';
 import { MessageHandler } from '../../src/handlers/MessageHandler';
 import { ChannelState } from '../../src/FDC3ServerInstance';
-import { AbstractFDC3ServerFactory } from '../../src/FDC3ServerFactory';
+import { BroadcastHandler } from '../../src/handlers/BroadcastHandler';
+import { IntentHandler } from '../../src/handlers/IntentHandler';
+import { OpenHandler } from '../../src/handlers/OpenHandler';
+import { HeartbeatHandler } from '../../src/handlers/HeartbeatHandler';
 
 type ConnectionDetails = AppRegistration & {
   msg?: object;
@@ -27,7 +30,6 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   public handlers: MessageHandler[];
 
   constructor(
-    private readonly factory: TestFDC3ServerFactory,
     cw: CustomWorld,
     handlers: MessageHandler[],
     channels: ChannelState[],
@@ -121,9 +123,9 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
       const id = this.getInstanceDetails(to);
       const app = id
         ? {
-            appId: id!.appId,
-            instanceId: id!.instanceId,
-          }
+          appId: id!.appId,
+          instanceId: id!.instanceId,
+        }
         : undefined;
       this.postedMessages.push({
         msg,
@@ -154,22 +156,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
    */
   async shutdown(): Promise<void> {
     super.shutdown();
-    this.factory.shutdownHandlers();
-  }
-}
-
-export class TestFDC3ServerFactory extends AbstractFDC3ServerFactory {
-  constructor(
-    private cw: CustomWorld,
-    channels: ChannelState[],
-    directory: Directory,
-    heartbeats: boolean
-  ) {
-    super(directory, channels, heartbeats, 2000, 2000);
-  }
-
-  createInstance(): TestFDC3ServerInstance {
-    return new TestFDC3ServerInstance(this, this.cw, this.handlers, this.channels, this.directory);
+    this.handlers.forEach(handler => handler.shutdown());
   }
 }
 
@@ -179,5 +166,16 @@ export function createTestFDC3ServerInstance(
   directory: Directory,
   heartbeats: boolean
 ): TestFDC3ServerInstance {
-  return new TestFDC3ServerFactory(cw, channels, directory, heartbeats).createInstance();
+  const handlers: MessageHandler[] = [];
+  handlers.push(new BroadcastHandler());
+  handlers.push(new IntentHandler(200));
+  handlers.push(new OpenHandler(100));
+
+  if (heartbeats) {
+    handlers.push(
+      new HeartbeatHandler(10, 20, 30)
+    );
+  }
+
+  return new TestFDC3ServerInstance(cw, handlers, channels, directory);
 }

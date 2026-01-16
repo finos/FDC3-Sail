@@ -35,7 +35,7 @@
     "@cucumber/messages": "^28.1.0",
     "@cucumber/pretty-formatter": "1.0.1",
     "@eslint/js": "^9.19.0",
-    "@finos/testing": "../../FDC3/packages/fdc3-testing",
+    "@finos/fdc3-testing": "../../../FDC3/packages/fdc3-testing",
     "@types/expect": "24.3.0",
     "@types/lodash": "4.14.167",
     "@types/node": "^20.16.11",
