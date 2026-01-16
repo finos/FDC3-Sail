@@ -1,6 +1,6 @@
 import { AbstractFDC3ServerInstance, AppRegistration, ChannelState, DirectoryApp, InstanceID, MessageHandler, State } from "@finos/fdc3-sail-da-impl"
 import { getIcon, SailDirectory } from "../appd/SailDirectory"
-import { Socket } from "socket.io"
+import { Connection } from "./connection/Connection"
 import { AppHosting, AugmentedAppIntent, AugmentedAppMetadata, ContextHistory, FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_BROADCAST_CONTEXT, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailIntentResolveResponse, TabDetail } from "@finos/fdc3-sail-common"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
@@ -15,8 +15,8 @@ import { mapChannels } from "./SailFDC3ServerFactory"
  * Terminated: App Window has been closed
  */
 export type SailData = AppRegistration & {
-    socket?: Socket,
-    channelSockets: Socket[],
+    connection?: Connection,
+    channelConnections: Connection[],
     url?: string,
     hosting: AppHosting,
     channel: string | null,
@@ -32,14 +32,14 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     readonly directory: SailDirectory
     private instances: SailData[] = []
-    private readonly socket: Socket
+    private readonly connection: Connection
     private readonly channelState: ChannelState[] = []
     private readonly appStartDestinations: Map<string, string | null> = new Map()
 
-    constructor(directory: SailDirectory, socket: Socket, handlers: MessageHandler[], channels: ChannelState[]) {
+    constructor(directory: SailDirectory, connection: Connection, handlers: MessageHandler[], channels: ChannelState[]) {
         super(handlers, channels)
         this.directory = directory
-        this.socket = socket
+        this.connection = connection
         this.channelState = channels
     }
 
@@ -49,7 +49,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
             if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
                 this.log("Posting message to app: " + JSON.stringify(message))
             }
-            instance.socket?.emit(FDC3_DA_EVENT, message)
+            instance.connection?.emit(FDC3_DA_EVENT, message)
         } else {
             this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
         }
@@ -59,7 +59,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     notifyBroadcastContext(broadcastEvent: BrowserTypes.BroadcastRequest) {
         const channel = broadcastEvent.payload.channelId
         const context = broadcastEvent.payload.context
-        this.socket.emit(SAIL_BROADCAST_CONTEXT, {
+        this.connection.emit(SAIL_BROADCAST_CONTEXT, {
             channelId: channel,
             context: context
         })
@@ -87,7 +87,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
             const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail?.forceNewWindow
             const approach = forceNewWindow || (channel === null) ? AppHosting.Tab : AppHosting.Frame
 
-            const details: SailAppOpenResponse = await this.socket.emitWithAck(SAIL_APP_OPEN, {
+            const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
                 appDRecord: app[0],
                 approach,
                 channel
@@ -101,7 +101,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
                 hosting: approach,
                 channel: channel ?? null,
                 instanceTitle: details.instanceTitle,
-                channelSockets: []
+                channelConnections: []
             })
 
             if (channel) {
@@ -128,7 +128,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
 
     async setInitialChannel(app: AppIdentifier): Promise<void> {
-        this.socket.emit(SAIL_CHANNEL_SETUP, app.instanceId)
+        this.connection.emit(SAIL_CHANNEL_SETUP, app.instanceId)
     }
 
     async getConnectedApps(): Promise<AppRegistration[]> {
@@ -276,24 +276,25 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         return new Promise<AppIntent[]>((resolve) => {
             console.log("SAIL Narrowing intents", augmentedIntents, context)
 
-            this.socket.emit(SAIL_INTENT_RESOLVE, {
+            this.connection.emitWithCallback(SAIL_INTENT_RESOLVE, {
                 appIntents: augmentedIntents,
                 context
-            }, async (response: SailIntentResolveResponse, err: string) => {
+            }, async (response: unknown, err?: string) => {
                 if (err) {
                     console.error(err)
                     resolve([])
                 } else {
-                    console.log("SAIL Narrowed intents", response)
+                    const typedResponse = response as SailIntentResolveResponse
+                    console.log("SAIL Narrowed intents", typedResponse)
 
-                    if (appNeedsStarting(response.appIntents)) {
+                    if (appNeedsStarting(typedResponse.appIntents)) {
                         // tell sail where to open the app
-                        const theAppIntent = getSingleAppIntent(response.appIntents)
+                        const theAppIntent = getSingleAppIntent(typedResponse.appIntents)
                         const theApp = theAppIntent.apps[0]
-                        this.appStartDestinations.set(theApp.appId, response.channel)
+                        this.appStartDestinations.set(theApp.appId, typedResponse.channel)
                     }
 
-                    resolve(response.appIntents)
+                    resolve(typedResponse.appIntents)
                 }
             })
         })
