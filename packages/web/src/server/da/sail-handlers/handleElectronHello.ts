@@ -1,7 +1,7 @@
 import { ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse } from "@finos/fdc3-sail-common"
 import { v4 as uuid } from 'uuid'
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
-import { Connection } from "../connection"
+import { Connection } from "../connection/Connection"
 import { ConnectionContext, getSailUrl } from "./types"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

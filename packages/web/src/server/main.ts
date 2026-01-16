@@ -2,6 +2,7 @@ import express from "express";
 import ViteExpress from "vite-express";
 import { SailFDC3ServerFactory } from "./da/SailFDC3ServerFactory";
 import { initSailSocketIOService } from "./da/initSailSocketIOService";
+import { RemoteSocketService } from "./da/RemoteSocketService";
 import dotenv from "dotenv";
 import { getSailUrl } from "./da/sail-handlers";
 
@@ -16,7 +17,9 @@ const httpServer = ViteExpress.listen(app, 8090, () => {
   console.log(`SAIL Server is listening in ${process.env.NODE_ENV} mode.  Head to ${getSailUrl()}`)
 });
 
-initSailSocketIOService(httpServer, new SailFDC3ServerFactory(true))
+const factory = new SailFDC3ServerFactory(true)
+const remoteSocketService = new RemoteSocketService(httpServer, factory)
+initSailSocketIOService(httpServer, factory, remoteSocketService)
 
 
 app.get("/polygon-key", (_req, res) => {

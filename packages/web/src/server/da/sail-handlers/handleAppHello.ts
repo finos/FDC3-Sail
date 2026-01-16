@@ -2,7 +2,7 @@ import { AppHosting, AppHelloArgs, SailHostManifest } from "@finos/fdc3-sail-com
 import { State, WebAppDetails } from "@finos/fdc3-sail-da-impl"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { SailData } from "../SailFDC3ServerInstance"
-import { Connection } from "../connection"
+import { Connection } from "../connection/Connection"
 import { ConnectionContext, ConnectionType, DEBUG_MODE } from "./types"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

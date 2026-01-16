@@ -9,7 +9,8 @@ import {
     DA_REGISTER_APP_LAUNCH,
     ELECTRON_HELLO,
     CHANNEL_RECEIVER_HELLO,
-    SAIL_INTENT_RESOLVE_ON_CHANNEL
+    SAIL_INTENT_RESOLVE_ON_CHANNEL,
+    RemoteApp
 } from "@finos/fdc3-sail-common"
 import { ConnectionContext } from "./types"
 import { Connection } from "../connection/Connection"
@@ -40,13 +41,23 @@ import { handleIntentResolveOnChannel } from "./handleIntentResolveOnChannel"
 import { handleDisconnect } from "./handleDisconnect"
 
 /**
+ * Callback invoked when remote apps configuration changes.
+ * Called after DA_HELLO or SAIL_CLIENT_STATE is processed.
+ */
+export type OnRemoteAppsChanged = (userSessionId: string, remoteApps: RemoteApp[]) => void
+
+/**
  * Registers all message type handlers on a connection.
  * This sets up the complete FDC3 message handling for a single connection session.
+ * 
+ * @param onRemoteAppsChanged - Optional callback invoked when DA_HELLO or SAIL_CLIENT_STATE
+ *                              is received, allowing the caller to refresh remote socket endpoints.
  */
 export function handleAllMessageTypes(
     ctx: ConnectionContext,
     factory: SailFDC3ServerFactory,
-    connection: Connection
+    connection: Connection,
+    onRemoteAppsChanged: OnRemoteAppsChanged
 ): void {
     connection.on(ELECTRON_HELLO, (props: any, callback: any) => {
         handleElectronHello(ctx, factory, connection, props, callback)
@@ -54,6 +65,7 @@ export function handleAllMessageTypes(
 
     connection.on(DA_HELLO, (props: any, callback: any) => {
         handleDAHello(ctx, factory, connection, props, callback)
+        onRemoteAppsChanged(props.userSessionId, props.remoteApps)
     })
 
     connection.on(DA_DIRECTORY_LISTING, (props: any, callback: any) => {
@@ -66,6 +78,7 @@ export function handleAllMessageTypes(
 
     connection.on(SAIL_CLIENT_STATE, (props: any, callback: any) => {
         handleClientState(factory, props, callback)
+        onRemoteAppsChanged(props.userSessionId, props.remoteApps)
     })
 
     connection.on(SAIL_CHANNEL_CHANGE, (props: any, callback: any) => {
