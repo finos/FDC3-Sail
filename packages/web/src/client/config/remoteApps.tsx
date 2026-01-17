@@ -17,10 +17,10 @@ function getAllAvailableApps(): DirectoryApp[] {
 }
 
 /**
- * Generate a unique websocket path for a remote app
+ * Generate a unique application extension ID for a remote app
  */
-function generateWebsocketPath(): string {
-  return `/remote/${uuid()}`
+function generateApplicationExtensionId(): string {
+  return uuid()
 }
 
 /**
@@ -36,7 +36,7 @@ function createInitialState(): RemoteApp[] {
 function newRemoteApp(appId: string): RemoteApp {
   return {
     appId,
-    websocketPath: generateWebsocketPath(),
+    applicationExtensionId: generateApplicationExtensionId(),
   }
 }
 
@@ -89,14 +89,17 @@ const AppSelector = ({
  * Display the websocket connection details for a remote app
  */
 const ConnectionDetails = ({ app }: { app: RemoteApp }) => {
+  const userSessionId = getClientState().getUserSessionID()
+  const websocketPath = `/remote/${userSessionId}/${app.applicationExtensionId}`
+
   // Compute the full WebSocket URL based on current location
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:"
-  const wsUrl = `${wsProtocol}//${window.location.host}${app.websocketPath}`
+  const wsUrl = `${wsProtocol}//${window.location.host}${websocketPath}`
 
   return (
     <div className={styles.connectionDetails}>
       <div className={styles.connectionLabel}>WebSocket Path:</div>
-      <div className={styles.connectionValue}>{app.websocketPath}</div>
+      <div className={styles.connectionValue}>{websocketPath}</div>
       <div className={styles.connectionLabel}>Full WebSocket URL:</div>
       <div className={styles.connectionValue}>{wsUrl}</div>
     </div>
@@ -118,7 +121,7 @@ const RemoteAppItem = ({
   const appTitle = directoryApp?.title ?? directoryApp?.name ?? app.appId
 
   return (
-    <div key={app.websocketPath} className={styles.item}>
+    <div key={app.applicationExtensionId} className={styles.item}>
       <div className={styles.verticalControlsGrow}>
         <div className={styles.name}>{appTitle}</div>
 
@@ -168,19 +171,19 @@ export const RemoteAppList = () => {
 
       {apps.map((app) => (
         <RemoteAppItem
-          key={app.websocketPath}
+          key={app.applicationExtensionId}
           app={app}
           update={(updatedApp) => {
             if (updatedApp) {
               const idx = apps.findIndex(
-                (a) => a.websocketPath === app.websocketPath,
+                (a) => a.applicationExtensionId === app.applicationExtensionId,
               )
               const newApps = [...apps]
               newApps[idx] = updatedApp
               updateApps(newApps)
             } else {
               const idx = apps.findIndex(
-                (a) => a.websocketPath === app.websocketPath,
+                (a) => a.applicationExtensionId === app.applicationExtensionId,
               )
               const newApps = [...apps]
               newApps.splice(idx, 1)

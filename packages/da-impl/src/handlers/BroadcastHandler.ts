@@ -50,7 +50,7 @@ function onlyUniqueAppIds(value: AppIdentifier, index: number, self: AppIdentifi
 }
 
 export class BroadcastHandler implements MessageHandler {
-  shutdown(): void {}
+  shutdown(): void { }
 
   getCurrentChannel(from: FullAppIdentifier, sc: FDC3ServerInstance): ChannelState | null {
     return sc.getCurrentChannel(from.instanceId);
@@ -90,7 +90,7 @@ export class BroadcastHandler implements MessageHandler {
       return;
     }
 
-    console.log(`BroadcastHandler: accept called with msg: ${JSON.stringify(msg)}`);
+    //console.log(`BroadcastHandler: accept called with msg: ${JSON.stringify(msg)}`);
 
     try {
       switch (msg.type as string | null) {

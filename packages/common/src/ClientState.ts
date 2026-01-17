@@ -21,13 +21,16 @@ export interface IntentResolution {
 /**
  * Configuration for a remote/native application that connects via WebSocket.
  * This allows native apps (like Java apps) to connect to Sail.
+ * 
+ * Remote apps connect via WebSocket to URLs of the form:
+ *   /remote/{userSessionId}/{applicationExtensionId}
  */
 export interface RemoteApp {
     /** The appId from the directory that this remote app represents */
     appId: string
 
-    /** The path that instances of this application connect on. */
-    websocketPath: string
+    /** Unique identifier for this remote app configuration. Used as the final segment of the WebSocket URL. */
+    applicationExtensionId: string
 }
 
 /**

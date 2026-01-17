@@ -174,7 +174,8 @@ export abstract class AbstractClientState implements ClientState {
             channels: this.tabs,
             panels: this.panels,
             customApps: this.customApps,
-            contextHistory: this.contextHistory
+            contextHistory: this.contextHistory,
+            remoteApps: this.remoteApps
         }
     }
 
