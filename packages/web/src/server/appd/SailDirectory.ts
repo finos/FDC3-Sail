@@ -47,46 +47,80 @@ const convertToDirectoryList = (data: any) => {
 export class SailDirectory extends BasicDirectory {
 
     private readonly urlBase: string
+    private currentUrlsJson: string = '[]'
+    private currentCustomAppsJson: string = '[]'
 
     /**
      * 
-     * @param urlBase Should be in the form http(s)://<host>:<port>/remote/<userSessionId>
+     * @param urlBase Should be in the form ws(s)://<host>:<port>/remote/<userSessionId>
      */
     constructor(urlBase: string) {
         super([])
         this.urlBase = urlBase
     }
 
-    async load(url: string): Promise<void> {
+    /**
+     * Refresh the directory with the given URLs and custom apps.
+     * Only reloads if something has actually changed to avoid race conditions.
+     * The update is atomic - allApps is replaced in a single assignment.
+     */
+    async refresh(urls: string[], customApps: DirectoryApp[]): Promise<void> {
+        // Capture JSON of inputs BEFORE any modifications (to avoid connectionUrl affecting comparison)
+        const urlsJson = JSON.stringify(urls)
+        const customAppsJson = JSON.stringify(customApps)
+
+        if (this.currentUrlsJson == urlsJson && this.currentCustomAppsJson == customAppsJson) {
+            return // Nothing changed
+        }
+
+        console.log("Directory refresh triggered")
+
+        // Build new apps array
+        const newApps: DirectoryApp[] = []
+
+        // Load apps from URLs
+        for (const u of urls) {
+            const apps = await this.loadFromUrl(u)
+            apps.forEach(a => {
+                if (!newApps.find(a2 => a2.appId == a.appId)) {
+                    newApps.push(a)
+                }
+            })
+        }
+
+        // Deep copy custom apps to avoid modifying the originals when we set connectionUrl
+        const customAppsCopy: DirectoryApp[] = JSON.parse(customAppsJson)
+        customAppsCopy.forEach(a => {
+            if (!newApps.find(a2 => a2.appId == a.appId)) {
+                newApps.push(a)
+            }
+        })
+
+        // Set connection URLs for native apps
+        newApps.forEach(app => {
+            if (app.type === 'native') {
+                const applicationExtensionId = this.hashApplicationExtensionId(app.appId!);
+                (app.details as any)[FDC3_WEBSOCKET_PROPERTY] = `${this.urlBase}/${applicationExtensionId}`
+            }
+        })
+
+        // Atomic replacement
+        this.allApps = newApps
+        this.currentUrlsJson = urlsJson
+        this.currentCustomAppsJson = customAppsJson
+
+        console.log("Directory refreshed: " + this.allApps.length + " total apps")
+    }
+
+    private async loadFromUrl(url: string): Promise<DirectoryApp[]> {
         try {
             const apps = await load(url)
             console.log(`Loaded ${apps.length} apps from`, url)
-            apps.forEach((a) => {
-                // ensure we don't have two apps with same appId
-                if (!this.allApps.find(a2 => a2.appId == a.appId)) {
-                    this.allApps.push(a)
-                }
-            })
-            this.setNativeAppConnectionUrls()
+            return apps
         } catch (e) {
-            console.error(`Error loading`, e)
+            console.error(`Error loading from ${url}:`, e)
+            return []
         }
-    }
-
-    /**
-     * Replaces the loaded apps with new ones
-     */
-    async replace(url: string[]) {
-        this.allApps = []
-        for (const u of url) {
-            await this.load(u)
-        }
-        console.log("Loaded " + this.allApps.length + " apps")
-    }
-
-    add(d: DirectoryApp) {
-        this.allApps.push(d)
-        this.setNativeAppConnectionUrls()
     }
 
     retrieveAppsByUrl(url: string): DirectoryApp[] {
@@ -99,21 +133,6 @@ export class SailDirectory extends BasicDirectory {
     private hashApplicationExtensionId(appId: string): string {
         const data = `${this.urlBase}:${appId}`
         return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16)
-    }
-
-    /**
-     * Sets the connectionUrl for all native apps in the directory.
-     * The connectionUrl format is: {urlBase}/remote/{userSessionId}/{applicationExtensionId}
-     * where applicationExtensionId is a secure hash to prevent nefarious connnections.
-     */
-    private setNativeAppConnectionUrls(): void {
-        this.allApps.forEach(app => {
-            if (app.type === 'native') {
-                const applicationExtensionId = this.hashApplicationExtensionId(app.appId!)
-                const connectionUrl = `${this.urlBase}/${applicationExtensionId}`;
-                (app.details as any)[FDC3_WEBSOCKET_PROPERTY] = connectionUrl
-            }
-        })
     }
 
 }

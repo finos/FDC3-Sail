@@ -321,8 +321,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
 
     async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]): Promise<void> {
-        await this.directory.replace(urls)
-        customApps.forEach(a => this.directory.add(a))
+        await this.directory.refresh(urls, customApps)
     }
 
     private getChannelDetails(): ChannelState[] {
