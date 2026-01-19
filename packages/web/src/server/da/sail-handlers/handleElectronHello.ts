@@ -1,21 +1,21 @@
 import { ElectronHelloArgs, ElectronAppResponse, ElectronDAResponse } from "@finos/fdc3-sail-common"
 import { v4 as uuid } from 'uuid'
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
-import { Connection } from "../connection/Connection"
 import { ConnectionContext, getSailUrl } from "./types"
+import { SocketIOConnection } from "../connection"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 /**
  * Handle ELECTRON_HELLO message
  */
-export function handleElectronHello(
+export async function handleElectronHello(
     ctx: ConnectionContext,
     factory: SailFDC3ServerFactory,
-    connection: Connection,
+    connection: SocketIOConnection,
     props: ElectronHelloArgs,
     callback: (success: any, err?: string) => void
-): void {
+): Promise<void> {
     console.log("SAIL ELECTRON HELLO: " + JSON.stringify(props))
     let fdc3Server = factory.getSession(props.userSessionId)
 
@@ -38,7 +38,7 @@ export function handleElectronHello(
         }
     } else if (props.url == getSailUrl()) {
         ctx.userSessionId = props.userSessionId
-        fdc3Server = factory.createInstance(connection, props)
+        fdc3Server = await factory.createInstance(connection, props)
 
         callback({
             type: 'da',

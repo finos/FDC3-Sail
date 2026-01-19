@@ -1,8 +1,8 @@
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common";
 import { ChannelType, ChannelState, MessageHandler, BroadcastHandler, IntentHandler, OpenHandler, HeartbeatHandler } from "@finos/fdc3-sail-da-impl";
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance";
-import { Connection } from "./connection/Connection";
 import { SailDirectory } from "../appd/SailDirectory";
+import { SocketIOConnection } from "./connection";
 
 export function mapChannels(channels: TabDetail[]): ChannelState[] {
     const out = channels.map((c) => {
@@ -42,12 +42,11 @@ export class SailFDC3ServerFactory {
         }
     }
 
-    createInstance(connection: Connection, args: DesktopAgentHelloArgs): SailFDC3ServerInstance {
+    async createInstance(connection: SocketIOConnection, args: DesktopAgentHelloArgs): Promise<SailFDC3ServerInstance> {
         const channels = mapChannels(args.channels)
         const d = new SailDirectory()
-        d.replace(args.directories)
-        args.customApps.forEach(a => d.add(a))
         const out = new SailFDC3ServerInstance(d, connection, this.handlers, channels)
+        await out.reloadAppDirectories(args.directories, args.customApps)
         this.sessions.set(args.userSessionId, out)
         return out
     }

@@ -7,6 +7,7 @@ import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
 import { v4 as uuidv4 } from 'uuid'
 import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { mapChannels } from "./SailFDC3ServerFactory"
+import { SocketIOConnection } from "./connection"
 /**
  * Represents the state of a Sail app.
  * Pending: App has a window, but isn't connected to FDC3
@@ -32,11 +33,11 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     readonly directory: SailDirectory
     private instances: SailData[] = []
-    private readonly connection: Connection
+    private readonly connection: SocketIOConnection
     private readonly channelState: ChannelState[] = []
     private readonly appStartDestinations: Map<string, string | null> = new Map()
 
-    constructor(directory: SailDirectory, connection: Connection, handlers: MessageHandler[], channels: ChannelState[]) {
+    constructor(directory: SailDirectory, connection: SocketIOConnection, handlers: MessageHandler[], channels: ChannelState[]) {
         super(handlers, channels)
         this.directory = directory
         this.connection = connection
@@ -186,7 +187,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         return "2.0"
     }
 
-    convertToTabDetail(channel: ChannelState): TabDetail {
+    private convertToTabDetail(channel: ChannelState): TabDetail {
         return {
             id: channel.id,
             icon: channel.displayMetadata?.glyph ?? "",
@@ -319,7 +320,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         }
     }
 
-    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]) {
+    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]): Promise<void> {
         await this.directory.replace(urls)
         customApps.forEach(a => this.directory.add(a))
     }

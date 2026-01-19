@@ -26,19 +26,6 @@ export class WebSocketConnection implements Connection {
         }
     }
 
-    // Not used for remote apps - stub implementations
-    emitWithAck<T>(_event: string, _data: any): Promise<T> {
-        return Promise.reject(new Error("emitWithAck not supported for remote connections"))
-    }
-
-    emitWithCallback(_event: string, _data: any, _callback: (response: any, err?: string) => void): void {
-        throw new Error("emitWithCallback not supported for remote connections")
-    }
-
-    on(_event: string, _handler: (...args: any[]) => void): void {
-        // Not used - message handling is done directly in RemoteSocketService
-    }
-
     shutdown(): void {
         this.ws.close()
     }

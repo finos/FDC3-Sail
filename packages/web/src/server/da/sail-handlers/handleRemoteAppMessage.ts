@@ -1,10 +1,10 @@
 import { ConnectionContext } from "./types"
-import { Connection } from "../connection/Connection"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { isWebConnectionProtocol4ValidateAppIdentity } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AppHosting, RemoteApp } from "@finos/fdc3-sail-common"
 import { State } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from 'uuid'
+import { WebSocketConnection } from "../connection"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -18,7 +18,7 @@ type WebConnectionProtocol4ValidateAppIdentity = BrowserTypes.WebConnectionProto
 export function handleRemoteAppMessage(
     ctx: ConnectionContext,
     remoteApp: RemoteApp,
-    connection: Connection,
+    connection: WebSocketConnection,
     data: any
 ): void {
     if (!ctx.fdc3ServerInstance) {
@@ -73,7 +73,7 @@ export function handleRemoteAppMessage(
 function handleValidateAppIdentity(
     ctx: ConnectionContext,
     remoteApp: RemoteApp,
-    connection: Connection,
+    connection: WebSocketConnection,
     msg: WebConnectionProtocol4ValidateAppIdentity
 ): void {
     const instanceUuid = msg.payload.instanceUuid

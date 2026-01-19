@@ -13,7 +13,6 @@ import {
     RemoteApp
 } from "@finos/fdc3-sail-common"
 import { ConnectionContext } from "./types"
-import { Connection } from "../connection/Connection"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -39,6 +38,7 @@ import { handleFDC3AppEvent } from "./handleFDC3AppEvent"
 import { handleChannelReceiverHello } from "./handleChannelReceiverHello"
 import { handleIntentResolveOnChannel } from "./handleIntentResolveOnChannel"
 import { handleDisconnect } from "./handleDisconnect"
+import { SocketIOConnection } from "../connection"
 
 /**
  * Callback invoked when remote apps configuration changes.
@@ -56,15 +56,15 @@ export type OnRemoteAppsChanged = (userSessionId: string, remoteApps: RemoteApp[
 export function handleAllMessageTypes(
     ctx: ConnectionContext,
     factory: SailFDC3ServerFactory,
-    connection: Connection,
+    connection: SocketIOConnection,
     onRemoteAppsChanged: OnRemoteAppsChanged
 ): void {
-    connection.on(ELECTRON_HELLO, (props: any, callback: any) => {
-        handleElectronHello(ctx, factory, connection, props, callback)
+    connection.on(ELECTRON_HELLO, async (props: any, callback: any) => {
+        await handleElectronHello(ctx, factory, connection, props, callback)
     })
 
-    connection.on(DA_HELLO, (props: any, callback: any) => {
-        handleDAHello(ctx, factory, connection, props, callback)
+    connection.on(DA_HELLO, async (props: any, callback: any) => {
+        await handleDAHello(ctx, factory, connection, props, callback)
         onRemoteAppsChanged(props.userSessionId, props.remoteApps)
     })
 
@@ -76,13 +76,13 @@ export function handleAllMessageTypes(
         handleRegisterAppLaunch(factory, props, callback)
     })
 
-    connection.on(SAIL_CLIENT_STATE, (props: any, callback: any) => {
-        handleClientState(factory, props, callback)
+    connection.on(SAIL_CLIENT_STATE, async (props: any, callback: any) => {
+        await handleClientState(factory, props, callback)
         onRemoteAppsChanged(props.userSessionId, props.remoteApps)
     })
 
-    connection.on(SAIL_CHANNEL_CHANGE, (props: any, callback: any) => {
-        handleChannelChange(factory, props, callback)
+    connection.on(SAIL_CHANNEL_CHANGE, async (props: any, callback: any) => {
+        await handleChannelChange(factory, props, callback)
     })
 
     connection.on(APP_HELLO, (props: any, callback: any) => {

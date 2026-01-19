@@ -14,7 +14,7 @@ export async function handleClientState(
     console.log("SAIL CLIENT STATE: " + JSON.stringify(props))
     const session = factory.getSession(props.userSessionId)
     if (session) {
-        session.reloadAppDirectories(props.directories, props.customApps)
+        await session.reloadAppDirectories(props.directories, props.customApps)
         session.updateChannelData(props.channels)
 
         // tell each app to check for a channel change
