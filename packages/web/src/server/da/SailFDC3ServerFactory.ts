@@ -3,6 +3,21 @@ import { ChannelType, ChannelState, MessageHandler, BroadcastHandler, IntentHand
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance";
 import { SailDirectory } from "../appd/SailDirectory";
 import { SocketIOConnection } from "./connection";
+import { getSailUrl } from "./sail-handlers/types";
+
+/**
+ * Converts an HTTP(S) URL to a WebSocket URL.
+ * http:// -> ws://
+ * https:// -> wss://
+ */
+function toWebSocketUrl(httpUrl: string): string {
+    if (httpUrl.startsWith('https://')) {
+        return 'wss://' + httpUrl.substring(8)
+    } else if (httpUrl.startsWith('http://')) {
+        return 'ws://' + httpUrl.substring(7)
+    }
+    return httpUrl // Already a WebSocket URL or other protocol
+}
 
 export function mapChannels(channels: TabDetail[]): ChannelState[] {
     const out = channels.map((c) => {
@@ -44,7 +59,8 @@ export class SailFDC3ServerFactory {
 
     async createInstance(connection: SocketIOConnection, args: DesktopAgentHelloArgs): Promise<SailFDC3ServerInstance> {
         const channels = mapChannels(args.channels)
-        const d = new SailDirectory()
+        const remoteUrlBase = `${toWebSocketUrl(getSailUrl())}/remote/${args.userSessionId}`
+        const d = new SailDirectory(remoteUrlBase)
         const out = new SailFDC3ServerInstance(d, connection, this.handlers, channels)
         await out.reloadAppDirectories(args.directories, args.customApps)
         this.sessions.set(args.userSessionId, out)

@@ -129,6 +129,51 @@
     overflow-wrap: anywhere;
 }
 
+.url.disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.typeRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.fieldLabel {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.typeSelect {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.typeSelect:focus {
+    outline: none;
+    border-color: #694512;
+}
+
+/* Input styling for name, description, url */
+.name, .description, .url {
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+}
+
+.name:focus, .description:focus, .url:focus {
+    outline: none;
+    border-color: #694512;
+}
+
 .add {
     flex-grow: 0;
     flex-shrink: 0;
@@ -199,64 +244,6 @@
     text-align: center;
     grid-column-start: 1;
     grid-column-end: 3;
-}
-
-/* Remote Apps styles */
-.remoteAppsInfo {
-    background-color: #e8f4fc;
-    padding: 1rem;
-    border-radius: .5rem;
-    margin-bottom: .5rem;
-}
-
-.remoteAppsInfo p {
-    margin: 0;
-    color: #333;
-    font-size: 0.9rem;
-}
-
-.appSelector {
-    margin-bottom: .5rem;
-}
-
-.connectionDetails {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    padding: .75rem;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: .5rem;
-    align-items: center;
-}
-
-.connectionLabel {
-    font-weight: bold;
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.connectionValue {
-    font-family: monospace;
-    font-size: 0.85rem;
-    color: #333;
-    background-color: #fff;
-    padding: .25rem .5rem;
-    border-radius: .25rem;
-    overflow-wrap: anywhere;
-    user-select: all;
-}
-
-.noApps {
-    background-color: #fff3cd;
-    padding: 1rem;
-    border-radius: .5rem;
-    text-align: center;
-}
-
-.noApps p {
-    margin: 0;
-    color: #856404;
 }
 
 .selected {

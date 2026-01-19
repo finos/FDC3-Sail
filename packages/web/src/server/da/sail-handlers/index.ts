@@ -9,9 +9,9 @@ import {
     DA_REGISTER_APP_LAUNCH,
     ELECTRON_HELLO,
     CHANNEL_RECEIVER_HELLO,
-    SAIL_INTENT_RESOLVE_ON_CHANNEL,
-    RemoteApp
+    SAIL_INTENT_RESOLVE_ON_CHANNEL
 } from "@finos/fdc3-sail-common"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { ConnectionContext } from "./types"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 
@@ -41,23 +41,32 @@ import { handleDisconnect } from "./handleDisconnect"
 import { SocketIOConnection } from "../connection"
 
 /**
- * Callback invoked when remote apps configuration changes.
- * Called after DA_HELLO or SAIL_CLIENT_STATE is processed.
+ * Callback invoked when native apps in the directory change.
+ * Called after DA_HELLO or SAIL_CLIENT_STATE is processed, passing native apps from the directory.
  */
-export type OnRemoteAppsChanged = (userSessionId: string, remoteApps: RemoteApp[]) => void
+export type OnNativeAppsChanged = (userSessionId: string, nativeApps: DirectoryApp[]) => void
+
+/**
+ * Gets all native apps from the directory for the given session.
+ */
+function getNativeAppsFromSession(factory: SailFDC3ServerFactory, userSessionId: string): DirectoryApp[] {
+    const session = factory.getSession(userSessionId)
+    if (!session) return []
+    return session.directory.retrieveAllApps().filter(app => app.type === 'native')
+}
 
 /**
  * Registers all message type handlers on a connection.
  * This sets up the complete FDC3 message handling for a single connection session.
  * 
- * @param onRemoteAppsChanged - Optional callback invoked when DA_HELLO or SAIL_CLIENT_STATE
+ * @param onNativeAppsChanged - Optional callback invoked when DA_HELLO or SAIL_CLIENT_STATE
  *                              is received, allowing the caller to refresh remote socket endpoints.
  */
 export function handleAllMessageTypes(
     ctx: ConnectionContext,
     factory: SailFDC3ServerFactory,
     connection: SocketIOConnection,
-    onRemoteAppsChanged: OnRemoteAppsChanged
+    onNativeAppsChanged: OnNativeAppsChanged
 ): void {
     connection.on(ELECTRON_HELLO, async (props: any, callback: any) => {
         await handleElectronHello(ctx, factory, connection, props, callback)
@@ -65,7 +74,7 @@ export function handleAllMessageTypes(
 
     connection.on(DA_HELLO, async (props: any, callback: any) => {
         await handleDAHello(ctx, factory, connection, props, callback)
-        onRemoteAppsChanged(props.userSessionId, props.remoteApps)
+        onNativeAppsChanged(props.userSessionId, getNativeAppsFromSession(factory, props.userSessionId))
     })
 
     connection.on(DA_DIRECTORY_LISTING, (props: any, callback: any) => {
@@ -78,7 +87,7 @@ export function handleAllMessageTypes(
 
     connection.on(SAIL_CLIENT_STATE, async (props: any, callback: any) => {
         await handleClientState(factory, props, callback)
-        onRemoteAppsChanged(props.userSessionId, props.remoteApps)
+        onNativeAppsChanged(props.userSessionId, getNativeAppsFromSession(factory, props.userSessionId))
     })
 
     connection.on(SAIL_CHANNEL_CHANGE, async (props: any, callback: any) => {

@@ -1,8 +1,8 @@
 import { ConnectionContext } from "./types"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { isWebConnectionProtocol4ValidateAppIdentity } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { AppHosting, RemoteApp } from "@finos/fdc3-sail-common"
-import { State } from "@finos/fdc3-sail-da-impl"
+import { AppHosting } from "@finos/fdc3-sail-common"
+import { DirectoryApp, State } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from 'uuid'
 import { WebSocketConnection } from "../connection"
 
@@ -17,7 +17,7 @@ type WebConnectionProtocol4ValidateAppIdentity = BrowserTypes.WebConnectionProto
  */
 export function handleRemoteAppMessage(
     ctx: ConnectionContext,
-    remoteApp: RemoteApp,
+    nativeApp: DirectoryApp,
     connection: WebSocketConnection,
     data: any
 ): void {
@@ -41,7 +41,7 @@ export function handleRemoteAppMessage(
 
     // Handle WCP4ValidateAppIdentity specially to register and validate the app
     if (isWebConnectionProtocol4ValidateAppIdentity(data)) {
-        handleValidateAppIdentity(ctx, remoteApp, connection, data as WebConnectionProtocol4ValidateAppIdentity)
+        handleValidateAppIdentity(ctx, nativeApp, connection, data as WebConnectionProtocol4ValidateAppIdentity)
         return
     }
 
@@ -72,14 +72,15 @@ export function handleRemoteAppMessage(
  */
 function handleValidateAppIdentity(
     ctx: ConnectionContext,
-    remoteApp: RemoteApp,
+    nativeApp: DirectoryApp,
     connection: WebSocketConnection,
     msg: WebConnectionProtocol4ValidateAppIdentity
 ): void {
     const instanceUuid = msg.payload.instanceUuid
     const instanceId = msg.payload.instanceId
+    const appId = nativeApp.appId!
 
-    console.log(`SAIL Remote: ValidateAppIdentity - appId: ${remoteApp.appId}, instanceId: ${instanceId}, instanceUuid: ${instanceUuid}`)
+    console.log(`SAIL Remote: ValidateAppIdentity - appId: ${appId}, instanceId: ${instanceId}, instanceUuid: ${instanceUuid}`)
 
     // Determine the instance ID for this connection
     // - If reconnecting (instanceUuid provided), use that
@@ -90,15 +91,15 @@ function handleValidateAppIdentity(
     // For new apps (no instanceUuid), we need to register the instance
     // This is equivalent to what DA_REGISTER_APP_LAUNCH does for web apps
     if (!instanceUuid) {
-        console.log(`SAIL Remote: Registering new remote app instance - appId: ${remoteApp.appId}, instanceId: ${resolvedInstanceId}`)
+        console.log(`SAIL Remote: Registering new remote app instance - appId: ${appId}, instanceId: ${resolvedInstanceId}`)
         ctx.fdc3ServerInstance!.setInstanceDetails(resolvedInstanceId, {
             instanceId: resolvedInstanceId,
             state: State.Pending,
-            appId: remoteApp.appId,
+            appId: appId,
             connection: connection,
             hosting: AppHosting.Remote,
             channel: null,
-            instanceTitle: `${remoteApp.appId} (Remote)`,
+            instanceTitle: `${nativeApp.title || appId} (Remote)`,
             channelConnections: []
         })
     }

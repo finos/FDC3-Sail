@@ -5,9 +5,8 @@ import { Popup } from "../popups/popup"
 import { DirectoryList } from "./directories"
 import { TabList } from "./tabs"
 import { CustomAppList } from "./customApps"
-import { RemoteAppList } from "./remoteApps"
 
-const CONFIG_ITEMS = ["Directories", "Tabs", "Custom Apps", "Remote Apps"]
+const CONFIG_ITEMS = ["Directories", "Tabs", "Custom Apps"]
 
 type AppPanelProps = {
   closeAction: () => void
@@ -49,7 +48,6 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
               {this.state.item == CONFIG_ITEMS[0] ? <DirectoryList /> : null}
               {this.state.item == CONFIG_ITEMS[1] ? <TabList /> : null}
               {this.state.item == CONFIG_ITEMS[2] ? <CustomAppList /> : null}
-              {this.state.item == CONFIG_ITEMS[3] ? <RemoteAppList /> : null}
             </div>
           </div>
         }

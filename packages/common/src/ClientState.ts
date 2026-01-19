@@ -3,6 +3,11 @@ import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from ".
 import { Context } from "@finos/fdc3-context";
 import { DirectoryApp } from "@finos/fdc3-sail-da-impl";
 
+/**
+ * The property name of the connection URL for a remote app.
+ */
+export const FDC3_WEBSOCKET_PROPERTY = 'connectionUrl'
+
 export type AppPanel = GridStackPosition & {
     title: string
     url: string,
@@ -16,21 +21,6 @@ export interface IntentResolution {
     appIntents: AugmentedAppIntent[]
     requestId: string
     context: Context
-}
-
-/**
- * Configuration for a remote/native application that connects via WebSocket.
- * This allows native apps (like Java apps) to connect to Sail.
- * 
- * Remote apps connect via WebSocket to URLs of the form:
- *   /remote/{userSessionId}/{applicationExtensionId}
- */
-export interface RemoteApp {
-    /** The appId from the directory that this remote app represents */
-    appId: string
-
-    /** Unique identifier for this remote app configuration. Used as the final segment of the WebSocket URL. */
-    applicationExtensionId: string
 }
 
 /**
@@ -69,10 +59,6 @@ export interface ClientState {
     /** Custom Apps, configured by the user  */
     setCustomApps(apps: DirectoryApp[]): Promise<void>
     getCustomApps(): DirectoryApp[]
-
-    /** Remote Apps - native apps that connect via WebSocket */
-    setRemoteApps(apps: RemoteApp[]): Promise<void>
-    getRemoteApps(): RemoteApp[]
 
     /** Callback */
     addStateChangeCallback(cb: () => void): void

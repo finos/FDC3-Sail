@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
 import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl";
+import { FDC3_WEBSOCKET_PROPERTY } from '@finos/fdc3-sail-common';
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -37,10 +39,22 @@ const convertToDirectoryList = (data: any) => {
     return data.applications as DirectoryApp[];
 }
 
+
+/**
+ * Handles local and remote url loading, and also specifies a connectionURL for native 
+ * apps.
+ */
 export class SailDirectory extends BasicDirectory {
 
-    constructor() {
+    private readonly urlBase: string
+
+    /**
+     * 
+     * @param urlBase Should be in the form http(s)://<host>:<port>/remote/<userSessionId>
+     */
+    constructor(urlBase: string) {
         super([])
+        this.urlBase = urlBase
     }
 
     async load(url: string): Promise<void> {
@@ -53,6 +67,7 @@ export class SailDirectory extends BasicDirectory {
                     this.allApps.push(a)
                 }
             })
+            this.setNativeAppConnectionUrls()
         } catch (e) {
             console.error(`Error loading`, e)
         }
@@ -71,10 +86,34 @@ export class SailDirectory extends BasicDirectory {
 
     add(d: DirectoryApp) {
         this.allApps.push(d)
+        this.setNativeAppConnectionUrls()
     }
 
     retrieveAppsByUrl(url: string): DirectoryApp[] {
         return this.retrieveAllApps().filter(a => a.type == 'web' && (a.details as any).url == url);
+    }
+
+    /**
+     * Use a hash for the remote id so it's consistent across SailDirectory reloads.
+     */
+    private hashApplicationExtensionId(appId: string): string {
+        const data = `${this.urlBase}:${appId}`
+        return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16)
+    }
+
+    /**
+     * Sets the connectionUrl for all native apps in the directory.
+     * The connectionUrl format is: {urlBase}/remote/{userSessionId}/{applicationExtensionId}
+     * where applicationExtensionId is a secure hash to prevent nefarious connnections.
+     */
+    private setNativeAppConnectionUrls(): void {
+        this.allApps.forEach(app => {
+            if (app.type === 'native') {
+                const applicationExtensionId = this.hashApplicationExtensionId(app.appId!)
+                const connectionUrl = `${this.urlBase}/${applicationExtensionId}`;
+                (app.details as any)[FDC3_WEBSOCKET_PROPERTY] = connectionUrl
+            }
+        })
     }
 
 }

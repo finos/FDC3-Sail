@@ -3,11 +3,24 @@ import { IncomingMessage } from "http"
 import { SailFDC3ServerFactory } from "./SailFDC3ServerFactory"
 import { WebSocketConnection } from "./connection/WebSocketConnection"
 import { createConnectionContext } from "./sail-handlers"
-import { RemoteApp } from "@finos/fdc3-sail-common"
+import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { handleDisconnect } from "./sail-handlers/handleDisconnect"
 import { handleRemoteAppMessage } from "./sail-handlers/handleRemoteAppMessage"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
+
+/**
+ * Extracts the applicationExtensionId from a native app's connectionUrl.
+ * The connectionUrl format is: {urlBase}/{applicationExtensionId}
+ */
+function extractApplicationExtensionId(app: DirectoryApp): string | undefined {
+    const connectionUrl = (app.details as any)?.[FDC3_WEBSOCKET_PROPERTY]
+    if (!connectionUrl) return undefined
+    // The applicationExtensionId is the last segment of the URL path
+    const parts = connectionUrl.split('/').filter((p: string) => p.length > 0)
+    return parts[parts.length - 1]
+}
 
 /**
  * Manages WebSocket endpoints for remote/native applications.
@@ -17,16 +30,16 @@ import { handleRemoteAppMessage } from "./sail-handlers/handleRemoteAppMessage"
  * 
  * Where:
  * - userSessionId: The session ID of the browser desktop agent
- * - applicationExtensionId: Unique identifier for the remote app type (from RemoteApp config)
+ * - applicationExtensionId: Unique identifier derived from the native app's connectionUrl
  * 
- * This service dynamically enables/disables endpoints based on the RemoteApp
- * entries provided via refreshAvailableRemoteSockets().
+ * This service dynamically enables/disables endpoints based on native apps
+ * in the directory that have the FDC3_WEBSOCKET_PROPERTY set.
  */
 export class RemoteSocketService {
     private readonly factory: SailFDC3ServerFactory
     private readonly httpServer: any
     private readonly wss: WebSocketServer
-    private activeRemoteApps: Map<string, RemoteApp> = new Map()
+    private activeRemoteApps: Map<string, DirectoryApp> = new Map()
     private userSessionId: string | undefined
 
     constructor(httpServer: any, factory: SailFDC3ServerFactory) {
@@ -98,14 +111,12 @@ export class RemoteSocketService {
             ctx.userSessionId = meta.userSessionId
             ctx.fdc3ServerInstance = fdc3Server
 
-            ws.on('message', (rawData: any) => {
+            ws.on('message', (data: Buffer | string) => {
                 try {
-                    // Parse the incoming data - it comes as a Buffer from the ws library
-                    const jsonString = rawData instanceof Buffer ? rawData.toString('utf8') : rawData.toString()
-                    const data = JSON.parse(jsonString)
-                    handleRemoteAppMessage(ctx, remoteApp, connection, data)
+                    const message = JSON.parse(data.toString())
+                    handleRemoteAppMessage(ctx, remoteApp, connection, message)
                 } catch (e) {
-                    console.error(`SAIL Remote: Failed to parse message:`, e)
+                    console.error("SAIL Remote: Failed to parse message as JSON", e)
                 }
             })
 
@@ -125,30 +136,38 @@ export class RemoteSocketService {
         return this.activeRemoteApps.has(applicationExtensionId)
     }
 
-    private getRemoteApp(applicationExtensionId: string): RemoteApp | undefined {
+    private getRemoteApp(applicationExtensionId: string): DirectoryApp | undefined {
         return this.activeRemoteApps.get(applicationExtensionId)
     }
 
     /**
-     * Refresh the available remote socket endpoints based on the provided remote apps.
+     * Refresh the available remote socket endpoints based on native apps in the directory.
+     * Only apps with the FDC3_WEBSOCKET_PROPERTY set will be enabled.
      * This enables new endpoints and disables ones that are no longer configured.
      */
-    refreshAvailableRemoteSockets(userSessionId: string, remoteApps: RemoteApp[]): void {
-        const newIds = new Set(remoteApps.map(app => app.applicationExtensionId))
+    refreshAvailableRemoteSockets(userSessionId: string, nativeApps: DirectoryApp[]): void {
+        // Build a map of applicationExtensionId -> DirectoryApp for new apps
+        const newAppsMap = new Map<string, DirectoryApp>()
+        for (const app of nativeApps) {
+            const extId = extractApplicationExtensionId(app)
+            if (extId) {
+                newAppsMap.set(extId, app)
+            }
+        }
 
         // Find IDs to disable (in active but not in new)
         const idsToDisable: string[] = []
         for (const id of this.activeRemoteApps.keys()) {
-            if (!newIds.has(id)) {
+            if (!newAppsMap.has(id)) {
                 idsToDisable.push(id)
             }
         }
 
         // Find apps to enable (in new but not in active)
-        const appsToEnable: RemoteApp[] = []
-        for (const app of remoteApps) {
-            if (!this.activeRemoteApps.has(app.applicationExtensionId)) {
-                appsToEnable.push(app)
+        const appsToEnable: [string, DirectoryApp][] = []
+        for (const [extId, app] of newAppsMap) {
+            if (!this.activeRemoteApps.has(extId)) {
+                appsToEnable.push([extId, app])
             }
         }
 
@@ -159,9 +178,9 @@ export class RemoteSocketService {
         }
 
         // Enable new endpoints
-        for (const app of appsToEnable) {
-            console.log(`SAIL Enabling remote socket: /remote/${userSessionId}/${app.applicationExtensionId}`)
-            this.activeRemoteApps.set(app.applicationExtensionId, app)
+        for (const [extId, app] of appsToEnable) {
+            console.log(`SAIL Enabling remote socket: /remote/${userSessionId}/${extId} for app ${app.appId}`)
+            this.activeRemoteApps.set(extId, app)
         }
 
         // Update session ID

@@ -1,5 +1,5 @@
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl";
-import { AppPanel, ClientState, IntentResolution, RemoteApp } from "./ClientState";
+import { AppPanel, ClientState, IntentResolution } from "./ClientState";
 import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { Context } from "@finos/fdc3-context";
 
@@ -14,10 +14,9 @@ export abstract class AbstractClientState implements ClientState {
     protected intentResolution: IntentResolution | null = null
     protected knownApps: DirectoryApp[] = []
     protected customApps: DirectoryApp[] = []
-    protected remoteApps: RemoteApp[] = []
     protected contextHistory: ContextHistory = {}
 
-    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[], remoteApps: RemoteApp[], history: ContextHistory) {
+    constructor(tabs: TabDetail[], panels: AppPanel[], activeTabId: string, userSessionId: string, directories: Directory[], knownApps: DirectoryApp[], customApps: DirectoryApp[], history: ContextHistory) {
         this.tabs = tabs
         this.panels = panels
         this.activeTabId = activeTabId
@@ -26,7 +25,6 @@ export abstract class AbstractClientState implements ClientState {
         this.knownApps = knownApps
         this.customApps = customApps
         this.contextHistory = history
-        this.remoteApps = remoteApps
     }
 
     abstract saveState(): Promise<void>
@@ -174,8 +172,7 @@ export abstract class AbstractClientState implements ClientState {
             channels: this.tabs,
             panels: this.panels,
             customApps: this.customApps,
-            contextHistory: this.contextHistory,
-            remoteApps: this.remoteApps
+            contextHistory: this.contextHistory
         }
     }
 
@@ -213,15 +210,6 @@ export abstract class AbstractClientState implements ClientState {
 
     getContextHistory(tabId: string): Context[] {
         return this.contextHistory[tabId] ?? []
-    }
-
-    setRemoteApps(apps: RemoteApp[]): Promise<void> {
-        this.remoteApps = apps
-        return this.saveState()
-    }
-
-    getRemoteApps(): RemoteApp[] {
-        return this.remoteApps
     }
 
     async appendContextHistory(tabId: string, item: Context): Promise<void> {

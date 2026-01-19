@@ -3,7 +3,7 @@ import { SailFDC3ServerFactory } from "./SailFDC3ServerFactory"
 import { SocketIOConnection } from "./connection/SocketIOConnection"
 import { createConnectionContext, handleAllMessageTypes } from "./sail-handlers"
 import { RemoteSocketService } from "./RemoteSocketService"
-import { RemoteApp } from "@finos/fdc3-sail-common"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -13,7 +13,7 @@ import { RemoteApp } from "@finos/fdc3-sail-common"
  * 
  * @param httpServer - The HTTP server to attach to
  * @param factory - The FDC3 server factory
- * @param remoteSocketService - Optional RemoteSocketService to refresh when client state changes
+ * @param remoteSocketService - RemoteSocketService to refresh when native apps in directory change
  */
 export function initSailSocketIOService(
     httpServer: any,
@@ -27,12 +27,12 @@ export function initSailSocketIOService(
         const ctx = createConnectionContext()
         const connection = new SocketIOConnection(socket)
 
-        // Wire up the remote apps refresh callback
-        const onRemoteAppsChanged = (userSessionId: string, remoteApps: RemoteApp[]) => {
-            remoteSocketService.refreshAvailableRemoteSockets(userSessionId, remoteApps)
+        // Wire up the native apps refresh callback - called when directory is loaded
+        const onNativeAppsChanged = (userSessionId: string, nativeApps: DirectoryApp[]) => {
+            remoteSocketService.refreshAvailableRemoteSockets(userSessionId, nativeApps)
         }
 
-        handleAllMessageTypes(ctx, factory, connection, onRemoteAppsChanged)
+        handleAllMessageTypes(ctx, factory, connection, onNativeAppsChanged)
     })
 
     return io
