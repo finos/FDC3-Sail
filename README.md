@@ -93,7 +93,13 @@ Once an application is opened, you'll be able to see it, and interact with it, i
 
 The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is bundled on the main FDC3 website at [https://fdc3.finos.org/toolbox/fdc3-workbench/](https://fdc3.finos.org/toolbox/fdc3-workbench/) and can be used within Sail. It's directory entry is in the `directory/workbench.json` file.
 
-**NOTE:** This answers a very commonly-asked question in FDC3: Can apps be hosted on different domains? Poeple believe this might be impossible due to browser sandboxing, but the answer is yes, and the Workbench is a good example of this.
+**NOTE:** This answers a very commonly-asked question in FDC3: Can apps be hosted on different domains? People believe this might be impossible due to browser sandboxing, but the answer is yes, and the Workbench is a good example of this.
+
+**SECOND NOTE:** If you are running Sail on `localhost`, you will likely run into CORS issues when accessing Workbench over https. This is because workbench is running on `fdc3.finos.org`, which is secure, and trying to talk back to `localhost`, which isn't. To work around this in chrome:
+
+- Open chrome://flags/#unsafely-treat-insecure-origin-as-secure
+- Add http://localhost:8090 to the text box
+- Click "Relaunch" to restart Chrome
 
 ### Trading View Applications
 
@@ -151,6 +157,11 @@ To join the Electron FDC3 Desktop Agent & App Directory mailing list please emai
 _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool (or [EasyCLA](https://github.com/finos/community/blob/master/governance/Software-Projects/EasyCLA.md)). Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
 
 _Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
+
+### Emeritus Contributors
+
+- [Nick Kolba](@nkolba) contributed the first version of FDC3-Sail, initially called "FDC3 Electron", in 2022.
+- [Seb M'Barek](@sebbenmbarek) and Nick Kolba renamed the project to FDC3-Sail and presented it at [OSFF New York in 2023](https://www.youtube.com/watch?v=dKDkOk3btWU)
 
 ### Design Decisions
 

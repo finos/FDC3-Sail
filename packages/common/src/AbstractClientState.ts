@@ -1,4 +1,4 @@
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl";
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl";
 import { AppPanel, ClientState, IntentResolution } from "./ClientState";
 import { ContextHistory, Directory, SailClientStateArgs, TabDetail } from "./message-types";
 import { Context } from "@finos/fdc3-context";

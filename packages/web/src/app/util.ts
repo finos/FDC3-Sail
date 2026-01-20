@@ -1,4 +1,4 @@
-import { InstanceID } from "@finos/fdc3-web-impl"
+import { InstanceID } from "@finos/fdc3-sail-da-impl"
 import { io, Socket } from "socket.io-client"
 import { CHANNEL_RECEIVER_HELLO, CHANNEL_RECEIVER_UPDATE, ChannelReceiverHelloRequest, ChannelReceiverUpdate, FDC3_APP_EVENT, FDC3_DA_EVENT, SAIL_INTENT_RESOLVE_ON_CHANNEL, SailIntentResolveOpenChannelArgs, TabDetail } from "@finos/fdc3-sail-common"
 

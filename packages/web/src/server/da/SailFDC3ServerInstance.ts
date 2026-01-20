@@ -1,14 +1,16 @@
-import { Socket } from "socket.io";
+import { AbstractFDC3ServerInstance, AppRegistration, ChannelState, DirectoryApp, InstanceID, MessageHandler, State } from "@finos/fdc3-sail-da-impl"
+import { getIcon, SailDirectory } from "../appd/SailDirectory"
+import { Connection } from "./connection/Connection"
+import { AppHosting, AugmentedAppIntent, AugmentedAppMetadata, ContextHistory, FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_BROADCAST_CONTEXT, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailIntentResolveResponse, TabDetail } from "@finos/fdc3-sail-common"
+import { BrowserTypes } from "@finos/fdc3-schema"
+import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
 import { v4 as uuidv4 } from 'uuid'
-import { AppRegistration, ChannelState, DirectoryApp, FDC3Server, InstanceID, ServerContext, State } from "@finos/fdc3-web-impl"
-import { AppIdentifier } from "@finos/fdc3";
-import { getIcon, SailDirectory } from "../appd/SailDirectory";
-import { AppIntent, Context, OpenError } from "@finos/fdc3";
-import { FDC3_DA_EVENT, SAIL_APP_OPEN, SAIL_CHANNEL_SETUP, SAIL_INTENT_RESOLVE, SailAppOpenArgs, AppHosting, SailIntentResolveResponse, AugmentedAppIntent, AugmentedAppMetadata, SailAppOpenResponse, TabDetail, ContextHistory, SAIL_BROADCAST_CONTEXT } from "@finos/fdc3-sail-common";
-import { BroadcastRequest, ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
-import { mapChannels } from "./SailFDC3Server";
+import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { mapChannels } from "./SailFDC3ServerFactory"
+import { SocketIOConnection } from "./connection"
+import { createLogger } from "../logger"
 
-
+const log = createLogger('FDC3ServerInstance')
 /**
  * Represents the state of a Sail app.
  * Pending: App has a window, but isn't connected to FDC3
@@ -17,29 +19,32 @@ import { mapChannels } from "./SailFDC3Server";
  * Terminated: App Window has been closed
  */
 export type SailData = AppRegistration & {
-    socket?: Socket,
-    channelSockets: Socket[],
+    connection?: Connection,
+    channelConnections: Connection[],
     url?: string,
     hosting: AppHosting,
     channel: string | null,
     instanceTitle: string
 }
 
-export class SailServerContext implements ServerContext<SailData> {
+
+/**
+ * Extends BasicFDC3Server to allow for more detailed (and changeable) user channel metadata
+ * as well as user-configurable SailDirectory.
+ */
+export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     readonly directory: SailDirectory
     private instances: SailData[] = []
-    private fdc3Server: FDC3Server | undefined
-    private readonly socket: Socket
+    private readonly connection: SocketIOConnection
+    private readonly channelState: ChannelState[] = []
     private readonly appStartDestinations: Map<string, string | null> = new Map()
 
-    constructor(directory: SailDirectory, socket: Socket) {
+    constructor(directory: SailDirectory, connection: SocketIOConnection, handlers: MessageHandler[], channels: ChannelState[]) {
+        super(handlers, channels)
         this.directory = directory
-        this.socket = socket
-    }
-
-    setFDC3Server(server: FDC3Server): void {
-        this.fdc3Server = server
+        this.connection = connection
+        this.channelState = channels
     }
 
     post(message: object, instanceId: InstanceID): Promise<void> {
@@ -48,17 +53,17 @@ export class SailServerContext implements ServerContext<SailData> {
             if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
                 this.log("Posting message to app: " + JSON.stringify(message))
             }
-            instance.socket?.emit(FDC3_DA_EVENT, message)
+            instance.connection?.emit(FDC3_DA_EVENT, message)
         } else {
             this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
         }
         return Promise.resolve()
     }
 
-    notifyBroadcastContext(broadcastEvent: BroadcastRequest) {
+    notifyBroadcastContext(broadcastEvent: BrowserTypes.BroadcastRequest) {
         const channel = broadcastEvent.payload.channelId
         const context = broadcastEvent.payload.context
-        this.socket.emit(SAIL_BROADCAST_CONTEXT, {
+        this.connection.emit(SAIL_BROADCAST_CONTEXT, {
             channelId: channel,
             context: context
         })
@@ -86,7 +91,7 @@ export class SailServerContext implements ServerContext<SailData> {
             const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail?.forceNewWindow
             const approach = forceNewWindow || (channel === null) ? AppHosting.Tab : AppHosting.Frame
 
-            const details: SailAppOpenResponse = await this.socket.emitWithAck(SAIL_APP_OPEN, {
+            const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
                 appDRecord: app[0],
                 approach,
                 channel
@@ -100,7 +105,7 @@ export class SailServerContext implements ServerContext<SailData> {
                 hosting: approach,
                 channel: channel ?? null,
                 instanceTitle: details.instanceTitle,
-                channelSockets: []
+                channelConnections: []
             })
 
             if (channel) {
@@ -115,7 +120,7 @@ export class SailServerContext implements ServerContext<SailData> {
 
     setInstanceDetails(uuid: InstanceID, details: SailData): void {
         if (uuid != details.instanceId) {
-            console.error("UUID mismatch", uuid, details.instanceId)
+            log.error({ uuid, instanceId: details.instanceId }, 'UUID mismatch')
         }
 
         this.instances = this.instances.filter(ca => ca.instanceId !== uuid)
@@ -127,7 +132,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     async setInitialChannel(app: AppIdentifier): Promise<void> {
-        this.socket.emit(SAIL_CHANNEL_SETUP, app.instanceId)
+        this.connection.emit(SAIL_CHANNEL_SETUP, app.instanceId)
     }
 
     async getConnectedApps(): Promise<AppRegistration[]> {
@@ -150,8 +155,12 @@ export class SailServerContext implements ServerContext<SailData> {
 
             if (state == State.Terminated) {
                 this.instances = this.instances.filter(a => (a.instanceId !== app))
-                this.fdc3Server?.cleanup(found.instanceId)
+                log.info({ app }, 'App terminated')
+            } else {
+                log.debug({ app, state }, 'App state updated')
             }
+        } else {
+            log.error({ app, state }, 'App state not found')
         }
     }
 
@@ -171,7 +180,7 @@ export class SailServerContext implements ServerContext<SailData> {
     }
 
     log(message: string): void {
-        console.log('SAIL:' + message)
+        log.debug(message)
     }
 
     provider(): string {
@@ -186,7 +195,7 @@ export class SailServerContext implements ServerContext<SailData> {
         return "2.0"
     }
 
-    convertToTabDetail(channel: ChannelState): TabDetail {
+    private convertToTabDetail(channel: ChannelState): TabDetail {
         return {
             id: channel.id,
             icon: channel.displayMetadata?.glyph ?? "",
@@ -227,7 +236,7 @@ export class SailServerContext implements ServerContext<SailData> {
      * This is used when the intent resolver is managed by the desktop agent as opposed
      * to running inside an iframe in the client app.
      */
-    async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: Context): Promise<AppIntent[]> {
+    async narrowIntents(raiser: AppIdentifier, incomingIntents: AppIntent[], context: BrowserTypes.Context): Promise<AppIntent[]> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const sc = this
 
@@ -274,33 +283,34 @@ export class SailServerContext implements ServerContext<SailData> {
         }
 
         return new Promise<AppIntent[]>((resolve) => {
-            console.log("SAIL Narrowing intents", augmentedIntents, context)
+            log.debug({ augmentedIntents, context }, 'Narrowing intents')
 
-            this.socket.emit(SAIL_INTENT_RESOLVE, {
+            this.connection.emitWithCallback(SAIL_INTENT_RESOLVE, {
                 appIntents: augmentedIntents,
                 context
-            }, async (response: SailIntentResolveResponse, err: string) => {
+            }, async (response: unknown, err?: string) => {
                 if (err) {
-                    console.error(err)
+                    log.error(err)
                     resolve([])
                 } else {
-                    console.log("SAIL Narrowed intents", response)
+                    const typedResponse = response as SailIntentResolveResponse
+                    log.debug({ response: typedResponse }, 'Narrowed intents')
 
-                    if (appNeedsStarting(response.appIntents)) {
+                    if (appNeedsStarting(typedResponse.appIntents)) {
                         // tell sail where to open the app
-                        const theAppIntent = getSingleAppIntent(response.appIntents)
+                        const theAppIntent = getSingleAppIntent(typedResponse.appIntents)
                         const theApp = theAppIntent.apps[0]
-                        this.appStartDestinations.set(theApp.appId, response.channel)
+                        this.appStartDestinations.set(theApp.appId, typedResponse.channel)
                     }
 
-                    resolve(response.appIntents)
+                    resolve(typedResponse.appIntents)
                 }
             })
         })
     }
 
     async notifyUserChannelsChanged(instanceId: string, channelId: string | null): Promise<void> {
-        console.log("SAIL User channels changed", instanceId, channelId)
+        log.debug({ instanceId, channelId }, 'User channels changed')
         const instance = this.getInstanceDetails(instanceId!)
         if (instance) {
             instance.channel = channelId
@@ -318,14 +328,12 @@ export class SailServerContext implements ServerContext<SailData> {
         }
     }
 
-    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]) {
-        await this.directory.replace(urls)
-        customApps.forEach(a => this.directory.add(a))
+    async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]): Promise<void> {
+        await this.directory.refresh(urls, customApps)
     }
 
     private getChannelDetails(): ChannelState[] {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return ((this.fdc3Server as any).handlers[0].state as ChannelState[])
+        return this.channelState
     }
 
     getTabs(): TabDetail[] {
@@ -334,7 +342,7 @@ export class SailServerContext implements ServerContext<SailData> {
 
     updateChannelData(channelData: TabDetail[], history?: ContextHistory): void {
 
-        function relevantHistory(id: string, history?: ContextHistory,): undefined | Context[] {
+        function relevantHistory(id: string, history?: ContextHistory): undefined | BrowserTypes.Context[] {
             if (history) {
                 const basicHistory = history[id]
                 // just the first item of each unique type
@@ -344,17 +352,19 @@ export class SailServerContext implements ServerContext<SailData> {
             return undefined
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const channelState = ((this.fdc3Server as any).handlers[0].state as ChannelState[])
-        channelState.length = 0;
         const newState = mapChannels(channelData).map(c => {
             return {
                 ...c,
-                context: relevantHistory(c.id, history) ?? channelState.find(cs => cs.id == c.id)?.context ?? []
+                context: relevantHistory(c.id, history) ?? this.channelState.find(cs => cs.id == c.id)?.context ?? []
             }
         })
-        channelState.push(...newState)
-        console.log("SAIL Updated channel data", channelState)
+        this.channelState.length = 0;
+        this.channelState.push(...newState)
+        log.debug({ channelState: this.channelState }, 'Updated channel data')
+    }
+
+    getDirectory(): SailDirectory {
+        return this.directory
     }
 }
 

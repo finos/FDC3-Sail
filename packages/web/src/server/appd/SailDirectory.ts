@@ -1,5 +1,10 @@
 import fs from 'node:fs/promises';
-import { BasicDirectory, DirectoryApp } from "@finos/fdc3-web-impl";
+import crypto from 'node:crypto';
+import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl";
+import { FDC3_WEBSOCKET_PROPERTY } from '@finos/fdc3-sail-common';
+import { createLogger } from '../logger';
+
+const log = createLogger('Directory')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -37,43 +42,100 @@ const convertToDirectoryList = (data: any) => {
     return data.applications as DirectoryApp[];
 }
 
+
+/**
+ * Handles local and remote url loading, and also specifies a connectionURL for native 
+ * apps.
+ */
 export class SailDirectory extends BasicDirectory {
 
-    constructor() {
-        super([])
-    }
+    private readonly urlBase: string
+    private currentUrlsJson: string = '[]'
+    private currentCustomAppsJson: string = '[]'
 
-    async load(url: string): Promise<void> {
-        try {
-            const apps = await load(url)
-            apps.forEach((a) => {
-                // ensure we don't have two apps with same appId
-                if (!this.allApps.find(a2 => a2.appId == a.appId)) {
-                    this.allApps.push(a)
-                }
-            })
-        } catch (e) {
-            console.error(`Error loading`, e)
-        }
+    /**
+     * 
+     * @param urlBase Should be in the form ws(s)://<host>:<port>/remote/<userSessionId>
+     */
+    constructor(urlBase: string) {
+        super([])
+        this.urlBase = urlBase
     }
 
     /**
-     * Replaces the loaded apps with new ones
+     * Refresh the directory with the given URLs and custom apps.
+     * Only reloads if something has actually changed to avoid race conditions.
+     * The update is atomic - allApps is replaced in a single assignment.
      */
-    async replace(url: string[]) {
-        this.allApps = []
-        for (const u of url) {
-            await this.load(u)
+    async refresh(urls: string[], customApps: DirectoryApp[]): Promise<void> {
+        // Capture JSON of inputs BEFORE any modifications (to avoid connectionUrl affecting comparison)
+        const urlsJson = JSON.stringify(urls)
+        const customAppsJson = JSON.stringify(customApps)
+
+        if (this.currentUrlsJson == urlsJson && this.currentCustomAppsJson == customAppsJson) {
+            return // Nothing changed
         }
-        console.log("Loaded " + this.allApps.length + " apps")
+
+        log.debug('Directory refresh triggered')
+
+        // Build new apps array
+        const newApps: DirectoryApp[] = []
+
+        // Load apps from URLs
+        for (const u of urls) {
+            const apps = await this.loadFromUrl(u)
+            apps.forEach(a => {
+                if (!newApps.find(a2 => a2.appId == a.appId)) {
+                    newApps.push(a)
+                }
+            })
+        }
+
+        // Deep copy custom apps to avoid modifying the originals when we set connectionUrl
+        const customAppsCopy: DirectoryApp[] = JSON.parse(customAppsJson)
+        customAppsCopy.forEach(a => {
+            if (!newApps.find(a2 => a2.appId == a.appId)) {
+                newApps.push(a)
+            }
+        })
+
+        // Set connection URLs for native apps
+        newApps.forEach(app => {
+            if (app.type === 'native') {
+                const applicationExtensionId = this.hashApplicationExtensionId(app.appId!);
+                (app.details as any)[FDC3_WEBSOCKET_PROPERTY] = `${this.urlBase}/${applicationExtensionId}`
+            }
+        })
+
+        // Atomic replacement
+        this.allApps = newApps
+        this.currentUrlsJson = urlsJson
+        this.currentCustomAppsJson = customAppsJson
+
+        log.debug({ totalApps: this.allApps.length }, 'Directory refreshed')
     }
 
-    add(d: DirectoryApp) {
-        this.allApps.push(d)
+    private async loadFromUrl(url: string): Promise<DirectoryApp[]> {
+        try {
+            const apps = await load(url)
+            log.debug({ count: apps.length, url }, 'Loaded apps from URL')
+            return apps
+        } catch (e) {
+            log.error({ url, error: e }, 'Error loading from URL')
+            return []
+        }
     }
 
     retrieveAppsByUrl(url: string): DirectoryApp[] {
         return this.retrieveAllApps().filter(a => a.type == 'web' && (a.details as any).url == url);
+    }
+
+    /**
+     * Use a hash for the remote id so it's consistent across SailDirectory reloads.
+     */
+    private hashApplicationExtensionId(appId: string): string {
+        const data = `${this.urlBase}:${appId}`
+        return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16)
     }
 
 }

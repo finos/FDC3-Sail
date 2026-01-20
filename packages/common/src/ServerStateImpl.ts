@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@finos/fdc3-web-impl";
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl";
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard";
 import { DA_DIRECTORY_LISTING, DA_HELLO, DA_REGISTER_APP_LAUNCH, DesktopAgentDirectoryListingArgs, DesktopAgentHelloArgs, DesktopAgentRegisterAppLaunchArgs, SAIL_APP_OPEN, SAIL_APP_STATE, SAIL_BROADCAST_CONTEXT, SAIL_CHANNEL_CHANGE, SAIL_CHANNEL_SETUP, SAIL_CLIENT_STATE, SAIL_INTENT_RESOLVE, SailAppOpenArgs, SailAppOpenResponse, SailAppStateArgs, SailBroadcastContextArgs, SailChannelChangeArgs, SailClientStateArgs, SailIntentResolveArgs, SailIntentResolveResponse } from "./message-types";
@@ -95,7 +95,7 @@ export class ServerStateImpl implements ServerState {
             })
 
             this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
-                console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
                 this.cs!.setIntentResolution({
                     appIntents: data.appIntents,
                     context: data.context,
@@ -106,7 +106,7 @@ export class ServerStateImpl implements ServerState {
             })
 
             this.socket?.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
-                console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
                 this.cs!.appendContextHistory(data.channelId, data.context)
             })
         })
