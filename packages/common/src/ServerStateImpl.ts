@@ -95,7 +95,7 @@ export class ServerStateImpl implements ServerState {
             })
 
             this.socket?.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
-                console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_INTENT_RESOLVE: ${JSON.stringify(data)}`)
                 this.cs!.setIntentResolution({
                     appIntents: data.appIntents,
                     context: data.context,
@@ -106,7 +106,7 @@ export class ServerStateImpl implements ServerState {
             })
 
             this.socket?.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
-                console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
+                //console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
                 this.cs!.appendContextHistory(data.channelId, data.context)
             })
         })
