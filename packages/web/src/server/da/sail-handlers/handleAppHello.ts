@@ -4,6 +4,9 @@ import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { SailData } from "../SailFDC3ServerInstance"
 import { Connection } from "../connection/Connection"
 import { ConnectionContext, ConnectionType, DEBUG_MODE } from "./types"
+import { createLogger } from "../../logger"
+
+const log = createLogger('AppHello')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -19,7 +22,7 @@ export function handleAppHello(
     props: AppHelloArgs,
     callback: (success: any, err?: string) => void
 ): void {
-    console.log("SAIL APP HELLO: " + JSON.stringify(props))
+    log.debug({ props }, 'APP_HELLO received')
 
     ctx.appInstanceId = props.instanceId
     ctx.userSessionId = props.userSessionId
@@ -28,7 +31,7 @@ export function handleAppHello(
     const fdc3Server = factory.getSession(ctx.userSessionId)
 
     if (fdc3Server != undefined) {
-        console.log("SAIL An app connected: ", ctx.userSessionId, ctx.appInstanceId)
+        log.debug({ userSessionId: ctx.userSessionId, appInstanceId: ctx.appInstanceId }, 'App connected')
         const appInstance = fdc3Server.getInstanceDetails(ctx.appInstanceId)
         const directoryItem = fdc3Server.directory.retrieveAppsById(props.appId)
         if ((appInstance != undefined) && (appInstance.state == State.Pending)) {
@@ -38,7 +41,7 @@ export function handleAppHello(
             ctx.fdc3ServerInstance.setInstanceDetails(ctx.appInstanceId, appInstance)
             return callback(appInstance.hosting)
         } else if ((DEBUG_MODE && directoryItem.length > 0)) {
-            console.error("App tried to connect with invalid instance id, allowing connection anyway ", ctx.appInstanceId)
+            log.warn({ appInstanceId: ctx.appInstanceId }, 'App tried to connect with invalid instance id, allowing connection anyway')
 
             const shm: SailHostManifest = directoryItem[0]?.hostManifests?.sail as any
 
@@ -60,11 +63,11 @@ export function handleAppHello(
             return callback(instanceDetails.hosting)
         }
 
-        console.error("App tried to connect with invalid instance id")
+        log.error({ appInstanceId: ctx.appInstanceId }, 'App tried to connect with invalid instance id')
         return callback(null, "Invalid instance id")
 
     } else {
-        console.error("App Tried Connecting to non-existent DA Instance ", ctx.userSessionId, ctx.appInstanceId)
+        log.error({ userSessionId: ctx.userSessionId, appInstanceId: ctx.appInstanceId }, 'App tried connecting to non-existent DA instance')
         callback(null, "App Tried Connecting to non-existent DA Instance")
     }
 }

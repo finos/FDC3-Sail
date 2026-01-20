@@ -5,8 +5,11 @@ import { WebSocketConnection } from "./connection/WebSocketConnection"
 import { createConnectionContext } from "./sail-handlers"
 import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
 import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
-import { handleDisconnect } from "./sail-handlers/handleDisconnect"
 import { handleRemoteAppMessage } from "./sail-handlers/handleRemoteAppMessage"
+import { handleRemoteAppDisconnect } from "./sail-handlers/handleRemoteAppDisconnect"
+import { createLogger } from "../logger"
+
+const log = createLogger('RemoteSocket')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -54,7 +57,7 @@ export class RemoteSocketService {
         this.setupUpgradeHandler()
         this.setupConnectionHandler()
 
-        console.log("SAIL RemoteSocketService initialized")
+        log.info('RemoteSocketService initialized')
     }
 
     private setupUpgradeHandler(): void {
@@ -76,7 +79,7 @@ export class RemoteSocketService {
                         })
                         return
                     } else {
-                        console.log(`SAIL Remote connection rejected - path not active: ${pathname}`)
+                        log.error({ pathname }, 'Remote connection rejected - path not active')
                         socket.destroy()
                         return
                     }
@@ -88,11 +91,11 @@ export class RemoteSocketService {
 
     private setupConnectionHandler(): void {
         this.wss.on('connection', (ws: WebSocket, _request: IncomingMessage, meta: { userSessionId: string, applicationExtensionId: string }) => {
-            console.log(`SAIL Remote WebSocket client connected: ${meta.userSessionId}/${meta.applicationExtensionId}`)
+            log.info({ userSessionId: meta.userSessionId, applicationExtensionId: meta.applicationExtensionId }, 'Remote WebSocket client connected')
 
             const remoteApp = this.getRemoteApp(meta.applicationExtensionId)
             if (!remoteApp) {
-                console.error(`SAIL Remote app not found for applicationExtensionId: ${meta.applicationExtensionId}`)
+                log.error({ applicationExtensionId: meta.applicationExtensionId }, 'Remote app not found')
                 ws.close()
                 return
             }
@@ -100,7 +103,7 @@ export class RemoteSocketService {
             // Get the FDC3 server instance for this user session
             const fdc3Server = this.factory.getSession(meta.userSessionId)
             if (!fdc3Server) {
-                console.error(`SAIL Remote: No FDC3 session found for userSessionId: ${meta.userSessionId}`)
+                log.error({ userSessionId: meta.userSessionId }, 'No FDC3 session found')
                 ws.close()
                 return
             }
@@ -116,14 +119,14 @@ export class RemoteSocketService {
                     const message = JSON.parse(data.toString())
                     handleRemoteAppMessage(ctx, remoteApp, connection, message)
                 } catch (e) {
-                    console.error("SAIL Remote: Failed to parse message as JSON", e)
+                    log.error({ error: e }, 'Remote: Failed to parse message as JSON')
                 }
             })
 
-            ws.on('close', () => handleDisconnect(ctx, this.factory))
+            ws.on('close', () => handleRemoteAppDisconnect(ctx))
 
             ws.on('error', (error) => {
-                console.error(`SAIL Remote WebSocket error: ${meta.userSessionId}/${meta.applicationExtensionId}`, error)
+                log.error({ userSessionId: meta.userSessionId, applicationExtensionId: meta.applicationExtensionId, error }, 'Remote WebSocket error')
             })
         })
     }
@@ -173,20 +176,20 @@ export class RemoteSocketService {
 
         // Disable old endpoints
         for (const id of idsToDisable) {
-            console.log(`SAIL Disabling remote socket: /remote/${this.userSessionId}/${id}`)
+            log.debug({ path: `/remote/${this.userSessionId}/${id}` }, 'Disabling remote socket')
             this.activeRemoteApps.delete(id)
         }
 
         // Enable new endpoints
         for (const [extId, app] of appsToEnable) {
-            console.log(`SAIL Enabling remote socket: /remote/${userSessionId}/${extId} for app ${app.appId}`)
+            log.debug({ path: `/remote/${userSessionId}/${extId}`, appId: app.appId }, 'Enabling remote socket')
             this.activeRemoteApps.set(extId, app)
         }
 
         // Update session ID
         this.userSessionId = userSessionId
 
-        console.log(`SAIL RemoteSocketService: ${this.activeRemoteApps.size} active remote app endpoints`)
+        log.debug({ activeEndpoints: this.activeRemoteApps.size }, 'RemoteSocketService refreshed')
     }
 
     /**
@@ -204,6 +207,6 @@ export class RemoteSocketService {
     shutdown(): void {
         this.wss.close()
         this.activeRemoteApps.clear()
-        console.log("SAIL RemoteSocketService shutdown")
+        log.info('RemoteSocketService shutdown')
     }
 }

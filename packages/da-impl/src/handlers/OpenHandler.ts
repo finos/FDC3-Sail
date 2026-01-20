@@ -1,4 +1,4 @@
-import { MessageHandler } from './MessageHandler';
+import { LogFunction, MessageHandler } from './MessageHandler';
 import { FDC3ServerInstance } from '../FDC3ServerInstance';
 import { InstanceID, State } from '../AppRegistration';
 import { DirectoryApp } from '../directory/DirectoryInterface';
@@ -31,12 +31,14 @@ type WebConnectionProtocol5ValidateAppIdentitySuccessResponse =
 
 export class OpenHandler implements MessageHandler {
   readonly timeoutMs: number;
+  private readonly log: LogFunction;
 
-  constructor(timeoutMs: number) {
+  constructor(timeoutMs: number, log?: LogFunction) {
     this.timeoutMs = timeoutMs;
+    this.log = log ?? (() => { });
   }
 
-  shutdown(): void {}
+  shutdown(): void { }
 
   async accept(
     msg: AppRequestMessage | WebConnectionProtocol4ValidateAppIdentity,
@@ -67,7 +69,7 @@ export class OpenHandler implements MessageHandler {
           errorResponse(sc, msg, from, (e as Error).message ?? e, responseType);
         }
       } else {
-        console.warn('Received message from unknown source, ignoring', msg, uuid);
+        this.log('Received message from unknown source, ignoring', msg, uuid);
       }
     }
   }
@@ -241,12 +243,12 @@ export class OpenHandler implements MessageHandler {
 
     if (arg0.payload.instanceUuid) {
       // existing app reconnecting
-      console.log('App attempting to reconnect:', arg0.payload.instanceUuid);
+      this.log('App attempting to reconnect:', arg0.payload.instanceUuid);
       const appIdentity = sc.getInstanceDetails(arg0.payload.instanceUuid);
 
       if (appIdentity) {
         // in this case, the app is reconnecting, so let's just re-assign the identity
-        console.log(
+        this.log(
           `Reassigned existing identity, appId: `,
           appIdentity.appId,
           ', instanceId',
@@ -257,7 +259,7 @@ export class OpenHandler implements MessageHandler {
         return returnSuccess(appIdentity.appId, appIdentity.instanceId);
       } else {
         //we didn't find the identity, assign a new one
-        console.log('Existing identity not found for, assigning a new one: ', arg0.payload.instanceUuid);
+        this.log('Existing identity not found for, assigning a new one: ', arg0.payload.instanceUuid);
       }
     }
 

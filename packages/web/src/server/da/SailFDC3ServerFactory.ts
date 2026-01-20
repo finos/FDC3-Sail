@@ -1,9 +1,22 @@
 import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common";
-import { ChannelType, ChannelState, MessageHandler, BroadcastHandler, IntentHandler, OpenHandler, HeartbeatHandler } from "@finos/fdc3-sail-da-impl";
+import { ChannelType, ChannelState, MessageHandler, BroadcastHandler, IntentHandler, OpenHandler, HeartbeatHandler, LogFunction } from "@finos/fdc3-sail-da-impl";
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance";
 import { SailDirectory } from "../appd/SailDirectory";
 import { SocketIOConnection } from "./connection";
 import { getSailUrl } from "./sail-handlers/types";
+import { createLogger } from "../logger";
+
+// Create handler-specific loggers that adapt pino to the LogFunction signature
+function createHandlerLog(name: string): LogFunction {
+    const log = createLogger(name);
+    return (message: string, ...args: unknown[]) => {
+        if (args.length > 0) {
+            log.debug({ args }, message);
+        } else {
+            log.debug(message);
+        }
+    };
+}
 
 /**
  * Converts an HTTP(S) URL to a WebSocket URL.
@@ -46,13 +59,13 @@ export class SailFDC3ServerFactory {
         intentTimeoutMs: number = 20000,
         openHandlerTimeoutMs: number = 10000
     ) {
-        this.handlers.push(new BroadcastHandler());
-        this.handlers.push(new IntentHandler(intentTimeoutMs));
-        this.handlers.push(new OpenHandler(openHandlerTimeoutMs));
+        this.handlers.push(new BroadcastHandler(createHandlerLog('BroadcastHandler')));
+        this.handlers.push(new IntentHandler(intentTimeoutMs, createHandlerLog('IntentHandler')));
+        this.handlers.push(new OpenHandler(openHandlerTimeoutMs, createHandlerLog('OpenHandler')));
 
         if (heartbeats) {
             this.handlers.push(
-                new HeartbeatHandler(openHandlerTimeoutMs / 10, openHandlerTimeoutMs / 2, openHandlerTimeoutMs)
+                new HeartbeatHandler(openHandlerTimeoutMs / 10, openHandlerTimeoutMs / 2, openHandlerTimeoutMs, createHandlerLog('HeartbeatHandler'))
             );
         }
     }

@@ -65,15 +65,15 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   async heartbeatActivity(instanceId: InstanceID, event: HeartbeatActivityEvent): Promise<void> {
     switch (event) {
       case HeartbeatActivityEvent.ConnectedResponding:
-        console.error(`Heartbeat from ${instanceId}. App is considered connected.`);
+        //console.error(`Heartbeat from ${instanceId}. App is considered connected.`);
         await this.setAppState(instanceId, State.Connected);
         break;
       case HeartbeatActivityEvent.NotRespondingAfterDisconnectTime:
-        console.error(`No heartbeat from ${instanceId}. App is considered not responding.`);
+        //console.error(`No heartbeat from ${instanceId}. App is considered not responding.`);
         await this.setAppState(instanceId, State.NotResponding);
         break;
       case HeartbeatActivityEvent.NotRespondingAfterDeadTime:
-        console.error(`No heartbeat from ${instanceId}. App is considered terminated.`);
+        //console.error(`No heartbeat from ${instanceId}. App is considered terminated.`);
         await this.setAppState(instanceId, State.Terminated);
         break;
     }

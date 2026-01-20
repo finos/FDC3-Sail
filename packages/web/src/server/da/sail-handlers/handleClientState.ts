@@ -1,7 +1,10 @@
 import { SailClientStateArgs, ChannelReceiverUpdate, CHANNEL_RECEIVER_UPDATE } from "@finos/fdc3-sail-common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
+import { createLogger } from "../../logger"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
+
+const log = createLogger('ClientState')
 
 /**
  * Handle SAIL_CLIENT_STATE message
@@ -11,7 +14,7 @@ export async function handleClientState(
     props: SailClientStateArgs,
     callback: (success: any, err?: string) => void
 ): Promise<void> {
-    console.log("SAIL CLIENT STATE: " + JSON.stringify(props))
+    log.debug({ props }, 'SAIL_CLIENT_STATE received')
     const session = factory.getSession(props.userSessionId)
     if (session) {
         await session.reloadAppDirectories(props.directories, props.customApps)

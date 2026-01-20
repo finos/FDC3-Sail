@@ -3,6 +3,9 @@ import { v4 as uuid } from 'uuid'
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { ConnectionContext, getSailUrl } from "./types"
 import { SocketIOConnection } from "../connection"
+import { createLogger } from "../../logger"
+
+const log = createLogger('ElectronHello')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -16,14 +19,14 @@ export async function handleElectronHello(
     props: ElectronHelloArgs,
     callback: (success: any, err?: string) => void
 ): Promise<void> {
-    console.log("SAIL ELECTRON HELLO: " + JSON.stringify(props))
+    log.debug({ props }, 'ELECTRON_HELLO received')
     let fdc3Server = factory.getSession(props.userSessionId)
 
     if (fdc3Server) {
         const allApps = fdc3Server.getDirectory().retrieveAppsByUrl(props.url)
 
         if (allApps.length > 0) {
-            console.log("SAIL Found app", allApps[0].appId)
+            log.debug({ appId: allApps[0].appId }, 'Found app')
             callback({
                 type: 'app',
                 userSessionId: ctx.userSessionId,
@@ -33,7 +36,7 @@ export async function handleElectronHello(
                 channelSelector: null
             } as ElectronAppResponse)
         } else {
-            console.error("App not found", props.url)
+            log.error({ url: props.url }, 'App not found')
             callback(null, "App not found")
         }
     } else if (props.url == getSailUrl()) {
@@ -44,6 +47,6 @@ export async function handleElectronHello(
             type: 'da',
         } as ElectronDAResponse)
     } else {
-        console.error("Session not found", ctx.userSessionId)
+        log.error({ userSessionId: ctx.userSessionId }, 'Session not found')
     }
 }

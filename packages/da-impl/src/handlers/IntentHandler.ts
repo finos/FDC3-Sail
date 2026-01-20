@@ -1,4 +1,4 @@
-import { MessageHandler } from './MessageHandler';
+import { LogFunction, MessageHandler } from './MessageHandler';
 import { FDC3ServerInstance, IntentListenerRegistration } from '../FDC3ServerInstance';
 import { AppRegistration, InstanceID, State } from '../AppRegistration';
 import { DirectoryIntent } from '../directory/DirectoryInterface';
@@ -115,12 +115,14 @@ class PendingIntent {
 export class IntentHandler implements MessageHandler {
   readonly pendingIntents: Set<PendingIntent> = new Set();
   readonly timeoutMs: number;
+  private readonly log: LogFunction;
 
-  constructor(timeoutMs: number) {
+  constructor(timeoutMs: number, log?: LogFunction) {
     this.timeoutMs = timeoutMs;
+    this.log = log ?? (() => { });
   }
 
-  shutdown(): void {}
+  shutdown(): void { }
 
   async narrowIntents(
     raiser: AppIdentifier,
@@ -448,7 +450,7 @@ export class IntentHandler implements MessageHandler {
         return this.raiseIntentRequestToSpecificAppId([intentRequest], sc, target);
       } else {
         //invalid target
-        console.warn('Received an invalid target argument for raiseIntent', target, arg0);
+        this.log('Received an invalid target argument for raiseIntent', target, arg0);
         return errorResponseId(
           sc,
           arg0.meta.requestUuid,
@@ -499,7 +501,7 @@ export class IntentHandler implements MessageHandler {
         return this.raiseIntentRequestToSpecificAppId(possibleIntentRequests, sc, target);
       } else {
         //invalid target
-        console.warn('Received an invalid target argument for raiseIntentForContext', target, arg0);
+        this.log('Received an invalid target argument for raiseIntentForContext', target, arg0);
         return errorResponseId(
           sc,
           arg0.meta.requestUuid,
@@ -622,5 +624,5 @@ export class IntentHandler implements MessageHandler {
     return filteredApps;
   }
 
-  async handleEvent(): Promise<void> {}
+  async handleEvent(): Promise<void> { }
 }

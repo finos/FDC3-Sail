@@ -2,6 +2,9 @@ import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl";
 import { FDC3_WEBSOCKET_PROPERTY } from '@finos/fdc3-sail-common';
+import { createLogger } from '../logger';
+
+const log = createLogger('Directory')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -73,7 +76,7 @@ export class SailDirectory extends BasicDirectory {
             return // Nothing changed
         }
 
-        console.log("Directory refresh triggered")
+        log.debug('Directory refresh triggered')
 
         // Build new apps array
         const newApps: DirectoryApp[] = []
@@ -109,16 +112,16 @@ export class SailDirectory extends BasicDirectory {
         this.currentUrlsJson = urlsJson
         this.currentCustomAppsJson = customAppsJson
 
-        console.log("Directory refreshed: " + this.allApps.length + " total apps")
+        log.debug({ totalApps: this.allApps.length }, 'Directory refreshed')
     }
 
     private async loadFromUrl(url: string): Promise<DirectoryApp[]> {
         try {
             const apps = await load(url)
-            console.log(`Loaded ${apps.length} apps from`, url)
+            log.debug({ count: apps.length, url }, 'Loaded apps from URL')
             return apps
         } catch (e) {
-            console.error(`Error loading from ${url}:`, e)
+            log.error({ url, error: e }, 'Error loading from URL')
             return []
         }
     }

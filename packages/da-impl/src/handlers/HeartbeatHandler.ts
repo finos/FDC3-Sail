@@ -1,4 +1,4 @@
-import { MessageHandler } from './MessageHandler';
+import { LogFunction, MessageHandler } from './MessageHandler';
 import { InstanceID, State } from '../AppRegistration';
 import {
   AppRequestMessage,
@@ -39,8 +39,10 @@ export class HeartbeatHandler implements MessageHandler {
   private readonly fdc3Instances: FDC3ServerInstance[] = [];
   private readonly lastHeartbeats: Map<InstanceID, number> = new Map();
   private readonly timerFunction: NodeJS.Timeout;
+  private readonly log: LogFunction;
 
-  constructor(pingInterval: number = 1000, disconnectedAfter: number = 5000, deadAfter: number = 20000) {
+  constructor(pingInterval: number = 1000, disconnectedAfter: number = 5000, deadAfter: number = 20000, log?: LogFunction) {
+    this.log = log ?? (() => { });
     this.timerFunction = setInterval(() => {
       this.fdc3Instances.forEach(async sc => {
         const apps = await sc.getAllApps();
@@ -62,6 +64,7 @@ export class HeartbeatHandler implements MessageHandler {
               } else if (timeSinceLastHeartbeat > disconnectedAfter && currentState == State.Connected) {
                 sc.heartbeatActivity(app.instanceId, HeartbeatActivityEvent.NotRespondingAfterDisconnectTime);
               } else if (timeSinceLastHeartbeat > deadAfter && currentState == State.NotResponding) {
+                this.log(`No heartbeat from ${app.instanceId} for ${timeSinceLastHeartbeat}ms. App is considered terminated.`);
                 sc.heartbeatActivity(app.instanceId, HeartbeatActivityEvent.NotRespondingAfterDeadTime);
               } else {
                 // no action

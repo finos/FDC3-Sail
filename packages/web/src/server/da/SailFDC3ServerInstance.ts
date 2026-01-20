@@ -8,6 +8,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { mapChannels } from "./SailFDC3ServerFactory"
 import { SocketIOConnection } from "./connection"
+import { createLogger } from "../logger"
+
+const log = createLogger('FDC3ServerInstance')
 /**
  * Represents the state of a Sail app.
  * Pending: App has a window, but isn't connected to FDC3
@@ -117,7 +120,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     setInstanceDetails(uuid: InstanceID, details: SailData): void {
         if (uuid != details.instanceId) {
-            console.error("UUID mismatch", uuid, details.instanceId)
+            log.error({ uuid, instanceId: details.instanceId }, 'UUID mismatch')
         }
 
         this.instances = this.instances.filter(ca => ca.instanceId !== uuid)
@@ -152,7 +155,12 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
             if (state == State.Terminated) {
                 this.instances = this.instances.filter(a => (a.instanceId !== app))
+                log.info({ app }, 'App terminated')
+            } else {
+                log.debug({ app, state }, 'App state updated')
             }
+        } else {
+            log.error({ app, state }, 'App state not found')
         }
     }
 
@@ -172,7 +180,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
 
     log(message: string): void {
-        console.log('SAIL:' + message)
+        log.debug(message)
     }
 
     provider(): string {
@@ -275,18 +283,18 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         }
 
         return new Promise<AppIntent[]>((resolve) => {
-            console.log("SAIL Narrowing intents", augmentedIntents, context)
+            log.debug({ augmentedIntents, context }, 'Narrowing intents')
 
             this.connection.emitWithCallback(SAIL_INTENT_RESOLVE, {
                 appIntents: augmentedIntents,
                 context
             }, async (response: unknown, err?: string) => {
                 if (err) {
-                    console.error(err)
+                    log.error(err)
                     resolve([])
                 } else {
                     const typedResponse = response as SailIntentResolveResponse
-                    console.log("SAIL Narrowed intents", typedResponse)
+                    log.debug({ response: typedResponse }, 'Narrowed intents')
 
                     if (appNeedsStarting(typedResponse.appIntents)) {
                         // tell sail where to open the app
@@ -302,7 +310,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
 
     async notifyUserChannelsChanged(instanceId: string, channelId: string | null): Promise<void> {
-        console.log("SAIL User channels changed", instanceId, channelId)
+        log.debug({ instanceId, channelId }, 'User channels changed')
         const instance = this.getInstanceDetails(instanceId!)
         if (instance) {
             instance.channel = channelId
@@ -352,7 +360,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         })
         this.channelState.length = 0;
         this.channelState.push(...newState)
-        console.log("SAIL Updated channel data", this.channelState)
+        log.debug({ channelState: this.channelState }, 'Updated channel data')
     }
 
     getDirectory(): SailDirectory {

@@ -5,11 +5,14 @@ import { AppHosting } from "@finos/fdc3-sail-common"
 import { DirectoryApp, State } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from 'uuid'
 import { WebSocketConnection } from "../connection"
+import { createLogger } from "../../logger"
+import { SailData } from "../SailFDC3ServerInstance"
+
+const log = createLogger('RemoteAppMessage')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 type WebConnectionProtocol4ValidateAppIdentity = BrowserTypes.WebConnectionProtocol4ValidateAppIdentity
-
 
 /**
  * Messages are routed to the FDC3ServerInstance.receive() method.
@@ -22,7 +25,7 @@ export function handleRemoteAppMessage(
     data: any
 ): void {
     if (!ctx.fdc3ServerInstance) {
-        console.error("SAIL Remote: No FDC3 server instance in context")
+        log.error('No FDC3 server instance in context')
         return
     }
 
@@ -30,13 +33,13 @@ export function handleRemoteAppMessage(
     const messageType = data.type
 
     if (!messageType) {
-        console.error("SAIL Remote: Message missing 'type' field", data)
+        log.error({ data }, 'Message missing type field')
         return
     }
 
     // Log non-heartbeat messages
     if (!messageType.startsWith("heartbeat")) {
-        console.log(`SAIL Remote message: ${messageType}`, JSON.stringify(data).substring(0, 200))
+        log.debug({ messageType, data: JSON.stringify(data).substring(0, 200) }, 'Remote message received')
     }
 
     // Handle WCP4ValidateAppIdentity specially to register and validate the app
@@ -47,7 +50,7 @@ export function handleRemoteAppMessage(
 
     // For all other messages, we need an instanceId
     if (!ctx.appInstanceId) {
-        console.error("SAIL Remote: Received message before identity validation", messageType)
+        log.error({ messageType }, 'Received message before identity validation')
         return
     }
 
@@ -55,7 +58,7 @@ export function handleRemoteAppMessage(
     try {
         ctx.fdc3ServerInstance.receive(data, ctx.appInstanceId)
     } catch (e) {
-        console.error("SAIL Remote: Error processing message", e)
+        log.error({ error: e }, 'Error processing message')
     }
 }
 
@@ -80,37 +83,78 @@ function handleValidateAppIdentity(
     const instanceId = msg.payload.instanceId
     const appId = nativeApp.appId!
 
-    console.log(`SAIL Remote: ValidateAppIdentity - appId: ${appId}, instanceId: ${instanceId}, instanceUuid: ${instanceUuid}`)
+    log.debug({ appId, instanceId, instanceUuid }, 'ValidateAppIdentity')
 
-    // Determine the instance ID for this connection
-    // - If reconnecting (instanceUuid provided), use that
-    // - Otherwise, generate a new one
-    const resolvedInstanceId = instanceUuid || instanceId || 'sail-remote-' + uuid()
-    ctx.appInstanceId = resolvedInstanceId
-
-    // For new apps (no instanceUuid), we need to register the instance
-    // This is equivalent to what DA_REGISTER_APP_LAUNCH does for web apps
-    if (!instanceUuid) {
-        console.log(`SAIL Remote: Registering new remote app instance - appId: ${appId}, instanceId: ${resolvedInstanceId}`)
-        ctx.fdc3ServerInstance!.setInstanceDetails(resolvedInstanceId, {
-            instanceId: resolvedInstanceId,
-            state: State.Pending,
-            appId: appId,
-            connection: connection,
-            hosting: AppHosting.Remote,
-            channel: null,
-            instanceTitle: `${nativeApp.title || appId} (Remote)`,
-            channelConnections: []
-        })
-    }
-
-    // Forward to the FDC3 server for validation
-    // OpenHandler.handleValidate will:
-    // - If instanceUuid is provided: look up existing identity and reassign to this connection
-    // - If new: find the instance we just registered and confirm it
     try {
-        ctx.fdc3ServerInstance!.receive(msg, resolvedInstanceId)
+        if (instanceUuid) {
+            // Reconnecting app - look up existing identity
+            log.debug({ instanceUuid }, 'App attempting to reconnect')
+            const appIdentity = ctx.fdc3ServerInstance!.getInstanceDetails(instanceUuid)
+
+            if (appIdentity) {
+                reconnectExistingInstance(ctx, connection, msg, appIdentity)
+            } else {
+                log.info('Existing identity not found, creating new one')
+                registerNewInstance(ctx, nativeApp, connection, msg, appId)
+            }
+        } else {
+            // New app - register a new instance
+            log.info('New app - registering new instance')
+            registerNewInstance(ctx, nativeApp, connection, msg, appId)
+        }
     } catch (e) {
-        console.error("SAIL Remote: Error handling ValidateAppIdentity", e)
+        log.error({ error: e }, 'Error handling ValidateAppIdentity')
     }
+}
+
+/**
+ * Reconnects an existing remote app instance with a new connection.
+ */
+function reconnectExistingInstance(
+    ctx: ConnectionContext,
+    connection: WebSocketConnection,
+    msg: WebConnectionProtocol4ValidateAppIdentity,
+    appIdentity: SailData
+): void {
+    log.info({ appId: appIdentity.appId, instanceId: appIdentity.instanceId }, 'Reassigned existing identity for reconnecting app')
+    ctx.appInstanceId = appIdentity.instanceId
+
+    // Update the connection for the existing instance
+    ctx.fdc3ServerInstance!.setInstanceDetails(appIdentity.instanceId, {
+        ...appIdentity,
+        connection: connection
+    })
+
+    // Forward to FDC3 server for validation
+    ctx.fdc3ServerInstance!.receive(msg, appIdentity.instanceId)
+}
+
+/**
+ * Registers a new remote app instance and forwards the validation message.
+ */
+function registerNewInstance(
+    ctx: ConnectionContext,
+    nativeApp: DirectoryApp,
+    connection: WebSocketConnection,
+    msg: WebConnectionProtocol4ValidateAppIdentity,
+    appId: string,
+): void {
+    const newInstanceId = 'sail-remote-' + uuid()
+    ctx.appInstanceId = newInstanceId
+
+    log.info({ appId, instanceId: newInstanceId }, 'Registering new remote app instance')
+
+    ctx.fdc3ServerInstance!.setInstanceDetails(newInstanceId, {
+        instanceId: newInstanceId,
+        state: State.Pending,
+        appId: appId,
+        connection: connection,
+        hosting: AppHosting.Remote,
+        channel: null,
+        instanceTitle: `${nativeApp.title || appId} (Remote)`,
+        channelConnections: []
+    })
+
+    // Forward to FDC3 server for validation
+    ctx.fdc3ServerInstance!.receive(msg, newInstanceId)
 }

@@ -2,6 +2,9 @@ import { DesktopAgentRegisterAppLaunchArgs } from "@finos/fdc3-sail-common"
 import { State } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from 'uuid'
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
+import { createLogger } from "../../logger"
+
+const log = createLogger('RegisterAppLaunch')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -13,7 +16,7 @@ export function handleRegisterAppLaunch(
     props: DesktopAgentRegisterAppLaunchArgs,
     callback: (success: any, err?: string) => void
 ): void {
-    console.log("SAIL DA REGISTER APP LAUNCH: " + JSON.stringify(props))
+    log.debug({ props }, 'REGISTER_APP_LAUNCH received')
 
     const { appId, userSessionId } = props
     const session = factory.getSession(userSessionId)
@@ -28,10 +31,10 @@ export function handleRegisterAppLaunch(
             instanceTitle: props.instanceTitle,
             channelConnections: []
         })
-        console.log("SAIL Registered app", appId, instanceId)
+        log.debug({ appId, instanceId }, 'Registered app')
         callback(instanceId)
     } else {
-        console.error("SAIL Session not found", userSessionId)
+        log.error({ userSessionId }, 'Session not found')
         callback(null, "Session not found")
     }
 }

@@ -15,7 +15,7 @@ import { BroadcastHandler } from './handlers/BroadcastHandler';
 import { IntentHandler } from './handlers/IntentHandler';
 import { OpenHandler } from './handlers/OpenHandler';
 import { HeartbeatHandler } from './handlers/HeartbeatHandler';
-import { MessageHandler } from './handlers/MessageHandler';
+import { LogFunction, MessageHandler } from './handlers/MessageHandler';
 import { AbstractFDC3ServerInstance } from './AbstractFDC3ServerInstance';
 import {
   FDC3ServerInstanceEvent,
@@ -45,6 +45,7 @@ export {
   OpenHandler,
   HeartbeatHandler,
   type MessageHandler,
+  type LogFunction,
   PendingApp,
   AppState,
   type WebAppDetails,

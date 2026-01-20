@@ -1,4 +1,4 @@
-import { MessageHandler } from './MessageHandler';
+import { LogFunction, MessageHandler } from './MessageHandler';
 import {
   ChannelState,
   ChannelType,
@@ -50,6 +50,12 @@ function onlyUniqueAppIds(value: AppIdentifier, index: number, self: AppIdentifi
 }
 
 export class BroadcastHandler implements MessageHandler {
+  private readonly log: LogFunction;
+
+  constructor(log?: LogFunction) {
+    this.log = log ?? (() => { });
+  }
+
   shutdown(): void { }
 
   getCurrentChannel(from: FullAppIdentifier, sc: FDC3ServerInstance): ChannelState | null {
@@ -90,7 +96,7 @@ export class BroadcastHandler implements MessageHandler {
       return;
     }
 
-    //console.log(`BroadcastHandler: accept called with msg: ${JSON.stringify(msg)}`);
+    this.log(`BroadcastHandler: accept called with msg: ${JSON.stringify(msg)}`);
 
     try {
       switch (msg.type as string | null) {
@@ -491,7 +497,7 @@ export class BroadcastHandler implements MessageHandler {
         },
       } as PrivateChannelEvents; //Typescript doesn't like comparing an object with a union property (messageType) with a union of object types
 
-      console.log('invokePrivateChannelEventListeners msg: ', msg);
+      this.log('invokePrivateChannelEventListeners msg: ', msg);
       sc.getPrivateChannelEventListeners()
         .filter(
           listener =>
@@ -499,7 +505,7 @@ export class BroadcastHandler implements MessageHandler {
         )
         .filter(onlyUniqueAppIds)
         .forEach(e => {
-          console.log(`invokePrivateChannelEventListeners: posting to instance ${e.instanceId}`);
+          this.log(`invokePrivateChannelEventListeners: posting to instance ${e.instanceId}`);
           sc.post(msg, e.instanceId);
         });
     }

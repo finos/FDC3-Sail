@@ -2,6 +2,9 @@ import { SailChannelChangeArgs } from "@finos/fdc3-sail-common"
 import { BrowserTypes } from "@finos/fdc3"
 import { v4 as uuid } from 'uuid'
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
+import { createLogger } from "../../logger"
+
+const log = createLogger('ChannelChange')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -13,7 +16,7 @@ export async function handleChannelChange(
     props: SailChannelChangeArgs,
     callback: (success: any, err?: string) => void
 ): Promise<void> {
-    console.log("SAIL CHANNEL CHANGE: " + JSON.stringify(props))
+    log.debug({ props }, 'CHANNEL_CHANGE received')
     const session = factory.getSession(props.userSessionId)
 
     if (session) {
@@ -27,7 +30,7 @@ export async function handleChannelChange(
                 timestamp: new Date()
             }
         } as BrowserTypes.JoinUserChannelRequest, props.instanceId)
-        console.log("SAIL JOIN USER CHANNEL RESPONSE")
+        log.debug({ instanceId: props.instanceId, channel: props.channel }, 'Join user channel complete')
         await session.notifyUserChannelsChanged(props.instanceId, props.channel)
         callback(true)
     } else {

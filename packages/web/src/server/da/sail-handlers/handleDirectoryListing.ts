@@ -1,5 +1,8 @@
 import { DesktopAgentDirectoryListingArgs } from "@finos/fdc3-sail-common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
+import { createLogger } from "../../logger"
+
+const log = createLogger('DirectoryListing')
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -16,7 +19,7 @@ export function handleDirectoryListing(
     if (session) {
         callback(session?.getDirectory().allApps)
     } else {
-        console.error("Session not found", userSessionId)
+        log.error({ userSessionId }, 'Session not found')
         callback(null, "Session not found")
     }
 }
