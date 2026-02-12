@@ -159,7 +159,7 @@ export class DefaultAppState implements AppState {
         return new Promise((resolve) => {
             const sailManifest = detail.hostManifests?.sail ?? {}
             const forceNewWindow = ((typeof sailManifest === 'string') ? {} : sailManifest).forceNewWindow ?? false
-            const hosting: AppHosting = destination ?? (forceNewWindow ? AppHosting.Tab : AppHosting.Frame)
+            const hosting: AppHosting = (forceNewWindow ? AppHosting.Tab : undefined) ?? destination ?? AppHosting.Frame
             const instanceTitle = this.createTitle(detail)
             if (hosting == AppHosting.Tab) {
                 this.getServerState().registerAppLaunch(detail.appId, hosting, null, instanceTitle).then((instanceId) => {

@@ -16,9 +16,9 @@
         "rimraf": "^6.0.1"
     },
     "dependencies": {
-        "@finos/fdc3-agent-proxy": "2.2.0-beta.4",
-        "@finos/fdc3-schema": "2.2.0-beta.4",
-        "@finos/fdc3-web-impl": "2.2.0-beta.4",
+        "@finos/fdc3-agent-proxy": "2.2.1-beta.2",
+        "@finos/fdc3-schema": "2.2.1-beta.2",
+        "@finos/fdc3-web-impl": "2.2.1-beta.2",
         "socket.io-client": "^4.7.5",
         "typescript": "^5.7.3",
         "uuid": "^11.0.5"

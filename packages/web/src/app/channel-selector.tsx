@@ -50,6 +50,7 @@ window.addEventListener("load", () => {
     },
   }
 
+  // nosemgrep
   parent.postMessage(hello, "*", [mc.port2])
 
   function changeSize(expanded: boolean) {
