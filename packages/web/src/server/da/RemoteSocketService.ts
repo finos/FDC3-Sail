@@ -83,6 +83,10 @@ export class RemoteSocketService {
                         socket.destroy()
                         return
                     }
+                } else {
+                    log.error({ pathname }, 'Remote connection rejected - invalid path')
+                    socket.destroy()
+                    return
                 }
             }
             // If not a remote path, let other handlers deal with it
