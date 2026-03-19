@@ -1,15 +1,38 @@
-name: Static code analysis
+# SEMGREP_APP_TOKEN: Semgrep AppSec Platform > Settings (or help@finos.org for FINOS repos).
+# SARIF upload needs repo Settings → Actions → Workflow permissions to allow security events.
+name: Semgrep
 
-on: [push, pull_request]
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  security-events: write
+  contents: read
+  actions: read
 
 jobs:
   semgrep:
-    name: run-semgrep
-    runs-on: ubuntu-24.04
+    name: semgrep/ci
+    runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep
+    if: github.actor != 'dependabot[bot]'
+
     steps:
-      - uses: actions/checkout@v3
-      - run: semgrep scan --error --config auto
+      - uses: actions/checkout@v6
+      - name: Semgrep CI
+        run: semgrep ci --sarif > semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload SARIF file for GitHub Advanced Security Dashboard
+        uses: github/codeql-action/upload-sarif@v3
+        if: |
+          (success() || failure()) &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        with:
+          sarif_file: semgrep.sarif

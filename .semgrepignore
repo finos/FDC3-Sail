@@ -1,0 +1,12 @@
+# Extra paths Semgrep should skip (beyond its built-in defaults and root .gitignore).
+#
+# Semgrepignore v2 already applies:
+#   - default ignores (node_modules/, build/, dist/, vendor/, .venv/, *.min.js, test(s)/, …)
+#   - every .gitignore in the repo (node_modules, dist, build, .rollup.cache, …)
+#
+# Add lines here only for paths that are still scanned but aren’t worth SAST, e.g.:
+#   - semgrep.sarif          CI output (rare self-scan edge case)
+#   - **/fixtures/**         large test fixtures
+#   - directory/*.json       pure data if it ever triggers false positives
+#
+semgrep.sarif
