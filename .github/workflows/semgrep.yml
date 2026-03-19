@@ -18,12 +18,18 @@ jobs:
   semgrep:
     name: semgrep/ci
     runs-on: ubuntu-latest
-    container:
-      image: semgrep/semgrep
+    # Do not use a job-level container: semgrep/semgrep has no Node.js, so
+    # github/codeql-action/upload-sarif runs on the host and cannot see files
+    # written only inside the container workspace (semgrep.sarif "missing").
     if: github.actor != 'dependabot[bot]'
 
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Semgrep
+        run: pip install semgrep
       - name: Semgrep CI
         run: semgrep ci --sarif --sarif-output=semgrep.sarif
         env:
