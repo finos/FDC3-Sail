@@ -31,14 +31,29 @@ jobs:
       - name: Install Semgrep
         run: pip install semgrep
       - name: Semgrep CI
-        run: semgrep ci --sarif --sarif-output=semgrep.sarif
+        run: |
+          mkdir -p reports
+          semgrep ci --sarif --sarif-output=reports/semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      # failure() alone is unsafe: any earlier step failure (checkout, pip, …) still
+      # triggers upload-sarif, but semgrep.sarif was never written.
+      - name: Check SARIF output
+        id: sarif
+        if: always()
+        run: |
+          f="reports/semgrep.sarif"
+          if [ -f "$f" ] && [ -s "$f" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@v4
         if: |
-          (success() || failure()) &&
+          steps.sarif.outputs.ok == 'true' &&
           (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         with:
-          sarif_file: semgrep.sarif
+          sarif_file: reports/semgrep.sarif
