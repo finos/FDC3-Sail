@@ -1,5 +1,5 @@
 
-export enum AppHosting { Frame, Tab }
+export enum AppHosting { Frame, Tab, Remote }
 
 
 

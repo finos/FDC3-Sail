@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@finos/fdc3-web-impl"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { AppHosting } from "./app-hosting"
 import { SailClientStateArgs } from "./message-types"
 import { AppIdentifier } from "@finos/fdc3-standard"

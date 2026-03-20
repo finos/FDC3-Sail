@@ -129,6 +129,51 @@
     overflow-wrap: anywhere;
 }
 
+.url.disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.typeRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.fieldLabel {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.typeSelect {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.typeSelect:focus {
+    outline: none;
+    border-color: #694512;
+}
+
+/* Input styling for name, description, url */
+.name, .description, .url {
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+}
+
+.name:focus, .description:focus, .url:focus {
+    outline: none;
+    border-color: #694512;
+}
+
 .add {
     flex-grow: 0;
     flex-shrink: 0;
@@ -199,4 +244,9 @@
     text-align: center;
     grid-column-start: 1;
     grid-column-end: 3;
+}
+
+.selected {
+    background-color: #d0e8ff;
+    font-weight: bold;
 }

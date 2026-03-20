@@ -1,6 +1,6 @@
 import { AppOpenDetails, AppState } from "./AppState"
 import { AppHosting } from "./app-hosting"
-import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-web-impl";
+import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-sail-da-impl";
 import { SailAppStateArgs } from "./message-types";
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes";
 import { ServerState } from "./ServerState";

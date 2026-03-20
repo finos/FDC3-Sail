@@ -1,7 +1,12 @@
 import { GridStackPosition } from "gridstack"
 import { TabDetail, Directory, AugmentedAppIntent, SailClientStateArgs } from "./message-types";
 import { Context } from "@finos/fdc3-context";
-import { DirectoryApp } from "@finos/fdc3-web-impl";
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl";
+
+/**
+ * The property name of the connection URL for a remote app.
+ */
+export const FDC3_WEBSOCKET_PROPERTY = 'connectionUrl'
 
 export type AppPanel = GridStackPosition & {
     title: string

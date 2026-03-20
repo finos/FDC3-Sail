@@ -8,7 +8,7 @@ import {
   AppPanel,
   ClientState,
 } from "@finos/fdc3-sail-common"
-import { State } from "@finos/fdc3-web-impl"
+import { State } from "@finos/fdc3-sail-da-impl"
 //import { AppHosting } from "@finos/fdc3-sail-common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }

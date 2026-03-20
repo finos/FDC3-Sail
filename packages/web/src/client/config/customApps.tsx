@@ -1,6 +1,6 @@
 import { getClientState, getServerState } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-web-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
 import { v4 as uuid } from "uuid"
 import { InlineButton } from "./shared"
 import { intentTypes } from "./intentTypes"
@@ -64,9 +64,12 @@ type EditableIntent = {
   contexts: string[]
 }
 
+type AppType = "web" | "native"
+
 type EditableState = {
   id: string
   title: string
+  type: AppType
   url: string
   description: string
   intents: EditableIntent[]
@@ -76,6 +79,7 @@ function newApp(): EditableState {
   return {
     id: "app-id" + uuid(),
     title: "New App",
+    type: "web",
     url: "https://your.app.url/here",
     description: "Describe your app here",
     intents: [
@@ -94,6 +98,7 @@ function createInitialState(): EditableState[] {
       const lf = a.interop?.intents?.listensFor ?? {}
       return {
         id: a.appId,
+        type: (a.type === "native" ? "native" : "web") as AppType,
         url: (a.details as WebAppDetails)?.url ?? "",
         title: a.title,
         description: a.description ?? "",
@@ -114,10 +119,8 @@ function convertToDirectoryApps(es: EditableState[]): DirectoryApp[] {
       appId: s.id,
       title: s.title,
       name: s.title,
-      details: {
-        url: s.url,
-      },
-      type: "web",
+      details: s.type === "web" ? { url: s.url } : { path: "" },
+      type: s.type,
       description: s.description,
       icons: [{ src: "/icons/control/choose-app.svg" }],
       screenshots: [{ src: "/images/screenshot.webp" }],
@@ -287,36 +290,47 @@ const CustomAppItem = ({
   return (
     <div key={d.id} className={styles.item}>
       <div className={styles.verticalControlsGrow}>
-        <div
+        <input
+          type="text"
           className={styles.name}
-          contentEditable={true}
-          onBlur={(e) => {
-            d.title = e.currentTarget.textContent ?? ""
-            update(d)
+          value={d.title}
+          placeholder="App Title"
+          onChange={(e) => {
+            update({ ...d, title: e.target.value })
           }}
-        >
-          {d.title}
-        </div>
-        <div
+        />
+        <input
+          type="text"
           className={styles.description}
-          contentEditable={true}
-          onBlur={(e) => {
-            d.description = e.currentTarget.textContent ?? ""
-            update(d)
+          value={d.description}
+          placeholder="App Description"
+          onChange={(e) => {
+            update({ ...d, description: e.target.value })
           }}
-        >
-          {d.description}
+        />
+        <div className={styles.typeRow}>
+          <label className={styles.fieldLabel}>Type:</label>
+          <select
+            className={styles.typeSelect}
+            value={d.type}
+            onChange={(e) => {
+              update({ ...d, type: e.target.value as AppType })
+            }}
+          >
+            <option value="web">Web</option>
+            <option value="native">Native</option>
+          </select>
         </div>
-        <div
-          className={styles.url}
-          contentEditable={true}
-          onBlur={(e) => {
-            d.url = e.currentTarget.textContent ?? ""
-            update(d)
+        <input
+          type="text"
+          className={`${styles.url} ${d.type === "native" ? styles.disabled : ""}`}
+          value={d.url}
+          placeholder="https://your.app.url/here"
+          disabled={d.type === "native"}
+          onChange={(e) => {
+            update({ ...d, url: e.target.value })
           }}
-        >
-          {d.url}
-        </div>
+        />
 
         <InteropList app={d} update={update} />
       </div>

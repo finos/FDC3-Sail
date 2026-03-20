@@ -38,12 +38,47 @@
     background-color: #cdcdcd;
 }
 
-.appDDetail {
+.appDDetailContainer {
     flex-grow: 1;
     flex-basis: 40rem;
-    background-color: #fafafa;
-    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
     max-height: 40rem;
+    background-color: #fafafa;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.appDDetail {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.tabBar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab:hover {
+    background-color: #e0e0e0;
+}
+
+.activeTab {
+    color: #333;
+    border-bottom: 2px solid #694512;
+    background-color: #fafafa;
 }
 
 .appDInfo {
@@ -51,9 +86,115 @@
     border-radius: .5rem;
 }
 
-.appDScreenshots {}
+.appDJson {
+    padding: 1rem;
+    font-size: 0.8rem;
+}
+
+.appDJson pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    overflow-x: auto;
+}
+
+.appDScreenshots {
+    padding: 1rem;
+}
 
 .appDScreenshots img {
     width: 100%;
     border-radius: .5rem;
+    margin-bottom: 1rem;
+}
+
+.appDScreenshots img:last-child {
+    margin-bottom: 0;
+}
+
+.noScreenshots {
+    color: #888;
+    font-style: italic;
+}
+
+.connectionSection {
+    margin-top: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.connectionIntro {
+    margin: 0;
+    padding: 0.75rem;
+    background-color: #e8f4fc;
+    font-size: 0.9rem;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+}
+
+.platformTabs {
+    display: flex;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+
+.platformTab {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.platformTab:hover {
+    background-color: #e8e8e8;
+}
+
+.activePlatformTab {
+    color: #333;
+    background-color: #fff;
+    border-bottom: 2px solid #694512;
+}
+
+.platformContent {
+    padding: 0.75rem;
+    background-color: #fafafa;
+}
+
+.platformInstructions p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.platformInstructions p code {
+    background-color: #e8e8e8;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.2rem;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.85rem;
+}
+
+.platformInstructions .placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+.connectionCode {
+    display: block;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.85rem;
+    color: #333;
+    background-color: #fff;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ddd;
+    word-break: break-all;
+    user-select: all;
 }

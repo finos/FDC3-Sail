@@ -1,4 +1,4 @@
-import { AppRegistration, DirectoryApp } from "@finos/fdc3-web-impl"
+import { AppRegistration, DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { AppHosting } from "./app-hosting"
 import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
