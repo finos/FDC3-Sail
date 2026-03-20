@@ -1,15 +1,59 @@
-name: Static code analysis
+# SEMGREP_APP_TOKEN: Semgrep AppSec Platform > Settings (or help@finos.org for FINOS repos).
+# SARIF upload needs repo Settings → Actions → Workflow permissions to allow security events.
+name: Semgrep
 
-on: [push, pull_request]
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  security-events: write
+  contents: read
+  actions: read
 
 jobs:
   semgrep:
-    name: run-semgrep
-    runs-on: ubuntu-24.04
-    container:
-      image: returntocorp/semgrep
+    name: semgrep/ci
+    runs-on: ubuntu-latest
+    # Do not use a job-level container: semgrep/semgrep has no Node.js, so
+    # github/codeql-action/upload-sarif runs on the host and cannot see files
+    # written only inside the container workspace (semgrep.sarif "missing").
+    if: github.actor != 'dependabot[bot]'
+
     steps:
-      - uses: actions/checkout@v3
-      - run: semgrep scan --error --config auto
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Semgrep CI
+        run: |
+          mkdir -p reports
+          semgrep ci --sarif --sarif-output=reports/semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      # failure() alone is unsafe: any earlier step failure (checkout, pip, …) still
+      # triggers upload-sarif, but semgrep.sarif was never written.
+      - name: Check SARIF output
+        id: sarif
+        if: always()
+        run: |
+          f="reports/semgrep.sarif"
+          if [ -f "$f" ] && [ -s "$f" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload SARIF file for GitHub Advanced Security Dashboard
+        uses: github/codeql-action/upload-sarif@v4
+        if: |
+          steps.sarif.outputs.ok == 'true' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        with:
+          sarif_file: reports/semgrep.sarif
