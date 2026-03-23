@@ -20,8 +20,6 @@ function createHandlerLog(name: string): LogFunction {
 
 /**
  * Converts an HTTP(S) URL to a WebSocket URL.
- * http:// -> ws://
- * https:// -> wss://
  */
 function toWebSocketUrl(httpUrl: string): string {
     if (httpUrl.startsWith('https://')) {
