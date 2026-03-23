@@ -1,6 +1,8 @@
 import { Connection } from "./Connection"
 import { WebSocket } from "ws"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 
 /**
  * Simple WebSocket implementation of the Connection interface for remote apps.
