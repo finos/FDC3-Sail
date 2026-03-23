@@ -27,7 +27,9 @@ function toWebSocketUrl(httpUrl: string): string {
     if (httpUrl.startsWith('https://')) {
         return 'wss://' + httpUrl.substring(8)
     } else if (httpUrl.startsWith('http://')) {
-        return 'ws://' + httpUrl.substring(7) // nosemgrep
+        // should only be used in dev
+        // nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket
+        return 'ws://' + httpUrl.substring(7) 
     }
     return httpUrl // Already a WebSocket URL or other protocol
 }
