@@ -169,7 +169,6 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
             log.error({ app, state }, 'App state not found')
         }
     }
-  }
 
   async getAllApps(): Promise<AppRegistration[]> {
     return this.instances.map((x) => {
