@@ -9,13 +9,17 @@ labels: meeting
 
 Meeting date and time in UTC (e.g. 2026 March 16th — 14:00 UTC):
 
-## Meeting Links
+## Zoom Details:
 
-**Join Meeting:**
-- [Join FDC3 Sail Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c)
+Register for the meeting and get an invite sent to your calendar here:
+https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c&invite=true
 
-**Register for Meeting Series:**
-- [Register for FDC3 Sail Meetings (add to calendar)](https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c&invite=true)
+Join Zoom Meeting:
+https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c
+
+Meeting ID: 95252800112
+Meeting Passcode: 001816
+Join via Phone: https://zoom.us/u/alwnPIaVT
 
 ## Meeting Notices
 
