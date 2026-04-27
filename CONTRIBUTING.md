@@ -1,4 +1,4 @@
-# Electron FDC3 Desktop Agent & App Directory Contribution and Governance Policies
+# FDC3 Sail Contribution and Governance Policies
 
 This document describes the contribution process and governance policies of the FINOS Electron FDC3 Desktop Agent & App Directory project. The project is also governed by the [Linux Foundation Antitrust Policy](https://www.linuxfoundation.org/antitrust-policy/), and the FINOS [IP Policy](https://github.com/finos/community/blob/master/governance/IP-Policy.pdf), [Code of Conduct](https://github.com/finos/community/blob/master/governance/Code-of-Conduct.md), [Collaborative Principles](https://github.com/finos/community/blob/master/governance/Collaborative-Principles.md), and [Meeting Procedures](https://github.com/finos/community/blob/master/governance/Meeting-Procedures.md).
 
