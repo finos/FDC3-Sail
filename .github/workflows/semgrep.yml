@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install Semgrep
-        run: pip install semgrep
+        run: python -m pip install --require-hashes -r .github/requirements-semgrep.txt
       - name: Semgrep CI
         run: |
           mkdir -p reports

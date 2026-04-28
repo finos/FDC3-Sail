@@ -1,0 +1,1 @@
+semgrep==1.161.0 --hash=sha256:bf4bc7caf27fa817f4a5a26b0875add679bc011aff70ae44aa46913e21f5a401
