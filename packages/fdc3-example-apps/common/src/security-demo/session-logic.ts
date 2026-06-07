@@ -1,6 +1,6 @@
 // Shared session status utility for FDC3 demo apps
-import type { Context } from "@robmoffat/fdc3-context"
-import type { FDC3Handlers } from "@robmoffat/fdc3-security"
+import type { Context } from "@finos/fdc3-context"
+import type { FDC3Handlers } from "@finos/fdc3-security"
 import { createLogEntry } from "./logging"
 
 /** Minimal shape for UI after backend session is established */

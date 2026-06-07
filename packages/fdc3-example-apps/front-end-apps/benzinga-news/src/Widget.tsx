@@ -1,4 +1,4 @@
-import { getAgent } from "@robmoffat/fdc3"
+import { getAgent } from "@finos/fdc3"
 import { useEffect, useMemo, useState } from "react"
 
 /**

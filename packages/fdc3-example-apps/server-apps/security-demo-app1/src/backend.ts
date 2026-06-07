@@ -1,9 +1,9 @@
 import type { Application } from "express"
 import type { Server } from "http"
 import { WebSocket } from "ws"
-import { Channel, IntentHandler } from "@robmoffat/fdc3"
-import { Context } from "@robmoffat/fdc3-context"
-import type { ContextMetadata } from "@robmoffat/fdc3-standard"
+import { Channel, IntentHandler } from "@finos/fdc3"
+import { Context } from "@finos/fdc3-context"
+import type { ContextMetadata } from "@finos/fdc3-standard"
 import {
   AllowListFunction,
   createJosePrivateFDC3Security,
@@ -15,7 +15,7 @@ import {
   provisionJWKS,
   setupWebsocketServer,
   type JSONWebEncryption,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /** Legacy name; valuations are pushed over the secure-boundary WebSocket with purpose {@link VALUATION_PUSH_PURPOSE}. */
 export const GET_PRICES_PURPOSE = "price-stream"
@@ -37,7 +37,7 @@ type RequestPricesPayload = {
  */
 class App1BackendHandlers extends DefaultFDC3Handlers {
   private user: App1UserSession | null = null
-  private readonly metadataHandler = new MetadataHandlerImpl(false)
+  private readonly metadataHandler = new MetadataHandlerImpl(true)
 
   constructor(
     private readonly security: JosePrivateFDC3Security,

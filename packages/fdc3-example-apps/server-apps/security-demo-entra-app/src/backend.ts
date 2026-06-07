@@ -4,8 +4,8 @@ import * as dotenv from "dotenv"
 import express from "express"
 import path from "path"
 import { WebSocket } from "ws"
-import { IntentHandler } from "@robmoffat/fdc3"
-import { Context } from "@robmoffat/fdc3-context"
+import { IntentHandler } from "@finos/fdc3"
+import { Context } from "@finos/fdc3-context"
 import {
   AllowListFunction,
   createJosePrivateFDC3Security,
@@ -13,7 +13,7 @@ import {
   JosePrivateFDC3Security,
   provisionJWKS,
   setupWebsocketServer,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 import { loadEntraConfig, type EntraConfig } from "./config"
 import { JWTValidator } from "./jwt-validator"
 

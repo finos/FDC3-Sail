@@ -8,13 +8,13 @@ import {
   DesktopAgent,
   getAgent,
   Listener,
-} from "@robmoffat/fdc3"
+} from "@finos/fdc3"
 import {
   connectRemoteHandlers,
   createJosePublicFDC3SecurityFromUrl,
   MetadataHandlerImpl,
   PublicSignatureCheckingHandlerSupport,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 import styles from "./main.module.css"
 
 const CONTEXT_TYPE = "fdc3.instrument"

@@ -1,10 +1,6 @@
 # Microsoft Entra ID Integration for FDC3 Security Demo
 
-This app demonstrates how to integrate Microsoft Entra ID (formerly Azure AD) with FDC3 security features.
-
-## Overview
-
-The Microsoft Entra app follows the same pattern as the IDP app but integrates with Microsoft's identity platform instead of using a simple demo authentication.
+This example mirrors the demo IDP’s `CreateIdentityToken` flow but signs users in with Microsoft Entra ID through MSAL and validates Entra-issued JWTs on the server. It supplies identity tokens to the same security POC apps that pair with the simple IDP example.
 
 ## Features
 

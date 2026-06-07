@@ -1,8 +1,8 @@
 import type { Application } from "express"
 import type { Server } from "http"
 import { WebSocket } from "ws"
-import { Context } from "@robmoffat/fdc3-context"
-import { Channel } from "@robmoffat/fdc3-standard"
+import { Context } from "@finos/fdc3-context"
+import { Channel } from "@finos/fdc3-standard"
 import {
   BasicSignedBroadcaster,
   createJosePrivateFDC3Security,
@@ -13,7 +13,7 @@ import {
   provisionJWKS,
   setupWebsocketServer,
   type SignedBroadcaster,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /** Client calls exchangeData with this purpose to broadcast the sample instrument (see signing-broadcast-example). */
 export const SIGNED_BROADCAST_TRIGGER = "send-signed-fdc3-instrument"

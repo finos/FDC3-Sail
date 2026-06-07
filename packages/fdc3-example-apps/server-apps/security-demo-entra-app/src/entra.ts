@@ -1,13 +1,10 @@
-import { DesktopAgent, Context, ContextMetadata } from "@robmoffat/fdc3"
+import { DesktopAgent, Context, ContextMetadata } from "@finos/fdc3"
 import {
   PublicClientApplication,
   type Configuration,
   type AuthenticationResult,
 } from "@azure/msal-browser"
-import {
-  connectRemoteHandlers,
-  type FDC3Handlers,
-} from "@robmoffat/fdc3-security"
+import { connectRemoteHandlers, type FDC3Handlers } from "@finos/fdc3-security"
 import { createLogEntry } from "../../../common/src/security-demo/logging"
 import { initializeFDC3 } from "../../../common/src/security-demo/fdc3"
 import {

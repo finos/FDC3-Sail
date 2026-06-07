@@ -1,9 +1,9 @@
 import type { Application } from "express"
 import type { Server } from "http"
 import { WebSocket } from "ws"
-import { Channel, IntentHandler, PrivateChannel } from "@robmoffat/fdc3"
-import { Context, Valuation } from "@robmoffat/fdc3-context"
-import type { ContextMetadata } from "@robmoffat/fdc3-standard"
+import { Channel, IntentHandler, PrivateChannel } from "@finos/fdc3"
+import { Context, Valuation } from "@finos/fdc3-context"
+import type { ContextMetadata } from "@finos/fdc3-standard"
 import {
   AllowListFunction,
   createJosePrivateFDC3Security,
@@ -14,7 +14,7 @@ import {
   MetadataHandlerImpl,
   provisionJWKS,
   setupWebsocketServer,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /** Pushed to the App2 browser over the secure-boundary WebSocket when a valuation is broadcast on the private channel. */
 export const VALUATION_PUSH_PURPOSE = "valuation-push"

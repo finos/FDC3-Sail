@@ -6,7 +6,7 @@ import {
   DefaultFDC3Handlers,
   provisionJWKS,
   setupWebsocketServer,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /**
  * Receiver backend: JWKS + secure-boundary WebSocket only (App B in signing-broadcast-example).

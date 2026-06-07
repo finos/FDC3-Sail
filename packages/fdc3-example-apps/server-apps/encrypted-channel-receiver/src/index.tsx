@@ -7,14 +7,15 @@ import {
   DesktopAgent,
   getAgent,
   Listener,
-} from "@robmoffat/fdc3"
+} from "@finos/fdc3"
 import {
   connectRemoteHandlers,
   createJosePublicFDC3SecurityFromUrl,
+  createMetadataHandler,
   JsonWebKeyWithId,
   MetadataHandlerImpl,
   PublicEncryptedContextListenerSupport,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 import styles from "./main.module.css"
 
 /** Plain context type inside encrypted envelopes (must match sender). */
@@ -130,7 +131,7 @@ export const EncryptedReceiveComponent = () => {
           jwksUrl,
           () => true,
         )
-        const metadataHandler = new MetadataHandlerImpl(false)
+        const metadataHandler = createMetadataHandler(agent)
 
         const signingFunction = async (context: Context) => {
           const result = (await remoteHandlers!.exchangeData("sign-context", {

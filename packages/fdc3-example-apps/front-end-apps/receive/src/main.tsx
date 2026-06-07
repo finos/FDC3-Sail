@@ -1,49 +1,50 @@
 import { useEffect, useState } from "react"
-import { getAgent } from "@robmoffat/fdc3-get-agent"
-import { DesktopAgent, Listener } from "@robmoffat/fdc3"
+import { getAgent } from "@finos/fdc3-get-agent"
+import { DesktopAgent, Listener } from "@finos/fdc3"
 import { createRoot } from "react-dom/client"
 import styles from "./main.module.css"
 
 export const ReceiveComponent = () => {
   const [logMessages, setLogMessages] = useState<string[]>([])
   const [currentChannel, setCurrentChannel] = useState<string | null>(null)
-  const [listener, setListener] = useState<Promise<Listener> | null>(null)
+  const [theListener, setTheListener] = useState<Listener | null>(null)
 
   useEffect(() => {
     console.log("starting...")
     getAgent().then((agent) => {
-      console.log("got api...")
-      handleChannelChanged(agent)
+      agent.addEventListener("userChannelChanged", async () => {
+        console.log("userChannelChanged")
+        setLogMessages((prev) => [...prev, "User channel changed"])
+        const channel = await agent.getCurrentChannel()
+        setCurrentChannel(channel?.id || null)
 
-      agent.addEventListener("userChannelChanged", () =>
-        handleChannelChanged(agent),
-      )
-    })
-  }, [])
+        if (theListener != null) {
+          await theListener!.unsubscribe()
+        }
 
-  const handleChannelChanged = async (fdc3: DesktopAgent) => {
-    const channel = await fdc3.getCurrentChannel()
-    if (channel !== currentChannel) {
-      console.log("setting channel", channel)
-      setCurrentChannel(channel?.id || null)
-    }
-
-    setListener((l) => {
-      if (l == null && channel != null) {
-        console.log("setting listener", listener)
-        const lp = fdc3.addContextListener(null, (context) => {
+        const listener = await channel?.addContextListener(null, (context) => {
+          console.log("RECEIVED CONTEXT", context)
           setLogMessages((prev) => [
             ...prev,
             "Received: " + JSON.stringify(context),
           ])
         })
+        setTheListener(listener || null)
+      })
 
-        return lp
-      } else {
-        return l
-      }
+      const channel = agent.getCurrentChannel().then(async (channel) => {
+        setCurrentChannel(channel?.id || null)
+        const listener = await channel?.addContextListener(null, (context) => {
+          console.log("RECEIVED CONTEXT", context)
+          setLogMessages((prev) => [
+            ...prev,
+            "Received: " + JSON.stringify(context),
+          ])
+        })
+        setTheListener(listener || null)
+      })
     })
-  }
+  }, [])
 
   return (
     <div className={styles.receiveComponent}>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { createRoot } from "react-dom/client"
-import { Channel, DesktopAgent, getAgent, Listener } from "@robmoffat/fdc3"
-import { connectRemoteHandlers } from "@robmoffat/fdc3-security"
+import { Channel, DesktopAgent, getAgent, Listener } from "@finos/fdc3"
+import { connectRemoteHandlers } from "@finos/fdc3-security"
 import styles from "./main.module.css"
 
 /** Must match `SIGNED_BROADCAST_TRIGGER` in `backend.ts`. */

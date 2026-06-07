@@ -1,14 +1,14 @@
 import type { Application } from "express"
 import type { Server } from "http"
 import { WebSocket } from "ws"
-import { Context } from "@robmoffat/fdc3-context"
+import { Context } from "@finos/fdc3-context"
 import {
   createJosePrivateFDC3Security,
   DefaultFDC3Handlers,
   JosePrivateFDC3Security,
   provisionJWKS,
   setupWebsocketServer,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /**
  * Receiving app backend – provides sign-context (for key requests) and unwrap-symmetric-key via exchangeData.

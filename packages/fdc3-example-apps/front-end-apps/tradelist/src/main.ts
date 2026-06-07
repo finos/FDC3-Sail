@@ -1,4 +1,4 @@
-import { Channel, DesktopAgent, getAgent } from "@robmoffat/fdc3"
+import { Channel, DesktopAgent, getAgent } from "@finos/fdc3"
 
 let fdc3: DesktopAgent | undefined = undefined
 

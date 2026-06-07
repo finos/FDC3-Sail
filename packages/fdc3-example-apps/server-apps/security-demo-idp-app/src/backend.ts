@@ -1,8 +1,8 @@
 import type { Application } from "express"
 import type { Server } from "http"
 import { WebSocket } from "ws"
-import { IntentHandler } from "@robmoffat/fdc3"
-import { Context } from "@robmoffat/fdc3-context"
+import { IntentHandler } from "@finos/fdc3"
+import { Context } from "@finos/fdc3-context"
 import {
   AllowListFunction,
   createJosePrivateFDC3Security,
@@ -10,7 +10,7 @@ import {
   JosePrivateFDC3Security,
   provisionJWKS,
   setupWebsocketServer,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 
 /** Standard intent name; matches FDC3 Security & Identity docs and get-user-example.ts */
 export const CREATE_IDENTITY_TOKEN = "CreateIdentityToken"

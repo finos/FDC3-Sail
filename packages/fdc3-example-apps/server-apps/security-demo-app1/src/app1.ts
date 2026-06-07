@@ -1,10 +1,10 @@
-import { DesktopAgent, PrivateChannel } from "@robmoffat/fdc3"
-import type { Context } from "@robmoffat/fdc3-context"
+import { DesktopAgent, PrivateChannel } from "@finos/fdc3"
+import type { Context } from "@finos/fdc3-context"
 import {
   connectRemoteHandlers,
   type ExchangeDataMessage,
   type FDC3Handlers,
-} from "@robmoffat/fdc3-security"
+} from "@finos/fdc3-security"
 import { createLogEntry } from "../../../common/src/security-demo/logging"
 import {
   checkSessionStatus,

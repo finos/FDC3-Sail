@@ -1,4 +1,4 @@
-import { Channel, getAgent } from "@robmoffat/fdc3"
+import { Channel, getAgent } from "@finos/fdc3"
 
 enum Direction {
   UP,
