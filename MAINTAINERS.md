@@ -8,6 +8,7 @@ This file lists the maintainers of this repository.
 |----------------|------|--------------|-------|
 | @SeeWhatsOn | Chris Watson | @ElginWhite | cwatson1988@gmail.com |
 | @kriswest | Kris West | NatWest Group | kristopher.west@natwest.com |
+| @robmoffat | Rob Moffat | @FINOS | rob.moffat@finos.org |
 
 For information about maintainer responsibilities and resources, see the [FINOS Maintainers Cheatsheet](https://community.finos.org/docs/finos-maintainers-cheatsheet).
 
