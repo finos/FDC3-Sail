@@ -11,6 +11,7 @@ import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, State, WebAppDetails } from "@finos/fdc3-sail-da-impl"
 import { AppHosting } from "@finos/fdc3-sail-common"
 import { AppMetadata, Image } from "@finos/fdc3"
+import { hasDesktopLaunchUrl, launchNativeAppOnDesktop } from "./launchNative"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -155,11 +156,12 @@ function ConnectionInstructions({
   return (
     <div className={styles.connectionSection}>
       <p className={styles.connectionIntro}>
-        This native application connects to Sail via WSCP. Each running copy
-        needs its own pairing credentials. The credentials below are for the
-        next connection — when an app connects, a fresh set is shown
-        automatically so you can launch another instance. All pairings are
-        stored in this browser and synced to Sail.
+        This native application connects to Sail via WSCP. Use{" "}
+        <strong>Open On Desktop</strong> to launch via the registered protocol
+        handler, or copy the credentials below for a manual start. Each running
+        copy needs its own pairing credentials. The credentials below are for
+        the next connection — when an app connects, a fresh set is shown
+        automatically so you can launch another instance.
       </p>
 
       <button
@@ -383,6 +385,24 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
           </div>
         }
         buttons={[
+          <PopupButton
+            key="open-desktop"
+            text="Open On Desktop"
+            disabled={
+              this.state.chosen == null ||
+              !hasDesktopLaunchUrl(this.state.chosen)
+            }
+            onClick={async () => {
+              if (this.state.chosen) {
+                try {
+                  await launchNativeAppOnDesktop(this.state.chosen)
+                  this.props.closeAction()
+                } catch (error: unknown) {
+                  console.error("Failed to launch native app", error)
+                }
+              }
+            }}
+          />,
           <PopupButton
             key="open-frame"
             text="Open Here"

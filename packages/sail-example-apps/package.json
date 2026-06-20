@@ -4,10 +4,19 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "clean": "rimraf directory/generated front-end-apps/*/.vite server-apps/*/.vite",
+    "clean": "rimraf directory/static/generated front-end-apps/*/.vite server-apps/*/.vite directory/.vite",
     "build": "tsc",
     "dev": "tsx main.ts"
   },
+  "files": [
+    "main.ts",
+    "front-end-apps",
+    "server-apps",
+    "common",
+    "directory/properties.json",
+    "directory/index.html",
+    "directory/static"
+  ],
   "dependencies": {
     "@azure/msal-browser": "^4.12.0",
     "@finos/fdc3": "2.2.1-beta.3",

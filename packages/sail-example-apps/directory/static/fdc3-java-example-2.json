@@ -1,0 +1,29 @@
+{
+  "applications": [
+    {
+      "appId": "fdc3-java-example-2",
+      "name": "FDC3 Java Example 2: Protocol Handler",
+      "title": "FDC3 Java Example 2",
+      "description": "Java Swing demo that connects to Sail via WSCP. Launch from Sail with Open On Desktop",
+      "type": "native",
+      "details": {
+        "url": "fdc3-java-app://launch?webSocketUrl=$SAIL_WEBSOCKET_URL&sharedSecret=$SAIL_CONNECTION_SECRET"
+      },
+      "hostManifests": {
+        "sail": {
+          "searchable": true
+        }
+      },
+      "version": "1.0.0",
+      "publisher": "FINOS",
+      "icons": [
+        {
+          "src": "http://localhost:4205/static/images/java.png",
+          "size": "48x48",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "message": "OK"
+}

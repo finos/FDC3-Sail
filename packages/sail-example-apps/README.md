@@ -4,12 +4,12 @@ This toolbox package holds **sample web applications** used to exercise FDC3 (ch
 
 ## Layout
 
-| Path              | Role                                                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `front-end-apps/` | Browser-only or primarily client-side examples. Each subfolder is one app.                                                                                    |
-| `server-apps/`    | Examples that pair a Vite-served SPA with optional **Express** routes or **WebSockets** in the same process (see below).                                      |
-| `common/`         | Shared TypeScript used by more than one app (for example security-demo helpers). The dev server allows Vite to resolve imports into this tree when needed.    |
-| `directory/`      | App Directory payloads: hand-maintained JSON fragments (for example workbench or conformance presets) and a **`generated/`** subtree produced at dev startup. |
+| Path              | Role                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `front-end-apps/` | Browser-only or primarily client-side examples. Each subfolder is one app.                                                                                   |
+| `server-apps/`    | Examples that pair a Vite-served SPA with optional **Express** routes or **WebSockets** in the same process (see below).                                     |
+| `common/`         | Shared TypeScript used by more than one app (for example security-demo helpers). The dev server allows Vite to resolve imports into this tree when needed.   |
+| `directory/`      | App Directory server: `properties.json` (port), `index.html`, hand-maintained JSON under **`static/`**, and **`static/generated/`** produced at dev startup. |
 
 Apps are **not** registered in a central manifest: anything under `front-end-apps/` or `server-apps/` that looks like an app is picked up automatically.
 
@@ -28,7 +28,8 @@ Each app lives in its own directory and is expected to have at least:
 
 1. **Discovers** every subdirectory of `front-end-apps/` and `server-apps/` that contains `index.html`.
 2. **Assigns** each app an HTTP port (with optional overrides from `properties.json`).
-3. **Merges** all `static/appd.v2.json` files into `directory/generated/sail-example-apps.json` so a Desktop Agent can load a single combined App Directory for local demos.
+3. **Merges** all `static/appd.v2.json` files into `directory/static/generated/sail-example-apps.json` so a Desktop Agent can load a single combined App Directory for local demos.
 4. **Starts** one Express + Vite dev server per app (isolated Vite `root` and cache), serving the SPA and static assets, and loading `src/backend.ts` when present.
+5. **Starts** a dedicated **App Directory** server on the port in `directory/properties.json` (default `4205`), serving hand-maintained JSON under `directory/static/` and the generated combined directory.
 
-Point your agent or workbench at the generated directory file and the per-app `http://localhost:<port>` URLs as appropriate for your scenario.
+Point your agent or workbench at `http://localhost:4205/static/generated/sail-example-apps.json` (printed on startup) and the per-app `http://localhost:<port>` URLs as appropriate for your scenario.

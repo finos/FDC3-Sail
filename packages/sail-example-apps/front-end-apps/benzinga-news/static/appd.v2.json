@@ -7,11 +7,11 @@
       "description": "Benzinga Finance News",
       "type": "web",
       "details": {
-        "url": "http://localhost:4012/"
+        "url": "http://localhost:4212/"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4012/screenshot.png",
+          "src": "http://localhost:4212/screenshot.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -20,7 +20,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4012/benzinga.svg"
+          "src": "http://localhost:4212/benzinga.svg"
         }
       ],
       "interop": {

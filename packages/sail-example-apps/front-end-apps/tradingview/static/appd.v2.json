@@ -7,11 +7,11 @@
       "description": "Displays a symbol info of a given stock, using the TradingView applications",
       "type": "web",
       "details": {
-        "url": "http://localhost:4023/?mode=symbol-info"
+        "url": "http://localhost:4223/?mode=symbol-info"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4023/symbol-info.png",
+          "src": "http://localhost:4223/symbol-info.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -20,7 +20,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4023/tradingview-icon.png"
+          "src": "http://localhost:4223/tradingview-icon.png"
         }
       ],
       "interop": {
@@ -41,11 +41,11 @@
       "description": "Displays a chart of a given stock, using the TradingView applications",
       "type": "web",
       "details": {
-        "url": "http://localhost:4023/?mode=chart"
+        "url": "http://localhost:4223/?mode=chart"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4023/chart.png",
+          "src": "http://localhost:4223/chart.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -54,7 +54,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4023/tradingview-icon.png"
+          "src": "http://localhost:4223/tradingview-icon.png"
         }
       ],
       "interop": {
@@ -75,11 +75,11 @@
       "description": "Displays fundamentals of a given stock, using the TradingView applications",
       "type": "web",
       "details": {
-        "url": "http://localhost:4023/?mode=fundamentals"
+        "url": "http://localhost:4223/?mode=fundamentals"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4023/fundamentals.png",
+          "src": "http://localhost:4223/fundamentals.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -88,7 +88,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4023/tradingview-icon.png"
+          "src": "http://localhost:4223/tradingview-icon.png"
         }
       ],
       "interop": {
@@ -109,11 +109,11 @@
       "description": "Displays tickers of a given stock, using the TradingView applications",
       "type": "web",
       "details": {
-        "url": "http://localhost:4023/?mode=tickers"
+        "url": "http://localhost:4223/?mode=tickers"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4023/tickers.png",
+          "src": "http://localhost:4223/tickers.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -122,7 +122,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4023/tradingview-icon.png"
+          "src": "http://localhost:4223/tradingview-icon.png"
         }
       ],
       "interop": {
@@ -143,11 +143,11 @@
       "description": "Displays market data of a given stock, using the TradingView applications",
       "type": "web",
       "details": {
-        "url": "http://localhost:4023/?mode=market-data"
+        "url": "http://localhost:4223/?mode=market-data"
       },
       "screenshots": [
         {
-          "src": "http://localhost:4023/market-data.png",
+          "src": "http://localhost:4223/market-data.png",
           "label": "Demo Screenshot"
         }
       ],
@@ -156,7 +156,7 @@
       "publisher": "FINOS",
       "icons": [
         {
-          "src": "http://localhost:4023/tradingview-icon.png"
+          "src": "http://localhost:4223/tradingview-icon.png"
         }
       ],
       "interop": {

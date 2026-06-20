@@ -12,7 +12,22 @@ dotenv.config()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const BASE_PORT = 4010
+const BASE_PORT = 4210
+
+function resolveWithinRoot(root: string, ...segments: string[]): string {
+  const normalizedRoot = fs.realpathSync(root)
+  const suffix = segments.join("/")
+  const resolvedPath = path.normalize(
+    suffix ? `${normalizedRoot}/${suffix}` : normalizedRoot,
+  )
+  if (
+    resolvedPath !== normalizedRoot &&
+    !resolvedPath.startsWith(`${normalizedRoot}${path.sep}`)
+  ) {
+    throw new Error(`Resolved path escapes app root: ${resolvedPath}`)
+  }
+  return resolvedPath
+}
 
 /**
  * Discovery utility for both front-end and server apps.
@@ -22,17 +37,17 @@ function discoverApps(baseDir: string) {
   return fs
     .readdirSync(baseDir, { withFileTypes: true })
     .filter((dirent) => {
-      const appPath = path.join(baseDir, dirent.name)
+      const appPath = resolveWithinRoot(baseDir, dirent.name)
       return (
         dirent.isDirectory() &&
         dirent.name !== "node_modules" &&
         dirent.name !== "dist" &&
-        fs.existsSync(path.join(appPath, "index.html"))
+        fs.existsSync(resolveWithinRoot(appPath, "index.html"))
       )
     })
     .map((dirent) => ({
       name: dirent.name,
-      root: path.join(baseDir, dirent.name),
+      root: resolveWithinRoot(baseDir, dirent.name),
     }))
 }
 
@@ -45,6 +60,7 @@ const securityDemoDir = path.join(packageRoot, "common", "src", "security-demo")
 const generatedAppdPath = path.join(
   packageRoot,
   "directory",
+  "static",
   "generated",
   "sail-example-apps.json",
 )
@@ -57,7 +73,7 @@ const allApps = [
 // Assign ports, respecting properties.json if present
 const apps = allApps.map((a, index) => {
   let port = BASE_PORT + index
-  const propPath = path.join(a.root, "properties.json")
+  const propPath = resolveWithinRoot(a.root, "properties.json")
   if (fs.existsSync(propPath)) {
     try {
       const props = JSON.parse(fs.readFileSync(propPath, "utf-8"))
@@ -76,19 +92,84 @@ const apps = allApps.map((a, index) => {
 
 type AppWithPort = { name: string; root: string; port: number }
 
+type AppDirectoryRecord = {
+  details?: { url?: string }
+  icons?: Array<{ src?: string }>
+  screenshots?: Array<{ src?: string }>
+}
+
+function rewriteLocalhostUrl(url: string, port: number): string {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      parsed.port = String(port)
+      return parsed.toString()
+    }
+  } catch {
+    /* keep original */
+  }
+  return url
+}
+
+/** Align AppD launch URLs and asset paths with the port assigned by this orchestrator. */
+function applyPortToAppDirectoryRecords(
+  applications: AppDirectoryRecord[],
+  port: number,
+): AppDirectoryRecord[] {
+  const base = `http://localhost:${port}`
+  return applications.map((app) => {
+    const next: AppDirectoryRecord = {
+      ...app,
+      details: app.details ? { ...app.details } : {},
+    }
+    if (next.details?.url) {
+      const url = app.details!.url!
+      const isCustomProtocol =
+        /^[a-z][a-z0-9+.-]*:\/\//i.test(url) && !/^https?:\/\//i.test(url)
+      if (isCustomProtocol) {
+        next.details.url = url
+      } else if (url.startsWith("http://") || url.startsWith("https://")) {
+        next.details.url = rewriteLocalhostUrl(url, port)
+      } else {
+        let pathAndQuery = "/"
+        try {
+          const parsed = new URL(url, base)
+          pathAndQuery = `${parsed.pathname}${parsed.search}`
+        } catch {
+          pathAndQuery = url.startsWith("/") ? url : `/${url}`
+        }
+        next.details.url = `${base}${pathAndQuery.startsWith("/") ? pathAndQuery : `/${pathAndQuery}`}`
+      }
+    }
+    if (next.icons) {
+      next.icons = next.icons.map((icon) =>
+        icon.src ? { ...icon, src: rewriteLocalhostUrl(icon.src, port) } : icon,
+      )
+    }
+    if (next.screenshots) {
+      next.screenshots = next.screenshots.map((shot) =>
+        shot.src ? { ...shot, src: rewriteLocalhostUrl(shot.src, port) } : shot,
+      )
+    }
+    return next
+  })
+}
+
 function buildCombinedAppDirectory(appsList: AppWithPort[]) {
   const combined = {
-    applications: [] as any[],
+    applications: [] as AppDirectoryRecord[],
     message: "OK",
   }
 
   for (const a of appsList) {
-    const appdPath = path.join(a.root, "static", "appd.v2.json")
+    const appdPath = resolveWithinRoot(a.root, "static", "appd.v2.json")
     if (fs.existsSync(appdPath)) {
       try {
         const content = JSON.parse(fs.readFileSync(appdPath, "utf-8"))
         if (Array.isArray(content.applications)) {
-          combined.applications.push(...content.applications)
+          combined.applications.push(
+            ...applyPortToAppDirectoryRecords(content.applications, a.port),
+          )
         }
       } catch (e) {
         console.error(`Failed to read appd.v2.json for ${a.name}`, e)
@@ -100,7 +181,7 @@ function buildCombinedAppDirectory(appsList: AppWithPort[]) {
 }
 
 function writeGeneratedAppDirectory(combined: {
-  applications: any[]
+  applications: AppDirectoryRecord[]
   message: string
 }) {
   const dir = path.dirname(generatedAppdPath)
@@ -114,19 +195,23 @@ function writeGeneratedAppDirectory(combined: {
 }
 
 async function startApp(appName: string, appRoot: string, port: number) {
+  const normalizedAppRoot = fs.realpathSync(appRoot)
   const app = express()
   app.use(express.json())
 
   // Load backend if exists (mostly used in server-apps). Receives the shared HTTP server
   // so WebSocket + JWKS can bind to the same port as Express + Vite.
-  const backendPath = path.join(appRoot, "src", "backend.ts")
+  const backendPath = resolveWithinRoot(normalizedAppRoot, "src", "backend.ts")
   const server = http.createServer(app)
   if (fs.existsSync(backendPath)) {
     try {
       const backendUrl = `file://${backendPath}`
       const { default: backend } = await import(backendUrl)
       if (typeof backend === "function") {
-        const result = backend(app, server, { port, appRoot })
+        const result = backend(app, server, {
+          port,
+          appRoot: normalizedAppRoot,
+        })
         if (
           result != null &&
           typeof (result as Promise<void>).then === "function"
@@ -139,21 +224,25 @@ async function startApp(appName: string, appRoot: string, port: number) {
     }
   }
 
-  // Mount the app's static director at /static/appName to match the expected URL structure
-  // and legacy patterns from the demo.
-  const staticPath = path.join(appRoot, "static")
+  // Mount static assets. The directory server exposes files under /static/.
+  const staticPath = resolveWithinRoot(normalizedAppRoot, "static")
   if (fs.existsSync(staticPath)) {
-    app.use(express.static(staticPath))
+    if (appName === "directory") {
+      app.use("/static", express.static(staticPath))
+    } else {
+      app.use(express.static(staticPath))
+      app.use(`/static/${appName}`, express.static(staticPath))
+    }
   }
 
   // Each app gets its own isolated Vite server
   const vite = await createServer({
-    root: appRoot,
-    cacheDir: path.join(appRoot, ".vite"),
+    root: normalizedAppRoot,
+    cacheDir: resolveWithinRoot(normalizedAppRoot, ".vite"),
     server: {
       middlewareMode: true,
       fs: {
-        allow: [appRoot, securityDemoDir, packageRoot],
+        allow: [normalizedAppRoot, securityDemoDir, packageRoot],
       },
       hmr: {
         port: port + 100, // Avoid HMR port conflicts
@@ -176,9 +265,9 @@ async function startApp(appName: string, appRoot: string, port: number) {
   // Serve index.html for unknown routes
   app.get("*", spaIndexLimiter, (req, res, next) => {
     if (req.path.startsWith("/api")) return next()
-    const indexPath = path.join(appRoot, "index.html")
+    const indexPath = resolveWithinRoot(normalizedAppRoot, "index.html")
     if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath)
+      res.sendFile("index.html", { root: normalizedAppRoot })
     } else {
       next()
     }
@@ -215,4 +304,15 @@ async function startApp(appName: string, appRoot: string, port: number) {
       )
     }
   }
+
+  const directoryRoot = path.join(packageRoot, "directory")
+  const directoryPropsPath = path.join(directoryRoot, "properties.json")
+  const directoryProps = JSON.parse(
+    fs.readFileSync(directoryPropsPath, "utf-8"),
+  ) as { port: number }
+  await startApp("directory", directoryRoot, directoryProps.port)
+
+  console.info(
+    `Combined App Directory: http://localhost:${directoryProps.port}/static/generated/sail-example-apps.json`,
+  )
 })()

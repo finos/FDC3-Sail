@@ -82,22 +82,22 @@ const DEFAULT_DIRECTORIES: Directory[] = [
   },
   {
     label: "Sail Example Apps",
-    url: "../sail-example-apps/directory/generated/sail-example-apps.json",
+    url: "http://localhost:4205/static/generated/sail-example-apps.json",
     active: true,
   },
   {
     label: "FDC3 Workbench",
-    url: "../fdc3-example-apps/directory/workbench.json",
+    url: "http://localhost:4205/static/workbench.json",
     active: true,
   },
   {
     label: "Symphony Chat Platform",
-    url: "../fdc3-example-apps/directory/symphony.json",
+    url: "http://localhost:4205/static/symphony.json",
     active: false,
   },
   {
     label: "FDC3 Conformance",
-    url: "../fdc3-example-apps/directory/conformance.json",
+    url: "http://localhost:4205/static/conformance.json",
     active: false,
   },
 ]

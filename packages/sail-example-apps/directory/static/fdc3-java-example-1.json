@@ -1,0 +1,27 @@
+{
+  "applications": [
+    {
+      "appId": "fdc3-java-example-1",
+      "name": "FDC3 Java Example: Manual Credentials",
+      "title": "FDC3 Java Example 1",
+      "description": "Java Swing demo that connects to Sail via WSCP. Launch from Sail with Open On Desktop, copy the credentials manually",
+      "type": "native",
+      "details": {},
+      "hostManifests": {
+        "sail": {
+          "searchable": true
+        }
+      },
+      "version": "1.0.0",
+      "publisher": "FINOS",
+      "icons": [
+        {
+          "src": "http://localhost:4205/static/images/java.png",
+          "size": "48x48",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "message": "OK"
+}
