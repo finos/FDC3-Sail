@@ -78,7 +78,7 @@ const DEFAULT_DIRECTORIES: Directory[] = [
   },
   {
     label: "Sail Example Apps",
-    url: "../fdc3-example-apps/directory/generated/fdc3-example-apps.json",
+    url: "../sail-example-apps/directory/generated/sail-example-apps.json",
     active: true,
   },
   {

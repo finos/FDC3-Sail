@@ -36,7 +36,7 @@ function discoverApps(baseDir: string) {
     }))
 }
 
-/** This package (`packages/fdc3-example-apps`), not `process.cwd()` (workspace runs may use repo root). */
+/** This package (`packages/sail-example-apps`), not `process.cwd()` (workspace runs may use repo root). */
 const packageRoot = __dirname
 const frontEndAppsDir = path.join(packageRoot, "front-end-apps")
 const serverAppsDir = path.join(packageRoot, "server-apps")
@@ -46,7 +46,7 @@ const generatedAppdPath = path.join(
   packageRoot,
   "directory",
   "generated",
-  "fdc3-example-apps.json",
+  "sail-example-apps.json",
 )
 
 const allApps = [

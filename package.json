@@ -7,7 +7,7 @@
     "build": "npm run build --workspaces --if-present",
     "web:dev": "npm run dev -w packages/web",
     "electron:start": "npm run dev -w packages/electron",
-    "examples:dev": "npm run dev -w packages/fdc3-example-apps",
+    "examples:dev": "npm run dev -w packages/sail-example-apps",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "start": "concurrently -n \"WEB,ELECTRON,EXAMPLES\" -c \"blue,green,yellow\" \"npm run web:dev\" \"wait-on -l -i 1000 -t 60000 -w 1000 tcp:localhost:8090 && npm run electron:start\" \"npm run examples:dev\"",
@@ -20,7 +20,7 @@
     "packages/common",
     "packages/web",
     "packages/electron",
-    "packages/fdc3-example-apps"
+    "packages/sail-example-apps"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react"
  * https://docs.benzinga.com/widgets/overview ).
  *
  * Optional token: https://docs.benzinga.com/widgets/authorization
- * Set VITE_BENZINGA_WIDGET_TOKEN in packages/fdc3-example-apps/.env when licensed.
+ * Set VITE_BENZINGA_WIDGET_TOKEN in packages/sail-example-apps/.env when licensed.
  */
 const DEFAULT_SYMBOL = "AAPL"
 

@@ -28,7 +28,7 @@ Each app lives in its own directory and is expected to have at least:
 
 1. **Discovers** every subdirectory of `front-end-apps/` and `server-apps/` that contains `index.html`.
 2. **Assigns** each app an HTTP port (with optional overrides from `properties.json`).
-3. **Merges** all `static/appd.v2.json` files into `directory/generated/fdc3-example-apps.json` so a Desktop Agent can load a single combined App Directory for local demos.
+3. **Merges** all `static/appd.v2.json` files into `directory/generated/sail-example-apps.json` so a Desktop Agent can load a single combined App Directory for local demos.
 4. **Starts** one Express + Vite dev server per app (isolated Vite `root` and cache), serving the SPA and static assets, and loading `src/backend.ts` when present.
 
 Point your agent or workbench at the generated directory file and the per-app `http://localhost:<port>` URLs as appropriate for your scenario.
