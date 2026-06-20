@@ -1,5 +1,4 @@
 import fs from "node:fs/promises"
-import crypto from "node:crypto"
 import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
 import { createLogger } from "../logger"
@@ -53,7 +52,7 @@ export class SailDirectory extends BasicDirectory {
 
   /**
    *
-   * @param urlBase Should be in the form ws(s)://<host>:<port>/remote/<userSessionId>
+   * @param urlBase Inbound WSCP WebSocket URL (e.g. ws://localhost:8090/fdc3/ws)
    */
   constructor(urlBase: string) {
     super([])
@@ -100,14 +99,10 @@ export class SailDirectory extends BasicDirectory {
       }
     })
 
-    // Set connection URLs for native apps
+    // Set connection URLs for native apps (deployment-wide inbound WSCP endpoint)
     newApps.forEach((app) => {
       if (app.type === "native") {
-        const applicationExtensionId = this.hashApplicationExtensionId(
-          app.appId!,
-        )
-        ;(app.details as any)[FDC3_WEBSOCKET_PROPERTY] =
-          `${this.urlBase}/${applicationExtensionId}`
+        ;(app.details as any)[FDC3_WEBSOCKET_PROPERTY] = this.urlBase
       }
     })
 
@@ -134,17 +129,5 @@ export class SailDirectory extends BasicDirectory {
     return this.retrieveAllApps().filter(
       (a) => a.type == "web" && (a.details as any).url == url,
     )
-  }
-
-  /**
-   * Use a hash for the remote id so it's consistent across SailDirectory reloads.
-   */
-  private hashApplicationExtensionId(appId: string): string {
-    const data = `${this.urlBase}:${appId}`
-    return crypto
-      .createHash("sha256")
-      .update(data)
-      .digest("hex")
-      .substring(0, 16)
   }
 }

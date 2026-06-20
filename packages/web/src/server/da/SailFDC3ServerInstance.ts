@@ -23,6 +23,7 @@ import {
   SailAppOpenResponse,
   SailIntentResolveResponse,
   TabDetail,
+  WscpPairing,
 } from "@finos/fdc3-sail-common"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
@@ -59,6 +60,10 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private readonly connection: SocketIOConnection
   private readonly channelState: ChannelState[] = []
   private readonly appStartDestinations: Map<string, string | null> = new Map()
+  private wscpPairingBySecret = new Map<
+    string,
+    { appId: string; instanceId: string }
+  >()
 
   constructor(
     directory: SailDirectory,
@@ -147,6 +152,30 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
 
     throw new Error(OpenError.AppNotFound)
+  }
+
+  findRemoteInstanceByAppId(appId: string): SailData | undefined {
+    return this.instances.find(
+      (instance) =>
+        instance.appId === appId && instance.hosting === AppHosting.Remote,
+    )
+  }
+
+  syncWscpPairings(pairings: WscpPairing[]): void {
+    this.wscpPairingBySecret.clear()
+    for (const pairing of pairings) {
+      this.wscpPairingBySecret.set(pairing.sharedSecret, {
+        appId: pairing.appId,
+        instanceId: pairing.instanceId,
+      })
+    }
+    log.debug({ count: pairings.length }, "Synced WSCP pairings")
+  }
+
+  lookupWscpPairing(
+    sharedSecret: string,
+  ): { appId: string; instanceId: string } | undefined {
+    return this.wscpPairingBySecret.get(sharedSecret)
   }
 
   setInstanceDetails(uuid: InstanceID, details: SailData): void {

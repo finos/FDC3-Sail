@@ -10,6 +10,7 @@ export * from "./ClientState"
 export * from "./message-types"
 export * from "./AppState"
 export * from "./ServerState"
+export * from "./wscp"
 
 let theServerState: ServerState | null = null
 let theClientState: ClientState | null = null

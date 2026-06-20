@@ -12,52 +12,47 @@ export type WscpDisconnectMeta = {
   timestamp: string | Date
 }
 
-export type Wscp1ConnectRequestPayload = {
-  role: "application" | "desktopAgent"
+export type WscpApplicationConnectPayload = {
   protocolVersion: "1.0"
-  sessionId: string
-  /** Required for initial connect (flow 1). Omit on reconnect (flow 2) when instanceUuid is supplied. */
+  /** Present when the application is the TCP initiator (Flow 1). */
   sharedSecret?: string
-  appId?: string
-  instanceId?: string
-  instanceUuid?: string
 }
 
-export type Wscp1ConnectRequest = {
-  type: "WSCP1ConnectRequest"
-  payload: Wscp1ConnectRequestPayload
+export type WscpApplicationConnect = {
+  type: "WSCPApplicationConnect"
+  payload: WscpApplicationConnectPayload
   meta: WscpConnectionStepMeta
 }
 
-export type Wscp2ConnectResponsePayload = {
-  appId: string
-  instanceId: string
-  instanceUuid: string
+export type WscpDesktopAgentConnectPayload = {
+  protocolVersion: "1.0"
+  /** Present when the Desktop Agent is the TCP initiator (Flow 2). */
+  sharedSecret?: string
   implementationMetadata: Record<string, unknown>
 }
 
-export type Wscp2ConnectResponse = {
-  type: "WSCP2ConnectResponse"
-  payload: Wscp2ConnectResponsePayload
+export type WscpDesktopAgentConnect = {
+  type: "WSCPDesktopAgentConnect"
+  payload: WscpDesktopAgentConnectPayload
   meta: WscpConnectionStepMeta
 }
 
-export type Wscp2ConnectFailedResponse = {
-  type: "WSCP2ConnectFailedResponse"
+export type WscpConnectFailed = {
+  type: "WSCPConnectFailed"
   payload: { message: string }
   meta: WscpConnectionStepMeta
 }
 
-export type Wscp3Goodbye = {
-  type: "WSCP3Goodbye"
+export type WscpGoodbye = {
+  type: "WSCPGoodbye"
   meta: WscpDisconnectMeta
 }
 
 export type WscpMessage =
-  | Wscp1ConnectRequest
-  | Wscp2ConnectResponse
-  | Wscp2ConnectFailedResponse
-  | Wscp3Goodbye
+  | WscpApplicationConnect
+  | WscpDesktopAgentConnect
+  | WscpConnectFailed
+  | WscpGoodbye
 
 export const WSCP_INBOUND_PATH = "/fdc3/ws"
 
@@ -80,24 +75,22 @@ export function getInboundWebSocketUrl(pageOrigin?: string): string {
 /** Property injected into native app details for UI display only (never in published directory). */
 export const FDC3_SHARED_SECRET_PROPERTY = "sharedSecret"
 
-export function isWscp1ConnectRequest(
+export function isWscpApplicationConnect(
   msg: unknown,
-): msg is Wscp1ConnectRequest {
-  const payload = (msg as Wscp1ConnectRequest)?.payload
+): msg is WscpApplicationConnect {
+  const payload = (msg as WscpApplicationConnect)?.payload
   return (
     typeof msg === "object" &&
     msg !== null &&
-    (msg as Wscp1ConnectRequest).type === "WSCP1ConnectRequest" &&
-    typeof payload?.sessionId === "string" &&
-    (typeof payload?.sharedSecret === "string" ||
-      typeof payload?.instanceUuid === "string")
+    (msg as WscpApplicationConnect).type === "WSCPApplicationConnect" &&
+    payload?.protocolVersion === "1.0"
   )
 }
 
-export function isWscp3Goodbye(msg: unknown): msg is Wscp3Goodbye {
+export function isWscpGoodbye(msg: unknown): msg is WscpGoodbye {
   return (
     typeof msg === "object" &&
     msg !== null &&
-    (msg as Wscp3Goodbye).type === "WSCP3Goodbye"
+    (msg as WscpGoodbye).type === "WSCPGoodbye"
   )
 }

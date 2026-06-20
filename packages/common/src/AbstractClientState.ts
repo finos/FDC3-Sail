@@ -1,5 +1,11 @@
 import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
-import { AppPanel, ClientState, IntentResolution } from "./ClientState"
+import { v4 as uuidv4 } from "uuid"
+import {
+  AppPanel,
+  ClientState,
+  IntentResolution,
+  WscpPairing,
+} from "./ClientState"
 import {
   ContextHistory,
   Directory,
@@ -19,6 +25,7 @@ export abstract class AbstractClientState implements ClientState {
   protected knownApps: DirectoryApp[] = []
   protected customApps: DirectoryApp[] = []
   protected contextHistory: ContextHistory = {}
+  protected wscpPairings: WscpPairing[] = []
 
   constructor(
     tabs: TabDetail[],
@@ -29,6 +36,7 @@ export abstract class AbstractClientState implements ClientState {
     knownApps: DirectoryApp[],
     customApps: DirectoryApp[],
     history: ContextHistory,
+    wscpPairings: WscpPairing[] = [],
   ) {
     this.tabs = tabs
     this.panels = panels
@@ -38,6 +46,7 @@ export abstract class AbstractClientState implements ClientState {
     this.knownApps = knownApps
     this.customApps = customApps
     this.contextHistory = history
+    this.wscpPairings = wscpPairings
   }
 
   abstract saveState(): Promise<void>
@@ -186,6 +195,7 @@ export abstract class AbstractClientState implements ClientState {
       panels: this.panels,
       customApps: this.customApps,
       contextHistory: this.contextHistory,
+      wscpPairings: this.wscpPairings,
     }
   }
 
@@ -236,6 +246,36 @@ export abstract class AbstractClientState implements ClientState {
     }
 
     this.contextHistory[tabId] = items
+    await this.saveState()
+  }
+
+  getWscpPairings(): WscpPairing[] {
+    return this.wscpPairings
+  }
+
+  getWscpPairingsForApp(appId: string): WscpPairing[] {
+    return this.wscpPairings.filter((pairing) => pairing.appId === appId)
+  }
+
+  async mintWscpPairing(appId: string): Promise<WscpPairing> {
+    const pairing: WscpPairing = {
+      sharedSecret: uuidv4(),
+      appId,
+      instanceId: "sail-remote-" + uuidv4(),
+    }
+    this.wscpPairings.push(pairing)
+    await this.saveState()
+    return pairing
+  }
+
+  async removeWscpPairings(instanceIds: string[]): Promise<void> {
+    if (instanceIds.length === 0) {
+      return
+    }
+    const remove = new Set(instanceIds)
+    this.wscpPairings = this.wscpPairings.filter(
+      (pairing) => !remove.has(pairing.instanceId),
+    )
     await this.saveState()
   }
 }

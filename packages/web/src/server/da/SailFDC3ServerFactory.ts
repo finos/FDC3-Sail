@@ -1,4 +1,8 @@
-import { DesktopAgentHelloArgs, TabDetail } from "@finos/fdc3-sail-common"
+import {
+  DesktopAgentHelloArgs,
+  getInboundWebSocketUrl,
+  TabDetail,
+} from "@finos/fdc3-sail-common"
 import {
   ChannelType,
   ChannelState,
@@ -8,6 +12,7 @@ import {
   OpenHandler,
   HeartbeatHandler,
   LogFunction,
+  DirectoryApp,
 } from "@finos/fdc3-sail-da-impl"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { SailDirectory } from "../appd/SailDirectory"
@@ -25,20 +30,6 @@ function createHandlerLog(name: string): LogFunction {
       log.debug(message)
     }
   }
-}
-
-/**
- * Converts an HTTP(S) URL to a WebSocket URL.
- */
-function toWebSocketUrl(httpUrl: string): string {
-  if (httpUrl.startsWith("https://")) {
-    return "wss://" + httpUrl.substring(8)
-  } else if (httpUrl.startsWith("http://")) {
-    // should only be used in dev
-    // nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket
-    return "ws://" + httpUrl.substring(7)
-  }
-  return httpUrl // Already a WebSocket URL or other protocol
 }
 
 export function mapChannels(channels: TabDetail[]): ChannelState[] {
@@ -94,7 +85,7 @@ export class SailFDC3ServerFactory {
     args: DesktopAgentHelloArgs,
   ): Promise<SailFDC3ServerInstance> {
     const channels = mapChannels(args.channels)
-    const remoteUrlBase = `${toWebSocketUrl(getSailUrl())}/remote/${args.userSessionId}`
+    const remoteUrlBase = getInboundWebSocketUrl(getSailUrl())
     const d = new SailDirectory(remoteUrlBase)
     const out = new SailFDC3ServerInstance(
       d,
@@ -103,6 +94,7 @@ export class SailFDC3ServerFactory {
       channels,
     )
     await out.reloadAppDirectories(args.directories, args.customApps)
+    out.syncWscpPairings(args.wscpPairings ?? [])
     this.sessions.set(args.userSessionId, out)
     return out
   }
@@ -134,5 +126,41 @@ export class SailFDC3ServerFactory {
 
   getSession(sessionId: string): SailFDC3ServerInstance | undefined {
     return this.sessions.get(sessionId)
+  }
+
+  /**
+   * Resolves a WSCP sharedSecret to the matching FDC3 session and app instance.
+   * Pairings are synced from ClientState on DA hello / client state updates.
+   */
+  resolveNativeAppPairing(sharedSecret: string):
+    | {
+        sessionId: string
+        appId: string
+        instanceId: string
+        fdc3Server: SailFDC3ServerInstance
+        nativeApp: DirectoryApp
+      }
+    | undefined {
+    for (const [sessionId, fdc3Server] of this.sessions) {
+      const pairing = fdc3Server.lookupWscpPairing(sharedSecret)
+      if (!pairing) {
+        continue
+      }
+
+      const nativeApps = fdc3Server.directory.retrieveAppsById(pairing.appId)
+      const nativeApp = nativeApps.find((app) => app.type === "native")
+      if (!nativeApp) {
+        continue
+      }
+
+      return {
+        sessionId,
+        appId: pairing.appId,
+        instanceId: pairing.instanceId,
+        fdc3Server,
+        nativeApp,
+      }
+    }
+    return undefined
   }
 }

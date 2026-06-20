@@ -1,10 +1,16 @@
 import { WebSocketServer, WebSocket } from "ws"
 import { IncomingMessage } from "http"
+import { v4 as uuid } from "uuid"
 import { SailFDC3ServerFactory } from "./SailFDC3ServerFactory"
 import { WebSocketConnection } from "./connection/WebSocketConnection"
 import { createConnectionContext } from "./sail-handlers"
-import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import {
+  AppHosting,
+  isWscpApplicationConnect,
+  isWscpGoodbye,
+  WSCP_INBOUND_PATH,
+} from "@finos/fdc3-sail-common"
+import { DirectoryApp, OpenHandler, State } from "@finos/fdc3-sail-da-impl"
 import { handleRemoteAppMessage } from "./sail-handlers/handleRemoteAppMessage"
 import { handleRemoteAppDisconnect } from "./sail-handlers/handleRemoteAppDisconnect"
 import { createLogger } from "../logger"
@@ -13,43 +19,26 @@ const log = createLogger("RemoteSocket")
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-/**
- * Extracts the applicationExtensionId from a native app's connectionUrl.
- * The connectionUrl format is: {urlBase}/{applicationExtensionId}
- */
-function extractApplicationExtensionId(app: DirectoryApp): string | undefined {
-  const connectionUrl = (app.details as any)?.[FDC3_WEBSOCKET_PROPERTY]
-  if (!connectionUrl) return undefined
-  // The applicationExtensionId is the last segment of the URL path
-  const parts = connectionUrl.split("/").filter((p: string) => p.length > 0)
-  return parts[parts.length - 1]
-}
+const openHandler = new OpenHandler(10000, () => {})
 
 /**
- * Manages WebSocket endpoints for remote/native applications.
+ * Manages the inbound WSCP WebSocket endpoint for remote/native applications.
  *
- * Remote apps (like Java applications) connect via WebSocket to URLs of the form:
- *   /remote/{userSessionId}/{applicationExtensionId}
+ * Flow 1 (application-initiated): a native app opens a WebSocket to `/fdc3/ws`,
+ * sends `WSCPApplicationConnect` with `sharedSecret`, and receives
+ * `WSCPDesktopAgentConnect` before DACP traffic begins.
  *
- * Where:
- * - userSessionId: The session ID of the browser desktop agent
- * - applicationExtensionId: Unique identifier derived from the native app's connectionUrl
- *
- * This service dynamically enables/disables endpoints based on native apps
- * in the directory that have the FDC3_WEBSOCKET_PROPERTY set.
+ * @see https://fdc3.finos.org/docs/api/specs/webSocketConnectionProtocol
  */
 export class RemoteSocketService {
   private readonly factory: SailFDC3ServerFactory
   private readonly httpServer: any
   private readonly wss: WebSocketServer
-  private activeRemoteApps: Map<string, DirectoryApp> = new Map()
-  private userSessionId: string | undefined
 
   constructor(httpServer: any, factory: SailFDC3ServerFactory) {
     this.httpServer = httpServer
     this.factory = factory
 
-    // Create a single WebSocket server that handles all /remote/* paths
     this.wss = new WebSocketServer({
       noServer: true,
     })
@@ -57,212 +46,230 @@ export class RemoteSocketService {
     this.setupUpgradeHandler()
     this.setupConnectionHandler()
 
-    log.info("RemoteSocketService initialized")
+    log.info({ path: WSCP_INBOUND_PATH }, "RemoteSocketService initialized")
   }
 
   private setupUpgradeHandler(): void {
     this.httpServer.on(
       "upgrade",
       (request: IncomingMessage, socket: any, head: Buffer) => {
-        const pathname = request.url || ""
+        const pathname = request.url?.split("?")[0] ?? ""
 
-        // Check if this is a remote app connection
-        if (pathname.startsWith("/remote/")) {
-          const parts = pathname.split("/").filter((p) => p.length > 0)
-          // Expected format: /remote/{userSessionId}/{applicationExtensionId}
-          if (parts.length >= 3) {
-            const userSessionId = parts[1]
-            const applicationExtensionId = parts[2]
-
-            // Check if this path is active
-            if (this.isPathActive(userSessionId, applicationExtensionId)) {
-              this.wss.handleUpgrade(request, socket, head, (ws) => {
-                this.wss.emit("connection", ws, request, {
-                  userSessionId,
-                  applicationExtensionId,
-                })
-              })
-              return
-            } else {
-              log.error(
-                { pathname },
-                "Remote connection rejected - path not active",
-              )
-              socket.destroy()
-              return
-            }
-          } else {
-            log.error({ pathname }, "Remote connection rejected - invalid path")
-            socket.destroy()
-            return
-          }
+        if (pathname === WSCP_INBOUND_PATH) {
+          this.wss.handleUpgrade(request, socket, head, (ws) => {
+            this.wss.emit("connection", ws, request)
+          })
+          return
         }
-        // If not a remote path, let other handlers deal with it
       },
     )
   }
 
   private setupConnectionHandler(): void {
-    this.wss.on(
-      "connection",
-      (
-        ws: WebSocket,
-        _request: IncomingMessage,
-        meta: { userSessionId: string; applicationExtensionId: string },
-      ) => {
-        log.info(
-          {
-            userSessionId: meta.userSessionId,
-            applicationExtensionId: meta.applicationExtensionId,
-          },
-          "Remote WebSocket client connected",
-        )
+    this.wss.on("connection", (ws: WebSocket) => {
+      log.info("Remote WebSocket client connected, awaiting WSCP handshake")
 
-        const remoteApp = this.getRemoteApp(meta.applicationExtensionId)
-        if (!remoteApp) {
-          log.error(
-            { applicationExtensionId: meta.applicationExtensionId },
-            "Remote app not found",
+      const connection = new WebSocketConnection(ws as any)
+      const ctx = createConnectionContext()
+      let handshakeComplete = false
+      let nativeApp: DirectoryApp | undefined
+
+      const onMessage = async (data: Buffer | string) => {
+        let message: any
+        try {
+          message = JSON.parse(data.toString())
+        } catch (e) {
+          log.error({ error: e }, "Remote: Failed to parse message as JSON")
+          return
+        }
+
+        if (!handshakeComplete) {
+          await this.handleHandshake(ws, ctx, connection, message, (app) => {
+            nativeApp = app
+            handshakeComplete = true
+          })
+          return
+        }
+
+        if (isWscpGoodbye(message)) {
+          log.info(
+            { appInstanceId: ctx.appInstanceId },
+            "Remote app sent WSCPGoodbye",
           )
+          await handleRemoteAppDisconnect(ctx)
           ws.close()
           return
         }
 
-        // Get the FDC3 server instance for this user session
-        const fdc3Server = this.factory.getSession(meta.userSessionId)
-        if (!fdc3Server) {
-          log.error(
-            { userSessionId: meta.userSessionId },
-            "No FDC3 session found",
-          )
-          ws.close()
+        if (!nativeApp) {
+          log.error("Remote message received without native app context")
           return
         }
 
-        const connection = new WebSocketConnection(ws as any)
+        handleRemoteAppMessage(ctx, nativeApp, connection, message)
+      }
 
-        const ctx = createConnectionContext()
-        ctx.userSessionId = meta.userSessionId
-        ctx.fdc3ServerInstance = fdc3Server
+      ws.on("message", (data) => {
+        const payload =
+          typeof data === "string"
+            ? data
+            : Buffer.isBuffer(data)
+              ? data
+              : Buffer.from(data as ArrayBuffer)
+        void onMessage(payload)
+      })
 
-        ws.on("message", (data: Buffer | string) => {
-          try {
-            const message = JSON.parse(data.toString())
-            handleRemoteAppMessage(ctx, remoteApp, connection, message)
-          } catch (e) {
-            log.error({ error: e }, "Remote: Failed to parse message as JSON")
-          }
-        })
+      ws.on("close", () => {
+        if (handshakeComplete) {
+          void handleRemoteAppDisconnect(ctx)
+        } else {
+          log.debug("Remote WebSocket closed before WSCP handshake completed")
+        }
+      })
 
-        ws.on("close", () => handleRemoteAppDisconnect(ctx))
-
-        ws.on("error", (error) => {
-          log.error(
-            {
-              userSessionId: meta.userSessionId,
-              applicationExtensionId: meta.applicationExtensionId,
-              error,
-            },
-            "Remote WebSocket error",
-          )
-        })
-      },
-    )
+      ws.on("error", (error) => {
+        log.error({ error }, "Remote WebSocket error")
+      })
+    })
   }
 
-  private isPathActive(
-    userSessionId: string,
-    applicationExtensionId: string,
-  ): boolean {
-    // Check if userSessionId matches and the applicationExtensionId is in our active list
-    if (this.userSessionId && this.userSessionId !== userSessionId) {
-      return false
+  private async handleHandshake(
+    ws: WebSocket,
+    ctx: ReturnType<typeof createConnectionContext>,
+    connection: WebSocketConnection,
+    message: unknown,
+    onComplete: (nativeApp: DirectoryApp) => void,
+  ): Promise<void> {
+    if (!isWscpApplicationConnect(message)) {
+      this.sendConnectFailed(
+        ws,
+        "Expected WSCPApplicationConnect as first message",
+      )
+      return
     }
-    return this.activeRemoteApps.has(applicationExtensionId)
+
+    const { payload, meta } = message
+    const connectionAttemptUuid = meta.connectionAttemptUuid
+
+    if (!payload.sharedSecret) {
+      this.sendConnectFailed(
+        ws,
+        "Missing sharedSecret in WSCPApplicationConnect",
+        connectionAttemptUuid,
+      )
+      return
+    }
+
+    const pairing = this.factory.resolveNativeAppPairing(payload.sharedSecret)
+    if (!pairing) {
+      this.sendConnectFailed(
+        ws,
+        "Invalid or unknown sharedSecret",
+        connectionAttemptUuid,
+      )
+      return
+    }
+
+    const { sessionId, appId, instanceId, fdc3Server, nativeApp } = pairing
+    ctx.userSessionId = sessionId
+    ctx.fdc3ServerInstance = fdc3Server
+    ctx.appInstanceId = instanceId
+
+    const existing = fdc3Server.getInstanceDetails(instanceId)
+
+    if (existing) {
+      log.info(
+        { appId, instanceId },
+        "Reassigning existing remote app instance",
+      )
+
+      const priorConnection = existing.connection
+      if (priorConnection && priorConnection !== connection) {
+        priorConnection.shutdown()
+      }
+
+      fdc3Server.setInstanceDetails(instanceId, {
+        ...existing,
+        connection,
+      })
+    } else {
+      log.info({ appId, instanceId }, "Registering new remote app instance")
+
+      fdc3Server.setInstanceDetails(instanceId, {
+        instanceId,
+        state: State.Pending,
+        appId,
+        connection,
+        hosting: AppHosting.Remote,
+        channel: null,
+        instanceTitle: `${nativeApp.title || appId} (Remote)`,
+        channelConnections: [],
+      })
+    }
+
+    const implementationMetadata = openHandler.getImplementationMetadata(
+      fdc3Server,
+      { appId, instanceId },
+    )
+
+    ws.send(
+      JSON.stringify({
+        type: "WSCPDesktopAgentConnect",
+        payload: {
+          protocolVersion: "1.0",
+          implementationMetadata,
+        },
+        meta: {
+          connectionAttemptUuid,
+          timestamp: new Date().toISOString(),
+        },
+      }),
+    )
+
+    await fdc3Server.setAppState(instanceId, State.Connected)
+    onComplete(nativeApp)
+    log.info({ appId, instanceId, sessionId }, "WSCP handshake completed")
   }
 
-  private getRemoteApp(
-    applicationExtensionId: string,
-  ): DirectoryApp | undefined {
-    return this.activeRemoteApps.get(applicationExtensionId)
+  private sendConnectFailed(
+    ws: WebSocket,
+    message: string,
+    connectionAttemptUuid?: string,
+  ): void {
+    log.warn({ message }, "WSCP handshake failed")
+    ws.send(
+      JSON.stringify({
+        type: "WSCPConnectFailed",
+        payload: { message },
+        meta: {
+          connectionAttemptUuid: connectionAttemptUuid ?? uuid(),
+          timestamp: new Date().toISOString(),
+        },
+      }),
+    )
+    ws.close()
   }
 
   /**
-   * Refresh the available remote socket endpoints based on native apps in the directory.
-   * Only apps with the FDC3_WEBSOCKET_PROPERTY set will be enabled.
-   * This enables new endpoints and disables ones that are no longer configured.
+   * Retained for compatibility with directory refresh callbacks.
+   * Inbound connections are accepted on the fixed `/fdc3/ws` path; pairing is
+   * validated via sharedSecret during the handshake.
    */
   refreshAvailableRemoteSockets(
     userSessionId: string,
     nativeApps: DirectoryApp[],
   ): void {
-    // Build a map of applicationExtensionId -> DirectoryApp for new apps
-    const newAppsMap = new Map<string, DirectoryApp>()
-    for (const app of nativeApps) {
-      const extId = extractApplicationExtensionId(app)
-      if (extId) {
-        newAppsMap.set(extId, app)
-      }
-    }
-
-    // Find IDs to disable (in active but not in new)
-    const idsToDisable: string[] = []
-    for (const id of this.activeRemoteApps.keys()) {
-      if (!newAppsMap.has(id)) {
-        idsToDisable.push(id)
-      }
-    }
-
-    // Find apps to enable (in new but not in active)
-    const appsToEnable: [string, DirectoryApp][] = []
-    for (const [extId, app] of newAppsMap) {
-      if (!this.activeRemoteApps.has(extId)) {
-        appsToEnable.push([extId, app])
-      }
-    }
-
-    // Disable old endpoints
-    for (const id of idsToDisable) {
-      log.debug(
-        { path: `/remote/${this.userSessionId}/${id}` },
-        "Disabling remote socket",
-      )
-      this.activeRemoteApps.delete(id)
-    }
-
-    // Enable new endpoints
-    for (const [extId, app] of appsToEnable) {
-      log.debug(
-        { path: `/remote/${userSessionId}/${extId}`, appId: app.appId },
-        "Enabling remote socket",
-      )
-      this.activeRemoteApps.set(extId, app)
-    }
-
-    // Update session ID
-    this.userSessionId = userSessionId
-
-    log.debug(
-      { activeEndpoints: this.activeRemoteApps.size },
-      "RemoteSocketService refreshed",
-    )
+    void userSessionId
+    void nativeApps
+    log.debug("RemoteSocketService refresh (no-op for inbound WSCP endpoint)")
   }
 
-  /**
-   * Get the list of currently active remote app paths.
-   */
   getActivePaths(): string[] {
-    return Array.from(this.activeRemoteApps.keys()).map(
-      (id) => `/remote/${this.userSessionId}/${id}`,
-    )
+    return [WSCP_INBOUND_PATH]
   }
 
-  /**
-   * Shutdown the service and close all connections.
-   */
   shutdown(): void {
     this.wss.close()
-    this.activeRemoteApps.clear()
     log.info("RemoteSocketService shutdown")
   }
 }

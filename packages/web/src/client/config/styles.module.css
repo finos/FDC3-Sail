@@ -253,3 +253,139 @@
   background-color: #d0e8ff;
   font-weight: bold;
 }
+
+.pairingList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pairingToolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pairingIntro {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.clearUnusedButton {
+  flex-shrink: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.clearUnusedButton:hover {
+  background-color: #f5f5f5;
+}
+
+.pairingWarning {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background-color: #fff3cd;
+  color: #856404;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.pairingEmpty {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+}
+
+.pairingCard {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 0.5rem;
+  align-items: flex-start;
+}
+
+.pairingDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.pairingHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pairingTitle {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.pairingField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pairingValue {
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.pairingSecret {
+  display: block;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.85rem;
+  color: #333;
+  background-color: #fff;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #ddd;
+  word-break: break-all;
+  user-select: all;
+}
+
+.statusBadge {
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+}
+
+.statusConnected {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.statusPending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.statusWarning {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.statusDisconnected {
+  background-color: #e9ecef;
+  color: #495057;
+}

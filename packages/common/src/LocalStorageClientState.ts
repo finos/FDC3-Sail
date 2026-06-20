@@ -21,6 +21,7 @@ export class LocalStorageClientState extends AbstractClientState {
         knownApps,
         customApps,
         contextHistory,
+        wscpPairings,
       } = JSON.parse(theState)
       super(
         tabs,
@@ -31,6 +32,7 @@ export class LocalStorageClientState extends AbstractClientState {
         knownApps ?? [],
         customApps ?? [],
         contextHistory ?? {},
+        wscpPairings ?? [],
       )
     } else {
       super(
@@ -42,6 +44,7 @@ export class LocalStorageClientState extends AbstractClientState {
         [],
         [],
         {},
+        [],
       )
     }
   }
@@ -62,6 +65,7 @@ export class LocalStorageClientState extends AbstractClientState {
       knownApps: this.knownApps,
       customApps: this.customApps,
       contextHistory: this.contextHistory,
+      wscpPairings: this.wscpPairings,
     })
     localStorage.setItem(STORAGE_KEY, data)
     // console.log(`SAIL saved state: ${data}`)

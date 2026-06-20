@@ -13,6 +13,16 @@ import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
  */
 export const FDC3_WEBSOCKET_PROPERTY = "connectionUrl"
 
+/**
+ * A WSCP pairing credential binding a random sharedSecret to one app instance.
+ * Stored in ClientState (localStorage) and synced to the Sail server on connect.
+ */
+export type WscpPairing = {
+  sharedSecret: string
+  appId: string
+  instanceId: string
+}
+
 export type AppPanel = GridStackPosition & {
   title: string
   url: string
@@ -83,4 +93,10 @@ export interface ClientState {
    */
   getContextHistory(tabId: string): Context[]
   appendContextHistory(tabId: string, item: Context): Promise<void>
+
+  /** WSCP pairing credentials for native app instances */
+  getWscpPairings(): WscpPairing[]
+  getWscpPairingsForApp(appId: string): WscpPairing[]
+  mintWscpPairing(appId: string): Promise<WscpPairing>
+  removeWscpPairings(instanceIds: string[]): Promise<void>
 }
