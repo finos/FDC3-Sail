@@ -1,6 +1,6 @@
 {
-  "name": "@finos/fdc3-example-apps",
-  "version": "3.0.0-alpha.2",
+  "name": "@finos/sail-example-apps",
+  "version": "0.0.0",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^4.12.0",
-    "@finos/fdc3": "3.0.0-alpha.2",
-    "@finos/fdc3-security": "3.0.0-alpha.2",
+    "@finos/fdc3": "2.2.1-beta.3",
     "@jridgewell/trace-mapping": "^0.3.28",
     "dotenv": "^16.4.0",
     "canonicalize": "^2.1.0",
