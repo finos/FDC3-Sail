@@ -61,6 +61,7 @@ From the terminal in Visual Studio Code (and assuming your current directory is 
 
 ```
 npm install
+npm run build
 npm run web
 ```
 
@@ -74,6 +75,7 @@ From the terminal in Visual Studio Code (and assuming your current directory is 
 
 ```bash
 npm install
+npm run build
 npm run electron
 ```
 
@@ -103,11 +105,11 @@ The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is b
 
 ### Trading View Applications
 
-[TradingView](tradingview.com) provides a number of widgets that can be embedded in a web page. The `packages/web/public/example-apps/tradingview` directory contains a number of apps that use the TradingView widgets and respond to FDC3 broadcast and raise intent events. The AppD records for these are in the `directory/tradingview.json` file.
+[TradingView](https://tradingview.com) provides a number of widgets that can be embedded in a web page. The `packages/web/public/example-apps/tradingview` directory contains a number of apps that use the TradingView widgets and respond to FDC3 broadcast and raise intent events. The AppD records for these are in the `directory/tradingview.json` file.
 
 ### Polygon Applications
 
-The `packages/web/public/example-apps/polygon` directory contains a number of apps that use the [Polygon API](polygon.io) you can open. The AppD records for these are in the `directory/polygon.json` file.
+The `packages/web/public/example-apps/polygon` directory contains a number of apps that use the [Polygon API](https://polygon.io) you can open. The AppD records for these are in the `directory/polygon.json` file.
 
 If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
 
@@ -122,16 +124,16 @@ For the purposes of the training tutorial, Sail has been bundled with two toy ap
 
 - `Pricer`: A simple application that displays a price for a given instrument.
 - `TradeList`: A simple application that displays a list of trades.
-- `ChanelListener`: A simple application that listens for messages on a channel.
+- `ChannelListener`: A simple application that listens for messages on a channel.
 - `ChannelBroadcaster`: A simple application that broadcasts messages on a channel.
 
 You can start these from the app picker.
 
-These applications are hed in the `directories/training.json` app directory file within the Sail distribution that you downloaded and are run from within the Sail web server. You can access them directly by visiting http://localhost:8090/example-apps/training/pricer/index.html or http://localhost:8099/example-apps/training/tradelist/index.html.
+These applications are held in the `directory/training.json` app directory file within the Sail distribution that you downloaded and are run from within the Sail web server. You can access them directly by visiting http://localhost:8090/example-apps/training/pricer/index.html or http://localhost:8090/example-apps/training/tradelist/index.html.
 
 ## About Application Directories
 
-The list of applications available to Sail is provided in what's called an "Application Directory Record". You can find the Application Directory Records for the tutorial applications in the `directory/training-appd.v2.json` file. This includes details about where the application is run from (e.g. http://localhost:5000/static/pricer/index.html), what it's called, images, icons and what FDC3 messages it responds to (in a section of the json called `interop:`).
+The list of applications available to Sail is provided in what's called an "Application Directory Record". You can find the Application Directory Records for the tutorial applications in the `directory/training.json` file. This includes details about where the application is run from (e.g. http://localhost:5000/static/pricer/index.html), what it's called, images, icons and what FDC3 messages it responds to (in a section of the json called `interop:`).
 
 ## Other FDC3 Desktop Agents
 
@@ -140,6 +142,18 @@ FDC3 is an open standard and there are other desktop agents available. You can f
 - [Connectifi](training/instructions/Connectifi.md)
 - [io.Connect](training/instructions/Io.Connect.md)
 - [OpenFin](training/instructions/OpenFin.md)
+
+## Meetings
+
+FDC3 Sail holds regular project meetings to discuss development progress, roadmap, and community contributions.
+
+**Join Meeting:**
+- [Join FDC3 Sail Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c)
+
+**Register for Meeting Series:**
+- [Register for FDC3 Sail Meetings (add to calendar)](https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c&invite=true)
+
+Meeting agendas and minutes are tracked through GitHub issues with the `meeting` label.
 
 ## Mailing List
 

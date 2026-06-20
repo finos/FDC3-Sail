@@ -9,6 +9,18 @@ labels: meeting
 
 Meeting date and time in UTC (e.g. 2026 March 16th — 14:00 UTC):
 
+## Zoom Details:
+
+Register for the meeting and get an invite sent to your calendar here:
+https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c&invite=true
+
+Join Zoom Meeting:
+https://zoom-lfx.platform.linuxfoundation.org/meeting/95252800112?password=90638454-991c-4ab0-8aed-791fc372623c
+
+Meeting ID: 95252800112
+Meeting Passcode: 001816
+Join via Phone: https://zoom.us/u/alwnPIaVT
+
 ## Meeting Notices
 
 - FINOS **Project leads** are responsible for observing the FINOS guidelines for [running project meetings](https://github.com/finos/community/blob/main/docs/governance/Meeting-Procedures.md#run-the-meeting). Project maintainers can find additional resources in the [FINOS Maintainers Cheatsheet](https://odp.finos.org/docs/finos-maintainers-cheatsheet/).
