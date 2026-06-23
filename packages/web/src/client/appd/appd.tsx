@@ -80,9 +80,11 @@ async function pruneUnusedPairings(
 function ConnectionInstructions({
   appId,
   connectionUrl,
+  protocolLaunchAvailable,
 }: {
   appId: string
   connectionUrl: string
+  protocolLaunchAvailable: boolean
 }) {
   const [platform, setPlatform] = useState<ConnectionPlatform>("java")
   const [displayPairing, setDisplayPairing] = useState<WscpPairing | null>(null)
@@ -97,6 +99,9 @@ function ConnectionInstructions({
   }
 
   useEffect(() => {
+    if (protocolLaunchAvailable) {
+      return
+    }
     let cancelled = false
     ensureNextUnusedPairing(appId)
       .then(async (pairing) => {
@@ -114,9 +119,12 @@ function ConnectionInstructions({
     return () => {
       cancelled = true
     }
-  }, [appId])
+  }, [appId, protocolLaunchAvailable])
 
   useEffect(() => {
+    if (protocolLaunchAvailable) {
+      return
+    }
     const rotateAfterConnect = () => {
       const current = displayPairingRef.current
       if (!current || mintInFlightRef.current) {
@@ -142,7 +150,7 @@ function ConnectionInstructions({
       wasInUseRef.current = inUse
     }
     getAppState().addStateChangeCallback(rotateAfterConnect)
-  }, [appId])
+  }, [appId, protocolLaunchAvailable])
 
   const createPairing = () => {
     getClientState()
@@ -156,27 +164,41 @@ function ConnectionInstructions({
   return (
     <div className={styles.connectionSection}>
       <p className={styles.connectionIntro}>
-        This native application connects to Sail via WSCP. Use{" "}
-        <strong>Open On Desktop</strong> to launch via the registered protocol
-        handler, or copy the credentials below for a manual start. Each running
-        copy needs its own pairing credentials. The credentials below are for
-        the next connection — when an app connects, a fresh set is shown
-        automatically so you can launch another instance.
+        {protocolLaunchAvailable ? (
+          <>
+            This native application connects to Sail via WSCP. Click{" "}
+            <strong>Open On Desktop</strong> to launch it via the registered
+            protocol handler — Sail supplies pairing credentials in the launch
+            URL automatically.
+          </>
+        ) : (
+          <>
+            This native application connects to Sail via WSCP. Copy the
+            credentials below for a manual start. Each running copy needs its
+            own pairing credentials. The credentials below are for the next
+            connection — when an app connects, a fresh set is shown
+            automatically so you can launch another instance.
+          </>
+        )}
       </p>
 
-      <button
-        type="button"
-        className={styles.platformTab}
-        onClick={createPairing}
-      >
-        New credentials
-      </button>
+      {!protocolLaunchAvailable && (
+        <>
+          <button
+            type="button"
+            className={styles.platformTab}
+            onClick={createPairing}
+          >
+            New credentials
+          </button>
 
-      {displayPairing && (
-        <PairingCredentials
-          pairing={displayPairing}
-          connectionUrl={connectionUrl}
-        />
+          {displayPairing && (
+            <PairingCredentials
+              pairing={displayPairing}
+              connectionUrl={connectionUrl}
+            />
+          )}
+        </>
       )}
 
       <div className={styles.platformTabs}>
@@ -209,10 +231,18 @@ function ConnectionInstructions({
       <div className={styles.platformContent}>
         {platform === "java" && (
           <div className={styles.platformInstructions}>
-            <p>
-              Pass <code>webSocketUrl</code> and <code>sharedSecret</code> to
-              your app launch handler or <code>GetAgentParams</code>.
-            </p>
+            {protocolLaunchAvailable ? (
+              <p>
+                Register the <code>fdc3-java-app://</code> protocol handler on
+                your OS, then use <strong>Open On Desktop</strong>. See the
+                fdc3-example-app README for setup instructions.
+              </p>
+            ) : (
+              <p>
+                Pass <code>webSocketUrl</code> and <code>sharedSecret</code> to
+                your app launch handler or <code>GetAgentParams</code>.
+              </p>
+            )}
           </div>
         )}
 
@@ -356,6 +386,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                               connectionUrl={
                                 (app.details as any)[FDC3_WEBSOCKET_PROPERTY]
                               }
+                              protocolLaunchAvailable={hasDesktopLaunchUrl(app)}
                             />
                           )}
                       </div>
