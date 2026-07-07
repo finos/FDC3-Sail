@@ -7,7 +7,6 @@ import {
   SAIL_APP_STATE,
   SAIL_CLIENT_STATE,
   DA_REGISTER_APP_LAUNCH,
-  ELECTRON_HELLO,
   CHANNEL_RECEIVER_HELLO,
   SAIL_INTENT_RESOLVE_ON_CHANNEL,
 } from "@finos/fdc3-sail-common"
@@ -27,7 +26,6 @@ export {
 } from "./types"
 
 // Individual handlers
-import { handleElectronHello } from "./handleElectronHello"
 import { handleDAHello } from "./handleDAHello"
 import { handleDirectoryListing } from "./handleDirectoryListing"
 import { handleRegisterAppLaunch } from "./handleRegisterAppLaunch"
@@ -76,10 +74,6 @@ export function handleAllMessageTypes(
   connection: SocketIOConnection,
   onNativeAppsChanged: OnNativeAppsChanged,
 ): void {
-  connection.on(ELECTRON_HELLO, async (props: any, callback: any) => {
-    await handleElectronHello(ctx, factory, connection, props, callback)
-  })
-
   connection.on(DA_HELLO, async (props: any, callback: any) => {
     await handleDAHello(ctx, factory, connection, props, callback)
     onNativeAppsChanged(

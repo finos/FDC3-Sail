@@ -17,6 +17,3 @@ cucumber-report.html
 .vite
 .vite-cache
 packages/fdc3-example-apps/directory/generated
-
-# npm workspaces: only the root package-lock.json is authoritative
-packages/electron/package-lock.json
