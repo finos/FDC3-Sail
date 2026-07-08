@@ -6,10 +6,9 @@
     "clean": "npm run clean --workspaces",
     "build": "npm run build --workspaces --if-present",
     "web:dev": "npm run dev -w packages/web",
-    "examples:dev": "npm run dev -w packages/fdc3-example-apps",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
-    "start": "concurrently -n \"WEB,EXAMPLES\" -c \"blue,yellow\" \"npm run web:dev\" \"npm run examples:dev\"",
+    "start": "npm run web:dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -17,12 +16,10 @@
   "workspaces": [
     "packages/da-impl",
     "packages/common",
-    "packages/web",
-    "packages/fdc3-example-apps"
+    "packages/web"
   ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
-    "concurrently": "^8.2.2",
     "eslint": "^9.22.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
