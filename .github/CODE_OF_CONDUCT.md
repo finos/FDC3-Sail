@@ -1,3 +1,3 @@
-# Code of Conduct for Electron FDC3 Desktop Agent & App Directory
+# Code of Conduct for FDC3 Sail
 
 Please see the [Community Code of Conduct](https://www.finos.org/code-of-conduct).

@@ -52,6 +52,10 @@ FDC3 For the Web and Sail v2 will be featured at FINOS' [OSFF New York event](ht
 
 FDC3 Sail is based on the newly-approved FDC3 For-The-Web standard. It is currently in development and is **definitely not yet ready for production use**. Please help us advance progress by **raising issues as you find them**. Contributions welcome - see below.
 
+### Desktop (Electron) Support
+
+Electron support has been removed for now. Electron requires significant security hardening before it can be production-ready, so the next release will focus on FDC3 for the web. Desktop support via Electron may be revisited after Sail v3.
+
 ## Getting Started
 
 **Note:** If you're not a developer and all of this seems very daunting - don't worry! Come along to [The FDC3 Developer Training Workshop](https://osffny2024.sched.com/event/1k1nV/fdc3-developer-training-workshop-pre-registration-required-rob-moffat-finos) anyway. Maybe you can be an extra pair of eyes and hands to help out someone else?
@@ -84,18 +88,6 @@ npm run web
 Point your browser at http://localhost:8090
 
 ![Sail Initial Screen](./packages/web/images/blank-screen.png)
-
-### Running The Project (For Electron)
-
-From the terminal in Visual Studio Code (and assuming your current directory is now `FDC3-Sail`), run the following commands:
-
-```bash
-npm install
-npm run build
-npm run electron
-```
-
-The desktop app should load and you should see the same screen as above.
 
 ### Opening Apps
 
@@ -175,7 +167,7 @@ Meeting agendas and minutes are tracked through GitHub issues with the `meeting`
 
 ## Mailing List
 
-To join the Electron FDC3 Desktop Agent & App Directory mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
+To join the FDC3 Sail mailing list please email [fdc3-sail+subscribe@lists.finos.org](mailto:fdc3-sail+subscribe@lists.finos.org).
 
 ## Contributing
 
