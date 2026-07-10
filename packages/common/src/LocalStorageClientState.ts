@@ -74,27 +74,7 @@ const DEFAULT_DIRECTORIES: Directory[] = [
   {
     label: "FINOS FDC3 Directory",
     url: "https://directory.fdc3.finos.org/v2/apps/",
-    active: false,
-  },
-  {
-    label: "Sail Example Apps",
-    url: "../fdc3-example-apps/directory/generated/fdc3-example-apps.json",
     active: true,
-  },
-  {
-    label: "FDC3 Workbench",
-    url: "../fdc3-example-apps/directory/workbench.json",
-    active: true,
-  },
-  {
-    label: "Symphony Chat Platform",
-    url: "../fdc3-example-apps/directory/symphony.json",
-    active: false,
-  },
-  {
-    label: "FDC3 Conformance",
-    url: "../fdc3-example-apps/directory/conformance.json",
-    active: false,
   },
 ]
 

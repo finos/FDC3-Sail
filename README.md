@@ -82,7 +82,7 @@ From the terminal in Visual Studio Code (and assuming your current directory is 
 ```
 npm install
 npm run build
-npm run web
+npm start
 ```
 
 Point your browser at http://localhost:8090
@@ -91,7 +91,7 @@ Point your browser at http://localhost:8090
 
 ### Opening Apps
 
-This tutorial version of Sail contains several apps that you can open. To open an app, click the plus icon in the bottom left corner of the sail window. You'll be given a choice of applications to open like so:
+To open an app, click the plus icon in the bottom left corner of the sail window. You'll be given a choice of applications from the configured application directories:
 
 ![Sail App Picker](./packages/web/images/open-app.png)
 
@@ -101,7 +101,7 @@ Once an application is opened, you'll be able to see it, and interact with it, i
 
 ### The FDC3 Workbench
 
-The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is bundled on the main FDC3 website at [https://fdc3.finos.org/toolbox/fdc3-workbench/](https://fdc3.finos.org/toolbox/fdc3-workbench/) and can be used within Sail. It's directory entry is in the `directory/workbench.json` file.
+The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is hosted on the main FDC3 website at [https://fdc3.finos.org/toolbox/fdc3-workbench/](https://fdc3.finos.org/toolbox/fdc3-workbench/) and can be used within Sail by adding it via an application directory.
 
 **NOTE:** This answers a very commonly-asked question in FDC3: Can apps be hosted on different domains? People believe this might be impossible due to browser sandboxing, but the answer is yes, and the Workbench is a good example of this.
 
@@ -111,45 +111,13 @@ The FDC3 Workbench is a simple app that allows you to test the FDC3 API. It is b
 - Add http://localhost:8090 to the text box
 - Click "Relaunch" to restart Chrome
 
-### Trading View Applications
-
-[TradingView](https://tradingview.com) provides a number of widgets that can be embedded in a web page. The `packages/web/public/example-apps/tradingview` directory contains a number of apps that use the TradingView widgets and respond to FDC3 broadcast and raise intent events. The AppD records for these are in the `directory/tradingview.json` file.
-
-### Polygon Applications
-
-The `packages/web/public/example-apps/polygon` directory contains a number of apps that use the [Polygon API](https://polygon.io) you can open. The AppD records for these are in the `directory/polygon.json` file.
-
-If you want to see the Polygon apps in action, you need to set the `POLYGON_API_KEY` environment variable to your Polygon API key.
-
-```
-POLYGON_API_KEY=your_api_key
-npm run web
-```
-
-## Training / Tutorial Applications
-
-For the purposes of the training tutorial, Sail has been bundled with two toy applications:
-
-- `Pricer`: A simple application that displays a price for a given instrument.
-- `TradeList`: A simple application that displays a list of trades.
-- `ChannelListener`: A simple application that listens for messages on a channel.
-- `ChannelBroadcaster`: A simple application that broadcasts messages on a channel.
-
-You can start these from the app picker.
-
-These applications are held in the `directory/training.json` app directory file within the Sail distribution that you downloaded and are run from within the Sail web server. You can access them directly by visiting http://localhost:8090/example-apps/training/pricer/index.html or http://localhost:8090/example-apps/training/tradelist/index.html.
-
 ## About Application Directories
 
-The list of applications available to Sail is provided in what's called an "Application Directory Record". You can find the Application Directory Records for the tutorial applications in the `directory/training.json` file. This includes details about where the application is run from (e.g. http://localhost:5000/static/pricer/index.html), what it's called, images, icons and what FDC3 messages it responds to (in a section of the json called `interop:`).
+The list of applications available to Sail is provided by Application Directory records. By default, Sail uses the [FINOS FDC3 Directory](https://directory.fdc3.finos.org/v2/apps/). You can also add your own directory URLs in Sail settings. Each directory entry describes where an application is hosted, its name, icons/screenshots, and which FDC3 messages it supports (in the `interop` section of the JSON).
 
 ## Other FDC3 Desktop Agents
 
-FDC3 is an open standard and there are other desktop agents available. You can find a list of them on the [FDC3 Website](https://fdc3.finos.org). Sail is just a 'toy' desktop agent, but if you would rather follow the tutorial using a different desktop agent, you can do so. Here are some instructions provided by other vendors to get started with their desktop agents.
-
-- [Connectifi](training/instructions/Connectifi.md)
-- [io.Connect](training/instructions/Io.Connect.md)
-- [OpenFin](training/instructions/OpenFin.md)
+FDC3 is an open standard and there are other desktop agents available. You can find a list of them on the [FDC3 Website](https://fdc3.finos.org).
 
 ## Meetings
 
