@@ -1,25 +1,34 @@
 
 
-# **FDC3-Sail FAQ**
+# **FDC3-Sail: FAQ**
 
 ### **What is Sail and how does it relate to FDC3?**
 
-Sail is a free, web-based simulator where people are able to test out the FDC3 rules in action. Imagine FDC3 as a rulebook on how applications should talk to each other, Sail is the digital practice field.
+Sail is a free, web-based, live demonstration tool, where people are able to test out the FDC3 application interoperability. FDC3 is the standard, Sail is the digital playground. 
 
-Sail lets anyone test drive 'dummy' apps inside a browser without having to download heavy software. This is especially useful for large organizations which want to test out FDC3, without implementing it.
+Sail lets anyone test drive apps inside a browser without having to download heavy software. This is especially useful for:
+- orginisations where installing new software is difficult.
+- People wanting to carry out a low-stakes evaluation of Sail, wanting to try it out and play around with its features.
+- It is useful for many developers who need a free reference implimentation. 
 
 ### **What is FDC3 for exactly?**
 
-FDC3 is designed to stop users having to manually copy and paste data between different programs in order to view information. It provides a universal language so that software which was previously blind to other apps, can now instantly share data and trigger actions across each other automatically.
+FDC3 is designed to stop users having to manually copy and paste data between different programs in order to view information. It provides a universal language so that software which was previously blind to other apps, can now instantly share data and trigger actions across each other automatically. To learn more about FDC3, see:
+- [What is FDC3?](https://interop.io/fdc3/)
+- [FDC3 overview slideshow](https://docs.google.com/presentation/d/1yvttxu1y1ffiEmmaJtDRe_5sY2soCR-Tk7UAXQbbpoE/edit?slide=id.p#slide=id.p)
+
+<img alt="Desktop Agent Diagram" src="https://fdc3.finos.org/assets/images/api-3-275a05da9ce0df54edd7e9f602b4841c.png" width="450" align="right">
+
 
 ### **What is a desktop agent?**
 
-A desktop agent acts as a 'digital postman' running on your computer. Since individual applications are blind to each other, the agent sits in the middle, listening for data from App A and securely routing it to App B.
+A desktop agent acts as a central 'traffic controller' running on your computer. Since individual applications are blind to each other, the agent sits in the middle, listening for data from App A and securely routing it to App B. Desktop agents do this using intents. An intent is like a request for an action to be performed. The desktop agent will catch these intents coming from the applications, and passes that data onto the other application in order for it to get done. 
+
 
 ### **What is FINOS and the Linux Foundation?**
 
-- The Linux Foundation is the world's largest non-profit group, helping industries and organizations to build free to use, open technology together.
-- FINOS (the Fintech open source Foundation) is the financial branch of the Linux Foundation. They manage and protect the FDC3 standard.
+- The Linux Foundation is the world's largest non-profit group, helping industries and organizations to build free to use, open technology together. [Linux Foundation Website](https://www.linuxfoundation.org/about?_gl=1*1wh6qbm*_up*MQ..*_ga*MjAxODc1NTA1NS4xNzg0MTA5NzA4*_ga_BKD8K5CRV0*czE3ODQxMDk3MDYkbzEkZzAkdDE3ODQxMDk3MDYkajYwJGwwJGgw*_ga_FBYHX832ZD*czE3ODQxMDk3MDYkbzEkZzAkdDE3ODQxMDk3MDYkajYwJGwwJGgw)
+- FINOS (the Fintech open source Foundation) is the financial branch of the Linux Foundation. They manage and protect the FDC3 standard. [FINOS Website](https://www.finos.org/about-us)
 
 ### **How can beginners easily start to use FDC3 without prior knowledge about programming?**
 
@@ -35,7 +44,8 @@ FDC3 makes working financially on a computer smooth and fast by doing the follow
 
 ### **What will happen to my applications if I go offline?**
 
-Since FDC3 does not rely on a cloud connection to pass messages, the desktop agent will run locally right on your computer. This means that open applications will continue to talk to each other and pass data continuously even if your internet drops out.
+1. In FDC3, since it does not rely on a cloud connection to pass messages, the desktop agent will run locally right on your computer. This means that open applications will continue to talk to each other and pass data continuously even if your internet drops out.
+2. In Sail, it will continue to function. This is due to Sail running locally on your browser hence, applications do not need a cloud connection to talk to eachother. You will still be able to test workflows and pass data between apps while Sail is offline. 
 
 ### **If one of my apps crashes, how would this affect my other apps?**
 
@@ -43,11 +53,13 @@ A single app crash would not affect/break your setup. This is due to FDC3 applic
 
 ### **How does FDC3 protect my financial data?**
 
-FDC3 acts as a secure traffic controller. Applications cannot spy on your desktop or grab data from other platforms freely. Your sensitive information is only shared when you take a specific action, and modern FDC3 standards include digital signatures and private channels which ensure all data only goes to verified, trusted apps.
+Applications cannot spy on your desktop or grab data from other platforms freely, as these applications have no direct relationship with there counterparts. This is because FDC3 relies on browser sandboxing, which means that it places all individual applications into their own isolated digital cells. This is done through applications communicating through the desktop agent, which verifys the identity of the applications that they connect. 
+- See more on [FDC3 Website - Security & Identity](https://fdc3.finos.org/docs/next/api/security)
 
 ### **What devices can FDC3 be used on?**
 
 FDC3 can be used on almost any standard office computer. It is built to be platform agnostic, meaning that it runs seamlessly across many operating systems.
+Sail can be run on any device that is able to run a browser.
 
 ### **How does Sail act as a 'sandbox'?**
 
@@ -55,9 +67,9 @@ Sail will run directly inside any ordinary browser. It creates an isolated, 'dig
 
 ### **Why is it important to use Sail to test workflows?**
 
-- Catching silent but harmful bugs: Financial workflows often will fail due to App A sending a message that App B cannot understand. Sail can be used to test this and catch these language barriers before they are implemented.
-- Preventing expensive mistakes: An example of this would be a trader clicking a stock ticker and the wrong chart popping up, they could make an expensive mistake in this situation. Testing workflows using Sail ensure that clicking items will trigger the exact action wanted/required.
-- Saving tech teams time: Testing software on a banking network is slow and frustrating. However, using Sail to test in a sandbox takes mere minutes, speeding up the process of these tools being built.
+**- Catching silent but harmful bugs:** Financial workflows often will fail due to App A sending a message that App B cannot understand. Sail can be used to test this and catch these language barriers before they are implemented.
+**- Saving tech teams time:** Testing software on a banking network is slow and frustrating. However, using Sail to test in a sandbox takes mere minutes, speeding up the process of these tools being built.
+**- Verifying connectivity:** Using sail to test workflows is essential as it is able to ensure secure connections between applications, and verify its core functions such as launching apps, sharing data and raising intents.
 
 ### **How can I add new applications into Sail?**
 
@@ -76,3 +88,6 @@ You are able to turn any basic financial web page into an FDC3 app by following 
 - Create your simple web page.
 - Import the FDC3 rulebook. Do this by adding a small snippet of free code to your web page that links it to the official FDC3 library. This will instantly teach your web page how to understand the universal FDC3 language.
 - Tell the app what to listen for. Write a few basic lines of instructions which will tell your app how to behave. This makes it compatible with FDC3.
+- More information is avaliable through the course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
+- Also see [toolbox package holding sample web applications](https://github.com/finos/FDC3/tree/main/toolbox/fdc3-example-apps)
+
