@@ -83,4 +83,10 @@ export interface ClientState {
    */
   getContextHistory(tabId: string): Context[]
   appendContextHistory(tabId: string, item: Context): Promise<void>
+
+  /**
+   * Splash Screen
+   */
+  isSplashScreenVisible(): boolean
+  setSplashScreenVisible(visible: boolean): Promise<void>
 }
