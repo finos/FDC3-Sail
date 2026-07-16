@@ -86,10 +86,11 @@ To get Sail to recognise and display your app, you must register it into Sail's 
 ### **What do I need to do in order to create my own app which is compatible with FDC3?**
 
 You are able to turn any basic financial web page into an FDC3 app by following these steps:
-
-- Create your simple web page.
-- Import the FDC3 rulebook. Do this by adding a small snippet of free code to your web page that links it to the official FDC3 library. This will instantly teach your web page how to understand the universal FDC3 language.
-- Tell the app what to listen for. Write a few basic lines of instructions which will tell your app how to behave. This makes it compatible with FDC3.
-- More information is avaliable through the course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
+1. Web apps cannot talk to each other directly through FDC3 without a host framework. Your app must be run inside an enterprise container or a browser extension.
+2. Create your app defenition by describing it so that the desktop agent knows how to launch it, and what data it supports. Use a configuration file in JSON to host this.
+3. The web app needs to be actively listening for incoming data or intents from the rest of the desktop. You can do this by adding the code to handle data using JS.
+4. Test your app using FDC3-Sail. To do this you will need to serve your application locally. Then configure your App Definition JSON, drop it into Sail's local directory, and use Sail's built-in [FDC3 Workbench](https://github.com/finos/FDC3/blob/main/toolbox/fdc3-workbench/README.md) to mock and monitor interactions.
+   **This is a heavily simplified explination, so see these links for further understanding:
+- Learn through the online course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
 - Also see [toolbox package holding sample web applications](https://github.com/finos/FDC3/tree/main/toolbox/fdc3-example-apps)
-
+- Don't forget, [Using the FDC3 Workbench](https://finsemble.interop.io/docs/connect-apps/interop/FDC3Workbench/) which provides more in-depth examples and more advanced intel on the code. 
