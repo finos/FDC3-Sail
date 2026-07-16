@@ -22,6 +22,7 @@
   flex-shrink: 0;
   padding-right: 0.5rem;
   border-bottom-right-radius: 6px;
+  cursor: pointer;
 }
 
 .logoImage {
