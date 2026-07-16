@@ -5,9 +5,9 @@ export const Empty = () => {
   return <div className={styles.empty} />
 }
 
-export const Logo = () => {
+export const Logo = ({ onClick }: { onClick?: () => void }) => {
   return (
-    <div className={styles.logo}>
+    <div className={styles.logo} onClick={onClick}>
       <img src="/icons/logo/logo.svg" className={styles.logoImage} />
       <p className={styles.logoTextThin}>FDC3</p>
       <p className={styles.logoTextBold}>Sail</p>
