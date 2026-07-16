@@ -15,6 +15,7 @@ import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
 import { ContextHistoryPanel } from "../context/ContextHistory"
+import { SplashScreen } from "../splash/splash"
 
 enum Popup {
   NONE,
@@ -51,13 +52,21 @@ export class Frame extends Component<FrameProps, FrameState> {
     }
   }
 
+  private openSplashScreen = () => {
+    void this.props.cs.setSplashScreenVisible(true)
+  }
+
+  private closeSplashScreen = () => {
+    void this.props.cs.setSplashScreenVisible(false)
+  }
+
   render() {
     const activeTab = this.props.cs.getActiveTab()
 
     return (
       <div className={styles.outer}>
         <div className={styles.top}>
-          <Logo />
+          <Logo onClick={this.openSplashScreen} />
           <ContextHistory
             onClick={() => this.setState({ popup: Popup.CONTEXT_HISTORY })}
             contextHistory={this.props.cs.getContextHistory(activeTab.id)}
@@ -130,6 +139,9 @@ export class Frame extends Component<FrameProps, FrameState> {
               )
             }}
           />
+        ) : null}
+        {this.props.cs.isSplashScreenVisible() ? (
+          <SplashScreen closeAction={this.closeSplashScreen} />
         ) : null}
       </div>
     )
