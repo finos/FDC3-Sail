@@ -1,8 +1,8 @@
 import { Popup } from "../popups/popup"
 import { CSSProperties } from "react"
-
 const REPO_URL = "https://github.com/finos/FDC3-Sail"
-
+const GUIDE_URL = "https://github.com/finos/FDC3-Sail/blob/main/GUIDE.md"
+const FAQ_URL = "https://github.com/finos/FDC3-Sail/blob/main/FAQ.md"
 const splashContentStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
@@ -13,41 +13,39 @@ const splashContentStyle: CSSProperties = {
   textAlign: "center",
   color: "#111",
 }
-
 const splashLogoStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "0.75rem",
   alignItems: "center",
 }
-
 const splashLogoImageStyle: CSSProperties = {
   width: "6rem",
   height: "6rem",
 }
-
 const splashTitleStyle: CSSProperties = {
   fontSize: "2rem",
   fontWeight: 600,
   margin: 0,
 }
-
 const splashTextStyle: CSSProperties = {
   maxWidth: "36rem",
   margin: 0,
   lineHeight: 1.5,
 }
-
 const repoLabelStyle: CSSProperties = {
   margin: 0,
   fontWeight: 600,
 }
-
 const repoLinkStyle: CSSProperties = {
   color: "#0a66c2",
   fontWeight: 500,
 }
-
+const linksRowStyle: CSSProperties = {
+  display: "flex",
+  gap: "1.5rem",
+  justifyContent: "center",
+}
 export const SplashScreen = ({ closeAction }: { closeAction: () => void }) => {
   return (
     <Popup
@@ -68,7 +66,7 @@ export const SplashScreen = ({ closeAction }: { closeAction: () => void }) => {
             managing FDC3 apps in tabs and panels.
           </p>
           <p style={repoLabelStyle}>GitHub repository</p>
-          <a
+          
             style={repoLinkStyle}
             href={REPO_URL}
             target="_blank"
@@ -76,6 +74,24 @@ export const SplashScreen = ({ closeAction }: { closeAction: () => void }) => {
           >
             {REPO_URL}
           </a>
+          <div style={linksRowStyle}>
+            
+              style={repoLinkStyle}
+              href={GUIDE_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              User Guide
+            </a>
+            
+              style={repoLinkStyle}
+              href={FAQ_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              FAQ
+            </a>
+          </div>
         </div>
       }
       buttons={[]}
