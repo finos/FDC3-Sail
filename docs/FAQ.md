@@ -68,7 +68,9 @@ Sail will run directly inside any ordinary browser. It creates an isolated, 'dig
 ### **Why is it important to use Sail to test workflows?**
 
 **- Catching silent but harmful bugs:** Financial workflows often will fail due to App A sending a message that App B cannot understand. Sail can be used to test this and catch these language barriers before they are implemented.
+
 **- Saving tech teams time:** Testing software on a banking network is slow and frustrating. However, using Sail to test in a sandbox takes mere minutes, speeding up the process of these tools being built.
+
 **- Verifying connectivity:** Using sail to test workflows is essential as it is able to ensure secure connections between applications, and verify its core functions such as launching apps, sharing data and raising intents.
 
 ### **How can I add new applications into Sail?**
