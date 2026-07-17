@@ -83,16 +83,20 @@ You can use Sail as a lightweight desktop agent when validating FDC3 workflows:
 
 ### **How can I add new app directories into Sail?**
 
-Firstly, let's talk about app directories: an app directory contains a number of AppD records. Each record describes a single FDC3 application. This tells the desktop agent exactly where each application lives, its name, and what kind of data it sends/receives. Sail can support multiple app directories. To add a new directory:
+Firstly, let's talk about app directories: an app directory contains a number of AppD records. Each record describes a single FDC3 application. This tells the desktop agent exactly where each application lives, its name, and what kind of data it sends/receives. Sail can support multiple app directories. 
+
+**To add a new directory:**
 
 1.  Hit the ellipsis icon on the top right of the Sail UI to open the config screen.
 ![screenshot6](images/ss6.png)
 3.  Select the directories tab.
-4.  Press "Click to add a new directory"
-5.  Enter the directory URL and give it a name.
-6.  Slide the activation slider to the right to enable that directory.
-7.  Close the config screen and go to the "Start Application" panel.
-8.  You should see the new applications from your directory listed there.
+![screenshot9](images/ss9.png)
+5.  Press "Click to add a new directory"
+![screenshot10](images/ss10.png)
+7.  Enter the directory URL and give it a name, then slide the activation slider to the right to enable that directory.
+![screenshot11](images/ss11.png)
+ 
+Close the config screen and go to the "Start Application" panel. You should see the new applications from your directory listed there.
 
 ### **How can I add custom applications into Sail?**
 
