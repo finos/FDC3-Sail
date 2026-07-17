@@ -7,9 +7,9 @@
 Sail is a free, web-based, live demonstration tool, where people are able to test out the FDC3 application interoperability. FDC3 is the standard, Sail is the digital playground. 
 
 Sail lets anyone test drive apps inside a browser without having to download heavy software. This is especially useful for:
-- orginisations where installing new software is difficult.
+- Organizations where installing new software is difficult.
 - People wanting to carry out a low-stakes evaluation of Sail, wanting to try it out and play around with its features.
-- It is useful for many developers who need a free reference implimentation. 
+- It is useful for many developers who need a free reference implementation. 
 
 ### **What is FDC3 for exactly?**
 
@@ -22,7 +22,7 @@ FDC3 is designed to stop users having to manually copy and paste data between di
 
 ### **What is a desktop agent?**
 
-A desktop agent acts as a central 'traffic controller' running on your computer. Since individual applications are blind to each other, the agent sits in the middle, listening for data from App A and securely routing it to App B. Desktop agents do this using intents. An intent is like a request for an action to be performed. The desktop agent will catch these intents coming from the applications, and passes that data onto the other application in order for it to get done. 
+A desktop agent acts as a central 'traffic controller' running on your computer. Since individual applications are blind to each other, the agent sits in the middle, listening for data from App A and securely routing it to App B. Desktop agents do this using intents. An intent is like a request for an action to be performed. The desktop agent will catch these intents coming from the applications, and pass that data onto the other application in order for it to get done. 
 
 
 ### **What is FINOS and the Linux Foundation?**
@@ -45,7 +45,7 @@ FDC3 makes working financially on a computer smooth and fast by doing the follow
 ### **What will happen to my applications if I go offline?**
 
 1. In FDC3, since it does not rely on a cloud connection to pass messages, the desktop agent will run locally right on your computer. This means that open applications will continue to talk to each other and pass data continuously even if your internet drops out.
-2. In Sail, it will continue to function. This is due to Sail running locally on your browser hence, applications do not need a cloud connection to talk to eachother. You will still be able to test workflows and pass data between apps while Sail is offline. 
+2. In Sail, it will continue to function. This is due to Sail running locally on your browser hence, applications do not need a cloud connection to talk to each other. You will still be able to test workflows and pass data between apps while Sail is offline. 
 
 ### **If one of my apps crashes, how would this affect my other apps?**
 
@@ -53,7 +53,7 @@ A single app crash would not affect/break your setup. This is due to FDC3 applic
 
 ### **How does FDC3 protect my financial data?**
 
-Applications cannot spy on your desktop or grab data from other platforms freely, as these applications have no direct relationship with there counterparts. This is because FDC3 relies on browser sandboxing, which means that it places all individual applications into their own isolated digital cells. This is done through applications communicating through the desktop agent, which verifys the identity of the applications that they connect. 
+Applications cannot spy on your desktop or grab data from other platforms freely, as these applications have no direct relationship with their counterparts. This is because FDC3 relies on browser sandboxing, which means that it places all individual applications into their own isolated digital cells. This is done through applications communicating through the desktop agent, which verifies the identity of the applications that they connect. 
 - See more on [FDC3 Website - Security & Identity](https://fdc3.finos.org/docs/next/api/security)
 
 ### **What devices can FDC3 be used on?**
@@ -92,11 +92,11 @@ Well done! You have just injected your web app into Sail without changing any co
 
 You are able to turn any basic financial web page into an FDC3 app by following these steps:
 1. Web apps cannot talk to each other directly through FDC3 without a host framework. Your app must be run inside an enterprise container or a browser extension.
-2. Create your app defenition by describing it so that the desktop agent knows how to launch it, and what data it supports. Use a configuration file in JSON to host this.
+2. Create your app definition by describing it so that the desktop agent knows how to launch it, and what data it supports. Use a configuration file in JSON to host this.
 3. The web app needs to be actively listening for incoming data or intents from the rest of the desktop. You can do this by adding the code to handle data using JS.
 4. Test your app using FDC3-Sail. To do this you will need to serve your application locally. Then configure your App Definition JSON, drop it into Sail's local directory, and use Sail's built-in [FDC3 Workbench](https://github.com/finos/FDC3/blob/main/toolbox/fdc3-workbench/README.md) to mock and monitor interactions.
  
-   **This is a simplified explination, so see these links for further understanding:**
+   **This is a simplified explanation, so see these links for further understanding:**
 - Learn through the online course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
 - Also see [toolbox package holding sample web applications](https://github.com/finos/FDC3/tree/main/toolbox/fdc3-example-apps)
 - Don't forget, [Using the FDC3 Workbench](https://finsemble.interop.io/docs/connect-apps/interop/FDC3Workbench/) which provides more in-depth examples and more advanced intel on the code. 
