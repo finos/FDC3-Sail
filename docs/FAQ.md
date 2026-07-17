@@ -74,14 +74,18 @@ Sail will run directly inside any ordinary browser. It creates an isolated, 'dig
 **- Verifying connectivity:** Using sail to test workflows is essential as it is able to ensure secure connections between applications, and verify its core functions such as launching apps, sharing data and raising intents.
 
 ### **How can I add new applications into Sail?**
+Opening your application into Sail is easy once you are able to host it as a html web page. Once you have done this, follow these easy steps:
+1. Open Sail within your browser and locate the three dots button which will take you to the Sail Configuration menu. 
+![screenshot6](images/ss6.png)
 
-Firstly, let's talk about app directories. We can imagine these as an 'app store' for financial desktops. It acts as a central master list that tells the desktop agent exactly where each application lives, its name, and what kind of data it sends/receives.
+2. Within this menu, select 'Custom Apps' and click add new app.
+![screenshot7](images/ss7.png)
 
-To get Sail to recognise and display your app, you must register it into Sail's directory. Here are some steps:
+3. From here you are able to paste the URL of your local or hosted web app, give it a name and select what intents it listens to by using the drop-down button as shown here:
+![screenshot8](images/ss8.png)
 
-- Open the directory file, and locate the master directory list used by Sail.
-- Add your apps profile into the directory. The profile will include information about its name, URL, and the FDC3 rules it uses.
-- Once added to the directory list, you are now able to launch and test your application within the Sail interface. It is ready to be linked up to other apps.
+From there just select done and your app should be able to be opened in Sail. Well done! You have just injected your web app into Sail without changing any code files.
+
 
 ### **What do I need to do in order to create my own app which is compatible with FDC3?**
 
