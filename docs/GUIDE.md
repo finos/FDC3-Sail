@@ -43,13 +43,29 @@ Simply, Sail can help users by:
 - **Saves time** - Teams can prototype their ideas in minutes.
 - **Ensures compatibility** - Helps these builders verify that their software follows FDC3's rulebook correctly.
 - **Open source base** - Anyone is able to build a white label version, being able to customize it to their needs.
-  
+
 Now that you know what FDC3 and Sail does and how it works, here are some instructions on how to get started using FDC3-Sail:
 
 ## **🛠️ How to Use Sail (Step-by-Step)**
+
 You can use Sail two ways:
+
 1. Using (https://sail.fdc3.finos.org/html/index.html) - This is the browser version. Can be used to easily test workflows and can be opened on any browser.
 2. Installing Sail locally - README.md [here](https://github.com/finos/FDC3) explains in detail how to install Sail locally.
+
+### Starting Your First Application
+
+Once you have the Sail app loaded in the browser, hit the plus button on the bottom left of the screen to open the directory picker.
+
+![Screenshot 1](images/ss1.png)
+
+Choose one of the built-in applications from the list and click "Open Here"
+
+![Screenshot 2](images/ss2.png)
+
+The application will load into the current workspace (One) in a resizable window like this:
+
+![Screenshot 3](images/ss3.png)
 
 ## **How being open source benefits FDC3-Sail**
 
@@ -57,7 +73,7 @@ You can use Sail two ways:
 
 - Anyone from a student to a major bank can use it without paying expensive licensing fees.
 - Companies can adopt it instantly without waiting for corporate financial approval.
-- Uses the apache 2.0 licence. This gives people total freedom to download, modify and even sell products that are built using/on Sail. The only catch is that you must give credit to the original creators. 
+- Uses the apache 2.0 licence. This gives people total freedom to download, modify and even sell products that are built using/on Sail. The only catch is that you must give credit to the original creators.
 
 #### **Anyone/Everyone can help fix and improve**
 
