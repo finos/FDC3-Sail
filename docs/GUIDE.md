@@ -6,7 +6,8 @@
 
 1. If you are developing with Sail, you will need to understand and install Git, VS code, node.js, and hosted web pages to get started.
 2. You will also need a good grasp on what FDC3 is/does and how it helps users.
-   You can see this here:
+
+   **You can view this here:**
 
 ### **FDC3:**
 
@@ -52,7 +53,7 @@ You can use Sail two ways:
 
 1. Using (https://sail.fdc3.finos.org/html/index.html) - This is the browser version. Can be used to easily test workflows and can be opened on any browser.
 2. Installing Sail locally - README.md [here](https://github.com/finos/FDC3) explains in detail how to install Sail locally.
-- When opening Sail for the first time or by clicking Sail logo, you will be met with this menu which depics a short description and links for more information on Sail:
+- When opening Sail for the first time or by clicking Sail logo, you will be met with this menu which depicts a short description and links for more information on Sail:
 ![splashscreen](images/splashscreen.png)
 
 ### Starting Your First Application
