@@ -21,29 +21,29 @@ This relies on two main concepts,
 
 ### **Sail:**
 
-Managed by our open source community, FINOS, FDC3-Sail is a free, web-based tool designed to act as a desktop agent.
+Managed by our open source community, FINOS, FDC3-Sail is a free, web-based tool designed to act as a standards-compliant FDC3 desktop agent.
 
-Setting up financial software is complex, most people want to test FDC3 out before implementing it and using real money. Sail gives people a safe environment inside the internet browser that allows users and learners to open up dummy apps, click around and discover how smoothly they pass data back and forth using the FDC3 standard.
+Setting up financial software is complex, most people want to test FDC3 out before committing to it. Sail gives people a safe environment inside the internet browser that allows users and learners to open apps, learn the basics and discover how the FDC3 standard works.
 
-Simply, Sail can help users by:
+Sail helps users by:
 
-### **1. Providing a free simulator**
+### **1. Providing an online desktop agent**
 
 - **No installation required** - It runs directly inside the browser.
 - **Instant setup** - Users do not need to download heavy software.
 - **Risk-free space** - Offers a safe environment to test tools without touching real financial systems.
 
-### **2. Applications can communicate**
+### **2. Open source and white-label ready**
 
-- **Connects isolated apps** - Acting as a central hub, or desktop agent, Sail routes messages between different windows.
-- **Demonstrates automation** - Provides evidence on how clicking an item in App A can instantly change the view in App B.
+- **Open source implementation** - Sail is a free, FINOS-hosted reference implementation of an FDC3 desktop agent that anyone can inspect, run, and contribute to.
+- **White-label for firms** - Banks and vendors can fork Sail and customize branding, configuration, and hosting to create their own desktop-agent experience on top of a standards-compliant core.
+- **Avoid starting from scratch** - Teams get a working FDC3 agent as a foundation, then adapt it to internal requirements instead of building interoperability infrastructure alone.
 
 ### **3. Helps teams build better tools**
 
 - **Speeds up development** - Software creators can use Sail to test their apps quickly.
 - **Saves time** - Teams can prototype their ideas in minutes.
 - **Ensures compatibility** - Helps these builders verify that their software follows FDC3's rulebook correctly.
-- **Open source base** - Anyone is able to build a white label version, being able to customize it to their needs.
 
 Now that you know what FDC3 and Sail does and how it works, here are some instructions on how to get started using FDC3-Sail:
 
@@ -72,15 +72,16 @@ The application will load into the current workspace (One) in a resizable window
 
 ## **How being open source benefits FDC3-Sail**
 
-#### **Completely free:**
+#### **Completely free and open source:**
 
 - Anyone from a student to a major bank can use it without paying expensive licensing fees.
 - Companies can adopt it instantly without waiting for corporate financial approval.
-- Uses the apache 2.0 licence. This gives people total freedom to download, modify and even sell products that are built using/on Sail. The only catch is that you must give credit to the original creators.
+- Uses the Apache 2.0 licence. This gives people total freedom to download, modify and even sell products that are built using/on Sail. The only catch is that you must give credit to the original creators.
 
 #### **Anyone/Everyone can help fix and improve**
 
 - Instead of just one small company building it, many programmers worldwide contribute updates.
+- Neutrally governed by FINOS.
 - If a bug or glitch pops up, someone in the global community usually spots it and can fix it immediately.
 - The community can keep the tool alive and updated constantly.
 
