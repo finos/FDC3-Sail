@@ -96,7 +96,9 @@
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 0.9rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 
 .input:focus {
@@ -304,15 +306,15 @@
   .formRow {
     flex-direction: column;
   }
-  
+
   .imageUploadContainer {
     flex-direction: column;
   }
-  
+
   .intentItem {
     flex-direction: column;
   }
-  
+
   .tagInput {
     flex-direction: column;
   }

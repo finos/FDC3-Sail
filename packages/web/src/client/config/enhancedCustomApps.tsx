@@ -55,9 +55,9 @@ type EnhancedEditableState = {
 // Validation functions
 function validateUrl(url: string, type: AppType): string | undefined {
   if (type === "native") return undefined
-  
+
   if (!url.trim()) return "URL is required for web apps"
-  
+
   try {
     new URL(url)
     return undefined
@@ -90,12 +90,15 @@ function validateApp(app: EnhancedEditableState): EnhancedEditableState {
     publisher: validatePublisher(app.publisher),
     version: validateVersion(app.version),
   }
-  
+
   return { ...app, errors }
 }
 
-function checkDuplicateId(id: string, currentApps: EnhancedEditableState[]): boolean {
-  return currentApps.filter(app => app.id === id).length > 1
+function checkDuplicateId(
+  id: string,
+  currentApps: EnhancedEditableState[],
+): boolean {
+  return currentApps.filter((app) => app.id === id).length > 1
 }
 
 function newEnhancedApp(): EnhancedEditableState {
@@ -109,9 +112,11 @@ function newEnhancedApp(): EnhancedEditableState {
     version: "1.0.0",
     categories: [],
     icons: [{ src: "/icons/control/choose-app.svg" }],
-    screenshots: [{ src: "/images/screenshot.webp", label: "Default Screenshot" }],
+    screenshots: [
+      { src: "/images/screenshot.webp", label: "Default Screenshot" },
+    ],
     intents: [],
-    errors: {}
+    errors: {},
   }
 }
 
@@ -130,49 +135,53 @@ function uploadFile(file: File): Promise<string> {
 }
 
 // Enhanced components
-const ImageUpload = ({ 
-  label, 
-  currentSrc, 
-  onUpload 
-}: { 
+const ImageUpload = ({
+  label,
+  currentSrc,
+  onUpload,
+}: {
   label: string
   currentSrc: string
-  onUpload: (src: string) => void 
+  onUpload: (src: string) => void
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         alert("File size must be less than 5MB")
         return
       }
-      
-      if (!file.type.startsWith('image/')) {
+
+      if (!file.type.startsWith("image/")) {
         alert("Please select an image file")
         return
       }
-      
+
       try {
         const dataUrl = await uploadFile(file)
         onUpload(dataUrl)
-      } catch (error) {
+      } catch {
         alert("Failed to upload image")
       }
     }
   }
-  
+
   return (
     <div className={styles.imageUpload}>
       <label className={styles.fieldLabel}>{label}:</label>
       <div className={styles.imageUploadContainer}>
-        <img 
-          src={currentSrc} 
+        <img
+          src={currentSrc}
           alt={label}
           className={styles.imagePreview}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "/icons/control/choose-app.svg"
+            ;(e.target as HTMLImageElement).src =
+              "/icons/control/choose-app.svg"
           }}
         />
         <div className={styles.imageUploadControls}>
@@ -208,34 +217,34 @@ const ValidationError = ({ error }: { error?: string }) => {
   return <div className={styles.validationError}>{error}</div>
 }
 
-const TagEditor = ({ 
-  tags, 
-  onUpdate 
-}: { 
+const TagEditor = ({
+  tags,
+  onUpdate,
+}: {
   tags: string[]
-  onUpdate: (tags: string[]) => void 
+  onUpdate: (tags: string[]) => void
 }) => {
   const [newTag, setNewTag] = useState("")
-  
+
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
       onUpdate([...tags, newTag.trim()])
       setNewTag("")
     }
   }
-  
+
   const removeTag = (tagToRemove: string) => {
-    onUpdate(tags.filter(tag => tag !== tagToRemove))
+    onUpdate(tags.filter((tag) => tag !== tagToRemove))
   }
-  
+
   return (
     <div className={styles.tagEditor}>
       <label className={styles.fieldLabel}>Categories/Tags:</label>
       <div className={styles.tagList}>
-        {tags.map(tag => (
+        {tags.map((tag) => (
           <span key={tag} className={styles.tag}>
             {tag}
-            <button 
+            <button
               type="button"
               onClick={() => removeTag(tag)}
               className={styles.tagRemove}
@@ -250,15 +259,11 @@ const TagEditor = ({
           type="text"
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && addTag()}
+          onKeyPress={(e) => e.key === "Enter" && addTag()}
           placeholder="Add category/tag"
           className={styles.input}
         />
-        <button 
-          type="button"
-          onClick={addTag}
-          className={styles.addTagButton}
-        >
+        <button type="button" onClick={addTag} className={styles.addTagButton}>
           Add
         </button>
       </div>
@@ -269,21 +274,23 @@ const TagEditor = ({
 const EnhancedCustomAppItem = ({
   app,
   update,
-  isDuplicate
+  isDuplicate,
 }: {
   app: EnhancedEditableState
   update: (app: EnhancedEditableState | null) => void
   isDuplicate: boolean
 }) => {
   const validatedApp = validateApp(app)
-  const hasErrors = Object.values(validatedApp.errors).some(error => error)
-  
+  const hasErrors = Object.values(validatedApp.errors).some((error) => error)
+
   return (
     <div className={`${styles.item} ${hasErrors ? styles.itemWithErrors : ""}`}>
       <div className={styles.appHeader}>
         <h3 className={styles.appTitle}>
           {app.title || "New App"}
-          {isDuplicate && <span className={styles.duplicateWarning}> (Duplicate ID)</span>}
+          {isDuplicate && (
+            <span className={styles.duplicateWarning}> (Duplicate ID)</span>
+          )}
         </h3>
         <InlineButton
           onClick={() => update(null)}
@@ -292,12 +299,12 @@ const EnhancedCustomAppItem = ({
           className={styles.actionButton}
         />
       </div>
-      
+
       <div className={styles.appForm}>
         {/* Basic Information */}
         <div className={styles.formSection}>
           <h4 className={styles.sectionTitle}>Basic Information</h4>
-          
+
           <div className={styles.formRow}>
             <div className={styles.formField}>
               <label className={styles.fieldLabel}>App ID:</label>
@@ -310,7 +317,7 @@ const EnhancedCustomAppItem = ({
               />
               {isDuplicate && <ValidationError error="App ID must be unique" />}
             </div>
-            
+
             <div className={styles.formField}>
               <label className={styles.fieldLabel}>Title *:</label>
               <input
@@ -323,7 +330,7 @@ const EnhancedCustomAppItem = ({
               <ValidationError error={validatedApp.errors.title} />
             </div>
           </div>
-          
+
           <div className={styles.formRow}>
             <div className={styles.formField}>
               <label className={styles.fieldLabel}>Publisher *:</label>
@@ -336,7 +343,7 @@ const EnhancedCustomAppItem = ({
               />
               <ValidationError error={validatedApp.errors.publisher} />
             </div>
-            
+
             <div className={styles.formField}>
               <label className={styles.fieldLabel}>Version *:</label>
               <input
@@ -349,7 +356,7 @@ const EnhancedCustomAppItem = ({
               <ValidationError error={validatedApp.errors.version} />
             </div>
           </div>
-          
+
           <div className={styles.formField}>
             <label className={styles.fieldLabel}>Description:</label>
             <textarea
@@ -360,30 +367,32 @@ const EnhancedCustomAppItem = ({
               rows={3}
             />
           </div>
-          
-          <TagEditor 
+
+          <TagEditor
             tags={app.categories}
             onUpdate={(categories) => update({ ...app, categories })}
           />
         </div>
-        
+
         {/* App Type & URL */}
         <div className={styles.formSection}>
           <h4 className={styles.sectionTitle}>Application Details</h4>
-          
+
           <div className={styles.formRow}>
             <div className={styles.formField}>
               <label className={styles.fieldLabel}>Type:</label>
               <select
                 value={app.type}
-                onChange={(e) => update({ ...app, type: e.target.value as AppType })}
+                onChange={(e) =>
+                  update({ ...app, type: e.target.value as AppType })
+                }
                 className={styles.select}
               >
                 <option value="web">Web Application</option>
                 <option value="native">Native Application</option>
               </select>
             </div>
-            
+
             {app.type === "web" && (
               <div className={styles.formField}>
                 <label className={styles.fieldLabel}>URL *:</label>
@@ -399,30 +408,36 @@ const EnhancedCustomAppItem = ({
             )}
           </div>
         </div>
-        
+
         {/* Visual Assets */}
         <div className={styles.formSection}>
           <h4 className={styles.sectionTitle}>Visual Assets</h4>
-          
+
           <ImageUpload
             label="App Icon"
             currentSrc={app.icons[0]?.src || "/icons/control/choose-app.svg"}
-            onUpload={(src) => update({ 
-              ...app, 
-              icons: [{ src, type: "image/png" }] 
-            })}
+            onUpload={(src) =>
+              update({
+                ...app,
+                icons: [{ src, type: "image/png" }],
+              })
+            }
           />
-          
+
           <ImageUpload
             label="Screenshot"
             currentSrc={app.screenshots[0]?.src || "/images/screenshot.webp"}
-            onUpload={(src) => update({ 
-              ...app, 
-              screenshots: [{ src, label: "App Screenshot", type: "image/png" }] 
-            })}
+            onUpload={(src) =>
+              update({
+                ...app,
+                screenshots: [
+                  { src, label: "App Screenshot", type: "image/png" },
+                ],
+              })
+            }
           />
         </div>
-        
+
         {/* Intents Configuration */}
         <div className={styles.formSection}>
           <h4 className={styles.sectionTitle}>FDC3 Intents</h4>
@@ -601,7 +616,9 @@ const IntentItem = ({
 }
 
 // Convert enhanced state to DirectoryApp format
-function convertEnhancedToDirectoryApps(apps: EnhancedEditableState[]): DirectoryApp[] {
+function convertEnhancedToDirectoryApps(
+  apps: EnhancedEditableState[],
+): DirectoryApp[] {
   return apps.map((app) => {
     return {
       appId: app.id,
@@ -633,7 +650,9 @@ function convertEnhancedToDirectoryApps(apps: EnhancedEditableState[]): Director
 }
 
 // Convert existing DirectoryApp to enhanced state
-function convertFromDirectoryApps(apps: DirectoryApp[]): EnhancedEditableState[] {
+function convertFromDirectoryApps(
+  apps: DirectoryApp[],
+): EnhancedEditableState[] {
   return apps.map((a) => {
     const lf = a.interop?.intents?.listensFor ?? {}
     return {
@@ -654,30 +673,32 @@ function convertFromDirectoryApps(apps: DirectoryApp[]): EnhancedEditableState[]
           contexts: val.contexts,
         }
       }),
-      errors: {}
+      errors: {},
     }
   })
 }
 
 export const EnhancedCustomAppList = () => {
-  const [apps, setApps] = useState<EnhancedEditableState[]>(() => 
-    convertFromDirectoryApps(getClientState().getCustomApps())
+  const [apps, setApps] = useState<EnhancedEditableState[]>(() =>
+    convertFromDirectoryApps(getClientState().getCustomApps()),
   )
 
   async function updateApps(newApps: EnhancedEditableState[]): Promise<void> {
     // Validate all apps before saving
     const validatedApps = newApps.map(validateApp)
-    const hasErrors = validatedApps.some(app => 
-      Object.values(app.errors).some(error => error)
+    const hasErrors = validatedApps.some((app) =>
+      Object.values(app.errors).some((error) => error),
     )
-    
+
     setApps(validatedApps)
-    
+
     if (!hasErrors) {
       return getClientState()
         .setCustomApps(convertEnhancedToDirectoryApps(validatedApps))
         .then(async () => {
-          getClientState().setKnownApps(await getServerState().getApplications())
+          getClientState().setKnownApps(
+            await getServerState().getApplications(),
+          )
         })
     }
   }
@@ -686,9 +707,12 @@ export const EnhancedCustomAppList = () => {
     <div className={styles.list}>
       <div className={styles.listHeader}>
         <h2>Custom Applications</h2>
-        <p>Create and manage your custom FDC3 applications with proper icons, screenshots, and metadata.</p>
+        <p>
+          Create and manage your custom FDC3 applications with proper icons,
+          screenshots, and metadata.
+        </p>
       </div>
-      
+
       {apps.map((app) => (
         <EnhancedCustomAppItem
           key={app.id}
@@ -709,7 +733,7 @@ export const EnhancedCustomAppList = () => {
           }}
         />
       ))}
-      
+
       <AddButton onClick={() => updateApps([...apps, newEnhancedApp()])} />
     </div>
   )

@@ -1,0 +1,16 @@
+{
+  "parent": null,
+  "pid": 17572,
+  "argv": [
+    "C:\\Users\\USER\\scoop\\apps\\nodejs\\current\\node.exe",
+    "C:\\Users\\USER\\OneDrive\\Desktop\\FDC3\\FDC3-Sail\\node_modules\\@cucumber\\cucumber\\bin\\cucumber.js"
+  ],
+  "execArgv": [],
+  "cwd": "C:\\Users\\USER\\OneDrive\\Desktop\\FDC3\\FDC3-Sail\\packages\\da-impl",
+  "time": 1785006331049,
+  "ppid": 9532,
+  "coverageFilename": "C:\\Users\\USER\\OneDrive\\Desktop\\FDC3\\FDC3-Sail\\packages\\da-impl\\.nyc_output\\fd11b6dd-2b91-49a6-99f8-d9a0a698f7ab.json",
+  "externalId": "",
+  "uuid": "fd11b6dd-2b91-49a6-99f8-d9a0a698f7ab",
+  "files": []
+}
