@@ -109,6 +109,10 @@ export function createMeta(cw: CustomWorld, appStr: string) {
   }
 }
 
+Given("schemas loaded", function (this: CustomWorld) {
+  // schemas loaded step definition
+})
+
 Given("A newly instantiated FDC3 Server", function (this: CustomWorld) {
   const apps = this.props[APP_FIELD] ?? []
   this.sc = createTestFDC3ServerInstance(

@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.root.json",
   "module": "CommonJS", // needed for cucumber
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@finos/fdc3-testing": ["./test/support/fdc3-testing.ts"]
+    },
     /* Basic Options */
     "esModuleInterop": true,
     "module": "CommonJS",

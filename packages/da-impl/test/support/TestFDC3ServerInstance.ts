@@ -183,3 +183,21 @@ export function createTestFDC3ServerInstance(
 
   return new TestFDC3ServerInstance(cw, handlers, channels, directory)
 }
+
+export class TestFDC3ServerFactory {
+  constructor(
+    private cw: CustomWorld,
+    private channels: ChannelState[],
+    private directory: Directory,
+    private heartbeats: boolean,
+  ) {}
+
+  createInstance(): TestFDC3ServerInstance {
+    return createTestFDC3ServerInstance(
+      this.cw,
+      this.channels,
+      this.directory,
+      this.heartbeats,
+    )
+  }
+}
