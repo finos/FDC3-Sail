@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": { "correctness": "off" },
+  "ignorePatterns": ["packages/sail-conformance-harness/2.2-conformance-tests/**"],
+  "overrides": [
+    {
+      "files": ["packages/sail-desktop-agent/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@finos/sail-platform",
+                  "@finos/sail-finance",
+                  "@finos/sail-one",
+                  "**/sail-platform/**"
+                ],
+                "message": "sail-desktop-agent is the engine: it must not depend on the platform or any shell."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/sail-finance/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@finos/sail-one", "**/sail-one/**"],
+                "message": "Shells must not import each other. Share via @finos/sail-theme or the platform, never shell-to-shell."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/sail-one/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@finos/sail-finance", "**/sail-finance/**"],
+                "message": "Shells must not import each other. Share via @finos/sail-theme or the platform, never shell-to-shell."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

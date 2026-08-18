@@ -1,0 +1,46 @@
+{
+  "name": "@finos/sail-one",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "vp build",
+    "predev": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform",
+    "dev": "vp dev",
+    "preview": "vp preview",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt .",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "test": "vp test",
+    "test:run": "vp test run",
+    "typecheck": "tsc",
+    "validate": "npm run typecheck && npm run lint && npm run format"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "glob": "^10.3.10",
+    "jsdom": "^26.1.0",
+    "rimraf": "^6.0.1",
+    "typescript-plugin-css-modules": "^5.1.0"
+  },
+  "dependencies": {
+    "@finos/fdc3": "^2.2.3",
+    "@finos/fdc3-schema": "^2.2.1-beta.3",
+    "@finos/sail-desktop-agent": "*",
+    "@finos/sail-platform": "*",
+    "color": "^5.0.0",
+    "gridstack": "^12.6.0",
+    "lucide-react": "^0.542.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "react-widgets": "^5.8.6"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

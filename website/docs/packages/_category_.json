@@ -1,0 +1,8 @@
+{
+  "label": "Packages",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Per-package documentation. The Docusaurus site is the single source of truth; npm READMEs link here."
+  }
+}

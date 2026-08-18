@@ -1,0 +1,26 @@
+{
+  "name": "@finos/sail-conformance-harness",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
+    "dev:local": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
+    "dev:e2e": "HARNESS_NO_OPEN=1 npm run build -w @finos/sail-desktop-agent --prefix ../.. && HARNESS_NO_OPEN=1 vp dev --mode toolbox-local",
+    "build": "vp build",
+    "typecheck": "tsc --noEmit",
+    "test": "vp test run",
+    "test:watch": "vp test",
+    "test:conformance": "playwright test"
+  },
+  "dependencies": {
+    "@finos/fdc3": "^2.2.3",
+    "@finos/sail-desktop-agent": "*",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0"
+  }
+}

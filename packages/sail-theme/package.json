@@ -1,0 +1,22 @@
+{
+  "name": "@finos/sail-theme",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sail brand design tokens and assets: framework-agnostic CSS custom properties, logos and fonts. Consumed by the shells and the docs site.",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./tailwind.css": "./tailwind.css",
+    "./assets/*": "./assets/*",
+    "./fonts/*": "./fonts/*"
+  },
+  "files": [
+    "tokens.css",
+    "tailwind.css",
+    "assets",
+    "fonts"
+  ],
+  "sideEffects": [
+    "*.css"
+  ]
+}

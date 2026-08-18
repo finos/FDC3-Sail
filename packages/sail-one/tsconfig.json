@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.root.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules"
+      }
+    ],
+    "types": ["node", "vitest/globals"],
+    "outDir": "dist",
+    "noEmit": true,
+    "rootDirs": ["src"]
+  },
+  "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
+  "exclude": ["dist/**"]
+}

@@ -14,30 +14,47 @@ defaults:
     shell: bash
 
 jobs:
-  lint-format-build:
+  ci:
     runs-on: ubuntu-latest
     # setup-node cache: npm persists/restores npm cache via the Actions cache API
     permissions:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
 
       - name: Prettier
-        run: npm run format:check
+        run: npm run format
 
-      - name: ESLint
-        run: npm run lint
-
+      # Must run before lint and typecheck. `@finos/sail-desktop-agent` and
+      # `@finos/sail-platform` publish their types from `dist` (`"types": "./dist/index.d.mts"`),
+      # and `dist` is gitignored — so on a clean runner every consumer package fails with
+      # TS2307 until these are built. Measured: without `dist`, `npm run lint` reports 140
+      # errors and `npm run typecheck` exits 2; with it, both are clean.
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Docs conformance inventory
+        run: npm run conformance:inventory:check -w @finos/sail-docs
+
+      - name: Build docs site
+        run: npm run docs:build
+
+      - name: Test (Vitest)
+        run: npm test -- --run
+
+      - name: Test (Cucumber)
+        run: npm run test:cucumber -w @finos/sail-desktop-agent

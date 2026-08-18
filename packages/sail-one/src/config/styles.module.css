@@ -1,0 +1,872 @@
+.configContent {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-grow: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.configChoice {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+  padding: 0.75rem;
+  background-color: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 0.4rem;
+}
+
+.configChoiceLeft {
+  flex: 0 0 8.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.icon {
+  flex-basis: 4rem;
+  border-radius: 0.5rem;
+}
+
+.configItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #f7f7f7;
+  border: 1px solid #e8e8e8;
+  border-radius: 0.4rem;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.configItem:hover {
+  background-color: var(--sail-accent-soft);
+  border-color: var(--sail-cyan-muted);
+}
+
+.configItem:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 1px;
+}
+
+.colorSwatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 4.5rem;
+  min-height: 4.5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.colorSwatchHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #00000066;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.colorSwatchHint svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.colorSwatch:hover .colorSwatchHint,
+.colorSwatch:focus-within .colorSwatchHint {
+  opacity: 1;
+}
+
+.colorSwatchInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.item {
+  position: relative;
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 0.5rem;
+  background-color: #fafafa;
+  justify-content: center;
+  align-items: center;
+}
+
+.itemDragging {
+  opacity: 0.4;
+}
+
+.dropBefore::before,
+.dropAfter::after {
+  content: "";
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sail-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sail-accent) 25%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dropBefore::before {
+  top: -0.2rem;
+}
+
+.dropAfter::after {
+  bottom: -0.2rem;
+}
+
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: #777;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.dragHandle:hover {
+  background: #ececec;
+  color: #333;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 1px;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.deleteButton svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: #fde8ea;
+  border-color: #e81123;
+  color: #e81123;
+}
+
+.deleteButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.deleteButton:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 1px;
+}
+
+.deleteButtonCompact {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.deleteButtonCompact svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.verticalControls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-grow: 0;
+  flex-basis: 5rem;
+  flex-shrink: 0;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.verticalControlsSlim {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-grow: 0;
+  flex-basis: 2rem;
+  flex-shrink: 0;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.verticalControlsGrow {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-grow: 1;
+}
+
+.name {
+  padding: 0.5rem;
+  font-weight: bold;
+  display: flex;
+  flex-grow: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  padding: 0.5rem;
+  font-weight: regular;
+  display: flex;
+  flex-grow: 0;
+  margin: 0;
+  height: 3rem;
+  overflow-wrap: anywhere;
+  background-color: #e5e5e5;
+}
+
+.name[contenteditable="false"] {
+  color: #ccc;
+}
+
+.name img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.url {
+  padding: 0.5rem;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+
+.url.disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.typeRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.fieldLabel {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.typeSelect {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.typeSelect:focus {
+  outline: none;
+  border-color: var(--sail-accent);
+}
+
+/* Input styling for name, description, url */
+.name,
+.description,
+.url {
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+}
+
+.name:focus,
+.description:focus,
+.url:focus {
+  outline: none;
+  border-color: var(--sail-accent);
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--sail-accent);
+  border-radius: 0.35rem;
+  background: var(--sail-accent);
+  color: var(--sail-on-accent, #fff);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.addButton svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.addButton:hover {
+  background: var(--sail-accent-hover, #0052cc);
+  border-color: var(--sail-accent-hover, #0052cc);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 2px;
+}
+
+.addButtonCompact {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+}
+
+.addButtonCompact svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.actionButton {
+  width: 3rem;
+  height: 3rem;
+  padding: 0.1rem;
+}
+
+.verticalControlsSlim .actionButton {
+  width: 2rem;
+  height: 2rem;
+}
+
+.intent {
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 0.5rem;
+  background-color: #fafafa;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #eee;
+  border-radius: 0.5rem;
+}
+
+.picker {
+  grid-column: 1;
+}
+
+.contexts {
+  grid-column: 2;
+}
+
+.rowicon {
+  grid-column: 3;
+}
+
+.miniButton {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.1rem;
+}
+
+.interop {
+  border: 1px solid #ddd;
+  padding: 3px;
+  border-radius: 0.5rem;
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: 3fr 5fr 0.5fr;
+}
+
+.intentHeading {
+  font-weight: bold;
+  text-align: left;
+  grid-column: 1 / -1;
+}
+
+.interop > .addButton {
+  justify-self: start;
+}
+
+.selected {
+  background-color: #d0e8ff;
+  font-weight: bold;
+}
+
+/* Shared settings cards */
+
+.settingsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.settingsEmpty {
+  margin: 0;
+  padding: 1rem 0.85rem;
+  color: var(--sail-muted, #5b6b7c);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: #fff;
+  border: 1px dashed var(--sail-border, #d5dee7);
+  border-radius: 0.5rem;
+}
+
+.settingsCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.85rem 0.9rem;
+  background: #fff;
+  border: 1px solid var(--sail-border, #d5dee7);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.15s ease;
+}
+
+.settingsCardActive {
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sail-ink) 6%, transparent);
+}
+
+.settingsCardDragging {
+  opacity: 0.4;
+}
+
+.settingsCard.dropBefore::before,
+.settingsCard.dropAfter::after {
+  content: "";
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sail-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sail-accent) 25%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.settingsCard.dropBefore::before {
+  top: -0.35rem;
+}
+
+.settingsCard.dropAfter::after {
+  bottom: -0.35rem;
+}
+
+.settingsFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.settingsField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.settingsFieldLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sail-muted, #5b6b7c);
+}
+
+.settingsInput {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--sail-border, #d5dee7);
+  border-radius: 0.35rem;
+  background: var(--sail-surface-subtle, #f5f8fb);
+  color: var(--sail-ink, #0b1b2b);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.settingsInput:hover:not(:disabled) {
+  border-color: var(--sail-border-strong, #b7c5d3);
+}
+
+.settingsInput:focus {
+  outline: none;
+  border-color: var(--sail-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sail-accent) 18%, transparent);
+}
+
+.settingsInput:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.settingsSelect {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--sail-border, #d5dee7);
+  border-radius: 0.35rem;
+  background: var(--sail-surface-subtle, #f5f8fb);
+  color: var(--sail-ink, #0b1b2b);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.settingsSelect:hover {
+  border-color: var(--sail-border-strong, #b7c5d3);
+}
+
+.settingsSelect:focus {
+  outline: none;
+  border-color: var(--sail-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sail-accent) 18%, transparent);
+}
+
+.settingsActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.15rem;
+  border-top: 1px solid #eef2f6;
+}
+
+.settingsActionsEnd {
+  justify-content: flex-end;
+}
+
+.settingsCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.settingsCardHeaderMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tabCardBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.tabSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  padding-top: 1.15rem;
+}
+
+.tabTitleRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.tabTitleRow .settingsField {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tabTitleRow .deleteButton {
+  margin-bottom: 0.05rem;
+}
+
+.tabColorSwatch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 3.25rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tabColorSwatchIcon {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  pointer-events: none;
+}
+
+.tabColorSwatchHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #00000066;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.tabColorSwatchHint svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.tabColorSwatch:hover .tabColorSwatchHint,
+.tabColorSwatch:focus-within .tabColorSwatchHint {
+  opacity: 1;
+}
+
+.tabColorSwatchInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #eef2f6;
+}
+
+.settingsSectionTitle {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sail-muted, #5b6b7c);
+}
+
+.appCard {
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.appTitleRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+.appTitleRow .settingsField {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.appTitleRow .deleteButton {
+  margin-bottom: 0.05rem;
+}
+
+.appMetaRow {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.intentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.intentCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.75rem;
+  background: var(--sail-surface-subtle, #f5f8fb);
+  border: 1px solid var(--sail-border, #d5dee7);
+  border-radius: 0.4rem;
+}
+
+.intentRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.intentCard .deleteButton {
+  margin-top: 1.15rem;
+  flex-shrink: 0;
+}
+
+.settingsWidget {
+  min-width: 0;
+}
+
+.settingsWidget :global(.rw-widget) {
+  width: 100%;
+}
+
+.settingsWidget :global(.rw-widget-picker),
+.settingsWidget :global(.rw-widget-input),
+.settingsWidget :global(.rw-input),
+.settingsWidget :global(.rw-dropdown-list-input) {
+  border-color: var(--sail-border, #d5dee7) !important;
+  border-radius: 0.35rem !important;
+  background: #fff !important;
+  font-size: 0.9rem !important;
+  min-height: 2.15rem;
+}
+
+.settingsWidget :global(.rw-multiselect-taglist) {
+  margin: 0.15rem;
+}
+
+.settingsWidget :global(.rw-widget-picker.rw-widget-input:hover),
+.settingsWidget :global(.rw-state-focus .rw-widget-picker) {
+  border-color: var(--sail-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sail-accent) 18%, transparent);
+}
+
+.directoryToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.directoryToggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.directoryToggleTrack {
+  position: relative;
+  width: 2.4rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #c5ced8;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.directoryToggleThumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px #00000033;
+  transition: transform 0.15s ease;
+}
+
+.directoryToggle input:checked + .directoryToggleTrack {
+  background: var(--sail-accent);
+}
+
+.directoryToggle input:checked + .directoryToggleTrack .directoryToggleThumb {
+  transform: translateX(1.05rem);
+}
+
+.directoryToggle input:focus-visible + .directoryToggleTrack {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 2px;
+}
+
+.directoryToggleLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sail-ink-soft, #243447);
+}
