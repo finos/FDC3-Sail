@@ -37,6 +37,7 @@
     "@cucumber/cucumber": "^12.5.0",
     "@types/lodash": "^4.17.24",
     "expect": "^30.2.0",
+    "jsdom": "^26.1.0",
     "lodash": "^4.17.23",
     "tsx": "^4.21.0"
   },
