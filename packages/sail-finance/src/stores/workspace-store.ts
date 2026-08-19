@@ -157,42 +157,12 @@ const mapStorage = {
     }
   },
   setItem: (name: string, value: unknown) => {
-    const serializedState = value as { state: { workspaces: Map<string, Workspace> } }
-    const newSerializedState: { state: { workspaces: Map<string, Workspace> } } = {
-      ...serializedState,
-      state: {
-        ...serializedState.state,
-        workspaces: new Map(
-          Array.from(serializedState.state.workspaces.entries()).map(([workspaceId, workspace]) => [
-            workspaceId,
-            {
-              ...workspace,
-              layout: {
-                ...workspace.layout,
-                tabs: new Map(
-                  Array.from(workspace.layout.tabs.entries()).map(([tabId, tab]) => [
-                    tabId,
-                    {
-                      ...tab,
-                      panels: new Map(
-                        Array.from(tab.panels.entries()).map(([panelId, panel]) => [
-                          panelId,
-                          {
-                            ...panel,
-                          },
-                        ]),
-                      ),
-                    },
-                  ]),
-                ),
-              },
-            },
-          ]),
-        ),
-      },
-    }
-
-    localStorage.setItem(name, JSON.stringify(newSerializedState))
+    // `JSON.stringify` turns a Map into `{}`, which would drop every workspace, tab and
+    // panel. Write Maps as entry arrays instead — getItem rebuilds the Maps on the way back.
+    localStorage.setItem(
+      name,
+      JSON.stringify(value, (_key, val: unknown) => (val instanceof Map ? Array.from(val) : val)),
+    )
   },
   removeItem: (name: string) => {
     localStorage.removeItem(name)
