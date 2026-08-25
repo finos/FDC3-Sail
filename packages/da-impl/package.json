@@ -24,7 +24,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "@finos/fdc3": "2.2.1-beta.3",
+    "@finos/fdc3": "2.2.3",
     "@types/uuid": "^10.0.0",
     "uuid": "^11.1.1"
   },
@@ -35,8 +35,8 @@
     "@cucumber/pretty-formatter": "1.0.1",
     "@eslint/js": "^9.19.0",
     "@finos/cucumber-testing-steps": "^1.2.3",
-    "@finos/fdc3-context": "2.2.1-beta.3",
-    "@finos/fdc3-schema": "2.2.1-beta.3",
+    "@finos/fdc3-context": "2.2.3",
+    "@finos/fdc3-schema": "2.2.3",
     "@types/expect": "24.3.0",
     "@types/lodash": "4.14.167",
     "@types/node": "^20.16.11",
