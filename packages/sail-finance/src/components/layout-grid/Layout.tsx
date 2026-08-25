@@ -26,7 +26,7 @@ export type { Panel as WorkspacePanel } from "../../stores/workspace-store"
 const Layout = (props: DockviewSailProps) => {
   const api = useRef<DockviewApi | undefined>(undefined)
   const [mountedPanels, setMountedPanels] = useState<Map<string, FDC3AppPanel>>(new Map())
-  const restoredWorkspaceIdRef = useRef<string | null>(null)
+  const [restoredWorkspaceId, setRestoredWorkspaceId] = useState<string | null>(null)
   const [apiReady, setApiReady] = useState(false)
   const isRestoringRef = useRef(false)
 
@@ -55,11 +55,16 @@ const Layout = (props: DockviewSailProps) => {
   const onReady = (event: DockviewReadyEvent) => {
     api.current = event.api
     setApiReady(true)
+    // A fresh Dockview instance holds no panels, so the saved layout must be replayed into
+    // it and panel tracking must start over.
+    setRestoredWorkspaceId(null)
+    // Same reference when already empty so React can bail out of the re-render.
+    setMountedPanels(prev => (prev.size === 0 ? prev : new Map<string, FDC3AppPanel>()))
   }
 
   // Reset restoration tracking when workspace changes
   useEffect(() => {
-    restoredWorkspaceIdRef.current = null
+    setRestoredWorkspaceId(null)
   }, [activeWorkspaceId])
 
   // Layout restoration - only run once per workspace when API is ready
@@ -69,7 +74,7 @@ const Layout = (props: DockviewSailProps) => {
     }
 
     // Only restore once per workspace ID
-    if (restoredWorkspaceIdRef.current === activeWorkspaceId) {
+    if (restoredWorkspaceId === activeWorkspaceId) {
       return
     }
 
@@ -85,7 +90,7 @@ const Layout = (props: DockviewSailProps) => {
       Object.keys(savedLayoutState).length === 0
     ) {
       // No valid layout to restore, mark as restored to prevent re-checking
-      restoredWorkspaceIdRef.current = activeWorkspaceId
+      setRestoredWorkspaceId(activeWorkspaceId)
       return
     }
 
@@ -93,7 +98,7 @@ const Layout = (props: DockviewSailProps) => {
       console.log("Restoring layout state from workspace store")
       // Prevent saveState from running during restoration
       isRestoringRef.current = true
-      restoredWorkspaceIdRef.current = activeWorkspaceId
+      setRestoredWorkspaceId(activeWorkspaceId)
 
       // The layout state comes from Dockview's toJSON() which returns SerializedDockview
       // We store it as any in the store, so we need to cast it back
@@ -115,9 +120,9 @@ const Layout = (props: DockviewSailProps) => {
       console.warn("Failed to restore layout state:", error)
       isRestoringRef.current = false
       setDockviewLayout(activeWorkspaceId, null)
-      restoredWorkspaceIdRef.current = activeWorkspaceId
+      setRestoredWorkspaceId(activeWorkspaceId)
     }
-  }, [apiReady, activeWorkspaceId, getDockviewLayout, setDockviewLayout])
+  }, [apiReady, activeWorkspaceId, restoredWorkspaceId, getDockviewLayout, setDockviewLayout])
 
   // Event listeners and state saving - separate from restoration
   useEffect(() => {
@@ -226,6 +231,10 @@ const Layout = (props: DockviewSailProps) => {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- localStorage-persisted state; panels derives from JSON-parsed workspace data
     if (!api.current || !panels || !activeTabId || !activeWorkspaceId) return
 
+    // Wait for the saved layout to be replayed. Adding panels first puts them in one default
+    // group and the resulting onDidAddPanel -> saveState overwrites the layout being restored.
+    if (restoredWorkspaceId !== activeWorkspaceId) return
+
     const currentPanelIds = Array.from(mountedPanels.keys())
     const externalPanelIds = panels.map(p => p.panelId)
 
@@ -298,7 +307,7 @@ const Layout = (props: DockviewSailProps) => {
           setMountedPanels(prev => new Map(prev).set(panel.panelId, fdc3Panel))
         }
       })
-  }, [panels, activeTabId, mountedPanels, activeWorkspaceId])
+  }, [panels, activeTabId, mountedPanels, activeWorkspaceId, restoredWorkspaceId])
 
   return (
     <div
