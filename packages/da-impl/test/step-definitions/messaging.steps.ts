@@ -1,7 +1,7 @@
 import { DataTable, Then } from "@cucumber/cucumber"
 import { CustomWorld } from "../world"
 import expect from "expect"
-import { setupGenericSteps, matchData } from "@finos/fdc3-testing"
+import { matchData } from "@finos/cucumber-testing-steps"
 
 Then(
   "messaging will have outgoing posts",
@@ -22,5 +22,3 @@ Then(
     expect(this.sc.postedMessages.length).toEqual(count)
   },
 )
-
-setupGenericSteps()

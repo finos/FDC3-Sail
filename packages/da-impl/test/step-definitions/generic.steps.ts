@@ -1,10 +1,22 @@
-import { Given, When } from "@cucumber/cucumber"
+import { Given, Then, When } from "@cucumber/cucumber"
+import {
+  cucumberWrapStep,
+  setupGenericSteps,
+} from "@finos/cucumber-testing-steps"
 import { CustomWorld } from "../world"
 import { createTestFDC3ServerInstance } from "../support/TestFDC3ServerInstance"
 import { BasicDirectory } from "../../src/directory/BasicDirectory"
 import { Context } from "@finos/fdc3-context"
 import { AppIdentifier } from "@finos/fdc3-standard"
 import { ChannelState, ChannelType } from "../../src/FDC3ServerInstance"
+import {
+  registerFdc3SchemaMatchers,
+  setupSchemaSteps,
+} from "../support/fdc3SchemaSteps"
+
+setupSchemaSteps()
+registerFdc3SchemaMatchers()
+setupGenericSteps({ Given, When, Then, wrapStep: cucumberWrapStep })
 
 export const APP_FIELD = "apps"
 
