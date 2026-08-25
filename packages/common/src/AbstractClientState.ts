@@ -13,6 +13,7 @@ export abstract class AbstractClientState implements ClientState {
   protected panels: AppPanel[] = []
   protected activeTabId: string
   protected readonly userSessionId: string
+  protected splashScreenVisible: boolean
   protected directories: Directory[] = []
   callbacks: (() => void)[] = []
   protected intentResolution: IntentResolution | null = null
@@ -25,6 +26,7 @@ export abstract class AbstractClientState implements ClientState {
     panels: AppPanel[],
     activeTabId: string,
     userSessionId: string,
+    splashScreenVisible: boolean,
     directories: Directory[],
     knownApps: DirectoryApp[],
     customApps: DirectoryApp[],
@@ -34,6 +36,7 @@ export abstract class AbstractClientState implements ClientState {
     this.panels = panels
     this.activeTabId = activeTabId
     this.userSessionId = userSessionId
+    this.splashScreenVisible = splashScreenVisible
     this.directories = directories
     this.knownApps = knownApps
     this.customApps = customApps
@@ -236,6 +239,15 @@ export abstract class AbstractClientState implements ClientState {
     }
 
     this.contextHistory[tabId] = items
+    await this.saveState()
+  }
+
+  isSplashScreenVisible(): boolean {
+    return this.splashScreenVisible
+  }
+
+  async setSplashScreenVisible(visible: boolean): Promise<void> {
+    this.splashScreenVisible = visible
     await this.saveState()
   }
 }
