@@ -1,0 +1,60 @@
+{
+  "name": "@finos/sail-desktop-agent",
+  "version": "3.0.0-pre.1.0",
+  "type": "module",
+  "description": "FDC3 Desktop Agent implementation for Sail",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch --no-clean",
+    "typecheck": "tsc",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt .",
+    "test": "vp test run && npm run test:cucumber",
+    "test:cucumber": "npm run test:cucumber:tags && cucumber-js",
+    "test:cucumber:tags": "node scripts/check-fdc3-tag-coverage.mjs",
+    "test:cucumber:ci": "cucumber-js --profile ci",
+    "test:cucumber:channels": "cucumber-js test/features/channels",
+    "test:cucumber:intents": "cucumber-js test/features/intents",
+    "test:cucumber:apps": "cucumber-js test/features/apps",
+    "test:cucumber:report": "FORCE_COLOR=false cucumber-js --publish",
+    "test:cucumber:watch": "cucumber-js --watch",
+    "validate": "npm run typecheck && npm run lint && npm run format && npm run test:cucumber:tags"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.5.0",
+    "@types/lodash": "^4.17.24",
+    "expect": "^30.2.0",
+    "lodash": "^4.17.23",
+    "tsx": "^4.21.0"
+  },
+  "dependencies": {
+    "@finos/fdc3": "^2.2.3",
+    "@finos/fdc3-schema": "^2.2.1-beta.3",
+    "immer": "^10.1.1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

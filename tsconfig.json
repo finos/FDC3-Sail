@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.root.json",
+  "files": [],
+  "references": [
+    { "path": "./packages/sail-desktop-agent" },
+    { "path": "./packages/sail-platform" },
+    { "path": "./packages/sail-finance" }
+  ]
+}

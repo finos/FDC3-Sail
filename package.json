@@ -2,46 +2,69 @@
   "name": "@finos/fdc3-sail",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.x.x",
+    "npm": ">=11.x.x"
+  },
   "scripts": {
     "clean": "npm run clean --workspaces",
-    "build": "npm run build --workspaces --if-present",
-    "web:dev": "npm run dev -w packages/web",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "eslint .",
-    "start": "npm run web:dev",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepare": "husky"
-  },
-  "workspaces": [
-    "packages/da-impl",
-    "packages/common",
-    "packages/web"
-  ],
-  "devDependencies": {
-    "@eslint/js": "^9.22.0",
-    "eslint": "^9.22.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.3.3",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.1",
-    "vitest": "^3.2.6",
-    "vite": "^6.4.2",
-    "tsx": "^4.19.1",
-    "nodemon": "^3.1.9"
-  },
-  "dependencies": {
-    "real-require": "^1.0.0",
-    "pino": "^9.6.0",
-    "pino-pretty": "^13.0.0",
-    "vite-express": "^0.22.1"
-  },
-  "lint-staged": {
-    "packages/*/src/**/*.{ts,tsx}": "eslint --fix --max-warnings=0",
-    "**/*": "prettier --ignore-unknown --write"
+    "build": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
+    "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
+    "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
+    "dev:conformance": "npm run dev -w @finos/sail-conformance-harness",
+    "docs:dev": "npm run start --workspace=@finos/sail-docs",
+    "docs:build": "npm run build --workspace=@finos/sail-docs",
+    "lint": "vp lint . && oxlint -c .oxlintrc.json packages",
+    "lint:fix": "vp lint . --fix",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vp test",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt .",
+    "validate": "npm run format && npm run build && npm run lint && npm run typecheck && npm run conformance:inventory:check -w @finos/sail-docs && npm run docs:build && npm test -- --run && npm run test:cucumber -w @finos/sail-desktop-agent",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "release:publish": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform && changeset publish",
+    "prepare": "vp config"
   },
   "overrides": {
-    "lodash": "4.18.1"
+    "copy-webpack-plugin": {
+      "serialize-javascript": "7.0.5"
+    },
+    "css-minimizer-webpack-plugin": {
+      "serialize-javascript": "7.0.5"
+    },
+    "shell-quote": "1.10.0",
+    "sockjs": {
+      "uuid": "11.1.1"
+    },
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+    "vitest": "4.1.10"
+  },
+  "workspaces": [
+    "packages/sail-desktop-agent",
+    "packages/sail-theme",
+    "packages/sail-platform",
+    "packages/sail-finance",
+    "packages/sail-one",
+    "packages/sail-conformance-harness",
+    "website"
+  ],
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@types/node": "^25.9.5",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.x",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/ui": "^4.0.18",
+    "concurrently": "^10.0.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "globals": "^16.3.0",
+    "knip": "^5.82.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.2",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+    "vite-plus": "0.2.5",
+    "vitest": "4.1.10"
   }
 }

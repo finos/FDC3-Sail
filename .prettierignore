@@ -1,6 +1,15 @@
-node_modules
-dist
-**/dist
+website/.docusaurus/**/*
+**/dist/**/*
+**/node_modules/**/*
+**/build/**/*
+**/.git/**/*
+**/coverage/**/*
+**/*.md
 package-lock.json
-coverage
-.vite
+yarn.lock
+pnpm-lock.yaml
+*.tsbuildinfo
+**/cucumber-report.html
+**/test-results.xml
+# Vendored FDC3 2.2 conformance toolbox build (generated upstream; see HEADLESS.md)
+packages/sail-conformance-harness/2.2-conformance-tests/**/*

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" fill="none" aria-hidden="true">
+  <rect width="1280" height="720" fill="#020617" />
+  <rect x="40" y="40" width="1200" height="64" rx="10" fill="#0f172a" stroke="#075985" stroke-width="2" />
+  <rect x="40" y="128" width="280" height="552" rx="12" fill="#0f172a" stroke="#075985" stroke-width="2" />
+  <rect x="336" y="128" width="904" height="552" rx="12" fill="#0f172a" stroke="#075985" stroke-width="2" />
+  <circle cx="88" cy="72" r="8" fill="#38bdf8" />
+  <rect x="112" y="64" width="140" height="16" rx="4" fill="#334155" />
+  <rect x="56" y="154" width="104" height="20" rx="4" fill="#0c4a6e" />
+  <rect x="64" y="160" width="56" height="8" rx="2" fill="#7dd3fc" opacity="0.4" />
+  <rect x="56" y="192" width="248" height="8" rx="2" fill="#1e3a5f" />
+  <rect x="56" y="208" width="220" height="8" rx="2" fill="#0c4a6e" />
+  <rect x="56" y="224" width="236" height="8" rx="2" fill="#1e3a5f" />
+  <rect x="364" y="156" width="120" height="22" rx="4" fill="#0369a1" opacity="0.5" />
+  <rect x="500" y="156" width="100" height="22" rx="4" fill="#334155" />
+  <rect x="616" y="156" width="100" height="22" rx="4" fill="#334155" />
+  <rect x="732" y="156" width="100" height="22" rx="4" fill="#334155" />
+  <rect x="848" y="156" width="100" height="22" rx="4" fill="#334155" />
+  <rect x="964" y="156" width="100" height="22" rx="4" fill="#334155" />
+  <g stroke="#164e63" stroke-width="1.5">
+    <line x1="360" y1="200" x2="1220" y2="200" />
+    <line x1="360" y1="240" x2="1220" y2="240" />
+    <line x1="360" y1="280" x2="1220" y2="280" />
+    <line x1="360" y1="320" x2="1220" y2="320" />
+    <line x1="360" y1="360" x2="1220" y2="360" />
+    <line x1="360" y1="400" x2="1220" y2="400" />
+    <line x1="360" y1="440" x2="1220" y2="440" />
+    <line x1="360" y1="480" x2="1220" y2="480" />
+    <line x1="360" y1="520" x2="1220" y2="520" />
+    <line x1="360" y1="560" x2="1220" y2="560" />
+    <line x1="360" y1="600" x2="1220" y2="600" />
+    <line x1="360" y1="640" x2="1220" y2="640" />
+  </g>
+  <rect x="372" y="208" width="72" height="24" rx="4" fill="#0c4a6e" />
+  <rect x="460" y="212" width="140" height="16" rx="3" fill="#1e293b" />
+  <rect x="620" y="212" width="80" height="16" rx="3" fill="#1e293b" />
+  <rect x="720" y="212" width="100" height="16" rx="3" fill="#155e75" />
+  <rect x="840" y="212" width="90" height="16" rx="3" fill="#155e75" />
+  <rect x="372" y="248" width="72" height="24" rx="4" fill="#155e75" />
+  <rect x="460" y="252" width="120" height="16" rx="3" fill="#1e293b" />
+  <rect x="600" y="252" width="100" height="16" rx="3" fill="#1e293b" />
+  <rect x="720" y="252" width="100" height="16" rx="3" fill="#0e7490" />
+  <circle cx="1050" cy="220" r="8" fill="#22d3ee" />
+  <rect x="372" y="288" width="72" height="24" rx="4" fill="#0c4a6e" />
+  <rect x="460" y="292" width="160" height="16" rx="3" fill="#1e293b" />
+  <rect x="372" y="328" width="72" height="24" rx="4" fill="#155e75" />
+  <path stroke="#38bdf8" stroke-width="3" stroke-linecap="round" d="M1100 400 1140 360l40 40" />
+</svg>

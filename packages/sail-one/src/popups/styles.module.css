@@ -1,0 +1,222 @@
+.popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #00000055;
+  opacity: 0;
+}
+
+.popup[data-variant="drawer"] {
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+.popup[data-loaded] {
+  transition: opacity 0.2s ease;
+  opacity: 1;
+}
+
+.popupInner {
+  background-color: var(--sail-surface);
+  border-radius: var(--sail-radius-lg);
+  padding: var(--sail-space-4);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--sail-ink) 20%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sail-space-4);
+  max-height: min(90vh, 52rem);
+  width: min(56rem, calc(100vw - 2rem));
+  color: var(--sail-text);
+}
+
+.popup[data-variant="drawer"] .popupInner {
+  width: min(40rem, 100vw);
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  border-left: 3px solid var(--sail-accent);
+  box-shadow: -4px 0 24px color-mix(in srgb, var(--sail-ink) 12%, transparent);
+  animation: slideIn 0.2s ease;
+  padding-top: 0;
+  gap: 0;
+}
+
+.popup[data-variant="drawer"] .popupTitle {
+  margin: 0 calc(var(--sail-space-4) * -1) 0;
+  padding: 0.75rem var(--sail-space-4);
+  background: var(--sail-surface-subtle, #f3f3f3);
+  border-bottom: 1px solid var(--sail-border);
+}
+
+.popup[data-variant="drawer"] .popupArea {
+  padding-top: var(--sail-space-4);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(1rem);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.popupArea {
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.popupTitle {
+  color: var(--sail-ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.popupTitleText {
+  display: inline;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.popupTitleActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.popupHeaderClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--sail-ink);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.popupHeaderClose:hover {
+  background-color: #e81123;
+  color: #fff;
+  opacity: 1;
+}
+
+.popupHeaderClose:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 1px;
+}
+
+.popupHeaderButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--sail-border);
+  border-radius: var(--sail-radius);
+  background-color: var(--sail-surface-subtle);
+  color: var(--sail-ink);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.popupHeaderButton svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+.popupHeaderButton:hover:not(:disabled) {
+  background-color: var(--sail-accent-soft);
+  border-color: var(--sail-cyan-muted);
+}
+
+.popupHeaderButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.popupHeaderButton:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 1px;
+}
+
+.popupHeaderButtonPrimary {
+  background-color: var(--sail-accent);
+  border-color: var(--sail-accent);
+  color: var(--sail-on-accent);
+}
+
+.popupHeaderButtonPrimary:hover:not(:disabled) {
+  background-color: var(--sail-accent-hover);
+  border-color: var(--sail-accent-hover);
+}
+
+.popupButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-basis: 3rem;
+  flex-grow: 0;
+  flex-shrink: 0;
+  gap: var(--sail-space-2);
+}
+
+.popupButton {
+  min-width: 8rem;
+  padding: 0.55rem 1rem;
+  text-align: center;
+  background-color: var(--sail-surface-subtle);
+  border: 1px solid var(--sail-border);
+  border-radius: var(--sail-radius);
+  color: var(--sail-ink);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.popupButton:hover:not(:disabled) {
+  background-color: var(--sail-accent-soft);
+  border-color: var(--sail-cyan-muted);
+}
+
+.popupButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.popupButtonPrimary {
+  background-color: var(--sail-accent);
+  border-color: var(--sail-accent);
+  color: var(--sail-on-accent);
+}
+
+.popupButtonPrimary:hover:not(:disabled) {
+  background-color: var(--sail-accent-hover);
+  border-color: var(--sail-accent-hover);
+}

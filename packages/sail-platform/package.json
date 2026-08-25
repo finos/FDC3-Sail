@@ -1,0 +1,42 @@
+{
+  "name": "@finos/sail-platform",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Workspaces, layouts and storage for FDC3 Sail hosts - UI-agnostic, zero dependencies",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt .",
+    "unused:check": "knip",
+    "test": "vp test run",
+    "validate": "npm run typecheck && npm run lint && npm run format"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

@@ -7,12 +7,21 @@ thumbs.db
 packages/preload/exposedInMainWorld.d.ts
 build
 .rollup.cache
-FDC3-Sail.pem
-tsconfig.tsbuildinfo
-FDC3-Sail.pem
 
-packages/da-impl/coverage
-test-results.xml
-cucumber-report.html
-.vite
-.vite-cache
+# Docusaurus generated cache (regenerated on start/build; see `docusaurus clear`)
+website/.docusaurus
+.cache-loader
+FDC3-Sail.pem
+*.tsbuildinfo
+packages/sail-desktop-agent/cucumber-report.html
+packages/sail-desktop-agent/html/
+# NOTE: do not use a bare `html/` here. Git matches it at every depth, which
+# silently made `packages/sail-one/html/` (its MPA entry points) uncommittable.
+packages/sail-desktop-agent/test-results.xml
+packages/sail-desktop-agent/reports/**/*
+
+packages/sail-finance/playwright-report/index.html
+
+# Conformance harness Playwright output (e2e/conformance-baseline-2.2.json is committed)
+packages/sail-conformance-harness/artifacts/
+packages/sail-conformance-harness/test-results/

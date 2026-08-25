@@ -1,0 +1,1 @@
+export { QuickAccessPanel } from "./QuickAccessPanel"
