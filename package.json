@@ -42,6 +42,9 @@
     "**/*": "prettier --ignore-unknown --write"
   },
   "overrides": {
-    "lodash": "4.18.1"
+    "lodash": "4.18.1",
+    "vite-node": {
+      "vite": "^7.3.6"
+    }
   }
 }
