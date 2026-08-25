@@ -1,14 +1,9 @@
 import { World, setWorldConstructor } from "@cucumber/cucumber"
-import { TestFDC3ServerFactory } from "../support/TestFDC3ServerInstance"
+import { createTestFDC3ServerInstance } from "../support/TestFDC3ServerInstance"
 import { BasicDirectory } from "../../src/directory/BasicDirectory"
 
 export class CustomWorld extends World {
-  sc = new TestFDC3ServerFactory(
-    this,
-    [],
-    new BasicDirectory([]),
-    false,
-  ).createInstance()
+  sc = createTestFDC3ServerInstance(this, [], new BasicDirectory([]), false)
   props: Record<string, any> = {}
 }
 
