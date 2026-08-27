@@ -59,13 +59,29 @@ describe("SailDesktopAgent constructor directory load", () => {
 
       expect(unhandledReasons).toEqual([])
 
+      const expectedFailingDirectoryUrl = new URL(FAILING_DIRECTORY_URL)
+
       expect(
-        logger.errorCalls.some(
-          call =>
-            typeof call.message === "string" &&
-            (call.message.includes(FAILING_DIRECTORY_URL) ||
-              call.message.includes("Failed to load")),
-        ),
+        logger.errorCalls.some(call => {
+          if (typeof call.message !== "string") {
+            return false
+          }
+
+          const urlsInMessage = call.message.match(/https?:\/\/[^\s"'`)>]+/g) ?? []
+          const containsMatchingDirectoryUrl = urlsInMessage.some(candidateUrl => {
+            try {
+              const parsedCandidateUrl = new URL(candidateUrl)
+              return (
+                parsedCandidateUrl.host === expectedFailingDirectoryUrl.host &&
+                parsedCandidateUrl.pathname === expectedFailingDirectoryUrl.pathname
+              )
+            } catch {
+              return false
+            }
+          })
+
+          return containsMatchingDirectoryUrl || call.message.includes("Failed to load")
+        }),
       ).toBe(true)
 
       expect(agent.directoriesLoaded).toBeInstanceOf(Promise)
