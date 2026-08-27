@@ -33,11 +33,25 @@ describe("app directory host logger", () => {
     )
 
     expect(
-      logger.errorCalls.some(
-        call =>
-          call.message.includes("Failed to load applications from") &&
-          call.message.includes("https://example.com/apps"),
-      ),
+      logger.errorCalls.some(call => {
+        if (!call.message.includes("Failed to load applications from")) {
+          return false
+        }
+
+        const urls = call.message.match(/https?:\/\/[^\s)]+/g) ?? []
+        return urls.some(rawUrl => {
+          try {
+            const parsed = new URL(rawUrl)
+            return (
+              parsed.protocol === "https:" &&
+              parsed.hostname === "example.com" &&
+              parsed.pathname === "/apps"
+            )
+          } catch {
+            return false
+          }
+        })
+      }),
     ).toBe(true)
 
     expect(consoleErrorSpy).not.toHaveBeenCalled()
