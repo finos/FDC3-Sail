@@ -32,6 +32,10 @@ jobs:
           results_file: results.sarif
           results_format: sarif
           publish_results: true
+          # SCORECARD_TOKEN should be a fine-grained PAT with read access to
+          # administration; without it, Branch-Protection cannot be evaluated
+          # because the default GITHUB_TOKEN can't read classic branch protection.
+          repo_token: ${{ secrets.SCORECARD_TOKEN || github.token }}
 
       - name: "Upload to code-scanning"
         uses: github/codeql-action/upload-sarif@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4.32.0
