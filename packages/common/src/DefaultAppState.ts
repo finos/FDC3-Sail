@@ -192,7 +192,7 @@ export class DefaultAppState implements AppState {
               "_blank",
             )
             if (w) {
-              this.registerAppWindow(w, instanceId)
+              this.registerAppWindow(w as unknown as Window, instanceId)
               resolve({ instanceId, channel: null, instanceTitle })
             } else {
               throw new Error("Failed to open window")

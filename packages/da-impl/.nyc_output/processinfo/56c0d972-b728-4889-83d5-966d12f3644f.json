@@ -1,0 +1,16 @@
+{
+  "parent": null,
+  "pid": 19084,
+  "argv": ["C:\\Users\\USER\\scoop\\apps\\nodejs\\current\\node.exe", "19696"],
+  "execArgv": [
+    "-e",
+    "\nconst pid = parseInt(process.argv[1], 10)\nprocess.title = 'node (foreground-child watchdog pid=' + pid + ')'\nif (!isNaN(pid)) {\n  let barked = false\n  // keepalive\n  const interval = setInterval(() => {}, 60000)\n  const bark = () => {\n    clearInterval(interval)\n    if (barked) return\n    barked = true\n    process.removeListener('SIGHUP', bark)\n    setTimeout(() => {\n      try {\n        process.kill(pid, 'SIGKILL')\n        setTimeout(() => process.exit(), 200)\n      } catch (_) {}\n    }, 500)\n  })\n  process.on('SIGHUP', bark)\n}\n"
+  ],
+  "cwd": "C:\\Users\\USER\\OneDrive\\Desktop\\FDC3\\FDC3-Sail\\packages\\da-impl",
+  "time": 1785081524876,
+  "ppid": 17936,
+  "coverageFilename": "C:\\Users\\USER\\OneDrive\\Desktop\\FDC3\\FDC3-Sail\\packages\\da-impl\\.nyc_output\\56c0d972-b728-4889-83d5-966d12f3644f.json",
+  "externalId": "",
+  "uuid": "56c0d972-b728-4889-83d5-966d12f3644f",
+  "files": []
+}
