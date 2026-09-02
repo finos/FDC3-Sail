@@ -53,8 +53,9 @@ You can use Sail two ways:
 
 1. Using (https://sail.fdc3.finos.org/html/index.html) - This is the browser version. Can be used to easily test workflows and can be opened on any browser.
 2. Installing Sail locally - README.md [here](https://github.com/finos/FDC3) explains in detail how to install Sail locally.
+
 - When opening Sail for the first time or by clicking Sail logo, you will be met with this menu which depicts a short description and links for more information on Sail:
-![splashscreen](images/splashscreen.png)
+  ![splashscreen](images/splashscreen.png)
 
 ### Starting Your First Application
 

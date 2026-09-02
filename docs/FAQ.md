@@ -83,35 +83,34 @@ You can use Sail as a lightweight desktop agent when validating FDC3 workflows:
 
 ### **How can I add new app directories into Sail?**
 
-Firstly, let's talk about app directories: an app directory contains a number of AppD records. Each record describes a single FDC3 application. This tells the desktop agent exactly where each application lives, its name, and what kind of data it sends/receives. Sail can support multiple app directories. 
+Firstly, let's talk about app directories: an app directory contains a number of AppD records. Each record describes a single FDC3 application. This tells the desktop agent exactly where each application lives, its name, and what kind of data it sends/receives. Sail can support multiple app directories.
 
 **To add a new directory:**
 
 1.  Hit the ellipsis icon on the top right of the Sail UI to open the config screen.
-![screenshot6](images/ss6.png)
-3.  Select the directories tab.
-![screenshot9](images/ss9.png)
-5.  Press "Click to add a new directory"
-![screenshot10](images/ss10.png)
-7.  Enter the directory URL and give it a name, then slide the activation slider to the right to enable that directory.
-![screenshot11](images/ss11.png)
- 
+    ![screenshot6](images/ss6.png)
+2.  Select the directories tab.
+    ![screenshot9](images/ss9.png)
+3.  Press "Click to add a new directory"
+    ![screenshot10](images/ss10.png)
+4.  Enter the directory URL and give it a name, then slide the activation slider to the right to enable that directory.
+    ![screenshot11](images/ss11.png)
+
 Close the config screen and go to the "Start Application" panel. You should see the new applications from your directory listed there.
 
 ### **How can I add custom applications into Sail?**
 
 1. Hit the ellipsis icon on the top right of the Sail UI to open the config screen
-![screenshot6](images/ss6.png)
+   ![screenshot6](images/ss6.png)
 
 2. Within this menu, select 'Custom Apps' and click add new app.
-![screenshot7](images/ss7.png)
+   ![screenshot7](images/ss7.png)
 
 3. From here you are able to paste the URL of your local or hosted web app, give it a name and select what intents it listens to by using the drop-down button as shown here:
-![screenshot8](images/ss8.png)
+   ![screenshot8](images/ss8.png)
 
-From there just select done and your app should be able to be opened in Sail. 
+From there just select done and your app should be able to be opened in Sail.
 Well done! You have just injected your web app into Sail without changing any code files.
-
 
 ### **What do I need to do in order to create my own app which is compatible with FDC3?**
 
@@ -121,8 +120,9 @@ You are able to turn any basic financial web page into an FDC3 app by following 
 2. Create your app definition by describing it so that the desktop agent knows how to launch it, and what data it supports. Use a configuration file in JSON to host this.
 3. The web app needs to be actively listening for incoming data or intents from the rest of the desktop. You can do this by adding the code to handle data using JS.
 4. Test your app using FDC3-Sail. To do this you will need to serve your application locally. Then configure your App Definition JSON, drop it into Sail's local directory, and use Sail's built-in [FDC3 Workbench](https://github.com/finos/FDC3/blob/main/toolbox/fdc3-workbench/README.md) to mock and monitor interactions.
- 
+
    **This is a simplified explanation, so see these links for further understanding:**
+
 - Learn through the online course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
 - Also see [toolbox package holding sample web applications](https://github.com/finos/FDC3/tree/main/toolbox/fdc3-example-apps)
 - Don't forget, [Using the FDC3 Workbench](https://finsemble.interop.io/docs/connect-apps/interop/FDC3Workbench/) which provides more in-depth examples and more advanced intel on the code.
