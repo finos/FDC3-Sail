@@ -1,0 +1,135 @@
+header:
+  schema-version: 2.2.0
+  last-updated: "2026-08-25"
+  last-reviewed: "2026-08-25"
+  url: https://raw.githubusercontent.com/finos/FDC3-Sail/main/security-insights.yml
+  comment: |
+    Security Insights data for FDC3 Sail, a FINOS Incubating project.
+    FINOS project lifecycle stages are tied to OSPS Baseline maturity levels
+    (Labs = ML1, Incubating = ML2, Graduated = ML3), so this file is
+    maintained alongside the weekly OSPS Baseline assessment workflow.
+
+project:
+  name: FDC3 Sail
+  homepage: https://github.com/finos/FDC3-Sail
+  administrators:
+    - name: Chris Watson
+      affiliation: Elgin White
+      email: cwatson1988@gmail.com
+      social: https://github.com/SeeWhatsOn
+      primary: true
+    - name: Kris West
+      affiliation: NatWest Group
+      email: kristopher.west@natwest.com
+      social: https://github.com/kriswest
+      primary: false
+    - name: Rob Moffat
+      affiliation: FINOS
+      email: rob.moffat@finos.org
+      social: https://github.com/robmoffat
+      primary: false
+  documentation:
+    quickstart-guide: https://github.com/finos/FDC3-Sail/blob/main/README.md
+    detailed-guide: https://github.com/finos/FDC3-Sail/blob/main/docs/GUIDE.md
+    code-of-conduct: https://github.com/finos/community/blob/master/governance/Code-of-Conduct.md
+  repositories:
+    - name: FDC3-Sail
+      url: https://github.com/finos/FDC3-Sail
+      comment: |
+        The sole repository for the project. FDC3 Sail is an npm-workspaces
+        monorepo; all packages are published from here.
+  vulnerability-reporting:
+    reports-accepted: true
+    bug-bounty-available: false
+    contact:
+      name: FDC3 Sail maintainers, via the FINOS security team
+      email: security@finos.org
+      primary: true
+    policy: https://github.com/finos/FDC3-Sail/blob/main/SECURITY.md
+    comment: |
+      FDC3 Sail adheres to the FINOS Security Vulnerabilities Responsible
+      Disclosure Policy:
+      https://community.finos.org/docs/governance/software-projects/cve-responsible-disclosure
+      Reports must not be filed as public GitHub Issues.
+
+repository:
+  url: https://github.com/finos/FDC3-Sail
+  status: active
+  accepts-change-request: true
+  accepts-automated-change-request: true
+  core-team:
+    - name: Chris Watson
+      affiliation: Elgin White
+      email: cwatson1988@gmail.com
+      social: https://github.com/SeeWhatsOn
+      primary: true
+    - name: Kris West
+      affiliation: NatWest Group
+      email: kristopher.west@natwest.com
+      social: https://github.com/kriswest
+      primary: false
+    - name: Rob Moffat
+      affiliation: FINOS
+      email: rob.moffat@finos.org
+      social: https://github.com/robmoffat
+      primary: false
+  documentation:
+    contributing-guide: https://github.com/finos/FDC3-Sail/blob/main/CONTRIBUTING.md
+    governance: https://github.com/finos/FDC3-Sail/blob/main/MAINTAINERS.md
+    security-policy: https://github.com/finos/FDC3-Sail/blob/main/SECURITY.md
+  license:
+    url: https://github.com/finos/FDC3-Sail/blob/main/LICENSE
+    expression: Apache-2.0
+  security:
+    assessments:
+      self:
+        comment: |
+          A self-assessment against the OSPS Baseline has not yet been
+          published. The assessment workflow in .github/workflows/OSPS.yml
+          runs weekly against Maturity Level 2, the level required for FINOS
+          Incubating status.
+    tools:
+      - name: CodeQL
+        type: SAST
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/ql.yml
+      - name: Semgrep
+        type: SAST
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/semgrep.yml
+      - name: OpenSSF Scorecard
+        type: other
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/scorecard.yml
+      - name: GitHub Dependency Review
+        type: SCA
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/dependency-review.yml
