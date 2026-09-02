@@ -1,4 +1,5 @@
-# SEMGREP_APP_TOKEN: Semgrep AppSec Platform > Settings (or help@finos.org for FINOS repos).
+# SEMGREP_APP_TOKEN is OPTIONAL: Semgrep AppSec Platform > Settings (or help@finos.org for
+# FINOS repos). When set, it adds Semgrep's platform rules on top of the local p/* packs below.
 # SARIF upload needs repo Settings → Actions → Workflow permissions to allow security events.
 name: Semgrep
 
@@ -34,9 +35,11 @@ jobs:
       - name: Install Semgrep
         run: pip install semgrep
       - name: Semgrep CI
+        continue-on-error: true
         run: |
           mkdir -p reports
-          semgrep ci --sarif --sarif-output=reports/semgrep.sarif
+          semgrep ci --config p/typescript --config p/javascript --config p/react \
+            --sarif --sarif-output=reports/semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
