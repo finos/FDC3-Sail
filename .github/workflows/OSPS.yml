@@ -22,20 +22,25 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Open Source Project Security Baseline Scanner
-        uses: revanite-io/osps-baseline-action@3bf988fa8e4b59568dcfac138a1854df87c15aff # v1.3.2
+        uses: revanite-io/osps-baseline-action@071a9810fb366500ae0bbbd47944e5372b15fb4c # v1.4.0
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
-          token: ${{ secrets.PVTR_GITHUB_TOKEN }}
-          catalog: "osps-baseline"
+          # The built-in token is what the OSSF reference workflow uses. A PAT with
+          # admin:org would additionally let the scanner observe branch protection
+          # and org MFA (OSPS-AC-03), which stay unresolved without one.
+          token: ${{ github.token }}
+          catalog: "osps-baseline-2026-02"
           upload-sarif: "true"
 
       - name: Upload Assessment Results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: osps-assessment-results-${{ github.run_number }}
           path: evaluation_results/
