@@ -27,7 +27,7 @@ jobs:
           persist-credentials: false
 
       - name: Open Source Project Security Baseline Scanner
-        uses: revanite-io/osps-baseline-action@071a9810fb366500ae0bbbd47944e5372b15fb4c # v1.4.0
+        uses: revanite-io/osps-baseline-action@6ba0e05ce6566af82fd77bb9356ae8387027f32e # v1.5.0
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
