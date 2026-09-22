@@ -23,6 +23,17 @@ export const DA_HELLO = "da-hello"
 
 export type ContextHistory = { [id: string]: Context[] }
 
+/**
+ * WSCP pairing credential stored in the browser and synced to the DA server.
+ * Source of truth is LocalStorageClientState; the server keeps an in-memory mirror.
+ */
+export type WscpPairing = {
+  appId: string
+  sharedSecret: string
+  /** Assigned by the server on first successful WSCP connect; retained for resume. */
+  instanceId: string | null
+}
+
 export type DesktopAgentHelloArgs = {
   userSessionId: string
   directories: string[]
@@ -30,6 +41,7 @@ export type DesktopAgentHelloArgs = {
   panels: AppPanel[]
   customApps: DirectoryApp[]
   contextHistory: ContextHistory
+  wscpPairings: WscpPairing[]
 }
 
 /**
@@ -194,4 +206,15 @@ export const SAIL_BROADCAST_CONTEXT = "sail-broadcast-context"
 export type SailBroadcastContextArgs = {
   context: Context
   channelId: string
+}
+
+/**
+ * Sent from the server to the browser DA after a WSCP handshake assigns or resumes an instanceId.
+ */
+export const SAIL_WSCP_PAIRING_UPDATE = "sail-wscp-pairing-update"
+
+export type SailWscpPairingUpdateArgs = {
+  appId: string
+  sharedSecret: string
+  instanceId: string
 }

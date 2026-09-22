@@ -19,10 +19,12 @@ import {
   SAIL_BROADCAST_CONTEXT,
   SAIL_CHANNEL_SETUP,
   SAIL_INTENT_RESOLVE,
+  SAIL_WSCP_PAIRING_UPDATE,
   SailAppOpenArgs,
   SailAppOpenResponse,
   SailIntentResolveResponse,
   TabDetail,
+  WscpPairing,
 } from "@finos/fdc3-sail-common"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
@@ -59,6 +61,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private readonly connection: SocketIOConnection
   private readonly channelState: ChannelState[] = []
   private readonly appStartDestinations: Map<string, string | null> = new Map()
+  /** In-memory mirror of browser WSCP pairings (source of truth is LocalStorageClientState). */
+  private wscpPairings: WscpPairing[] = []
 
   constructor(
     directory: SailDirectory,
@@ -70,6 +74,40 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     this.directory = directory
     this.connection = connection
     this.channelState = channels
+  }
+
+  setWscpPairings(pairings: WscpPairing[]): void {
+    this.wscpPairings = pairings.map((p) => ({ ...p }))
+  }
+
+  getWscpPairingBySecret(sharedSecret: string): WscpPairing | undefined {
+    return this.wscpPairings.find((p) => p.sharedSecret === sharedSecret)
+  }
+
+  /**
+   * Persist instanceId on the session mirror and notify the browser DA so localStorage stays in sync.
+   */
+  assignWscpInstanceId(
+    sharedSecret: string,
+    instanceId: string,
+  ): WscpPairing | undefined {
+    const idx = this.wscpPairings.findIndex(
+      (p) => p.sharedSecret === sharedSecret,
+    )
+    if (idx === -1) {
+      return undefined
+    }
+    const updated: WscpPairing = {
+      ...this.wscpPairings[idx],
+      instanceId,
+    }
+    this.wscpPairings[idx] = updated
+    this.connection.emit(SAIL_WSCP_PAIRING_UPDATE, {
+      appId: updated.appId,
+      sharedSecret: updated.sharedSecret,
+      instanceId,
+    })
+    return updated
   }
 
   post(message: object, instanceId: InstanceID): Promise<void> {

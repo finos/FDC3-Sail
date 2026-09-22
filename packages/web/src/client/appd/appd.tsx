@@ -1,9 +1,10 @@
-import { Component, useState } from "react"
+import { Component, useEffect, useState } from "react"
 import { Icon } from "../icon/icon"
 import {
   getAppState,
   getClientState,
   FDC3_WEBSOCKET_PROPERTY,
+  WscpPairing,
 } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
@@ -15,17 +16,73 @@ import { AppMetadata, Image } from "@finos/fdc3"
 
 type ConnectionPlatform = "java" | "csharp" | "go" | "websocket"
 
+function resolveWebSocketUrl(connectionUrl?: string): string {
+  if (connectionUrl) {
+    return connectionUrl
+  }
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+  return `${protocol}//${window.location.host}/fdc3/ws`
+}
+
 /**
- * Displays connection instructions for native apps with tabs for different platforms.
+ * Displays WSCP connection instructions for native apps (URL + sharedSecret).
  */
-function ConnectionInstructions({ connectionUrl }: { connectionUrl: string }) {
+function ConnectionInstructions({
+  appId,
+  connectionUrl,
+}: {
+  appId: string
+  connectionUrl?: string
+}) {
   const [platform, setPlatform] = useState<ConnectionPlatform>("java")
+  const [pairing, setPairing] = useState<WscpPairing | null>(
+    () => getClientState().getWscpPairing(appId) ?? null,
+  )
+  const [busy, setBusy] = useState(false)
+  const webSocketUrl = resolveWebSocketUrl(connectionUrl)
+
+  useEffect(() => {
+    let cancelled = false
+    setBusy(true)
+    getClientState()
+      .mintWscpPairing(appId)
+      .then((p) => {
+        if (!cancelled) {
+          setPairing(p)
+        }
+      })
+      .catch((e) => {
+        console.error("Failed to mint WSCP pairing", e)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setBusy(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [appId])
+
+  const regenerate = async () => {
+    setBusy(true)
+    try {
+      const p = await getClientState().regenerateWscpPairing(appId)
+      setPairing(p)
+    } catch (e) {
+      console.error("Failed to regenerate WSCP pairing", e)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const secret = pairing?.sharedSecret
 
   return (
     <div className={styles.connectionSection}>
       <p className={styles.connectionIntro}>
-        This is a native application that connects to Sail via WebSocket. Use
-        the connection URL below to configure your application.
+        This native app connects via the FDC3 WebSocket Connection Protocol
+        (WSCP). Copy the WebSocket URL and pairing secret into your application.
       </p>
 
       <div className={styles.platformTabs}>
@@ -51,7 +108,7 @@ function ConnectionInstructions({ connectionUrl }: { connectionUrl: string }) {
           className={`${styles.platformTab} ${platform === "websocket" ? styles.activePlatformTab : ""}`}
           onClick={() => setPlatform("websocket")}
         >
-          WebSocket
+          WSCP
         </button>
       </div>
 
@@ -59,43 +116,62 @@ function ConnectionInstructions({ connectionUrl }: { connectionUrl: string }) {
         {platform === "java" && (
           <div className={styles.platformInstructions}>
             <p>
-              Set the <code>FDC3_WEBSOCKET_URL</code> environment variable or
-              pass the URL to <code>GetAgentParams</code>:
+              Set <code>FDC3_WEBSOCKET_URL</code> and{" "}
+              <code>FDC3_CONNECTION_SECRET</code>, or pass both to{" "}
+              <code>GetAgentParams</code>:
             </p>
-            <code className={styles.connectionCode}>{connectionUrl}</code>
           </div>
         )}
 
         {platform === "csharp" && (
           <div className={styles.platformInstructions}>
             <p className={styles.placeholder}>
-              C# FDC3 support coming soon. Connect using the WebSocket URL
-              below.
+              C# FDC3 support coming soon. Use the WebSocket URL and shared
+              secret below with WSCP Flow 1.
             </p>
-            <code className={styles.connectionCode}>{connectionUrl}</code>
           </div>
         )}
 
         {platform === "go" && (
           <div className={styles.platformInstructions}>
             <p className={styles.placeholder}>
-              Go FDC3 support coming soon. Connect using the WebSocket URL
-              below.
+              Go FDC3 support coming soon. Use the WebSocket URL and shared
+              secret below with WSCP Flow 1.
             </p>
-            <code className={styles.connectionCode}>{connectionUrl}</code>
           </div>
         )}
 
         {platform === "websocket" && (
           <div className={styles.platformInstructions}>
             <p>
-              Connect directly via WebSocket using the FDC3 Web Connection
-              Protocol. Send and receive JSON messages according to the FDC3
-              specification.
+              Open a WebSocket to the URL below, then send{" "}
+              <code>WSCPApplicationConnect</code> with the shared secret. Sail
+              replies with <code>WSCPDesktopAgentConnect</code> (or{" "}
+              <code>WSCPConnectFailed</code>). DACP follows on the same socket.
             </p>
-            <code className={styles.connectionCode}>{connectionUrl}</code>
           </div>
         )}
+
+        <label className={styles.credentialLabel}>WebSocket URL</label>
+        <code className={styles.connectionCode}>{webSocketUrl}</code>
+
+        <label className={styles.credentialLabel}>Shared secret</label>
+        {busy && !secret ? (
+          <code className={styles.connectionCode}>Generating…</code>
+        ) : (
+          <code className={styles.connectionCode}>{secret ?? "—"}</code>
+        )}
+
+        <button
+          type="button"
+          className={styles.regenerateButton}
+          disabled={busy}
+          onClick={() => {
+            regenerate().catch(() => undefined)
+          }}
+        >
+          Regenerate secret
+        </button>
       </div>
     </div>
   )
@@ -204,14 +280,14 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                             <li key={c}>{c}</li>
                           ))}
                         </ul>
-                        {app.type === "native" &&
-                          (app.details as any)?.[FDC3_WEBSOCKET_PROPERTY] && (
-                            <ConnectionInstructions
-                              connectionUrl={
-                                (app.details as any)[FDC3_WEBSOCKET_PROPERTY]
-                              }
-                            />
-                          )}
+                        {app.type === "native" && (
+                          <ConnectionInstructions
+                            appId={app.appId!}
+                            connectionUrl={
+                              (app.details as any)?.[FDC3_WEBSOCKET_PROPERTY]
+                            }
+                          />
+                        )}
                       </div>
                     )}
                     {this.state.activeTab === "screenshots" && (

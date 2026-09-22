@@ -15,6 +15,7 @@ import {
   SAIL_CHANNEL_SETUP,
   SAIL_CLIENT_STATE,
   SAIL_INTENT_RESOLVE,
+  SAIL_WSCP_PAIRING_UPDATE,
   SailAppOpenArgs,
   SailAppOpenResponse,
   SailAppStateArgs,
@@ -23,6 +24,7 @@ import {
   SailClientStateArgs,
   SailIntentResolveArgs,
   SailIntentResolveResponse,
+  SailWscpPairingUpdateArgs,
 } from "./message-types"
 import { AppHosting } from "./app-hosting"
 import { ServerState } from "./ServerState"
@@ -164,6 +166,21 @@ export class ServerStateImpl implements ServerState {
         (data: SailBroadcastContextArgs) => {
           //console.log(`SAIL_BROADCAST_CONTEXT: ${JSON.stringify(data)}`)
           this.cs!.appendContextHistory(data.channelId, data.context)
+        },
+      )
+
+      this.socket?.on(
+        SAIL_WSCP_PAIRING_UPDATE,
+        (data: SailWscpPairingUpdateArgs) => {
+          this.cs!
+            .updateWscpPairingInstanceId(
+              data.appId,
+              data.sharedSecret,
+              data.instanceId,
+            )
+            .catch((e) => {
+              console.error("Error updating WSCP pairing instanceId", e)
+            })
         },
       )
     })

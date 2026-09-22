@@ -23,6 +23,7 @@ export async function handleClientState(
   if (session) {
     await session.reloadAppDirectories(props.directories, props.customApps)
     session.updateChannelData(props.channels)
+    session.setWscpPairings(props.wscpPairings ?? [])
 
     // tell each app to check for a channel change
     props.panels.forEach((panel) => {
