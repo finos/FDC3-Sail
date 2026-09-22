@@ -80,6 +80,11 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     url: "https://directory.fdc3.finos.org/v2/apps/",
     active: true,
   },
+  {
+    label: "FDC3 Example Apps (local)",
+    url: "http://localhost:4005/static/generated/fdc3-example-apps.json",
+    active: false,
+  },
 ]
 
 const DEFAULT_TABS: TabDetail[] = [

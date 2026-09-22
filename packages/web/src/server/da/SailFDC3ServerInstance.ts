@@ -3,8 +3,8 @@ import {
   AppRegistration,
   ChannelState,
   DirectoryApp,
+  HandlersByVersion,
   InstanceID,
-  MessageHandler,
   State,
 } from "@finos/fdc3-sail-da-impl"
 import { getIcon, SailDirectory } from "../appd/SailDirectory"
@@ -50,7 +50,7 @@ export type SailData = AppRegistration & {
 }
 
 /**
- * Extends BasicFDC3Server to allow for more detailed (and changeable) user channel metadata
+ * Extends AbstractFDC3ServerInstance to allow for more detailed (and changeable) user channel metadata
  * as well as user-configurable SailDirectory.
  */
 export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
@@ -63,10 +63,10 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   constructor(
     directory: SailDirectory,
     connection: SocketIOConnection,
-    handlers: MessageHandler[],
+    handlersByVersion: HandlersByVersion,
     channels: ChannelState[],
   ) {
-    super(handlers, channels)
+    super(handlersByVersion, channels)
     this.directory = directory
     this.connection = connection
     this.channelState = channels
@@ -98,6 +98,11 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     const destination = this.appStartDestinations.get(appId)
     this.appStartDestinations.delete(appId)
     return this.openSail(appId, destination ?? null)
+  }
+
+  async close(instanceId: InstanceID): Promise<void> {
+    await this.setAppState(instanceId, State.Terminated)
+    await this.cleanupApp(instanceId)
   }
 
   async openOnChannel(appId: string, channel: string): Promise<void> {
@@ -204,6 +209,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         appId: x.appId,
         instanceId: x.instanceId,
         state: x.state,
+        fdc3Version: x.fdc3Version,
       }
     })
   }
@@ -225,7 +231,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   fdc3Version(): string {
-    return "2.0"
+    return "3.0"
   }
 
   private convertToTabDetail(channel: ChannelState): TabDetail {
@@ -403,14 +409,22 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     function relevantHistory(
       id: string,
       history?: ContextHistory,
-    ): undefined | BrowserTypes.Context[] {
+    ): undefined | { context: BrowserTypes.Context; metadata: { source: { appId: string; instanceId: string } } }[] {
       if (history) {
         const basicHistory = history[id]
+        if (!basicHistory) {
+          return undefined
+        }
         // just the first item of each unique type
-        const relevantHistory = basicHistory.filter(
+        const relevant = basicHistory.filter(
           (h, i, a) => a.findIndex((h2) => h2.type == h.type) == i,
         )
-        return relevantHistory
+        return relevant.map((context) => ({
+          context,
+          metadata: {
+            source: { appId: "sail", instanceId: "history" },
+          },
+        }))
       }
       return undefined
     }

@@ -89,6 +89,26 @@ Point your browser at http://localhost:8090
 
 ![Sail Initial Screen](./packages/web/images/blank-screen.png)
 
+### Local FDC3 Example Apps
+
+Sail no longer ships its own example apps. Use the published [`@finos/fdc3-example-apps`](https://www.npmjs.com/package/@finos/fdc3-example-apps) package instead.
+
+In a second terminal (or instead of `npm start`):
+
+```
+npm run example-apps
+```
+
+Or start Sail and the example apps together:
+
+```
+npm run start:with-apps
+```
+
+That downloads and runs the package via `npx` (npm `prerelease` tag). On startup it prints a combined App Directory URL (by default `http://localhost:4005/static/generated/fdc3-example-apps.json`). Fresh Sail installs include this directory as an inactive entry — enable it in Sail settings, then open apps from the app picker.
+
+If you are developing against a sibling [FDC3](https://github.com/finos/FDC3) checkout (with the Express 5 SPA-route fix), use `npm run example-apps:local` / `npm run start:with-apps:local` instead until a fixed package is published.
+
 ### Opening Apps
 
 To open an app, click the plus icon in the bottom left corner of the sail window. You'll be given a choice of applications from the configured application directories:

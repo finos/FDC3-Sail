@@ -164,6 +164,7 @@ function registerNewInstance(
     instanceId: newInstanceId,
     state: State.Pending,
     appId: appId,
+    fdc3Version: "2.2",
     connection: connection,
     hosting: AppHosting.Remote,
     channel: null,

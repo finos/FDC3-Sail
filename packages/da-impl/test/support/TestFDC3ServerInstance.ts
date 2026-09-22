@@ -1,15 +1,26 @@
-import { InstanceID, State, AppRegistration } from "../../src/AppRegistration"
+import {
+  InstanceID,
+  State,
+  AppRegistration,
+  Fdc3ApiVersion,
+} from "../../src/AppRegistration"
 import { AbstractFDC3ServerInstance } from "../../src/AbstractFDC3ServerInstance"
 import { Directory } from "../../src/directory/DirectoryInterface"
 import { CustomWorld } from "../world"
 import { Context } from "@finos/fdc3-context"
 import { OpenError, AppIdentifier, AppIntent } from "@finos/fdc3-standard"
 import { MessageHandler } from "../../src/handlers/MessageHandler"
-import { ChannelState } from "../../src/FDC3ServerInstance"
-import { BroadcastHandler } from "../../src/handlers/BroadcastHandler"
-import { IntentHandler } from "../../src/handlers/IntentHandler"
-import { OpenHandler } from "../../src/handlers/OpenHandler"
-import { HeartbeatHandler } from "../../src/handlers/HeartbeatHandler"
+import {
+  ChannelState,
+  HandlersByVersion,
+} from "../../src/FDC3ServerInstance"
+import { BroadcastHandler as BroadcastHandlerV2 } from "../../src/handlers/v2/BroadcastHandler"
+import { IntentHandler as IntentHandlerV2 } from "../../src/handlers/v2/IntentHandler"
+import { OpenHandler as OpenHandlerV2 } from "../../src/handlers/v2/OpenHandler"
+import { HeartbeatHandler as HeartbeatHandlerV2 } from "../../src/handlers/v2/HeartbeatHandler"
+import { BroadcastHandler as BroadcastHandlerV3 } from "../../src/handlers/v3/BroadcastHandler"
+import { IntentHandler as IntentHandlerV3 } from "../../src/handlers/v3/IntentHandler"
+import { OpenHandler as OpenHandlerV3 } from "../../src/handlers/v3/OpenHandler"
 
 type ConnectionDetails = AppRegistration & {
   msg?: object
@@ -28,16 +39,21 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private nextInstanceId: number = 0
   private nextUUID: number = 0
   public handlers: MessageHandler[]
+  /** Default FDC3 API version for apps created in this test world. */
+  public defaultFdc3Version: Fdc3ApiVersion = "2.2"
 
   constructor(
     cw: CustomWorld,
-    handlers: MessageHandler[],
+    handlersByVersion: HandlersByVersion,
     channels: ChannelState[],
     private readonly directory: Directory,
   ) {
-    super(handlers, channels)
+    super(handlersByVersion, channels)
     this.cw = cw
-    this.handlers = handlers
+    this.handlers = [
+      ...handlersByVersion["2.2"],
+      ...handlersByVersion["3.0"],
+    ]
   }
 
   getDirectory(): Directory {
@@ -62,7 +78,10 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
       throw new Error("UUID mismatch")
     }
     this.instances = this.instances.filter((ca) => ca.instanceId !== uuid)
-    this.instances.push(appId)
+    this.instances.push({
+      ...appId,
+      fdc3Version: appId.fdc3Version ?? this.defaultFdc3Version,
+    })
   }
 
   async open(appId: string): Promise<InstanceID> {
@@ -71,9 +90,18 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
       throw new Error(OpenError.AppNotFound)
     } else {
       const uuid = "uuid-" + ni
-      this.instances.push({ appId, instanceId: uuid, state: State.Pending })
+      this.instances.push({
+        appId,
+        instanceId: uuid,
+        state: State.Pending,
+        fdc3Version: this.defaultFdc3Version,
+      })
       return uuid
     }
+  }
+
+  async close(instanceId: InstanceID): Promise<void> {
+    await this.setAppState(instanceId, State.Terminated)
   }
 
   async setAppState(app: InstanceID, newState: State): Promise<void> {
@@ -97,6 +125,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
         appId: x.appId,
         instanceId: x.instanceId,
         state: x.state,
+        fdc3Version: x.fdc3Version ?? this.defaultFdc3Version,
       }
     })
   }
@@ -115,7 +144,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
     return "1.2.3.TEST"
   }
   fdc3Version(): string {
-    return "2.0"
+    return "3.0"
   }
 
   createUUID(): string {
@@ -153,6 +182,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
       appId: appId.appId,
       instanceId: appId.instanceId!,
       state: State.Connected,
+      fdc3Version: this.defaultFdc3Version,
     })
     return appId.instanceId!
   }
@@ -162,7 +192,8 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
    */
   async shutdown(): Promise<void> {
     super.shutdown()
-    this.handlers.forEach((handler) => handler.shutdown())
+    // Deduplicate shared handlers (e.g. shared heartbeat)
+    ;[...new Set(this.handlers)].forEach((handler) => handler.shutdown())
   }
 }
 
@@ -172,14 +203,28 @@ export function createTestFDC3ServerInstance(
   directory: Directory,
   heartbeats: boolean,
 ): TestFDC3ServerInstance {
-  const handlers: MessageHandler[] = []
-  handlers.push(new BroadcastHandler())
-  handlers.push(new IntentHandler(200))
-  handlers.push(new OpenHandler(100))
+  const v2: MessageHandler[] = [
+    new BroadcastHandlerV2(),
+    new IntentHandlerV2(200),
+    new OpenHandlerV2(2000),
+  ]
+  const v3: MessageHandler[] = [
+    new BroadcastHandlerV3(),
+    new IntentHandlerV3(200),
+    new OpenHandlerV3(2000),
+  ]
 
   if (heartbeats) {
-    handlers.push(new HeartbeatHandler(10, 20, 30))
+    // Share a single heartbeat handler across versions to avoid duplicate timers
+    const hb = new HeartbeatHandlerV2(300, 1000, 3000)
+    v2.push(hb)
+    v3.push(hb)
   }
 
-  return new TestFDC3ServerInstance(cw, handlers, channels, directory)
+  const handlersByVersion: HandlersByVersion = {
+    "2.2": v2,
+    "3.0": v3,
+  }
+
+  return new TestFDC3ServerInstance(cw, handlersByVersion, channels, directory)
 }

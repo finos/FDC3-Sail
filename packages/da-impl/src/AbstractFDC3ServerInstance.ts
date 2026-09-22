@@ -1,4 +1,4 @@
-import { State, AppRegistration, InstanceID } from "./AppRegistration"
+import { State, AppRegistration, InstanceID, Fdc3ApiVersion } from "./AppRegistration"
 import {
   ChannelState,
   ChannelType,
@@ -8,6 +8,9 @@ import {
   IntentListenerRegistration,
   FDC3ServerInstance,
   HeartbeatActivityEvent,
+  HandlersByVersion,
+  StoredContext,
+  StoredContextMetadata,
 } from "./FDC3ServerInstance"
 import { AppIdentifier, AppIntent } from "@finos/fdc3-standard"
 import { Context } from "@finos/fdc3-context"
@@ -27,11 +30,20 @@ import { ReceivableMessage } from "./AppRegistration"
  * Contains all common state management logic for channels, listeners, and pending operations.
  */
 export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
-  protected readonly handlers: MessageHandler[]
+  protected readonly handlersByVersion: HandlersByVersion
 
-  constructor(handlers: MessageHandler[], channels: ChannelState[]) {
-    this.handlers = handlers
+  constructor(handlersByVersion: HandlersByVersion, channels: ChannelState[]) {
+    this.handlersByVersion = handlersByVersion
     this.channelStates = channels
+  }
+
+  /** All handlers across versions (for shutdown / event fan-out). */
+  protected allHandlers(): MessageHandler[] {
+    return [...this.handlersByVersion["2.2"], ...this.handlersByVersion["3.0"]]
+  }
+
+  protected handlersFor(version: Fdc3ApiVersion | undefined): MessageHandler[] {
+    return this.handlersByVersion[version ?? "2.2"] ?? this.handlersByVersion["2.2"]
   }
 
   // State management fields
@@ -50,6 +62,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   abstract getInstanceDetails(uuid: InstanceID): AppRegistration | undefined
   abstract setInstanceDetails(uuid: InstanceID, meta: AppRegistration): void
   abstract open(appId: string): Promise<InstanceID>
+  abstract close(instanceId: InstanceID): Promise<void>
   abstract getConnectedApps(): Promise<AppRegistration[]>
   abstract isAppConnected(app: InstanceID): Promise<boolean>
   abstract setAppState(app: InstanceID, newState: State): Promise<void>
@@ -72,15 +85,12 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   ): Promise<void> {
     switch (event) {
       case HeartbeatActivityEvent.ConnectedResponding:
-        //console.error(`Heartbeat from ${instanceId}. App is considered connected.`);
         await this.setAppState(instanceId, State.Connected)
         break
       case HeartbeatActivityEvent.NotRespondingAfterDisconnectTime:
-        //console.error(`No heartbeat from ${instanceId}. App is considered not responding.`);
         await this.setAppState(instanceId, State.NotResponding)
         break
       case HeartbeatActivityEvent.NotRespondingAfterDeadTime:
-        //console.error(`No heartbeat from ${instanceId}. App is considered terminated.`);
         await this.setAppState(instanceId, State.Terminated)
         break
     }
@@ -102,11 +112,25 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     return this.channelStates.find((c) => c.id == channelId) ?? null
   }
 
-  updateChannelContext(channelId: string, context: Context): void {
+  updateChannelContext(
+    channelId: string,
+    context: Context,
+    metadata: StoredContextMetadata,
+  ): void {
     const cs = this.getChannelById(channelId)
     if (cs) {
-      cs.context = cs.context.filter((c) => c.type != context.type)
-      cs.context.unshift(context)
+      cs.context = cs.context.filter((c) => c.context.type != context.type)
+      const stored: StoredContext = { context, metadata }
+      cs.context.unshift(stored)
+    }
+  }
+
+  clearChannelContext(channelId: string, contextType: string | null): void {
+    const cs = this.getChannelById(channelId)
+    if (cs) {
+      cs.context = contextType
+        ? cs.context.filter((c) => c.context.type !== contextType)
+        : []
     }
   }
 
@@ -132,7 +156,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   notifyEventHandlers(event: FDC3ServerInstanceEvent): void {
-    this.handlers.forEach((handler) => handler.handleEvent(event, this))
+    this.allHandlers().forEach((handler) => handler.handleEvent(event, this))
   }
 
   // Context listener management methods
@@ -194,6 +218,10 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
         (listener) => listener.instanceId !== instanceId,
       )
     return removed
+  }
+
+  getDesktopAgentEventListeners(): DesktopAgentEventListener[] {
+    return this.desktopAgentEventListeners
   }
 
   addDesktopAgentEventListener(listener: DesktopAgentEventListener): void {
@@ -293,7 +321,11 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   async receive(message: ReceivableMessage, from: InstanceID): Promise<void> {
-    this.handlers.forEach((handler) => handler.accept(message, this, from))
+    const details = this.getInstanceDetails(from)
+    const handlers = this.handlersFor(details?.fdc3Version)
+    await Promise.all(
+      handlers.map((handler) => handler.accept(message, this, from)),
+    )
   }
 
   async cleanupApp(instanceId: InstanceID): Promise<void> {

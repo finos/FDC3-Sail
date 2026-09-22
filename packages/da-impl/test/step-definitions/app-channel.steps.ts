@@ -1,7 +1,7 @@
 import { When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world"
 import { createMeta } from "./generic.steps"
-import { handleResolve } from "@finos/fdc3-testing"
+import { handleResolve } from "@finos/cucumber-testing-steps"
 import { BrowserTypes } from "@finos/fdc3-schema"
 type GetOrCreateChannelRequest = BrowserTypes.GetOrCreateChannelRequest
 

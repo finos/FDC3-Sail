@@ -1,10 +1,10 @@
-import { LogFunction, MessageHandler } from "./MessageHandler"
+import { LogFunction, MessageHandler } from "../MessageHandler"
 import {
   FDC3ServerInstance,
   IntentListenerRegistration,
-} from "../FDC3ServerInstance"
-import { AppRegistration, InstanceID, State } from "../AppRegistration"
-import { DirectoryIntent } from "../directory/DirectoryInterface"
+} from "../../FDC3ServerInstance"
+import { AppRegistration, InstanceID, State, ReceivableMessage } from "../../AppRegistration"
+import { DirectoryIntent } from "../../directory/DirectoryInterface"
 import { Context } from "@finos/fdc3-context"
 import { AppIntent, ResolveError, AppIdentifier } from "@finos/fdc3-standard"
 import {
@@ -121,6 +121,9 @@ class PendingIntent {
     if (
       arg0.appId == this.appId.appId &&
       arg0.intentName == this.r.intent &&
+      (arg0.contextTypes == null ||
+        arg0.contextTypes == undefined ||
+        arg0.contextTypes.includes(this.r.context.type)) &&
       (arg0.instanceId == this.appId.instanceId ||
         this.appId.instanceId == undefined)
     ) {
@@ -158,7 +161,7 @@ export class IntentHandler implements MessageHandler {
   }
 
   async accept(
-    msg: AppRequestMessage,
+    msg: ReceivableMessage,
     sc: FDC3ServerInstance,
     uuid: InstanceID,
   ): Promise<void> {
@@ -174,13 +177,13 @@ export class IntentHandler implements MessageHandler {
         // finding intents=
         case "findIntentsByContextRequest":
           return await this.findIntentsByContextRequest(
-            msg as FindIntentsByContextRequest,
+            msg as unknown as FindIntentsByContextRequest,
             sc,
             from,
           )
         case "findIntentRequest":
           return await this.findIntentRequest(
-            msg as FindIntentRequest,
+            msg as unknown as FindIntentRequest,
             sc,
             from,
           )
@@ -188,13 +191,13 @@ export class IntentHandler implements MessageHandler {
         // listeners
         case "addIntentListenerRequest":
           return await this.onAddIntentListener(
-            msg as AddIntentListenerRequest,
+            msg as unknown as AddIntentListenerRequest,
             sc,
             from,
           )
         case "intentListenerUnsubscribeRequest":
           return await this.onUnsubscribe(
-            msg as IntentListenerUnsubscribeRequest,
+            msg as unknown as IntentListenerUnsubscribeRequest,
             sc,
             from,
           )
@@ -202,29 +205,35 @@ export class IntentHandler implements MessageHandler {
         // raising intents and returning results
         case "raiseIntentRequest":
           return await this.raiseIntentRequest(
-            msg as RaiseIntentRequest,
+            msg as unknown as RaiseIntentRequest,
             sc,
             from,
           )
         case "raiseIntentForContextRequest":
           return await this.raiseIntentForContextRequest(
-            msg as RaiseIntentForContextRequest,
+            msg as unknown as RaiseIntentForContextRequest,
             sc,
             from,
           )
         case "intentResultRequest":
           return await this.intentResultRequest(
-            msg as IntentResultRequest,
+            msg as unknown as IntentResultRequest,
             sc,
             from,
           )
       }
     } catch (e) {
-      const responseType = msg.type.replace(
+      const responseType = (msg.type as string).replace(
         new RegExp("Request$"),
         "Response",
       ) as AgentResponseMessage["type"]
-      errorResponse(sc, msg, from, (e as Error).message ?? e, responseType)
+      errorResponse(
+        sc,
+        msg as unknown as AppRequestMessage,
+        from,
+        (e as Error).message ?? e,
+        responseType,
+      )
     }
   }
 
@@ -313,12 +322,19 @@ export class IntentHandler implements MessageHandler {
     instanceId: string,
     intentName: string,
     sc: FDC3ServerInstance,
+    contextType?: string,
   ): boolean {
     return (
       sc
         .getIntentListeners()
         .find(
-          (r) => r.instanceId == instanceId && r.intentName == intentName,
+          (r) =>
+            r.instanceId == instanceId &&
+            r.intentName == intentName &&
+            (contextType == undefined ||
+              r.contextTypes == null ||
+              r.contextTypes == undefined ||
+              r.contextTypes.includes(contextType)),
         ) != null
     )
   }
@@ -353,7 +369,7 @@ export class IntentHandler implements MessageHandler {
     }
 
     const requestsWithListeners = arg0.filter((r) =>
-      this.hasListener(target.instanceId, r.intent, sc),
+      this.hasListener(target.instanceId, r.intent, sc, r.context.type),
     )
 
     if (requestsWithListeners.length == 0) {
@@ -505,7 +521,15 @@ export class IntentHandler implements MessageHandler {
       sc.getDirectory().retrieveIntents(i.context.type, i.intent, undefined),
     )
     const matchingRegistrations = arg0.flatMap((i) =>
-      sc.getIntentListeners().filter((r) => r.intentName == i.intent),
+      sc
+        .getIntentListeners()
+        .filter(
+          (r) =>
+            r.intentName == i.intent &&
+            (r.contextTypes == null ||
+              r.contextTypes == undefined ||
+              r.contextTypes.includes(i.context.type)),
+        ),
     )
     const uniqueIntentNames = [
       ...matchingIntents.map((i) => i.intentName),

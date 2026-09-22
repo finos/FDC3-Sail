@@ -44,6 +44,7 @@ export function handleAppHello(
     if (appInstance != undefined && appInstance.state == State.Pending) {
       appInstance.connection = connection
       appInstance.url = (directoryItem[0].details as WebAppDetails).url
+      appInstance.fdc3Version = props.fdc3Version ?? "2.2"
       ctx.fdc3ServerInstance = fdc3Server
       ctx.fdc3ServerInstance.setInstanceDetails(ctx.appInstanceId, appInstance)
       return callback(appInstance.hosting)
@@ -59,6 +60,7 @@ export function handleAppHello(
         appId: props.appId,
         instanceId: ctx.appInstanceId,
         state: State.Pending,
+        fdc3Version: props.fdc3Version ?? "2.2",
         connection,
         url: (directoryItem[0].details as WebAppDetails).url,
         hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,

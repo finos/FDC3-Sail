@@ -48,6 +48,8 @@ export type AppHelloArgs = {
   userSessionId: string
   instanceId: string
   appId: string
+  /** Negotiated FDC3 API version for this app ("2.2" | "3.0"). */
+  fdc3Version?: "2.2" | "3.0"
 }
 
 /**

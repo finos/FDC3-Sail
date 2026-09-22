@@ -124,5 +124,5 @@ You are able to turn any basic financial web page into an FDC3 app by following 
    **This is a simplified explanation, so see these links for further understanding:**
 
 - Learn through the online course, [How to develop with FDC3](https://training.linuxfoundation.org/training/developing-solutions-with-fdc3-lfd237/)
-- Also see [toolbox package holding sample web applications](https://github.com/finos/FDC3/tree/main/toolbox/fdc3-example-apps)
+- Also see [`@finos/fdc3-example-apps`](https://www.npmjs.com/package/@finos/fdc3-example-apps) (run locally with `npm run example-apps` from FDC3-Sail)
 - Don't forget, [Using the FDC3 Workbench](https://finsemble.interop.io/docs/connect-apps/interop/FDC3Workbench/) which provides more in-depth examples and more advanced intel on the code.
