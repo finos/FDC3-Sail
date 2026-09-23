@@ -25,9 +25,9 @@
   },
   "dependencies": {
     "@finos/fdc3": "2.2.3",
-    "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0-alpha.4",
-    "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0-alpha.4",
-    "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0-alpha.4",
+    "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0-alpha.5",
+    "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0-alpha.5",
+    "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0-alpha.5",
     "@types/uuid": "^10.0.0",
     "uuid": "^14.0.2"
   },
