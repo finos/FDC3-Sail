@@ -1,6 +1,6 @@
 import { AppOpenDetails, AppState } from "./AppState"
 import { AppHosting } from "./app-hosting"
-import { DirectoryApp, WebAppDetails, State } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, WebAppDetails, State, Fdc3ApiVersion } from "@finos/fdc3-sail-da-impl"
 import { normalizeIdentityUrl } from "./normalizeIdentityUrl"
 import { SailAppStateArgs } from "./message-types"
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
@@ -16,6 +16,10 @@ export class DefaultAppState implements AppState {
 
   getAppState(instanceId: string): State | undefined {
     return this.states.find((x) => x.instanceId == instanceId)?.state
+  }
+
+  getFdc3Version(instanceId: string): Fdc3ApiVersion | undefined {
+    return this.states.find((x) => x.instanceId == instanceId)?.fdc3Version
   }
 
   setAppState(state: SailAppStateArgs): void {

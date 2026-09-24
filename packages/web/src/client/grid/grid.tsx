@@ -71,8 +71,13 @@ const AppStateIcon = ({
       switch (s) {
         case State.NotResponding:
           return [D + "not-responding.svg", "Not Responding"]
-        case State.Connected:
-          return [D + "connected.svg", "Connected to FDC3"]
+        case State.Connected: {
+          const version = as.getFdc3Version(instanceId)
+          const label = version
+            ? `Connected to FDC3 ${version}`
+            : "Connected to FDC3"
+          return [D + "connected.svg", label]
+        }
         case State.Pending:
           return [D + "pending.svg", "Pending"]
         case State.Terminated:
