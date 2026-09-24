@@ -22,7 +22,7 @@ export async function handleClientState(
   const session = factory.getSession(props.userSessionId)
   if (session) {
     await session.reloadAppDirectories(props.directories, props.customApps)
-    session.updateChannelData(props.channels)
+    session.updateUserChannelData(props.channels)
     session.setWscpPairings(props.wscpPairings ?? [])
 
     // tell each app to check for a channel change

@@ -2,6 +2,7 @@ import {
   AbstractFDC3ServerInstance,
   AppRegistration,
   ChannelState,
+  ChannelType,
   DirectoryApp,
   HandlersByVersion,
   InstanceID,
@@ -460,10 +461,12 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   getTabs(): TabDetail[] {
-    return this.getChannelDetails().map((c) => this.convertToTabDetail(c))
+    return this.getChannelDetails()
+      .filter((c) => c.type === ChannelType.user)
+      .map((c) => this.convertToTabDetail(c))
   }
 
-  updateChannelData(channelData: TabDetail[], history?: ContextHistory): void {
+  updateUserChannelData(tabs: TabDetail[], history?: ContextHistory): void {
     function relevantHistory(
       id: string,
       history?: ContextHistory,
@@ -487,7 +490,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       return undefined
     }
 
-    const newState = mapChannels(channelData).map((c) => {
+    const newUserChannels = mapChannels(tabs).map((c) => {
       return {
         ...c,
         context:
@@ -496,9 +499,15 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
           [],
       }
     })
+    // Client state only carries user-channel tabs. Preserve app/private channels
+    // (and their stored context) across SAIL_CLIENT_STATE syncs — otherwise a
+    // broadcast's history save wipes them and getCurrentContext returns NoChannelFound.
+    const preserved = this.channelState.filter(
+      (c) => c.type === ChannelType.app || c.type === ChannelType.private,
+    )
     this.channelState.length = 0
-    this.channelState.push(...newState)
-    log.debug({ channelState: this.channelState }, "Updated channel data")
+    this.channelState.push(...newUserChannels, ...preserved)
+    log.debug({ channelState: this.channelState }, "Updated user channel data")
   }
 
   getDirectory(): SailDirectory {
