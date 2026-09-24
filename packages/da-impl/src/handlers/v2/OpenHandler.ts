@@ -1,7 +1,7 @@
-import { LogFunction, MessageHandler } from "./MessageHandler"
-import { FDC3ServerInstance } from "../FDC3ServerInstance"
-import { InstanceID, State } from "../AppRegistration"
-import { DirectoryApp } from "../directory/DirectoryInterface"
+import { LogFunction, MessageHandler } from "../MessageHandler"
+import { FDC3ServerInstance } from "../../FDC3ServerInstance"
+import { InstanceID, State, ReceivableMessage } from "../../AppRegistration"
+import { DirectoryApp } from "../../directory/DirectoryInterface"
 import {
   ResolveError,
   AppIdentifier,
@@ -21,7 +21,7 @@ import {
   isOpenRequest,
   isWebConnectionProtocol4ValidateAppIdentity,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import { AppState, PendingApp } from "../PendingApp"
+import { AppState, PendingApp } from "../../PendingApp"
 
 type BroadcastEvent = BrowserTypes.BroadcastEvent
 type AddContextListenerRequest = BrowserTypes.AddContextListenerRequest
@@ -47,7 +47,7 @@ export class OpenHandler implements MessageHandler {
   shutdown(): void {}
 
   async accept(
-    msg: AppRequestMessage | WebConnectionProtocol4ValidateAppIdentity,
+    msg: ReceivableMessage,
     sc: FDC3ServerInstance,
     uuid: InstanceID,
   ): Promise<void> {
@@ -79,11 +79,17 @@ export class OpenHandler implements MessageHandler {
             return this.getInfo(msg, sc, from)
           }
         } catch (e) {
-          const responseType = msg.type.replace(
+          const responseType = (msg.type as string).replace(
             new RegExp("Request$"),
             "Response",
           ) as AgentResponseMessage["type"]
-          errorResponse(sc, msg, from, (e as Error).message ?? e, responseType)
+          errorResponse(
+            sc,
+            msg as unknown as AppRequestMessage,
+            from,
+            (e as Error).message ?? e,
+            responseType,
+          )
         }
       } else {
         this.log("Received message from unknown source, ignoring", msg, uuid)
@@ -253,10 +259,13 @@ export class OpenHandler implements MessageHandler {
       sc.getDirectory().retrieveAppsById(appIdentity.appId)[0],
       appIdentity,
     )
+    const details = appIdentity.instanceId
+      ? sc.getInstanceDetails(appIdentity.instanceId)
+      : undefined
     return {
       provider: sc.provider(),
       providerVersion: sc.providerVersion(),
-      fdc3Version: sc.fdc3Version(),
+      fdc3Version: details?.fdc3Version ?? sc.fdc3Version(),
       optionalFeatures: {
         DesktopAgentBridging: false,
         OriginatingAppMetadata: true,

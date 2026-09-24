@@ -1,16 +1,24 @@
 import { DataTable, Then, When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world"
 import { contextMap, createMeta } from "./generic.steps"
-import { matchData } from "@finos/fdc3-testing"
+import { matchData } from "@finos/cucumber-testing-steps"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { State } from "../../src/AppRegistration"
 import { GetInfoRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import expect from "expect"
 
 type OpenRequest = BrowserTypes.OpenRequest
 type GetAppMetadataRequest = BrowserTypes.GetAppMetadataRequest
 type FindInstancesRequest = BrowserTypes.FindInstancesRequest
 type WebConnectionProtocol4ValidateAppIdentity =
   BrowserTypes.WebConnectionProtocol4ValidateAppIdentity
+
+/** CloseRequest is FDC3 3.0; typed loosely until schema deps update. */
+type CloseRequest = {
+  type: "closeRequest"
+  meta: ReturnType<typeof createMeta>
+  payload: Record<string, never>
+}
 
 When(
   "{string} is opened with connection id {string}",
@@ -20,6 +28,7 @@ When(
       appId: meta.source.appId,
       instanceId: meta.source.instanceId!,
       state: State.Connected,
+      fdc3Version: this.sc.defaultFdc3Version,
     })
   },
 )
@@ -74,6 +83,11 @@ Then(
     matchData(this, apps, dataTable)
   },
 )
+
+Then("no apps are connected", async function (this: CustomWorld) {
+  const apps = await this.sc.getConnectedApps()
+  expect(apps.length).toEqual(0)
+})
 
 When(
   "{string} opens app {string}",
@@ -144,6 +158,34 @@ When(
       payload: {},
     }
     this.sc.receive(message, uuid)
+  },
+)
+
+When("{string} requests close", function (this: CustomWorld, appStr: string) {
+  const from = createMeta(this, appStr)
+  const uuid = this.sc.getInstanceUUID(from.source)!
+  const message: CloseRequest = {
+    type: "closeRequest",
+    meta: from,
+    payload: {},
+  }
+  this.sc.receive(message, uuid)
+})
+
+When(
+  "{string} requests close before connected",
+  function (this: CustomWorld, appStr: string) {
+    const from = createMeta(this, appStr)
+    const details = this.sc.getInstanceDetails(from.source.instanceId!)
+    if (details) {
+      details.state = State.Pending
+    }
+    const message: CloseRequest = {
+      type: "closeRequest",
+      meta: from,
+      payload: {},
+    }
+    this.sc.receive(message, from.source.instanceId!)
   },
 )
 

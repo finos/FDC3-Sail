@@ -4,7 +4,8 @@ default:
     - "@cucumber/pretty-formatter"
     - junit:test-results.xml
   paths:
-    - test/features/*.feature
+    - test/features/v2/*.feature
+    - test/features/v3/*.feature
   require:
     - test/step-definitions/*.steps.ts
     - test/support/*.ts

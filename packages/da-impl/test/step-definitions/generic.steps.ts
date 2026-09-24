@@ -1,4 +1,4 @@
-import { Given, When } from "@cucumber/cucumber"
+import { Before, Given, When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world"
 import { createTestFDC3ServerInstance } from "../support/TestFDC3ServerInstance"
 import { BasicDirectory } from "../../src/directory/BasicDirectory"
@@ -109,20 +109,31 @@ export function createMeta(cw: CustomWorld, appStr: string) {
   }
 }
 
+Before(function (this: CustomWorld, { gherkinDocument }) {
+  const uri = gherkinDocument.uri ?? ""
+  this.sc.defaultFdc3Version =
+    uri.includes("/features/v3/") || uri.includes("features/v3/")
+      ? "3.0"
+      : "2.2"
+})
+
 Given("A newly instantiated FDC3 Server", function (this: CustomWorld) {
   const apps = this.props[APP_FIELD] ?? []
+  const defaultVersion = this.sc.defaultFdc3Version
   this.sc = createTestFDC3ServerInstance(
     this,
     defaultChannels(),
     new BasicDirectory(apps),
     false,
   )
+  this.sc.defaultFdc3Version = defaultVersion
 })
 
 Given(
   "A newly instantiated FDC3 Server with heartbeat checking",
   function (this: CustomWorld) {
     const apps = this.props[APP_FIELD] ?? []
+    const defaultVersion = this.sc.defaultFdc3Version
 
     this.sc = createTestFDC3ServerInstance(
       this,
@@ -130,6 +141,7 @@ Given(
       new BasicDirectory(apps),
       true,
     )
+    this.sc.defaultFdc3Version = defaultVersion
   },
 )
 

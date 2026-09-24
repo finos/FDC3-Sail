@@ -5,8 +5,10 @@ import {
   Directory,
   SailClientStateArgs,
   TabDetail,
+  WscpPairing,
 } from "./message-types"
 import { Context } from "@finos/fdc3-context"
+import { v4 as uuidv4 } from "uuid"
 
 export abstract class AbstractClientState implements ClientState {
   protected tabs: TabDetail[] = []
@@ -20,6 +22,7 @@ export abstract class AbstractClientState implements ClientState {
   protected knownApps: DirectoryApp[] = []
   protected customApps: DirectoryApp[] = []
   protected contextHistory: ContextHistory = {}
+  protected wscpPairings: WscpPairing[] = []
 
   constructor(
     tabs: TabDetail[],
@@ -31,6 +34,7 @@ export abstract class AbstractClientState implements ClientState {
     knownApps: DirectoryApp[],
     customApps: DirectoryApp[],
     history: ContextHistory,
+    wscpPairings: WscpPairing[] = [],
   ) {
     this.tabs = tabs
     this.panels = panels
@@ -41,6 +45,7 @@ export abstract class AbstractClientState implements ClientState {
     this.knownApps = knownApps
     this.customApps = customApps
     this.contextHistory = history
+    this.wscpPairings = wscpPairings
   }
 
   abstract saveState(): Promise<void>
@@ -189,6 +194,7 @@ export abstract class AbstractClientState implements ClientState {
       panels: this.panels,
       customApps: this.customApps,
       contextHistory: this.contextHistory,
+      wscpPairings: this.wscpPairings,
     }
   }
 
@@ -248,6 +254,63 @@ export abstract class AbstractClientState implements ClientState {
 
   async setSplashScreenVisible(visible: boolean): Promise<void> {
     this.splashScreenVisible = visible
+    await this.saveState()
+  }
+
+  getWscpPairings(): WscpPairing[] {
+    return this.wscpPairings
+  }
+
+  getWscpPairing(appId: string): WscpPairing | undefined {
+    return this.wscpPairings.find((p) => p.appId === appId)
+  }
+
+  async mintWscpPairing(appId: string): Promise<WscpPairing> {
+    const existing = this.getWscpPairing(appId)
+    if (existing) {
+      return existing
+    }
+    const pairing: WscpPairing = {
+      appId,
+      sharedSecret: uuidv4(),
+      instanceId: null,
+    }
+    this.wscpPairings = [...this.wscpPairings, pairing]
+    await this.saveState()
+    return pairing
+  }
+
+  async regenerateWscpPairing(appId: string): Promise<WscpPairing> {
+    const pairing: WscpPairing = {
+      appId,
+      sharedSecret: uuidv4(),
+      instanceId: null,
+    }
+    this.wscpPairings = [
+      ...this.wscpPairings.filter((p) => p.appId !== appId),
+      pairing,
+    ]
+    await this.saveState()
+    return pairing
+  }
+
+  async updateWscpPairingInstanceId(
+    appId: string,
+    sharedSecret: string,
+    instanceId: string,
+  ): Promise<void> {
+    const idx = this.wscpPairings.findIndex(
+      (p) => p.appId === appId && p.sharedSecret === sharedSecret,
+    )
+    if (idx === -1) {
+      return
+    }
+    if (this.wscpPairings[idx].instanceId === instanceId) {
+      return
+    }
+    this.wscpPairings = this.wscpPairings.map((p, i) =>
+      i === idx ? { ...p, instanceId } : p,
+    )
     await this.saveState()
   }
 }

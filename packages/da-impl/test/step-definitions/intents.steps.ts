@@ -2,7 +2,7 @@ import { DataTable, Given, When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world"
 import { DirectoryApp } from "../../src/directory/DirectoryInterface"
 import { APP_FIELD, contextMap, createMeta } from "./generic.steps"
-import { handleResolve } from "@finos/fdc3-testing"
+import { handleResolve } from "@finos/cucumber-testing-steps"
 import { BrowserTypes } from "@finos/fdc3-schema"
 
 type FindIntentRequest = BrowserTypes.FindIntentRequest
@@ -146,7 +146,33 @@ Given(
       meta,
       payload: {
         intent: handleResolve(intent, this),
-        contextType: handleResolve(contextType, this),
+        contextTypes: [handleResolve(contextType, this)],
+      },
+    } as AddIntentListenerRequest
+    await this.sc.receive(message, uuid)
+  },
+)
+
+Given(
+  "{string} registers an intent listener for {string} with contextTypes {string} and {string}",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intent: string,
+    contextType1: string,
+    contextType2: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = {
+      type: "addIntentListenerRequest",
+      meta,
+      payload: {
+        intent: handleResolve(intent, this),
+        contextTypes: [
+          handleResolve(contextType1, this),
+          handleResolve(contextType2, this),
+        ],
       },
     } as AddIntentListenerRequest
     await this.sc.receive(message, uuid)
@@ -175,6 +201,7 @@ function raise(
   contextType: string,
   dest: string | null,
   meta: RaiseIntentRequest["meta"],
+  newInstance?: boolean,
 ): RaiseIntentRequest {
   const destMeta = dest != null ? createMeta(cw, dest) : null
   const message = {
@@ -186,6 +213,7 @@ function raise(
       intent: handleResolve(intentName, cw),
       context: contextMap[contextType],
       app: dest ? destMeta!.source : null,
+      ...(newInstance !== undefined && { newInstance }),
     },
   } as RaiseIntentRequest
   return message
@@ -305,6 +333,96 @@ When(
 )
 
 When(
+  "{string} raises an intent for {string} with contextType {string} on app {string} forcing a new instance",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+    dest: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = raise(this, intentName, contextType, dest, meta, true)
+    await this.sc.receive(message, uuid)
+  },
+)
+
+When(
+  "{string} raises an intent for {string} with contextType {string} on app {string} requiring an existing instance",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+    dest: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = raise(this, intentName, contextType, dest, meta, false)
+    await this.sc.receive(message, uuid)
+  },
+)
+
+When(
+  "{string} raises an intent for {string} with contextType {string} forcing a new instance",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = raise(this, intentName, contextType, null, meta, true)
+    await this.sc.receive(message, uuid)
+  },
+)
+
+When(
+  "{string} raises an intent for {string} with contextType {string} requiring an existing instance",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = raise(this, intentName, contextType, null, meta, false)
+    await this.sc.receive(message, uuid)
+  },
+)
+
+When(
+  "{string} raises an intent for {string} with contextType {string} with metadata traceId {string} signature {string} and custom key {string}",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+    traceId: string,
+    signature: string,
+    customKey: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid = this.sc.getInstanceUUID(meta.source)!
+    const message = raise(this, intentName, contextType, null, meta)
+    ;(message.payload as RaiseIntentRequest["payload"] & {
+      metadata?: object
+    }).metadata = {
+      traceId: handleResolve(traceId, this),
+      signature: {
+        signature: handleResolve(signature, this) + " (signature part)",
+        protected: handleResolve(signature, this) + " (protected part)",
+      },
+      custom: { region: handleResolve(customKey, this) },
+    }
+    await this.sc.receive(message, uuid)
+  },
+)
+
+When(
   "{string} raises an intent for {string} with contextType {string} on an invalid app instance",
   async function (
     this: CustomWorld,
@@ -378,6 +496,52 @@ When(
         intentEventUuid: eventUuid,
         raiseIntentRequestUuid: raiseIntentUuid,
       },
+    }
+    await this.sc.receive(message, uuid1)
+  },
+)
+
+When(
+  "{string} sends a intentResultRequest with eventUuid {string} and contextType {string} and raiseIntentUuid {string} with traceId {string} and signature {string} and antiReplay claims {string}",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    eventUuid: string,
+    contextType: string,
+    raiseIntentUuid: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+  ) {
+    const meta = createMeta(this, appStr)
+    const uuid1 = this.sc.getInstanceUUID(meta.source)!
+    const parts = antiReplayClaims.split("/")
+    const antiReplay = {
+      iat: Number(parts[0]),
+      exp: Number(parts[1]),
+      jti: parts[2],
+    }
+    const detachedSignature = {
+      protected: signature + " (protected part)",
+      signature: signature + " (signature part)",
+    }
+    const message: IntentResultRequest = {
+      type: "intentResultRequest",
+      meta: {
+        ...meta,
+      },
+      payload: {
+        intentResult: {
+          context: contextMap[contextType],
+        },
+        intentEventUuid: eventUuid,
+        raiseIntentRequestUuid: raiseIntentUuid,
+        metadata: {
+          traceId,
+          signature: detachedSignature,
+          antiReplay,
+        },
+      } as IntentResultRequest["payload"],
     }
     await this.sc.receive(message, uuid1)
   },

@@ -10,7 +10,6 @@ import {
   CHANNEL_RECEIVER_HELLO,
   SAIL_INTENT_RESOLVE_ON_CHANNEL,
 } from "@finos/fdc3-sail-common"
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { ConnectionContext } from "./types"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 
@@ -20,6 +19,8 @@ import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 export {
   DEBUG_MODE,
   getSailUrl,
+  getFdc3WebSocketUrl,
+  toWebSocketUrl,
   ConnectionType,
   ConnectionContext,
   createConnectionContext,
@@ -39,47 +40,16 @@ import { handleDisconnect } from "./handleDisconnect"
 import { SocketIOConnection } from "../connection"
 
 /**
- * Callback invoked when native apps in the directory change.
- * Called after DA_HELLO or SAIL_CLIENT_STATE is processed, passing native apps from the directory.
- */
-export type OnNativeAppsChanged = (
-  userSessionId: string,
-  nativeApps: DirectoryApp[],
-) => void
-
-/**
- * Gets all native apps from the directory for the given session.
- */
-function getNativeAppsFromSession(
-  factory: SailFDC3ServerFactory,
-  userSessionId: string,
-): DirectoryApp[] {
-  const session = factory.getSession(userSessionId)
-  if (!session) return []
-  return session.directory
-    .retrieveAllApps()
-    .filter((app) => app.type === "native")
-}
-
-/**
  * Registers all message type handlers on a connection.
  * This sets up the complete FDC3 message handling for a single connection session.
- *
- * @param onNativeAppsChanged - Optional callback invoked when DA_HELLO or SAIL_CLIENT_STATE
- *                              is received, allowing the caller to refresh remote socket endpoints.
  */
 export function handleAllMessageTypes(
   ctx: ConnectionContext,
   factory: SailFDC3ServerFactory,
   connection: SocketIOConnection,
-  onNativeAppsChanged: OnNativeAppsChanged,
 ): void {
   connection.on(DA_HELLO, async (props: any, callback: any) => {
     await handleDAHello(ctx, factory, connection, props, callback)
-    onNativeAppsChanged(
-      props.userSessionId,
-      getNativeAppsFromSession(factory, props.userSessionId),
-    )
   })
 
   connection.on(DA_DIRECTORY_LISTING, (props: any, callback: any) => {
@@ -92,10 +62,6 @@ export function handleAllMessageTypes(
 
   connection.on(SAIL_CLIENT_STATE, async (props: any, callback: any) => {
     await handleClientState(factory, props, callback)
-    onNativeAppsChanged(
-      props.userSessionId,
-      getNativeAppsFromSession(factory, props.userSessionId),
-    )
   })
 
   connection.on(SAIL_CHANNEL_CHANGE, async (props: any, callback: any) => {

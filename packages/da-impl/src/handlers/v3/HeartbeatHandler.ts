@@ -1,16 +1,14 @@
-import { LogFunction, MessageHandler } from "./MessageHandler"
-import { InstanceID, State } from "../AppRegistration"
+import { LogFunction, MessageHandler } from "../MessageHandler"
+import { InstanceID, State, ReceivableMessage } from "../../AppRegistration"
 import {
-  AppRequestMessage,
   HeartbeatEvent,
-  WebConnectionProtocol6Goodbye,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { FullAppIdentifier } from "./support"
 import {
   FDC3ServerInstance,
   HeartbeatActivityEvent,
-} from "../FDC3ServerInstance"
-import { FDC3ServerInstanceEvent } from "../FDC3ServerInstanceEvents"
+} from "../../FDC3ServerInstance"
+import { FDC3ServerInstanceEvent } from "../../FDC3ServerInstanceEvents"
 
 type HeartbeatDetails = {
   instanceId: string
@@ -135,7 +133,7 @@ export class HeartbeatHandler implements MessageHandler {
   }
 
   async accept(
-    msg: AppRequestMessage | WebConnectionProtocol6Goodbye,
+    msg: ReceivableMessage,
     sc: FDC3ServerInstance,
     from: InstanceID,
   ): Promise<void> {

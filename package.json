@@ -6,6 +6,8 @@
     "clean": "npm run clean --workspaces",
     "build": "npm run build --workspaces --if-present",
     "web:dev": "npm run dev -w packages/web",
+    "example-apps": "npx --yes @finos/fdc3-example-apps@prerelease",
+    "start:with-apps": "npx --yes concurrently -k -n sail,apps -c blue,magenta \"npm run start\" \"npm run example-apps\"",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "start": "npm run web:dev",

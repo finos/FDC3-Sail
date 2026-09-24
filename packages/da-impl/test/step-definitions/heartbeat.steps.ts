@@ -5,7 +5,7 @@ import {
   WebConnectionProtocol6Goodbye,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { createMeta } from "./generic.steps"
-import { HeartbeatHandler } from "../../src/handlers/HeartbeatHandler"
+import { HeartbeatHandler } from "../../src/handlers/v2/HeartbeatHandler"
 
 Given(
   "{string} sends a heartbeat response to eventUuid {string}",
@@ -51,12 +51,12 @@ Then(
 )
 
 Then("I get the heartbeat times", async function (this: CustomWorld) {
-  const hbh = this.sc.handlers[3]
+  const hbh = this.sc.handlers.find((h) => h instanceof HeartbeatHandler)
   const out = (hbh as HeartbeatHandler).heartbeatTimes()
   this.props["result"] = out
 })
 
 Then("I stop the heartbeat handler", function (this: CustomWorld) {
-  const hbh = this.sc.handlers[3]
+  const hbh = this.sc.handlers.find((h) => h instanceof HeartbeatHandler)
   ;(hbh as HeartbeatHandler).shutdown()
 })
