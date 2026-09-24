@@ -72,6 +72,11 @@ export class PendingApp {
   }
 
   private onError() {
+    const error =
+      this.state == AppState.Opening
+        ? OpenError.ApiTimeout
+        : OpenError.AppTimeout
+    this.state = AppState.Done
     this.sc.post(
       {
         type: "openResponse",
@@ -81,7 +86,7 @@ export class PendingApp {
           timestamp: new Date(),
         },
         payload: {
-          error: OpenError.AppTimeout,
+          error,
         },
       },
       this.source.instanceId,

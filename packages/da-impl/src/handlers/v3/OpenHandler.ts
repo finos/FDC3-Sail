@@ -241,15 +241,31 @@ export class OpenHandler implements MessageHandler {
     try {
       const reqMeta = arg0.payload.metadata ?? {}
       const uuid = await sc.open(toOpen.appId)
-      sc.setPendingApp(
-        uuid,
-        new PendingApp(sc, arg0, context, from, this.timeoutMs, {
-          traceId: reqMeta.traceId,
-          signature: reqMeta.signature,
-          antiReplay: reqMeta.antiReplay,
-          custom: reqMeta.custom,
-        }),
-      )
+      if (context) {
+        sc.setPendingApp(
+          uuid,
+          new PendingApp(sc, arg0, context, from, this.timeoutMs, {
+            traceId: reqMeta.traceId,
+            signature: reqMeta.signature,
+            antiReplay: reqMeta.antiReplay,
+            custom: reqMeta.custom,
+          }),
+        )
+      } else {
+        // No context: resolve as soon as the app launches; do not wait for FDC3.
+        successResponse(
+          sc,
+          arg0,
+          from,
+          {
+            appIdentifier: {
+              appId: toOpen.appId,
+              instanceId: uuid,
+            },
+          },
+          "openResponse",
+        )
+      }
     } catch (e) {
       errorResponse(sc, arg0, from, (e as Error).message ?? e, "openResponse")
     }
