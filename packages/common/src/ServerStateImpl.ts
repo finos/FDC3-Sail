@@ -8,6 +8,7 @@ import {
   DesktopAgentDirectoryListingArgs,
   DesktopAgentHelloArgs,
   DesktopAgentRegisterAppLaunchArgs,
+  SAIL_APP_CLOSE,
   SAIL_APP_OPEN,
   SAIL_APP_STATE,
   SAIL_BROADCAST_CONTEXT,
@@ -16,6 +17,7 @@ import {
   SAIL_CLIENT_STATE,
   SAIL_INTENT_RESOLVE,
   SAIL_WSCP_PAIRING_UPDATE,
+  SailAppCloseArgs,
   SailAppOpenArgs,
   SailAppOpenResponse,
   SailAppStateArgs,
@@ -138,6 +140,19 @@ export class ServerStateImpl implements ServerState {
         //console.log(`SAIL_APP_STATE: ${JSON.stringify(data)}`)
         this.as!.setAppState(data)
       })
+
+      this.socket?.on(
+        SAIL_APP_CLOSE,
+        async (data: SailAppCloseArgs, callback: () => void) => {
+          try {
+            await this.as!.closeApp(data.instanceId, data.hosting)
+          } catch (e) {
+            console.error("Error closing app container", e)
+          } finally {
+            callback()
+          }
+        },
+      )
 
       this.socket?.on(SAIL_CHANNEL_SETUP, async (instanceId: string) => {
         //console.log(`SAIL_CHANNEL_SETUP: ${instanceId}`)

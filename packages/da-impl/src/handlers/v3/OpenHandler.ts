@@ -297,7 +297,6 @@ export class OpenHandler implements MessageHandler {
 
     try {
       await sc.close(from.instanceId)
-      successResponse(sc, arg0, from, {}, "closeResponse")
     } catch (e) {
       errorResponse(
         sc,

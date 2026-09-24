@@ -162,6 +162,17 @@ export const SAIL_APP_STATE = "sail-app-state"
 export type SailAppStateArgs = AppRegistration[]
 
 /**
+ * A request by the server to the desktop agent client to close an app container
+ * (iframe panel or browser tab) after `fdc3.close()`.
+ */
+export const SAIL_APP_CLOSE = "sail-app-close"
+
+export type SailAppCloseArgs = {
+  instanceId: string
+  hosting: AppHosting
+}
+
+/**
  * These two messages carry FDC3 Communication Protocol messages.
  */
 export const FDC3_APP_EVENT = "fdc3-app-event" // from the app to the server

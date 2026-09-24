@@ -15,11 +15,13 @@ import {
   AugmentedAppMetadata,
   ContextHistory,
   FDC3_DA_EVENT,
+  SAIL_APP_CLOSE,
   SAIL_APP_OPEN,
   SAIL_BROADCAST_CONTEXT,
   SAIL_CHANNEL_SETUP,
   SAIL_INTENT_RESOLVE,
   SAIL_WSCP_PAIRING_UPDATE,
+  SailAppCloseArgs,
   SailAppOpenArgs,
   SailAppOpenResponse,
   SailIntentResolveResponse,
@@ -139,6 +141,24 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async close(instanceId: InstanceID): Promise<void> {
+    const details = this.getInstanceDetails(instanceId)
+    if (details) {
+      try {
+        await this.connection.emitWithAck(SAIL_APP_CLOSE, {
+          instanceId,
+          hosting: details.hosting,
+        } as SailAppCloseArgs)
+      } catch (e) {
+        log.error({ instanceId, error: e }, "Failed to close app container in browser DA")
+        throw e
+      }
+
+      // Remote apps keep an app-side socket; drop it when closing.
+      if (details.hosting === AppHosting.Remote) {
+        details.connection?.shutdown()
+      }
+    }
+
     await this.setAppState(instanceId, State.Terminated)
     await this.cleanupApp(instanceId)
   }

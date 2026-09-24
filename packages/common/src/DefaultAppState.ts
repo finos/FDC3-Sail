@@ -114,6 +114,38 @@ export class DefaultAppState implements AppState {
     this.windowInformation.set(window, instanceId)
   }
 
+  async closeApp(instanceId: string, hosting: AppHosting): Promise<void> {
+    if (hosting === AppHosting.Frame) {
+      await this.getClientState().removePanel(instanceId)
+      this.forgetWindow(instanceId)
+      return
+    }
+
+    if (hosting === AppHosting.Tab) {
+      const win = this.findWindow(instanceId)
+      this.forgetWindow(instanceId)
+      if (win && !win.closed) {
+        win.close()
+      }
+    }
+  }
+
+  private findWindow(instanceId: string): Window | undefined {
+    for (const [win, id] of this.windowInformation.entries()) {
+      if (id === instanceId) {
+        return win
+      }
+    }
+    return undefined
+  }
+
+  private forgetWindow(instanceId: string): void {
+    const win = this.findWindow(instanceId)
+    if (win) {
+      this.windowInformation.delete(win)
+    }
+  }
+
   /**
    * Since sometimes it takes the app windows a little while to load, here
    */

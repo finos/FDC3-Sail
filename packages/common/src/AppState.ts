@@ -21,6 +21,11 @@ export interface AppState {
 
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
 
+  /**
+   * Tear down the app container opened for this instance (tab or Sail frame).
+   */
+  closeApp(instanceId: string, hosting: AppHosting): Promise<void>
+
   getAppState(instanceId: string): State | undefined
 
   setAppState(state: SailAppStateArgs): void
