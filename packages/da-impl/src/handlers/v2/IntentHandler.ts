@@ -575,14 +575,23 @@ export class IntentHandler implements MessageHandler {
       }
     })
 
+    // Intent names can appear from live addIntentListener registrations even when
+    // no directory app supports this intent+context (listeners often omit
+    // contextTypes). Drop empty AppIntents so we return NoAppsFound instead of
+    // sending the client a resolver with nothing to choose.
+    const appIntentsWithApps = appIntents.filter((ai) => ai.apps.length > 0)
+
     const narrowedAppIntents = await this.narrowIntents(
       arg0[0].from,
-      appIntents,
+      appIntentsWithApps,
       arg0[0].context,
       sc,
     )
 
-    if (narrowedAppIntents.length == 0) {
+    if (
+      narrowedAppIntents.length == 0 ||
+      narrowedAppIntents.every((ai) => ai.apps.length == 0)
+    ) {
       // nothing can resolve the intent, fail
       return errorResponseId(
         sc,

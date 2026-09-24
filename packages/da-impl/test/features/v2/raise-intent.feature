@@ -159,6 +159,12 @@ Feature: Raising Intents
       | msg.payload.error | msg.type            |
       | NoAppsFound       | raiseIntentResponse |
 
+  Scenario: Raising An Intent with Context Not Supported By Directory
+    When "App1/a1" raises an intent for "uniqueIntent" with contextType "fdc3.book"
+    Then messaging will have outgoing posts
+      | msg.payload.error | msg.type            |
+      | NoAppsFound       | raiseIntentResponse |
+
   Scenario: Raising An Invalid Intent (non existent intent but valid app)
     When "App1/a1" raises an intent for "nonExistentIntent" with contextType "fdc3.book" on app "listenerApp/b1"
     Then messaging will have outgoing posts
