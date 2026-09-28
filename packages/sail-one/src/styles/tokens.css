@@ -1,0 +1,54 @@
+/*
+  Sail design tokens — derived from the logo mark:
+  cyan #50C9EF / #3EC6F3, ink black, white.
+  See STYLE.md for usage.
+*/
+
+:root {
+  /* Brand */
+  --sail-cyan: #50c9ef;
+  --sail-cyan-bright: #3ec6f3;
+  --sail-cyan-deep: #0e8bb8;
+  --sail-cyan-deeper: #0a6f93;
+  --sail-cyan-soft: color-mix(in srgb, var(--sail-cyan) 18%, white);
+  --sail-cyan-muted: color-mix(in srgb, var(--sail-cyan) 28%, transparent);
+
+  /* Ink & neutrals (cool, blue-biased) */
+  --sail-ink: #0b1b2b;
+  --sail-ink-soft: #243447;
+  --sail-muted: #5b6b7c;
+  --sail-border: #d5dee7;
+  --sail-border-strong: #b7c5d3;
+
+  /* Surfaces */
+  --sail-white: #ffffff;
+  --sail-canvas: #eef3f7;
+  --sail-surface: #ffffff;
+  --sail-surface-subtle: #f5f8fb;
+  --sail-rail: #f0f4f8;
+  --sail-topbar: #0b1b2b;
+
+  /* Semantic */
+  --sail-accent: var(--sail-cyan-deep);
+  --sail-accent-hover: var(--sail-cyan-deeper);
+  --sail-accent-soft: var(--sail-cyan-soft);
+  --sail-focus: var(--sail-cyan);
+  --sail-on-accent: var(--sail-white);
+  --sail-on-topbar: var(--sail-white);
+
+  /* Layout */
+  --sail-top-height: 2.75rem;
+  --sail-rail-width: 3.75rem;
+  --sail-radius-sm: 0.25rem;
+  --sail-radius: 0.35rem;
+  --sail-radius-lg: 0.5rem;
+  --sail-space-1: 0.25rem;
+  --sail-space-2: 0.5rem;
+  --sail-space-3: 0.75rem;
+  --sail-space-4: 1rem;
+
+  /* Type */
+  --sail-font: "DM-Sans", system-ui, sans-serif;
+  --sail-text: var(--sail-ink);
+  --sail-text-muted: var(--sail-muted);
+}

@@ -1,0 +1,70 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ *
+ * Brand colours come from @finos/sail-theme — the single source of truth
+ * shared with the Sail shells. Do not hardcode brand hex values in this file;
+ * add or change tokens in packages/sail-theme/tokens.css instead.
+ */
+@import "@finos/sail-theme/tokens.css";
+
+:root {
+  /* Docs-site aliases onto the shared brand tokens.
+     These resolve lazily, so they follow sail-theme's dark-mode shifts automatically. */
+  --sail-cyan: var(--sail-secondary);
+  --sail-cyan-bright: color-mix(in oklch, var(--sail-secondary), white 18%);
+  /* --sail-ocean, --sail-ocean-deep and --sail-navy come from sail-theme directly */
+
+  /* Infima ramp derived from the brand cyan, so it can never drift out of sync */
+  --ifm-color-primary: var(--sail-cyan);
+  --ifm-color-primary-dark: color-mix(in oklch, var(--sail-cyan), black 10%);
+  --ifm-color-primary-darker: color-mix(in oklch, var(--sail-cyan), black 15%);
+  --ifm-color-primary-darkest: color-mix(in oklch, var(--sail-cyan), black 25%);
+  --ifm-color-primary-light: color-mix(in oklch, var(--sail-cyan), white 10%);
+  --ifm-color-primary-lighter: color-mix(in oklch, var(--sail-cyan), white 15%);
+  --ifm-color-primary-lightest: color-mix(in oklch, var(--sail-cyan), white 25%);
+
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: color-mix(in oklch, var(--sail-ocean) 8%, transparent);
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-footer-background-color: var(--sail-ocean-deep);
+}
+
+[data-theme="dark"] {
+  /* The brand tokens themselves already shift in sail-theme's dark block,
+     so the Infima ramp above follows automatically. Only surfaces differ here. */
+  --docusaurus-highlighted-code-line-bg: color-mix(in oklch, var(--sail-cyan) 12%, transparent);
+  --ifm-background-color: var(--sail-navy);
+  --ifm-navbar-background-color: var(--sail-ocean-deep);
+  --ifm-footer-background-color: color-mix(in oklch, var(--sail-navy), black 45%);
+}
+
+.hero--primary {
+  --ifm-hero-background-color: var(--sail-ocean-deep);
+  --ifm-hero-text-color: #ffffff;
+}
+
+.button--secondary {
+  --ifm-button-background-color: rgba(255, 255, 255, 0.12);
+  --ifm-button-border-color: rgba(255, 255, 255, 0.65);
+  --ifm-button-color: #ffffff;
+}
+
+.button--secondary:hover {
+  --ifm-button-background-color: rgba(255, 255, 255, 0.22);
+  --ifm-button-border-color: #ffffff;
+  --ifm-button-color: #ffffff;
+}
+
+[data-theme="dark"] .button--secondary {
+  --ifm-button-background-color: rgba(255, 255, 255, 0.08);
+  --ifm-button-border-color: var(--sail-cyan);
+  --ifm-button-color: var(--sail-cyan-bright);
+}
+
+[data-theme="dark"] .button--secondary:hover {
+  --ifm-button-background-color: color-mix(in oklch, var(--sail-cyan) 15%, transparent);
+  --ifm-button-border-color: var(--sail-cyan-bright);
+  --ifm-button-color: var(--sail-cyan-bright);
+}

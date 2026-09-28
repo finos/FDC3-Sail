@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "pre",
+  "initialVersions": {
+    "@finos/sail-conformance-harness": "0.0.0",
+    "@finos/sail-desktop-agent": "3.0.0-pre.1.0",
+    "@finos/sail-platform": "0.0.1",
+    "@finos/sail-finance": "0.0.0",
+    "@finos/sail-docs": "0.0.0"
+  },
+  "changesets": []
+}

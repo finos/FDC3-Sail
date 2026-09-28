@@ -1,0 +1,116 @@
+{
+  "applications": [
+    {
+      "appId": "market-terminal",
+      "name": "Market Terminal",
+      "title": "Financial Data Terminal",
+      "type": "web",
+      "description": "Real-time market data and analytics platform",
+      "version": "1.2.0",
+      "details": {
+        "url": "https://terminal.example.com"
+      },
+      "icons": [
+        {
+          "src": "/icons/market-terminal-32.png",
+          "size": "32x32",
+          "type": "image/png"
+        },
+        {
+          "src": "/icons/market-terminal-64.png",
+          "size": "64x64",
+          "type": "image/png"
+        }
+      ],
+      "intents": [
+        {
+          "name": "ViewInstrument",
+          "displayName": "View Instrument",
+          "contexts": ["fdc3.instrument", "fdc3.instrumentList"]
+        },
+        {
+          "name": "ViewChart",
+          "displayName": "View Chart",
+          "contexts": ["fdc3.instrument", "fdc3.chart"]
+        },
+        {
+          "name": "ViewNews",
+          "displayName": "View News",
+          "contexts": ["fdc3.instrument", "fdc3.organization"]
+        }
+      ],
+      "customConfig": {
+        "apiKey": "test-api-key",
+        "theme": "dark"
+      }
+    },
+    {
+      "appId": "data-workspace",
+      "name": "Data Workspace",
+      "title": "Financial Data Workspace",
+      "type": "web",
+      "description": "Integrated market data and research platform",
+      "version": "2.1.5",
+      "details": {
+        "url": "https://workspace.example.com/app"
+      },
+      "icons": [
+        {
+          "src": "/icons/workspace.svg",
+          "type": "image/svg+xml"
+        }
+      ],
+      "intents": [
+        {
+          "name": "ViewInstrument",
+          "displayName": "View Security",
+          "contexts": ["fdc3.instrument", "fdc3.portfolio"]
+        },
+        {
+          "name": "StartCall",
+          "displayName": "Start Voice Call",
+          "contexts": ["fdc3.contact", "fdc3.contactList"]
+        },
+        {
+          "name": "ViewPortfolio",
+          "displayName": "View Portfolio",
+          "contexts": ["fdc3.portfolio", "fdc3.position"]
+        }
+      ]
+    },
+    {
+      "appId": "trading-blotter",
+      "name": "Trading Blotter",
+      "title": "Order Management System",
+      "type": "web",
+      "description": "Trade execution and order management",
+      "version": "3.0.2",
+      "details": {
+        "url": "https://trading.example.com/blotter"
+      },
+      "icons": [
+        {
+          "src": "/icons/blotter-icon.png",
+          "size": "48x48",
+          "type": "image/png"
+        }
+      ],
+      "intents": [
+        {
+          "name": "StartTrade",
+          "displayName": "Start Trade",
+          "contexts": ["fdc3.instrument", "fdc3.trade"]
+        },
+        {
+          "name": "ViewOrders",
+          "displayName": "View Orders",
+          "contexts": ["fdc3.portfolio", "fdc3.order"]
+        }
+      ],
+      "customConfig": {
+        "tradingDesk": "equity-derivatives",
+        "riskLimits": true
+      }
+    }
+  ]
+}

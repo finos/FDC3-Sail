@@ -1,0 +1,1 @@
+export { IntentResolverDialog } from "./IntentResolverDialog"

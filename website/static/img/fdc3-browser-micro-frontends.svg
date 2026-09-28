@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-labelledby="title desc">
+  <title id="title">Sail browser micro-frontends</title>
+  <desc id="desc">A Sail host window containing the browser edge and desktop agent, with separate iframe or child-window apps built with different frameworks connecting through WCP and MessagePort.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .host { fill: #eef6ff; stroke: #1d4ed8; stroke-width: 2; }
+      .agent { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; }
+      .app { fill: #ffffff; stroke: #64748b; stroke-width: 1.5; }
+      .note { fill: #fff7ed; stroke: #f97316; stroke-width: 1.5; }
+      .text { fill: #0f172a; font: 600 16px Arial, sans-serif; }
+      .small { fill: #334155; font: 13px Arial, sans-serif; }
+      .tiny { fill: #475569; font: 12px Arial, sans-serif; }
+      .line { stroke: #2563eb; stroke-width: 2; marker-end: url(#arrow); fill: none; }
+      .dash { stroke: #f97316; stroke-width: 2; stroke-dasharray: 6 5; marker-end: url(#arrowOrange); fill: none; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb" />
+    </marker>
+    <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f97316" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="920" height="420" rx="18" />
+
+  <rect class="host" x="30" y="30" width="860" height="330" rx="18" />
+  <text class="text" x="60" y="66">Sail host window</text>
+  <text class="small" x="60" y="90">Workspace chrome, app launcher, intent resolver, channel UI</text>
+
+  <rect class="agent" x="560" y="70" width="280" height="110" rx="14" />
+  <text class="text" x="585" y="105">Browser edge + Desktop Agent</text>
+  <text class="small" x="585" y="130">WCP listener on host window</text>
+  <text class="small" x="585" y="152">DACP handlers, intents, channels</text>
+
+  <rect class="app" x="70" y="135" width="170" height="105" rx="12" />
+  <text class="text" x="95" y="170">React app</text>
+  <text class="small" x="95" y="194">iframe document</text>
+  <text class="tiny" x="95" y="216">@finos/fdc3 getAgent()</text>
+
+  <rect class="app" x="270" y="135" width="170" height="105" rx="12" />
+  <text class="text" x="295" y="170">Vue app</text>
+  <text class="small" x="295" y="194">iframe document</text>
+  <text class="tiny" x="295" y="216">own app identity</text>
+
+  <rect class="app" x="70" y="260" width="170" height="75" rx="12" />
+  <text class="text" x="95" y="292">Angular app</text>
+  <text class="small" x="95" y="315">remote or local URL</text>
+
+  <rect class="app" x="270" y="260" width="170" height="75" rx="12" />
+  <text class="text" x="295" y="292">Svelte app</text>
+  <text class="small" x="295" y="315">team-owned deploy</text>
+
+  <path class="line" d="M240 185 C345 185, 430 120, 560 120" />
+  <path class="line" d="M440 185 C500 185, 510 140, 560 135" />
+  <path class="line" d="M240 300 C380 300, 430 165, 560 150" />
+  <path class="line" d="M440 300 C520 285, 520 175, 560 160" />
+
+  <text class="tiny" x="448" y="210">WCP postMessage</text>
+  <text class="tiny" x="448" y="230">then MessagePort</text>
+
+  <rect class="note" x="560" y="230" width="280" height="85" rx="12" />
+  <text class="text" x="585" y="262">Same-page components</text>
+  <text class="small" x="585" y="286">Host UI, not separate FDC3 apps</text>
+  <text class="tiny" x="585" y="306">Need iframe/window or custom Sail adapter</text>
+  <path class="dash" d="M560 272 C500 260, 490 245, 445 230" />
+
+  <text class="small" x="60" y="388">Frameworks and hosting are independent; the FDC3 boundary is the browsing context.</text>
+</svg>

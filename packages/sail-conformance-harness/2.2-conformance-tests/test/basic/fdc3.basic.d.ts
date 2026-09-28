@@ -1,0 +1,10 @@
+export declare const fdc3BasicGetAgent: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicCL1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicCL2: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicIL1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicGI1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicAC1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicUC1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicJC1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicRI1: () => Promise<Mocha.Suite>;
+export declare const fdc3BasicRI2: () => Promise<Mocha.Suite>;

@@ -1,0 +1,4 @@
+{
+  "note": "Headless FDC3 2.2 baseline: `npm run test:conformance -w @finos/sail-conformance-harness` (suite=All) against @finos/sail-desktop-agent via the vendored toolbox build. EMPTY — three consecutive runs on 2026-08-16 scored 83/83 with zero failures in ~300s each (16:26:21, 16:32:03, 16:37:28 UTC). The three titles previously listed here were real Sail defects, not toolbox flakiness: concurrent same-appId launches losing an instance registration, and a plain fdc3.open() resolving before the launched app had connected. Both are fixed. Keep this list empty — any entry added here is suppressing a real regression, so fix the defect instead. Refresh from artifacts/conformance.json only if a genuinely unfixable failure is agreed with a human.",
+  "failing": []
+}

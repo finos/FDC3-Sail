@@ -1,0 +1,44 @@
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.15rem;
+}
+
+.iconImage {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  border-radius: 0.45rem;
+  flex-shrink: 0;
+}
+
+.iconName {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  text-align: center;
+}
+
+.iconNameText {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-family: var(--sail-font);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--sail-ink);
+}
+
+[data-dark="true"] .iconNameText {
+  color: var(--sail-on-topbar);
+}

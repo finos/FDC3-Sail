@@ -1,0 +1,82 @@
+@import "dockview/dist/styles/dockview.css";
+
+.group-control .action {
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.group-control .action:hover {
+  border-radius: 2px;
+  /* eslint-disable-next-line css/no-invalid-properties */
+  background-color: var(--dv-icon-hover-background-color, rgba(0, 0, 0, 0.1));
+}
+
+.data-table table {
+  font-size: 11px;
+}
+
+.data-table table th {
+  padding: 0px 8px;
+}
+
+.action-container {
+  display: flex;
+  padding: 4px 0px;
+  overflow: auto;
+}
+
+.action-container button {
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1c254a;
+  color: white;
+  border: 1px solid #4c65d4;
+  cursor: pointer;
+}
+
+.action-container button:hover {
+  background-color: #222e62;
+}
+
+.action-container .text-button {
+  margin: 0px 4px;
+}
+
+.action-container .button-action {
+  margin: 0px 4px;
+}
+
+.action-container .button-action .selected {
+  background-color: #4864dc;
+}
+
+.action-container .button-action .demo-button {
+  min-width: 50px;
+  padding: 0px 2px;
+  border-radius: 0px;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  border: 1px solid #4c65d4;
+}
+
+.action-container .button-action .demo-icon-button {
+  border: 1px solid #4c65d4;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  border-radius: 0px;
+  padding: 0px 4px;
+  cursor: pointer;
+}
+
+.action-container .button-action .demo-icon-button span {
+  font-size: 16px;
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": false,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "jsxSingleQuote": false,
+  "semi": false,
+  "endOfLine": "lf",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "website/.docusaurus/**/*",
+    "**/dist/**/*",
+    "**/node_modules/**/*",
+    "**/build/**/*",
+    "**/.git/**/*",
+    "**/coverage/**/*",
+    "**/*.md",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "*.tsbuildinfo",
+    "**/cucumber-report.html",
+    "**/test-results.xml"
+  ]
+}

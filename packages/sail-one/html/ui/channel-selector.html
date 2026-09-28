@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/fonts/DM_Sans/DM_Sans.css" />
+    <title>Sail Channel Selector</title>
+    <style>
+      /* Injected UI: the agent sizes this frame via Fdc3UserInterfaceRestyle, so the
+         document must not paint a background of its own or it would occlude the host. */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="channelSelector"></div>
+    <script type="module" src="/src/embeddable-ui/channel-selector.tsx"></script>
+  </body>
+</html>

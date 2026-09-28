@@ -1,0 +1,215 @@
+/** Grids */
+
+.grids {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0.35rem;
+  box-sizing: border-box;
+}
+
+.grid {
+  background-color: transparent;
+}
+
+.emptyState {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--sail-canvas);
+  pointer-events: none;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--sail-ink);
+}
+
+.emptyCopy {
+  margin: 0;
+  max-width: 22rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--sail-text-muted);
+}
+
+.emptyButton {
+  pointer-events: auto;
+  margin-top: 0.5rem;
+  height: 2.25rem;
+  padding: 0 1.1rem;
+  border: none;
+  border-radius: var(--sail-radius);
+  background-color: var(--sail-accent);
+  color: var(--sail-on-accent);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.emptyButton:hover {
+  background-color: var(--sail-accent-hover);
+}
+
+.emptyButton:focus-visible {
+  outline: 2px solid var(--sail-focus);
+  outline-offset: 2px;
+}
+
+/** Grid Content */
+
+.content {
+  top: 0;
+  height: 100%;
+}
+
+.contentInner {
+  top: 0.25rem;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: 0.25rem;
+  position: absolute;
+  background-color: white;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 0.25rem;
+  border: 1px solid #ddd;
+}
+
+.contentTitle {
+  position: absolute;
+  top: 0;
+  height: 2rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background-color: var(--sail-topbar);
+  color: var(--sail-on-topbar);
+  gap: 0.3rem;
+  padding-left: 0.2rem;
+  padding-right: 0.35rem;
+  box-sizing: border-box;
+}
+
+.resizeBaffle {
+  display: none;
+  position: absolute;
+  top: 2rem;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  z-index: 1000;
+}
+
+.resizing .resizeBaffle {
+  display: block;
+  background-color: #ffffff22;
+}
+
+.contentBody {
+  position: absolute;
+  top: 2rem;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+}
+
+/** Title Bar **/
+
+.contentTitleText {
+  flex-basis: 5rem;
+  flex-grow: 1;
+  flex-shrink: 1;
+  color: white;
+  padding: 0.4rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contentTitleTextSpan {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contentTitleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.contentTitleButton:hover {
+  background-color: #ffffff33;
+}
+
+.contentTitleButton:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.contentTitleClose {
+  margin-left: 0.15rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.2rem;
+  opacity: 0.85;
+}
+
+.contentTitleClose:hover {
+  background-color: #e81123;
+  opacity: 1;
+}
+
+.contentTitleClose:focus-visible {
+  outline-color: #fff;
+  background-color: #e81123;
+  opacity: 1;
+}
+
+.contentTitleIcon {
+  width: 1rem;
+  height: 1rem;
+  color: inherit;
+  fill: currentColor;
+}
+
+.contentTitleCloseIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: inherit;
+  stroke: currentColor;
+}
+
+.iframe {
+  display: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

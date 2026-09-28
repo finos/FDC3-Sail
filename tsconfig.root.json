@@ -1,28 +1,25 @@
 {
   "compilerOptions": {
-    /* Basic Options */
     "esModuleInterop": true,
-    "module": "es2022",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    /* output setting */
-    "lib": ["es2021", "DOM"],
+    "lib": ["ES2023", "DOM"],
     "target": "ESNext",
-    "composite": true,
-    /* Linting */
+    "noEmit": true,
+    "composite": false,
+    "incremental": false,
+    "allowImportingTsExtensions": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    /* From Coverage Work */
     "skipLibCheck": true,
-    /* From Distribution Work */
+    "types": ["node"],
     "declaration": true,
     "declarationMap": true
   }
