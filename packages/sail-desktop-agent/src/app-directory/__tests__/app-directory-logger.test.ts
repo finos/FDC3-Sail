@@ -38,19 +38,21 @@ describe("app directory host logger", () => {
           return false
         }
 
-        const urls = call.message.match(/https?:\/\/[^\s)]+/g) ?? []
-        return urls.some(rawUrl => {
-          try {
-            const parsed = new URL(rawUrl)
-            return (
-              parsed.protocol === "https:" &&
-              parsed.hostname === "example.com" &&
-              parsed.pathname === "/apps"
-            )
-          } catch {
-            return false
-          }
-        })
+        const rawUrl = call.message.match(/from (\S+): /)?.[1]
+        if (!rawUrl) {
+          return false
+        }
+
+        try {
+          const parsed = new URL(rawUrl)
+          return (
+            parsed.protocol === "https:" &&
+            parsed.hostname === "example.com" &&
+            parsed.pathname === "/apps"
+          )
+        } catch {
+          return false
+        }
       }),
     ).toBe(true)
 
