@@ -31,7 +31,7 @@ no lower-level composition path to assemble.
                      channels · apps
 ```
 
-Remote or server-hosted Desktop Agent (`createWCPClient`) is **not** a supported adoption path on v3-pre. Cross-tab sync and native app transports are deferred as explicit future adapters — see the [integrator guide](./integrator-guide#server-worker-native-and-multi-device-paths-deferred).
+Remote or server-hosted Desktop Agent (`createWCPClient`) is **not** a supported adoption path on v3. Cross-tab sync and native app transports are deferred as explicit future adapters — see the [integrator guide](./integrator-guide#server-worker-native-and-multi-device-paths-deferred).
 
 ## Package layout
 

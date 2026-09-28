@@ -56,7 +56,7 @@ directly.
 
 ### 4. Browser-first Desktop Agent
 
-The supported v3-pre product path is a browser-resident Desktop Agent: one `SailDesktopAgent` per host
+The supported v3 product path is a browser-resident Desktop Agent: one `SailDesktopAgent` per host
 page, with FDC3 apps connecting through WCP and per-app `MessagePort`s. Worker, server, native, and
 cross-device paths are future adapters rather than current adoption paths — see
 [Deployment targets](./deployment-targets).

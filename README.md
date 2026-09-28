@@ -17,12 +17,12 @@
 
 <br />
 
-[![CI](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml/badge.svg?branch=v3-pre)](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml)
+[![CI](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/12272/badge)](https://bestpractices.coreinfrastructure.org/projects/12272)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/finos/FDC3-Sail/badge)](https://scorecard.dev/viewer/?uri=github.com/finos/FDC3-Sail)
-[![Semgrep](https://github.com/finos/FDC3-Sail/actions/workflows/semgrep.yml/badge.svg?branch=v3-pre)](https://github.com/finos/FDC3-Sail/actions/workflows/semgrep.yml)
-[![CodeQL](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml/badge.svg?branch=v3-pre)](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml)
-[![Node.js CVE scanning](https://github.com/finos/FDC3-Sail/actions/workflows/cve-scanning.yml/badge.svg?branch=v3-pre)](https://github.com/finos/FDC3-Sail/actions/workflows/cve-scanning.yml)
+[![Semgrep](https://github.com/finos/FDC3-Sail/actions/workflows/semgrep.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/semgrep.yml)
+[![CodeQL](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml)
+[![Node.js CVE scanning](https://github.com/finos/FDC3-Sail/actions/workflows/cve-scanning.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/cve-scanning.yml)
 
 </div>
 

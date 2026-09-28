@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Deployment Target: Browser Host
 
-FDC3 Sail's v3-pre runtime is the browser host: `sail-finance` runs a browser-resident `SailDesktopAgent`, and FDC3 web apps connect through WCP and `MessagePort`. Native packaging and deep OS integration are deferred — see [Future: native shell adapter](#future-native-shell-adapter).
+FDC3 Sail's v3 runtime is the browser host: `sail-finance` runs a browser-resident `SailDesktopAgent`, and FDC3 web apps connect through WCP and `MessagePort`. Native packaging and deep OS integration are deferred — see [Future: native shell adapter](#future-native-shell-adapter).
 
 ## Layered architecture
 
@@ -50,7 +50,7 @@ The `sail-desktop-agent` package keeps FDC3 state and handlers headless, but the
 
 ## Future: native shell adapter
 
-Some organisations need OS-level features (native notifications, deep links, system tray, IT-managed installers, air-gapped distribution) that the browser sandbox cannot provide. A native shell — wrapping the same browser host and `SailDesktopAgent` in a desktop runtime — is a valid future direction, but it should be an **explicit adapter** built when that need is concrete, not a promise about the current v3-pre package surface.
+Some organisations need OS-level features (native notifications, deep links, system tray, IT-managed installers, air-gapped distribution) that the browser sandbox cannot provide. A native shell — wrapping the same browser host and `SailDesktopAgent` in a desktop runtime — is a valid future direction, but it should be an **explicit adapter** built when that need is concrete, not a promise about the current v3 package surface.
 
 Remote Desktop Agent, cross-device sync, and native app connection adapters are deferred on the same basis.
 

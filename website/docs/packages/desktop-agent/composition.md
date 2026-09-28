@@ -70,7 +70,7 @@ throws on any DACP routing until an edge is attached.
 A replacement edge (WebSocket, native host) would ship as its own package implementing
 that contract, at the point one is actually needed.
 
-### Deferred deployment paths (not on v3-pre)
+### Deferred deployment paths (not on v3)
 
 ```mermaid
 flowchart TB

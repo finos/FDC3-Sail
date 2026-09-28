@@ -89,11 +89,11 @@ Construct **one** agent handle per host page and reuse it for intent, channel, a
 
 ### Server, worker, native, and multi-device paths (deferred)
 
-On **v3-pre**, the supported product path is **one browser-resident Desktop Agent per host page**. FDC3 web apps connect via WCP and per-app `MessagePort`; `SailDesktopAgent` couples the in-tab engine and browser app connection.
+On **v3**, the supported product path is **one browser-resident Desktop Agent per host page**. FDC3 web apps connect via WCP and per-app `MessagePort`; `SailDesktopAgent` couples the in-tab engine and browser app connection.
 
 The following are **not** current adoption paths:
 
-| Scenario | Status on v3-pre | Direction |
+| Scenario | Status on v3 | Direction |
 |----------|------------------|-----------|
 | Remote DA (Node server, Web Worker hosting the engine) | **Removed** — `createWCPClient` preset deleted (BFDA-02) | Future bridge/relay/sync architecture if multi-device coordination is needed |
 | Cross-tab or cross-device channel sync | **Deferred** | Explicit sync/relay layer on top of browser-first DA — not by remoting the core agent |
@@ -616,7 +616,7 @@ Where does the Desktop Agent run?
 │    → Implement AppLauncher (iframes + instanceId on iframe name)
 │    → Wire host UI via intentResolver, channels, apps controllers
 │
-└─ Server / worker / multi-tab / native host (not supported on v3-pre)
+└─ Server / worker / multi-tab / native host (not supported on v3)
      → Deferred — see Server, worker, native, and multi-device paths (deferred) above
 ```
 
@@ -629,7 +629,7 @@ public construction path.
 |-----------------|-------------|------------------------|
 | Ship a browser desktop | `SailDesktopAgent` | — |
 | App connection + DA seam tests | `SailDesktopAgent` integration tests, or construct with a custom `appConnection` | Duplicating WCP in app code |
-| Remote or multi-device DA | — (not on v3-pre) | `createWCPClient` (removed) |
+| Remote or multi-device DA | — (not on v3) | `createWCPClient` (removed) |
 
 **Canonical import:** `@finos/sail-desktop-agent`. There are no subpath exports — the app-connection internals are not part of the public API.
 
