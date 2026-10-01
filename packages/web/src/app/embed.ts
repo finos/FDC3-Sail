@@ -7,6 +7,16 @@ import { isWebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated
 const appWindow = window.parent
 let parentOrigin: string | null = null
 
+/** Negotiate DA wire version from the client's WCP1Hello fdc3Version. */
+function negotiateFdc3Version(
+  clientVersion: string | undefined,
+): "2.2" | "3.0" {
+  if (clientVersion && clientVersion.startsWith("3")) {
+    return "3.0"
+  }
+  return "2.2"
+}
+
 function doSocketConnection(
   socket: Socket,
   channel: MessageChannel,
@@ -19,11 +29,15 @@ function doSocketConnection(
     try {
       link(socket, channel, instanceId)
       const sessionId = getUserSessionId()
+      const fdc3Version = negotiateFdc3Version(
+        messageData.payload?.fdc3Version,
+      )
 
       const response = await socket.emitWithAck(APP_HELLO, {
         userSessionId: sessionId,
         instanceId,
         appId,
+        fdc3Version,
       } as AppHelloArgs)
 
       console.log("SAIL Received: " + JSON.stringify(response))
@@ -48,7 +62,7 @@ function doSocketConnection(
             timestamp: new Date(),
           },
           payload: {
-            fdc3Version: "2.2",
+            fdc3Version,
             intentResolverUrl,
             channelSelectorUrl,
           },

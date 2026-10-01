@@ -4,12 +4,14 @@ import {
   Directory,
   AugmentedAppIntent,
   SailClientStateArgs,
+  WscpPairing,
 } from "./message-types"
 import { Context } from "@finos/fdc3-context"
 import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
 
 /**
- * The property name of the connection URL for a remote app.
+ * @deprecated Prefer the stable WSCP endpoint (`/fdc3/ws`) plus sharedSecret.
+ * Kept for native AppD records that still carry a connectionUrl detail.
  */
 export const FDC3_WEBSOCKET_PROPERTY = "connectionUrl"
 
@@ -89,4 +91,20 @@ export interface ClientState {
    */
   isSplashScreenVisible(): boolean
   setSplashScreenVisible(visible: boolean): Promise<void>
+
+  /**
+   * WSCP pairings for native apps (sharedSecret + optional instanceId).
+   */
+  getWscpPairings(): WscpPairing[]
+  getWscpPairing(appId: string): WscpPairing | undefined
+  /** Create or return existing pairing for appId. Does not log the secret. */
+  mintWscpPairing(appId: string): Promise<WscpPairing>
+  /** Replace secret for appId (clears instanceId). */
+  regenerateWscpPairing(appId: string): Promise<WscpPairing>
+  /** Apply instanceId assigned by the server after WSCP connect. */
+  updateWscpPairingInstanceId(
+    appId: string,
+    sharedSecret: string,
+    instanceId: string,
+  ): Promise<void>
 }

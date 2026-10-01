@@ -3,7 +3,7 @@ import {
   AppRequestMessage,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AppIdentifier } from "@finos/fdc3-standard"
-import { FDC3ServerInstance } from "../FDC3ServerInstance"
+import { FDC3ServerInstance } from "../../FDC3ServerInstance"
 
 /** Interface representing a full specified app identifier (instanceId is optional in the API type). */
 export interface FullAppIdentifier {

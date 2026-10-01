@@ -23,6 +23,17 @@ export const DA_HELLO = "da-hello"
 
 export type ContextHistory = { [id: string]: Context[] }
 
+/**
+ * WSCP pairing credential stored in the browser and synced to the DA server.
+ * Source of truth is LocalStorageClientState; the server keeps an in-memory mirror.
+ */
+export type WscpPairing = {
+  appId: string
+  sharedSecret: string
+  /** Assigned by the server on first successful WSCP connect; retained for resume. */
+  instanceId: string | null
+}
+
 export type DesktopAgentHelloArgs = {
   userSessionId: string
   directories: string[]
@@ -30,6 +41,7 @@ export type DesktopAgentHelloArgs = {
   panels: AppPanel[]
   customApps: DirectoryApp[]
   contextHistory: ContextHistory
+  wscpPairings: WscpPairing[]
 }
 
 /**
@@ -48,6 +60,8 @@ export type AppHelloArgs = {
   userSessionId: string
   instanceId: string
   appId: string
+  /** Negotiated FDC3 API version for this app ("2.2" | "3.0"). */
+  fdc3Version?: "2.2" | "3.0"
 }
 
 /**
@@ -148,6 +162,17 @@ export const SAIL_APP_STATE = "sail-app-state"
 export type SailAppStateArgs = AppRegistration[]
 
 /**
+ * A request by the server to the desktop agent client to close an app container
+ * (iframe panel or browser tab) after `fdc3.close()`.
+ */
+export const SAIL_APP_CLOSE = "sail-app-close"
+
+export type SailAppCloseArgs = {
+  instanceId: string
+  hosting: AppHosting
+}
+
+/**
  * These two messages carry FDC3 Communication Protocol messages.
  */
 export const FDC3_APP_EVENT = "fdc3-app-event" // from the app to the server
@@ -192,4 +217,15 @@ export const SAIL_BROADCAST_CONTEXT = "sail-broadcast-context"
 export type SailBroadcastContextArgs = {
   context: Context
   channelId: string
+}
+
+/**
+ * Sent from the server to the browser DA after a WSCP handshake assigns or resumes an instanceId.
+ */
+export const SAIL_WSCP_PAIRING_UPDATE = "sail-wscp-pairing-update"
+
+export type SailWscpPairingUpdateArgs = {
+  appId: string
+  sharedSecret: string
+  instanceId: string
 }

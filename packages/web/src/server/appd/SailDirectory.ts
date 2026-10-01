@@ -1,8 +1,7 @@
-import fs from "node:fs/promises"
-import crypto from "node:crypto"
 import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl"
 import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
 import { createLogger } from "../logger"
+import fs from "node:fs/promises"
 
 const log = createLogger("Directory")
 
@@ -43,21 +42,24 @@ const convertToDirectoryList = (data: any) => {
 }
 
 /**
- * Handles local and remote url loading, and also specifies a connectionURL for native
- * apps.
+ * Handles local and remote url loading, and stamps the stable WSCP endpoint
+ * onto native apps as connectionUrl for UI display.
  */
 export class SailDirectory extends BasicDirectory {
-  private readonly urlBase: string
+  private readonly webSocketUrl: string
   private currentUrlsJson: string = "[]"
   private currentCustomAppsJson: string = "[]"
 
   /**
-   *
-   * @param urlBase Should be in the form ws(s)://<host>:<port>/remote/<userSessionId>
+   * @param webSocketUrl Stable WSCP endpoint, e.g. ws://localhost:8090/fdc3/ws
    */
-  constructor(urlBase: string) {
+  constructor(webSocketUrl: string) {
     super([])
-    this.urlBase = urlBase
+    this.webSocketUrl = webSocketUrl
+  }
+
+  getWebSocketUrl(): string {
+    return this.webSocketUrl
   }
 
   /**
@@ -66,7 +68,6 @@ export class SailDirectory extends BasicDirectory {
    * The update is atomic - allApps is replaced in a single assignment.
    */
   async refresh(urls: string[], customApps: DirectoryApp[]): Promise<void> {
-    // Capture JSON of inputs BEFORE any modifications (to avoid connectionUrl affecting comparison)
     const urlsJson = JSON.stringify(urls)
     const customAppsJson = JSON.stringify(customApps)
 
@@ -74,15 +75,13 @@ export class SailDirectory extends BasicDirectory {
       this.currentUrlsJson == urlsJson &&
       this.currentCustomAppsJson == customAppsJson
     ) {
-      return // Nothing changed
+      return
     }
 
     log.debug("Directory refresh triggered")
 
-    // Build new apps array
     const newApps: DirectoryApp[] = []
 
-    // Load apps from URLs
     for (const u of urls) {
       const apps = await this.loadFromUrl(u)
       apps.forEach((a) => {
@@ -92,7 +91,6 @@ export class SailDirectory extends BasicDirectory {
       })
     }
 
-    // Deep copy custom apps to avoid modifying the originals when we set connectionUrl
     const customAppsCopy: DirectoryApp[] = JSON.parse(customAppsJson)
     customAppsCopy.forEach((a) => {
       if (!newApps.find((a2) => a2.appId == a.appId)) {
@@ -100,18 +98,13 @@ export class SailDirectory extends BasicDirectory {
       }
     })
 
-    // Set connection URLs for native apps
+    // Stamp stable WSCP URL for native apps (identity is via sharedSecret, not path)
     newApps.forEach((app) => {
       if (app.type === "native") {
-        const applicationExtensionId = this.hashApplicationExtensionId(
-          app.appId!,
-        )
-        ;(app.details as any)[FDC3_WEBSOCKET_PROPERTY] =
-          `${this.urlBase}/${applicationExtensionId}`
+        ;(app.details as any)[FDC3_WEBSOCKET_PROPERTY] = this.webSocketUrl
       }
     })
 
-    // Atomic replacement
     this.allApps = newApps
     this.currentUrlsJson = urlsJson
     this.currentCustomAppsJson = customAppsJson
@@ -134,17 +127,5 @@ export class SailDirectory extends BasicDirectory {
     return this.retrieveAllApps().filter(
       (a) => a.type == "web" && (a.details as any).url == url,
     )
-  }
-
-  /**
-   * Use a hash for the remote id so it's consistent across SailDirectory reloads.
-   */
-  private hashApplicationExtensionId(appId: string): string {
-    const data = `${this.urlBase}:${appId}`
-    return crypto
-      .createHash("sha256")
-      .update(data)
-      .digest("hex")
-      .substring(0, 16)
   }
 }

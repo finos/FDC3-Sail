@@ -1,12 +1,16 @@
-import { LogFunction, MessageHandler } from "./MessageHandler"
+import { LogFunction, MessageHandler } from "../MessageHandler"
 import {
   FDC3ServerInstance,
   IntentListenerRegistration,
-} from "../FDC3ServerInstance"
-import { AppRegistration, InstanceID, State } from "../AppRegistration"
-import { DirectoryIntent } from "../directory/DirectoryInterface"
-import { Context } from "@finos/fdc3-context"
-import { AppIntent, ResolveError, AppIdentifier } from "@finos/fdc3-standard"
+} from "../../FDC3ServerInstance"
+import { AppRegistration, InstanceID, State, ReceivableMessage } from "../../AppRegistration"
+import { DirectoryIntent } from "../../directory/DirectoryInterface"
+import { Context } from "@finos/fdc3-context-v3"
+import { AppIntent, AppIdentifier } from "@finos/fdc3-standard"
+import {
+  AppProvidableContextMetadata,
+  ResolveError,
+} from "@finos/fdc3-standard-v3"
 import {
   errorResponse,
   errorResponseId,
@@ -16,7 +20,6 @@ import {
   successResponseId,
 } from "./support"
 import {
-  IntentEvent,
   FindIntentsByContextRequest,
   FindIntentRequest,
   AddIntentListenerRequest,
@@ -26,7 +29,7 @@ import {
   IntentResultRequest,
   AppRequestMessage,
   AgentResponseMessage,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 
 type IntentRequest = {
   intent: string
@@ -34,6 +37,14 @@ type IntentRequest = {
   requestUuid: string
   from: FullAppIdentifier
   type: "raiseIntentResponse" | "raiseIntentForContextResponse"
+  appProvidedMetadata?: AppProvidableContextMetadata
+  /**
+   * Caller's preference for how an instance of the target application is selected:
+   * - `true`: a new instance MUST be launched even if existing instances are available;
+   * - `false`: an existing instance MUST be used and a new instance MUST NOT be launched;
+   * - `undefined`: the Desktop Agent applies its default resolution behavior.
+   */
+  newInstance?: boolean
 }
 
 /**
@@ -44,14 +55,28 @@ async function forwardRequest(
   to: FullAppIdentifier,
   sc: FDC3ServerInstance,
 ): Promise<void> {
-  const out: IntentEvent = {
-    type: "intentEvent",
+  const appProvidedMeta = arg0.appProvidedMetadata ?? {}
+  const out = {
+    type: "intentEvent" as const,
     payload: {
       context: arg0.context,
       intent: arg0.intent,
-      originatingApp: {
-        appId: arg0.from.appId,
-        instanceId: arg0.from.instanceId,
+      metadata: {
+        source: {
+          appId: arg0.from.appId,
+          instanceId: arg0.from.instanceId,
+        },
+        timestamp: new Date(),
+        traceId: appProvidedMeta.traceId ?? sc.createUUID(),
+        ...(appProvidedMeta.signature !== undefined && {
+          signature: appProvidedMeta.signature,
+        }),
+        ...(appProvidedMeta.antiReplay !== undefined && {
+          antiReplay: appProvidedMeta.antiReplay,
+        }),
+        ...(appProvidedMeta.custom !== undefined && {
+          custom: appProvidedMeta.custom,
+        }),
       },
       raiseIntentRequestUuid: arg0.requestUuid,
     },
@@ -71,7 +96,7 @@ async function forwardRequest(
     {
       intentResolution: {
         intent: arg0.intent,
-        source: { appId: to.appId, instanceId: to.instanceId }, //make sure we're not carrying any excess fields from internal state
+        source: { appId: to.appId, instanceId: to.instanceId },
       },
     },
     arg0.type,
@@ -121,6 +146,9 @@ class PendingIntent {
     if (
       arg0.appId == this.appId.appId &&
       arg0.intentName == this.r.intent &&
+      (arg0.contextTypes == null ||
+        arg0.contextTypes == undefined ||
+        arg0.contextTypes.includes(this.r.context.type)) &&
       (arg0.instanceId == this.appId.instanceId ||
         this.appId.instanceId == undefined)
     ) {
@@ -158,7 +186,7 @@ export class IntentHandler implements MessageHandler {
   }
 
   async accept(
-    msg: AppRequestMessage,
+    msg: ReceivableMessage,
     sc: FDC3ServerInstance,
     uuid: InstanceID,
   ): Promise<void> {
@@ -171,60 +199,63 @@ export class IntentHandler implements MessageHandler {
 
     try {
       switch (msg.type as string) {
-        // finding intents=
         case "findIntentsByContextRequest":
           return await this.findIntentsByContextRequest(
-            msg as FindIntentsByContextRequest,
+            msg as unknown as FindIntentsByContextRequest,
             sc,
             from,
           )
         case "findIntentRequest":
           return await this.findIntentRequest(
-            msg as FindIntentRequest,
+            msg as unknown as FindIntentRequest,
             sc,
             from,
           )
 
-        // listeners
         case "addIntentListenerRequest":
           return await this.onAddIntentListener(
-            msg as AddIntentListenerRequest,
+            msg as unknown as AddIntentListenerRequest,
             sc,
             from,
           )
         case "intentListenerUnsubscribeRequest":
           return await this.onUnsubscribe(
-            msg as IntentListenerUnsubscribeRequest,
+            msg as unknown as IntentListenerUnsubscribeRequest,
             sc,
             from,
           )
 
-        // raising intents and returning results
         case "raiseIntentRequest":
           return await this.raiseIntentRequest(
-            msg as RaiseIntentRequest,
+            msg as unknown as RaiseIntentRequest,
             sc,
             from,
           )
         case "raiseIntentForContextRequest":
           return await this.raiseIntentForContextRequest(
-            msg as RaiseIntentForContextRequest,
+            msg as unknown as RaiseIntentForContextRequest,
             sc,
             from,
           )
         case "intentResultRequest":
           return await this.intentResultRequest(
-            msg as IntentResultRequest,
+            msg as unknown as IntentResultRequest,
             sc,
             from,
           )
       }
     } catch (e) {
-      const responseType = msg.type.replace(
+      const responseType = (msg.type as string).replace(
         new RegExp("Request$"),
         "Response",
       ) as AgentResponseMessage["type"]
-      errorResponse(sc, msg, from, (e as Error).message ?? e, responseType)
+      errorResponse(
+        sc,
+        msg as unknown as AppRequestMessage,
+        from,
+        (e as Error).message ?? e,
+        responseType,
+      )
     }
   }
 
@@ -239,14 +270,25 @@ export class IntentHandler implements MessageHandler {
     const requestId = arg0.payload.raiseIntentRequestUuid
     const to = sc.getPendingResolution(requestId)
     if (to && to.instanceId) {
-      // post the result to the app that raised the intent
-      //   if its still connected, otherwise do nothing
+      const appMeta = arg0.payload.metadata ?? {}
+      const resultMetadata = {
+        source: { appId: from.appId, instanceId: from.instanceId },
+        timestamp: new Date(),
+        traceId: appMeta.traceId ?? sc.createUUID(),
+        ...(appMeta.signature !== undefined && { signature: appMeta.signature }),
+        ...(appMeta.antiReplay !== undefined && {
+          antiReplay: appMeta.antiReplay,
+        }),
+        ...(appMeta.custom !== undefined && { custom: appMeta.custom }),
+      }
+
       successResponseId(
         sc,
         requestId,
         to as FullAppIdentifier,
         {
           intentResult: arg0.payload.intentResult,
+          resultMetadata,
         },
         "raiseIntentResultResponse",
       )
@@ -286,6 +328,7 @@ export class IntentHandler implements MessageHandler {
       appId: from.appId,
       instanceId: from.instanceId,
       intentName: arg0.payload.intent,
+      contextTypes: arg0.payload.contextTypes,
       listenerUUID: sc.createUUID(),
     }
 
@@ -313,12 +356,19 @@ export class IntentHandler implements MessageHandler {
     instanceId: string,
     intentName: string,
     sc: FDC3ServerInstance,
+    contextType?: string,
   ): boolean {
     return (
       sc
         .getIntentListeners()
         .find(
-          (r) => r.instanceId == instanceId && r.intentName == intentName,
+          (r) =>
+            r.instanceId == instanceId &&
+            r.intentName == intentName &&
+            (contextType == undefined ||
+              r.contextTypes == null ||
+              r.contextTypes == undefined ||
+              r.contextTypes.includes(contextType)),
         ) != null
     )
   }
@@ -353,7 +403,7 @@ export class IntentHandler implements MessageHandler {
     }
 
     const requestsWithListeners = arg0.filter((r) =>
-      this.hasListener(target.instanceId, r.intent, sc),
+      this.hasListener(target.instanceId, r.intent, sc, r.context.type),
     )
 
     if (requestsWithListeners.length == 0) {
@@ -390,6 +440,70 @@ export class IntentHandler implements MessageHandler {
     }
   }
 
+  /**
+   * Handles raiseIntent where the caller set `newInstance === false`.
+   */
+  async raiseIntentToExistingInstanceOnly(
+    arg0: IntentRequest[],
+    sc: FDC3ServerInstance,
+    target: AppIdentifier,
+  ): Promise<void> {
+    const runningInstances = await this.retrieveRunningInstances(
+      target.appId,
+      sc,
+    )
+
+    if (runningInstances.length == 0) {
+      return errorResponseId(
+        sc,
+        arg0[0].requestUuid,
+        arg0[0].from,
+        ResolveError.TargetInstanceUnavailable,
+        arg0[0].type,
+      )
+    }
+
+    if (runningInstances.length == 1) {
+      return this.raiseIntentRequestToSpecificInstance(
+        arg0,
+        sc,
+        runningInstances[0],
+      )
+    }
+
+    // More than one running instance - return for resolution
+    const instances: AppIdentifier[] = runningInstances.map((i) => ({
+      appId: i.appId,
+      instanceId: i.instanceId,
+    }))
+    if (arg0[0].type == "raiseIntentResponse") {
+      return successResponseId(
+        sc,
+        arg0[0].requestUuid,
+        arg0[0].from,
+        {
+          appIntent: {
+            intent: { name: arg0[0].intent, displayName: arg0[0].intent },
+            apps: instances,
+          },
+        },
+        arg0[0].type,
+      )
+    } else {
+      const appIntents: AppIntent[] = arg0.map((ir) => ({
+        intent: { name: ir.intent, displayName: ir.intent },
+        apps: instances,
+      }))
+      return successResponseId(
+        sc,
+        arg0[0].requestUuid,
+        arg0[0].from,
+        { appIntents },
+        arg0[0].type,
+      )
+    }
+  }
+
   async raiseIntentRequestToSpecificAppId(
     arg0: IntentRequest[],
     sc: FDC3ServerInstance,
@@ -404,6 +518,11 @@ export class IntentHandler implements MessageHandler {
         ResolveError.TargetAppUnavailable,
         arg0[0].type,
       )
+    }
+
+    // If the caller explicitly requested that an existing instance be used, never launch a new one.
+    if (arg0[0].newInstance === false) {
+      return this.raiseIntentToExistingInstanceOnly(arg0, sc, target)
     }
 
     const convertDirectoryIntentsToAppIntents = (
@@ -505,7 +624,15 @@ export class IntentHandler implements MessageHandler {
       sc.getDirectory().retrieveIntents(i.context.type, i.intent, undefined),
     )
     const matchingRegistrations = arg0.flatMap((i) =>
-      sc.getIntentListeners().filter((r) => r.intentName == i.intent),
+      sc
+        .getIntentListeners()
+        .filter(
+          (r) =>
+            r.intentName == i.intent &&
+            (r.contextTypes == null ||
+              r.contextTypes == undefined ||
+              r.contextTypes.includes(i.context.type)),
+        ),
     )
     const uniqueIntentNames = [
       ...matchingIntents.map((i) => i.intentName),
@@ -522,7 +649,7 @@ export class IntentHandler implements MessageHandler {
         directoryAppsWithIntent.includes(ca.appId),
       )
       const appRegistrations = matchingRegistrations
-        .filter((registration) => registration.intentName === i) // filter registrations for the current intent
+        .filter((registration) => registration.intentName === i)
         .map((listener) => ({
           appId: listener.appId,
           instanceId: listener.instanceId,
@@ -530,7 +657,7 @@ export class IntentHandler implements MessageHandler {
         }))
         .filter((appRegistration) =>
           allIntents.every((intent) => intent.appId !== appRegistration.appId),
-        ) // filter out apps that have intents registered in the directory
+        )
 
       const runningApps: AppRegistration[] = [
         ...runningDirectoryApps,
@@ -551,14 +678,23 @@ export class IntentHandler implements MessageHandler {
       }
     })
 
+    // Intent names can appear from live addIntentListener registrations even when
+    // no directory app supports this intent+context (listeners often omit
+    // contextTypes). Drop empty AppIntents so we return NoAppsFound instead of
+    // sending the client a resolver with nothing to choose.
+    const appIntentsWithApps = appIntents.filter((ai) => ai.apps.length > 0)
+
     const narrowedAppIntents = await this.narrowIntents(
       arg0[0].from,
-      appIntents,
+      appIntentsWithApps,
       arg0[0].context,
       sc,
     )
 
-    if (narrowedAppIntents.length == 0) {
+    if (
+      narrowedAppIntents.length == 0 ||
+      narrowedAppIntents.every((ai) => ai.apps.length == 0)
+    ) {
       // nothing can resolve the intent, fail
       return errorResponseId(
         sc,
@@ -579,6 +715,29 @@ export class IntentHandler implements MessageHandler {
           ...arg0[0],
           intent: narrowedAppIntents[0].intent.name,
         }
+        const newInstance = arg0[0].newInstance
+        const runningInstance = theAppIntent.apps.find((a) => a.instanceId)
+
+        if (newInstance === true) {
+          // Caller requested a new instance - always launch one
+          return this.startWithPendingIntent(ir, sc, {
+            appId: theAppIntent.apps[0].appId,
+          })
+        } else if (newInstance === false) {
+          // Caller requires an existing instance - never launch a new one
+          if (runningInstance && isFullAppIdentifier(runningInstance)) {
+            return forwardRequest(ir, runningInstance, sc)
+          }
+          return errorResponseId(
+            sc,
+            arg0[0].requestUuid,
+            arg0[0].from,
+            ResolveError.TargetInstanceUnavailable,
+            arg0[0].type,
+          )
+        }
+
+        // Default behavior (newInstance undefined)
         if (instanceCount == 1 && isFullAppIdentifier(theAppIntent.apps[0])) {
           // app is running
           return forwardRequest(ir, theAppIntent.apps[0], sc)
@@ -616,12 +775,20 @@ export class IntentHandler implements MessageHandler {
     sc: FDC3ServerInstance,
     from: FullAppIdentifier,
   ): Promise<void> {
+    const reqMeta = arg0.payload.metadata ?? {}
     const intentRequest: IntentRequest = {
       context: arg0.payload.context,
       from,
       intent: arg0.payload.intent,
       requestUuid: arg0.meta.requestUuid,
       type: "raiseIntentResponse",
+      newInstance: arg0.payload.newInstance ?? undefined,
+      appProvidedMetadata: {
+        traceId: reqMeta.traceId,
+        signature: reqMeta.signature,
+        antiReplay: reqMeta.antiReplay,
+        custom: reqMeta.custom,
+      },
     }
 
     const target = arg0.payload.app
@@ -671,6 +838,7 @@ export class IntentHandler implements MessageHandler {
     const uniqueIntentNames = mappedIntents.filter(
       (v, i, a) => a.findIndex((v2) => v2.intentName == v.intentName) == i,
     )
+    const rifcMeta = arg0.payload.metadata ?? {}
     const possibleIntentRequests: IntentRequest[] = uniqueIntentNames.map(
       (i) => {
         return {
@@ -679,6 +847,13 @@ export class IntentHandler implements MessageHandler {
           intent: i.intentName,
           requestUuid: arg0.meta.requestUuid,
           type: "raiseIntentForContextResponse",
+          newInstance: arg0.payload.newInstance ?? undefined,
+          appProvidedMetadata: {
+            traceId: rifcMeta.traceId,
+            signature: rifcMeta.signature,
+            antiReplay: rifcMeta.antiReplay,
+            custom: rifcMeta.custom,
+          },
         }
       },
     )

@@ -12,11 +12,20 @@ export enum AppState {
 
 type OpenRequest = BrowserTypes.OpenRequest
 
+/** App-provided portion of context metadata (FDC3 3.0). */
+export type AppProvidedOpenMetadata = {
+  traceId?: string
+  signature?: unknown
+  antiReplay?: unknown
+  custom?: Record<string, unknown>
+}
+
 export class PendingApp {
   private readonly sc: FDC3ServerInstance
   private readonly msg: OpenRequest
   readonly context: ContextElement | undefined
   readonly source: AppIdentifier & { instanceId: string }
+  readonly appProvidedMetadata: AppProvidedOpenMetadata
   state: AppState = AppState.Opening
   private openedApp: AppIdentifier | undefined = undefined
 
@@ -26,11 +35,13 @@ export class PendingApp {
     context: ContextElement | undefined,
     source: AppIdentifier & { instanceId: string },
     timeoutMs: number,
+    appProvidedMetadata?: AppProvidedOpenMetadata,
   ) {
     this.context = context
     this.source = source
     this.sc = sc
     this.msg = msg
+    this.appProvidedMetadata = appProvidedMetadata ?? {}
 
     setTimeout(() => {
       if (this.state != AppState.Done) {
@@ -61,6 +72,11 @@ export class PendingApp {
   }
 
   private onError() {
+    const error =
+      this.state == AppState.Opening
+        ? OpenError.ApiTimeout
+        : OpenError.AppTimeout
+    this.state = AppState.Done
     this.sc.post(
       {
         type: "openResponse",
@@ -70,7 +86,7 @@ export class PendingApp {
           timestamp: new Date(),
         },
         payload: {
-          error: OpenError.AppTimeout,
+          error,
         },
       },
       this.source.instanceId,

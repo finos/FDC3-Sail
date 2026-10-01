@@ -197,4 +197,33 @@
   border: 1px solid #ddd;
   word-break: break-all;
   user-select: all;
+  margin-bottom: 0.75rem;
+}
+
+.credentialLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.regenerateButton {
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  background: #fff;
+  cursor: pointer;
+  color: #333;
+}
+
+.regenerateButton:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.regenerateButton:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

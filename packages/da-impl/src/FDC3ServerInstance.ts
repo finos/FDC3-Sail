@@ -10,9 +10,11 @@ import {
   InstanceID,
   State,
   ReceivableMessage,
+  Fdc3ApiVersion,
 } from "./AppRegistration"
 import { PendingApp } from "./PendingApp"
 import { Directory } from "./directory/DirectoryInterface"
+import { MessageHandler } from "./handlers/MessageHandler"
 
 export enum HeartbeatActivityEvent {
   ConnectedResponding = "ConnectedResponding",
@@ -25,7 +27,8 @@ export type ContextListenerRegistration = {
   instanceId: string
   listenerUuid: string
   channelId: string | null
-  contextType: string | null
+  /** null = all types, string = single type, string[] = multiple specific types (3.0) */
+  contextType: string | string[] | null
 }
 
 export type PrivateChannelEventListener = {
@@ -40,6 +43,11 @@ export type DesktopAgentEventListener = {
   appId: string
   instanceId: string
   eventType: string | null
+  /**
+   * Channel-scoped listener when set; null = Desktop Agent-level listener
+   * whose scope follows the app's current User channel (3.0).
+   */
+  channelId: string | null
   listenerUuid: string
 }
 
@@ -49,10 +57,28 @@ export enum ChannelType {
   "private",
 }
 
+/**
+ * Context metadata stored with channel state. Compatible with both 2.2 (source only)
+ * and 3.0 (source, timestamp, traceId, optional signature/antiReplay/custom).
+ */
+export type StoredContextMetadata = {
+  source: AppIdentifier
+  timestamp?: Date | string
+  traceId?: string
+  signature?: unknown
+  antiReplay?: unknown
+  custom?: Record<string, unknown>
+}
+
+export type StoredContext = {
+  context: Context
+  metadata: StoredContextMetadata
+}
+
 export type ChannelState = {
   id: string
   type: ChannelType
-  context: Context[]
+  context: StoredContext[]
   displayMetadata: DisplayMetadata
 }
 
@@ -61,7 +87,11 @@ export type IntentListenerRegistration = {
   instanceId: string
   intentName: string
   listenerUUID: string
+  /** When set, only matching context types are delivered (3.0). null/omit = all. */
+  contextTypes?: string[] | null
 }
+
+export type HandlersByVersion = Record<Fdc3ApiVersion, MessageHandler[]>
 
 /**
  * Handles messaging to apps and opening apps for ONE FDC3 environment.
@@ -88,6 +118,12 @@ export interface FDC3ServerInstance {
    * Promise completes once the application window is opened
    */
   open(appId: string): Promise<InstanceID>
+
+  /**
+   * Closes a running app instance (FDC3 3.0 close()).
+   * Implementations should terminate the app and clean up connection state.
+   */
+  close(instanceId: InstanceID): Promise<void>
 
   /**
    * Registers a particular instance id with a given app id
@@ -148,7 +184,7 @@ export interface FDC3ServerInstance {
   providerVersion(): string
 
   /**
-   * Supported version of the FDC3 API of the desktop agent server.
+   * Highest supported FDC3 API version of the desktop agent server.
    */
   fdc3Version(): string
 
@@ -180,9 +216,18 @@ export interface FDC3ServerInstance {
   getChannelById(channelId: string | null): ChannelState | null
 
   /**
-   * Update the context for a specific channel
+   * Update the context for a specific channel (stores context + metadata)
    */
-  updateChannelContext(channelId: string, context: Context): void
+  updateChannelContext(
+    channelId: string,
+    context: Context,
+    metadata: StoredContextMetadata,
+  ): void
+
+  /**
+   * Clear context on a channel. If contextType is null, clear all; otherwise clear that type only.
+   */
+  clearChannelContext(channelId: string, contextType: string | null): void
 
   // Current channel tracking
   /**
@@ -238,6 +283,11 @@ export interface FDC3ServerInstance {
   removePrivateChannelEventListenersByInstance(instanceId: InstanceID): void
 
   // Desktop agent event listener management
+  /**
+   * Get all desktop agent event listeners
+   */
+  getDesktopAgentEventListeners(): DesktopAgentEventListener[]
+
   /**
    * Add a desktop agent event listener
    */
@@ -312,7 +362,7 @@ export interface FDC3ServerInstance {
   removePendingApp(instanceId: InstanceID): void
 
   /**
-   * Receive an incoming message
+   * Receive an incoming message; routed to handlers matching the app's fdc3Version.
    */
   receive(message: ReceivableMessage, from: InstanceID): Promise<void>
 

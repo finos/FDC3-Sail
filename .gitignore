@@ -15,6 +15,7 @@ tsconfig.tsbuildinfo
 FDC3-Sail.pem
 
 packages/da-impl/coverage
+packages/da-impl/.nyc_output
 test-results.xml
 cucumber-report.html
 .vite

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { AppPanel } from "./ClientState"
 import { AbstractClientState } from "./AbstractClientState"
-import { Directory, TabDetail } from "./message-types"
+import { Directory, TabDetail, WscpPairing } from "./message-types"
 import { ServerState } from "./ServerState"
 
 const STORAGE_KEY = "sail-client-state"
@@ -22,6 +22,7 @@ export class LocalStorageClientState extends AbstractClientState {
         knownApps,
         customApps,
         contextHistory,
+        wscpPairings,
       } = JSON.parse(theState)
       super(
         tabs,
@@ -33,6 +34,7 @@ export class LocalStorageClientState extends AbstractClientState {
         knownApps ?? [],
         customApps ?? [],
         contextHistory ?? {},
+        (wscpPairings as WscpPairing[] | undefined) ?? [],
       )
     } else {
       super(
@@ -45,6 +47,7 @@ export class LocalStorageClientState extends AbstractClientState {
         [],
         [],
         {},
+        [],
       )
     }
   }
@@ -66,9 +69,9 @@ export class LocalStorageClientState extends AbstractClientState {
       knownApps: this.knownApps,
       customApps: this.customApps,
       contextHistory: this.contextHistory,
+      wscpPairings: this.wscpPairings,
     })
     localStorage.setItem(STORAGE_KEY, data)
-    // console.log(`SAIL saved state: ${data}`)
     this.callbacks.forEach((cb) => cb())
     await this.ss!.sendClientState(this.createArgs())
   }
@@ -79,6 +82,11 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     label: "FINOS FDC3 Directory",
     url: "https://directory.fdc3.finos.org/v2/apps/",
     active: true,
+  },
+  {
+    label: "FDC3 Example Apps (local)",
+    url: "http://localhost:4005/static/generated/fdc3-example-apps.json",
+    active: false,
   },
 ]
 

@@ -2,9 +2,10 @@ import {
   AbstractFDC3ServerInstance,
   AppRegistration,
   ChannelState,
+  ChannelType,
   DirectoryApp,
+  HandlersByVersion,
   InstanceID,
-  MessageHandler,
   State,
 } from "@finos/fdc3-sail-da-impl"
 import { getIcon, SailDirectory } from "../appd/SailDirectory"
@@ -15,14 +16,18 @@ import {
   AugmentedAppMetadata,
   ContextHistory,
   FDC3_DA_EVENT,
+  SAIL_APP_CLOSE,
   SAIL_APP_OPEN,
   SAIL_BROADCAST_CONTEXT,
   SAIL_CHANNEL_SETUP,
   SAIL_INTENT_RESOLVE,
+  SAIL_WSCP_PAIRING_UPDATE,
+  SailAppCloseArgs,
   SailAppOpenArgs,
   SailAppOpenResponse,
   SailIntentResolveResponse,
   TabDetail,
+  WscpPairing,
 } from "@finos/fdc3-sail-common"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
@@ -50,7 +55,7 @@ export type SailData = AppRegistration & {
 }
 
 /**
- * Extends BasicFDC3Server to allow for more detailed (and changeable) user channel metadata
+ * Extends AbstractFDC3ServerInstance to allow for more detailed (and changeable) user channel metadata
  * as well as user-configurable SailDirectory.
  */
 export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
@@ -59,17 +64,53 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private readonly connection: SocketIOConnection
   private readonly channelState: ChannelState[] = []
   private readonly appStartDestinations: Map<string, string | null> = new Map()
+  /** In-memory mirror of browser WSCP pairings (source of truth is LocalStorageClientState). */
+  private wscpPairings: WscpPairing[] = []
 
   constructor(
     directory: SailDirectory,
     connection: SocketIOConnection,
-    handlers: MessageHandler[],
+    handlersByVersion: HandlersByVersion,
     channels: ChannelState[],
   ) {
-    super(handlers, channels)
+    super(handlersByVersion, channels)
     this.directory = directory
     this.connection = connection
     this.channelState = channels
+  }
+
+  setWscpPairings(pairings: WscpPairing[]): void {
+    this.wscpPairings = pairings.map((p) => ({ ...p }))
+  }
+
+  getWscpPairingBySecret(sharedSecret: string): WscpPairing | undefined {
+    return this.wscpPairings.find((p) => p.sharedSecret === sharedSecret)
+  }
+
+  /**
+   * Persist instanceId on the session mirror and notify the browser DA so localStorage stays in sync.
+   */
+  assignWscpInstanceId(
+    sharedSecret: string,
+    instanceId: string,
+  ): WscpPairing | undefined {
+    const idx = this.wscpPairings.findIndex(
+      (p) => p.sharedSecret === sharedSecret,
+    )
+    if (idx === -1) {
+      return undefined
+    }
+    const updated: WscpPairing = {
+      ...this.wscpPairings[idx],
+      instanceId,
+    }
+    this.wscpPairings[idx] = updated
+    this.connection.emit(SAIL_WSCP_PAIRING_UPDATE, {
+      appId: updated.appId,
+      sharedSecret: updated.sharedSecret,
+      instanceId,
+    })
+    return updated
   }
 
   post(message: object, instanceId: InstanceID): Promise<void> {
@@ -98,6 +139,29 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     const destination = this.appStartDestinations.get(appId)
     this.appStartDestinations.delete(appId)
     return this.openSail(appId, destination ?? null)
+  }
+
+  async close(instanceId: InstanceID): Promise<void> {
+    const details = this.getInstanceDetails(instanceId)
+    if (details) {
+      try {
+        await this.connection.emitWithAck(SAIL_APP_CLOSE, {
+          instanceId,
+          hosting: details.hosting,
+        } as SailAppCloseArgs)
+      } catch (e) {
+        log.error({ instanceId, error: e }, "Failed to close app container in browser DA")
+        throw e
+      }
+
+      // Remote apps keep an app-side socket; drop it when closing.
+      if (details.hosting === AppHosting.Remote) {
+        details.connection?.shutdown()
+      }
+    }
+
+    await this.setAppState(instanceId, State.Terminated)
+    await this.cleanupApp(instanceId)
   }
 
   async openOnChannel(appId: string, channel: string): Promise<void> {
@@ -204,6 +268,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         appId: x.appId,
         instanceId: x.instanceId,
         state: x.state,
+        fdc3Version: x.fdc3Version,
       }
     })
   }
@@ -225,7 +290,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   fdc3Version(): string {
-    return "2.0"
+    return "3.0"
   }
 
   private convertToTabDetail(channel: ChannelState): TabDetail {
@@ -396,26 +461,36 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   getTabs(): TabDetail[] {
-    return this.getChannelDetails().map((c) => this.convertToTabDetail(c))
+    return this.getChannelDetails()
+      .filter((c) => c.type === ChannelType.user)
+      .map((c) => this.convertToTabDetail(c))
   }
 
-  updateChannelData(channelData: TabDetail[], history?: ContextHistory): void {
+  updateUserChannelData(tabs: TabDetail[], history?: ContextHistory): void {
     function relevantHistory(
       id: string,
       history?: ContextHistory,
-    ): undefined | BrowserTypes.Context[] {
+    ): undefined | { context: BrowserTypes.Context; metadata: { source: { appId: string; instanceId: string } } }[] {
       if (history) {
         const basicHistory = history[id]
+        if (!basicHistory) {
+          return undefined
+        }
         // just the first item of each unique type
-        const relevantHistory = basicHistory.filter(
+        const relevant = basicHistory.filter(
           (h, i, a) => a.findIndex((h2) => h2.type == h.type) == i,
         )
-        return relevantHistory
+        return relevant.map((context) => ({
+          context,
+          metadata: {
+            source: { appId: "sail", instanceId: "history" },
+          },
+        }))
       }
       return undefined
     }
 
-    const newState = mapChannels(channelData).map((c) => {
+    const newUserChannels = mapChannels(tabs).map((c) => {
       return {
         ...c,
         context:
@@ -424,9 +499,15 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
           [],
       }
     })
+    // Client state only carries user-channel tabs. Preserve app/private channels
+    // (and their stored context) across SAIL_CLIENT_STATE syncs — otherwise a
+    // broadcast's history save wipes them and getCurrentContext returns NoChannelFound.
+    const preserved = this.channelState.filter(
+      (c) => c.type === ChannelType.app || c.type === ChannelType.private,
+    )
     this.channelState.length = 0
-    this.channelState.push(...newState)
-    log.debug({ channelState: this.channelState }, "Updated channel data")
+    this.channelState.push(...newUserChannels, ...preserved)
+    log.debug({ channelState: this.channelState }, "Updated user channel data")
   }
 
   getDirectory(): SailDirectory {

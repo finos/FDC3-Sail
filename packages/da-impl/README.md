@@ -1,17 +1,30 @@
-# FDC3 Web Implementation
+# FDC3 Sail DACP Implementation
 
-This package contains a [FDC3 2.0 Conformant](../../fdc3-conformance/README.md), headless implementation of the FDC3 DACP protocol.
+This package contains a headless implementation of the FDC3 DACP protocol used by FDC3-Sail.
 
-This package forms the basis of the implementation of the web-version of FDC3-Sail.
+It supports **both FDC3 2.2 and FDC3 3.0** wire formats in the same Desktop Agent session:
 
-It is expected that Desktop Agent implementations can either use this package as the basis for their own FDC3 implementation, use the tests provided here to test their implementation or take inspiration from the codebase to implement their own FDC3 Desktop Agent from scratch.
+- Shared state lives in `FDC3ServerInstance` / `AbstractFDC3ServerInstance`
+- Version-specific handlers live under `src/handlers/v2` and `src/handlers/v3`
+- Each app connection stores a negotiated `fdc3Version` (`"2.2"` | `"3.0"`); `receive()` routes messages to the matching handler set
+
+It is expected that Desktop Agent implementations can either use this package as the basis for their own FDC3 implementation, use the tests provided here to test their implementation, or take inspiration from the codebase.
 
 ## How This Works
 
 There are three main types of component here:
 
-- **MessageHandlers**: These are the core of the FDC3 implementation. They are responsible for handling incoming messages from apps and responding to them correctly. There are four defined, breaking up the functionality of FDC3: `BroadcastHandler` (handing channels and broadcasting), `IntentHandler` (handling intents, intent resolution etc.), `OpenHandler` (handling app launches) and `HeartbeatHandler` (handling app liveness and disconnection).
+- **MessageHandlers**: Core of the FDC3 implementation. Each version has four handlers: `BroadcastHandler` (channels and broadcasting), `IntentHandler`, `OpenHandler`, and `HeartbeatHandler`. Import `BroadcastHandlerV2` / `BroadcastHandlerV3` (etc.) from the package entry, or use the default names which alias the v2 handlers for backward compatibility.
 
-- **FDC3Server**: This is the main entry point for the FDC3 implementation. It is responsible for setting up the message handlers and starting the server, implemented by `BasicFDC3Server` and `DefaultFDC3Server` classes.
+- **FDC3ServerInstance**: Stores all shared channel/listener/pending state. `AbstractFDC3ServerInstance` implements the common logic and routes `receive()` by the sending app's `fdc3Version`.
 
-- **ServerContext**: This interface is responsible for maintaining the state of the server. `ServerContext` really determines how FDC3 is run: how messages are sent, how apps are launched, how intents are resolved etc. It is the main point of customization for an FDC3 implementation. If you are implementing an FDC3 Desktop Agent, you will need to implement this class yourself. See the [Demo](../demo/README.md), which implements this in-browser as `DemoServerContext`.
+- **HandlersByVersion**: A `Record<"2.2" | "3.0", MessageHandler[]>` passed into the server constructor (see `SailFDC3ServerFactory` in the web package).
+
+## Tests
+
+Cucumber features are split by version:
+
+- `test/features/v2/` — FDC3 2.2 scenarios (legacy Sail suite)
+- `test/features/v3/` — FDC3 3.0 scenarios (copied from `@finos/fdc3-web-impl`)
+
+Both suites run under `npm test`. Apps are registered with `fdc3Version` based on the feature path.

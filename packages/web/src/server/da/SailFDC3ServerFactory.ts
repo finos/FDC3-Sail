@@ -3,16 +3,20 @@ import {
   ChannelType,
   ChannelState,
   MessageHandler,
-  BroadcastHandler,
-  IntentHandler,
-  OpenHandler,
-  HeartbeatHandler,
+  BroadcastHandlerV2,
+  IntentHandlerV2,
+  OpenHandlerV2,
+  HeartbeatHandlerV2,
+  BroadcastHandlerV3,
+  IntentHandlerV3,
+  OpenHandlerV3,
   LogFunction,
+  HandlersByVersion,
 } from "@finos/fdc3-sail-da-impl"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { SailDirectory } from "../appd/SailDirectory"
 import { SocketIOConnection } from "./connection"
-import { getSailUrl } from "./sail-handlers/types"
+import { getFdc3WebSocketUrl } from "./sail-handlers/types"
 import { createLogger } from "../logger"
 
 // Create handler-specific loggers that adapt pino to the LogFunction signature
@@ -25,20 +29,6 @@ function createHandlerLog(name: string): LogFunction {
       log.debug(message)
     }
   }
-}
-
-/**
- * Converts an HTTP(S) URL to a WebSocket URL.
- */
-function toWebSocketUrl(httpUrl: string): string {
-  if (httpUrl.startsWith("https://")) {
-    return "wss://" + httpUrl.substring(8)
-  } else if (httpUrl.startsWith("http://")) {
-    // should only be used in dev
-    // nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket
-    return "ws://" + httpUrl.substring(7)
-  }
-  return httpUrl // Already a WebSocket URL or other protocol
 }
 
 export function mapChannels(channels: TabDetail[]): ChannelState[] {
@@ -59,7 +49,7 @@ export function mapChannels(channels: TabDetail[]): ChannelState[] {
 }
 
 export class SailFDC3ServerFactory {
-  protected readonly handlers: MessageHandler[] = []
+  protected readonly handlersByVersion: HandlersByVersion
   protected readonly sessions: Map<string, SailFDC3ServerInstance> = new Map()
 
   constructor(
@@ -67,26 +57,30 @@ export class SailFDC3ServerFactory {
     intentTimeoutMs: number = 20000,
     openHandlerTimeoutMs: number = 10000,
   ) {
-    this.handlers.push(
-      new BroadcastHandler(createHandlerLog("BroadcastHandler")),
-    )
-    this.handlers.push(
-      new IntentHandler(intentTimeoutMs, createHandlerLog("IntentHandler")),
-    )
-    this.handlers.push(
-      new OpenHandler(openHandlerTimeoutMs, createHandlerLog("OpenHandler")),
-    )
+    const v2: MessageHandler[] = [
+      new BroadcastHandlerV2(createHandlerLog("BroadcastHandlerV2")),
+      new IntentHandlerV2(intentTimeoutMs, createHandlerLog("IntentHandlerV2")),
+      new OpenHandlerV2(openHandlerTimeoutMs, createHandlerLog("OpenHandlerV2")),
+    ]
+    const v3: MessageHandler[] = [
+      new BroadcastHandlerV3(createHandlerLog("BroadcastHandlerV3")),
+      new IntentHandlerV3(intentTimeoutMs, createHandlerLog("IntentHandlerV3")),
+      new OpenHandlerV3(openHandlerTimeoutMs, createHandlerLog("OpenHandlerV3")),
+    ]
 
     if (heartbeats) {
-      this.handlers.push(
-        new HeartbeatHandler(
-          openHandlerTimeoutMs / 10,
-          openHandlerTimeoutMs / 2,
-          openHandlerTimeoutMs,
-          createHandlerLog("HeartbeatHandler"),
-        ),
+      // Share a single heartbeat handler across versions to avoid duplicate timers
+      const hb = new HeartbeatHandlerV2(
+        openHandlerTimeoutMs / 10,
+        openHandlerTimeoutMs / 2,
+        openHandlerTimeoutMs,
+        createHandlerLog("HeartbeatHandler"),
       )
+      v2.push(hb)
+      v3.push(hb)
     }
+
+    this.handlersByVersion = { "2.2": v2, "3.0": v3 }
   }
 
   async createInstance(
@@ -94,15 +88,15 @@ export class SailFDC3ServerFactory {
     args: DesktopAgentHelloArgs,
   ): Promise<SailFDC3ServerInstance> {
     const channels = mapChannels(args.channels)
-    const remoteUrlBase = `${toWebSocketUrl(getSailUrl())}/remote/${args.userSessionId}`
-    const d = new SailDirectory(remoteUrlBase)
+    const d = new SailDirectory(getFdc3WebSocketUrl())
     const out = new SailFDC3ServerInstance(
       d,
       connection,
-      this.handlers,
+      this.handlersByVersion,
       channels,
     )
     await out.reloadAppDirectories(args.directories, args.customApps)
+    out.setWscpPairings(args.wscpPairings ?? [])
     this.sessions.set(args.userSessionId, out)
     return out
   }
@@ -124,7 +118,12 @@ export class SailFDC3ServerFactory {
   }
 
   async shutdownHandlers(): Promise<void> {
-    this.handlers.forEach((handler) => handler.shutdown())
+    const all = [
+      ...this.handlersByVersion["2.2"],
+      ...this.handlersByVersion["3.0"],
+    ]
+    // Deduplicate shared handlers (e.g. shared heartbeat)
+    ;[...new Set(all)].forEach((handler) => handler.shutdown())
   }
 
   async shutdownEverything(): Promise<void> {
@@ -134,5 +133,24 @@ export class SailFDC3ServerFactory {
 
   getSession(sessionId: string): SailFDC3ServerInstance | undefined {
     return this.sessions.get(sessionId)
+  }
+
+  /**
+   * Locate a session that has minted the given WSCP sharedSecret.
+   */
+  findSessionBySharedSecret(
+    sharedSecret: string,
+  ):
+    | {
+        userSessionId: string
+        session: SailFDC3ServerInstance
+      }
+    | undefined {
+    for (const [userSessionId, session] of this.sessions) {
+      if (session.getWscpPairingBySecret(sharedSecret)) {
+        return { userSessionId, session }
+      }
+    }
+    return undefined
   }
 }

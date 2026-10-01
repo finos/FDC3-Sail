@@ -1,4 +1,4 @@
-import { DirectoryApp, State } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, Fdc3ApiVersion, State } from "@finos/fdc3-sail-da-impl"
 import { AppHosting } from "./app-hosting"
 import { SailAppStateArgs } from "./message-types"
 import { ServerState } from "./ServerState"
@@ -21,7 +21,15 @@ export interface AppState {
 
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
 
+  /**
+   * Tear down the app container opened for this instance (tab or Sail frame).
+   */
+  closeApp(instanceId: string, hosting: AppHosting): Promise<void>
+
   getAppState(instanceId: string): State | undefined
+
+  /** Negotiated FDC3 wire version from getAgent / APP_HELLO, if known. */
+  getFdc3Version(instanceId: string): Fdc3ApiVersion | undefined
 
   setAppState(state: SailAppStateArgs): void
 

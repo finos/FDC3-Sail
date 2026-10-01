@@ -20,8 +20,8 @@ const httpServer = ViteExpress.listen(app, 8090, () => {
 })
 
 const factory = new SailFDC3ServerFactory(true)
-const remoteSocketService = new RemoteSocketService(httpServer, factory)
-initSailSocketIOService(httpServer, factory, remoteSocketService)
+new RemoteSocketService(httpServer, factory)
+initSailSocketIOService(httpServer, factory)
 
 app.get("/", (_req, res) => {
   res.redirect("/html/index.html")

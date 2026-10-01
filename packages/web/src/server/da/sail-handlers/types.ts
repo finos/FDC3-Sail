@@ -18,6 +18,25 @@ export function getSailUrl(): string {
 }
 
 /**
+ * Converts an HTTP(S) Sail URL to a WebSocket URL.
+ */
+export function toWebSocketUrl(httpUrl: string): string {
+  if (httpUrl.startsWith("https://")) {
+    return "wss://" + httpUrl.substring(8)
+  } else if (httpUrl.startsWith("http://")) {
+    // should only be used in dev
+    // nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket
+    return "ws://" + httpUrl.substring(7)
+  }
+  return httpUrl
+}
+
+/** Stable WSCP Flow 1 endpoint for native apps. */
+export function getFdc3WebSocketUrl(): string {
+  return `${toWebSocketUrl(getSailUrl())}/fdc3/ws`
+}
+
+/**
  * Represents the type of connection
  */
 export enum ConnectionType {
