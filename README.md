@@ -35,26 +35,26 @@ FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org)
 For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://finos.github.io/FDC3-Sail/docs/architecture/overview); this README does not repeat it.
 
 ```mermaid
-graph TD
-  Apps["FDC3 apps calling fdc3.getAgent"]
-  DA["@finos/sail-desktop-agent<br/>WCP + MessagePort host"]
-  Engine["@finos/fdc3-sail-da-impl<br/>FDC3 2.2 / 3.0 DACP engine"]
-  Platform["@finos/sail-platform<br/>composition: layout, storage, lifecycle"]
-  One["@finos/sail-one<br/>example shell"]
-  Finance["@finos/sail-finance<br/>example shell"]
-  Theme["@finos/sail-theme<br/>design tokens"]
-  Harness["@finos/sail-conformance-harness<br/>FINOS toolbox runner"]
-  V2["@finos/fdc3-sail-web<br/>previous Socket.IO UI"]
+graph BT
+  Engine["@finos/fdc3-sail-da-impl"]
+  Theme["@finos/sail-theme"]
+  Platform["@finos/sail-platform"]
+  Common["@finos/fdc3-sail-common"]
+  DA["@finos/sail-desktop-agent"]
+  V2["@finos/fdc3-sail-web"]
+  Harness["@finos/sail-conformance-harness"]
+  One["@finos/sail-one"]
+  Finance["@finos/sail-finance"]
 
-  Apps -->|WCP handshake + MessagePort| DA
   DA --> Engine
-  Platform --> DA
-  One --> Platform
-  Finance --> Platform
-  Theme --> One
-  Theme --> Finance
-  Harness --> DA
   V2 --> Engine
+  V2 --> Common
+  Harness --> DA
+  One --> DA
+  One --> Platform
+  Finance --> DA
+  Finance --> Platform
+  Finance --> Theme
 ```
 
 ### Packages and apps

@@ -7,7 +7,6 @@ export default defineConfig({
     // Different timeouts for different test types
     testTimeout: 15000, // Default timeout increased for integration tests
     hookTimeout: 30000, // Longer timeout for setup/teardown hooks
-    setupFiles: ["./src/__tests__/setup/setup-tests.ts"],
     reporters: ["default"],
     // Retry configuration for flaky tests
     retry: 0,
