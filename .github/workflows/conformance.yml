@@ -37,12 +37,12 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # The harness resolves @finos/sail-desktop-agent from its `dist`, not its `src`, and
-      # `dist` is gitignored — so on a clean runner the agent must be built first. The
-      # webServer command does this too, but building here surfaces a build failure as a
-      # build failure rather than as a webServer timeout.
+      # Agent resolves @finos/fdc3-sail-da-impl from its dist; harness resolves
+      # @finos/sail-desktop-agent from dist. Build both before the suite.
       - name: Build desktop agent
-        run: npm run build -w @finos/sail-desktop-agent
+        run: |
+          npm run build -w @finos/fdc3-sail-da-impl
+          npm run build -w @finos/sail-desktop-agent
 
       # Fails on any regression against e2e/conformance-baseline-2.2.json, which is
       # currently empty — every one of the 83 tests must pass. The spec asserts on the

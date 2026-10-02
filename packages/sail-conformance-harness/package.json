@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
-    "dev:local": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
-    "dev:e2e": "HARNESS_NO_OPEN=1 npm run build -w @finos/sail-desktop-agent --prefix ../.. && HARNESS_NO_OPEN=1 vp dev --mode toolbox-local",
+    "dev": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
+    "dev:local": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
+    "dev:e2e": "HARNESS_NO_OPEN=1 npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && HARNESS_NO_OPEN=1 vp dev --mode toolbox-local",
     "build": "vp build",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
     "@finos/sail-desktop-agent": "*",
+    "@robmoffat/fdc3-conformance": "^2.2.3-test.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

@@ -2,14 +2,20 @@
  * FDC3 app directory fetch and validation helpers (REST /v2/apps).
  */
 
-import type { DirectoryApp, DirectoryData } from "./types"
+import type { DirectoryApp as DaDirectoryApp } from "@finos/fdc3-sail-da-impl"
+import type { DirectoryApp } from "./types"
 import { consoleLogger, type Logger } from "../logging/logger"
+
+export interface DirectoryData {
+  applications: DirectoryApp[]
+  message?: string
+}
 
 export function parseDirectoryData(data: DirectoryApp[] | DirectoryData): DirectoryApp[] {
   if (Array.isArray(data)) {
     return data
   }
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- data is unvalidated JSON from a remote app-directory URL; the type is an assumption, not a guarantee.
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- unvalidated remote JSON
   if (data.applications && Array.isArray(data.applications)) {
     return data.applications
   }
@@ -19,7 +25,7 @@ export function parseDirectoryData(data: DirectoryApp[] | DirectoryData): Direct
 }
 
 export function validateApplication(app: DirectoryApp, source?: string): void {
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- app is unvalidated JSON from a remote app-directory URL; the DirectoryApp type is an assumption about what should arrive, not a fact about what does.
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- unvalidated remote JSON
   if (!app.appId || !app.title || !app.type || !app.details) {
     const sourceInfo = source ? ` in ${source}` : ""
     throw new Error(
@@ -48,7 +54,6 @@ function normalizeDirectoryUrl(url: string): string {
   }
 }
 
-/** Directory URLs must be http/https REST endpoints (FDC3 app directory spec). */
 export function isValidDirectoryUrl(url: string): boolean {
   try {
     const urlObj = new URL(url)
@@ -58,8 +63,7 @@ export function isValidDirectoryUrl(url: string): boolean {
   }
 }
 
-/** Fetches and validates apps from a remote /v2/apps endpoint. */
-export async function fetchAppDirectory(url: string): Promise<DirectoryApp[]> {
+export async function fetchAppDirectory(url: string): Promise<DaDirectoryApp[]> {
   try {
     const normalizedUrl = normalizeDirectoryUrl(url)
     const response = await fetch(normalizedUrl)
@@ -70,7 +74,7 @@ export async function fetchAppDirectory(url: string): Promise<DirectoryApp[]> {
     const data = (await response.json()) as DirectoryData | { applications?: DirectoryApp[] }
     const applications = parseDirectoryData(data as DirectoryApp[] | DirectoryData)
     validateApplications(applications, normalizedUrl)
-    return applications
+    return applications as DaDirectoryApp[]
   } catch (error) {
     throw new Error(
       `Failed to fetch from ${url}: ${error instanceof Error ? error.message : String(error)}`,
@@ -78,19 +82,12 @@ export async function fetchAppDirectory(url: string): Promise<DirectoryApp[]> {
   }
 }
 
-/**
- * Merges fetched apps into catalog.apps without duplicate appIds.
- *
- * Identity is `appId` (including fully-qualified forms like `app1@company1.com`),
- * compared case-insensitively so `App1` and `app1` do not both enter the catalog.
- * When the same id appears again (across directories or batches), the first entry wins.
- */
 export function mergeAppsWithoutDuplicates(
-  existingApps: DirectoryApp[],
-  incomingApps: DirectoryApp[],
-): DirectoryApp[] {
+  existingApps: DaDirectoryApp[],
+  incomingApps: DaDirectoryApp[],
+): DaDirectoryApp[] {
   const existingAppIds = new Set(existingApps.map(app => app.appId.toLowerCase()))
-  const newApps: DirectoryApp[] = []
+  const newApps: DaDirectoryApp[] = []
   for (const app of incomingApps) {
     const normalizedAppId = app.appId.toLowerCase()
     if (!existingAppIds.has(normalizedAppId)) {

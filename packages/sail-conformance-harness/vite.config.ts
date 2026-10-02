@@ -1,19 +1,24 @@
+import { createRequire } from "node:module"
+import { dirname, join } from "node:path"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import react from "@vitejs/plugin-react"
+
+const require = createRequire(import.meta.url)
+const conformanceDist = join(
+  dirname(require.resolve("@robmoffat/fdc3-conformance/package.json")),
+  "dist",
+)
 
 export default defineConfig({
   plugins: lazyPlugins(() => [react()]),
   optimizeDeps: {
     exclude: ["@finos/sail-desktop-agent"],
   },
-  // Vendored FDC3 2.2 toolbox build, served at the harness origin so `/apps/...`,
-  // `/lib/...` and `/directories/...` match the URLs baked into
-  // 2.2-conformance-tests/directories/local-conformance.json.
-  //
-  // This build (unlike the hosted FINOS toolbox) carries the headless patch that
-  // makes `?suite=` run unattended — see HEADLESS.md. Serving it here also puts the
-  // toolbox same-origin with the harness, which WCP host-instance adoption needs.
-  publicDir: "2.2-conformance-tests",
+  // Published FDC3 2.2 toolbox (`@robmoffat/fdc3-conformance`), served at the harness
+  // origin so `/apps/...`, `/lib/...` and `/directories/...` match the URLs in
+  // `directories/localhost-conformance.json`. Same-origin is required for WCP
+  // host-instance adoption (`window.name`).
+  publicDir: conformanceDist,
   server: {
     port: 3001,
     // Headless/CI runs have no browser to open.

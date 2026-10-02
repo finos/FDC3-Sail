@@ -72,7 +72,7 @@ export type HarnessBootstrap = {
  */
 export function createHarnessBootstrap(options?: {
   debug?: boolean
-  /** App to mount on startup. Use `Conformance1Headless` for an unattended run (HEADLESS.md). */
+  /** App to mount on startup. Playwright uses `Conformance1` and clicks Run. */
   appId?: string
 }): HarnessBootstrap {
   const debug = options?.debug ?? HARNESS_DEBUG
@@ -129,7 +129,8 @@ export function createHarnessBootstrap(options?: {
   openWithContextCleanup = createOpenWithContextCleanupScheduler({
     instanceCleanup,
     popupWatcher,
-    hasAgentInstance: instanceId => Boolean(desktopAgentRef?.apps.getInstance(instanceId)),
+    hasAgentInstance: (instanceId: string) =>
+      Boolean(desktopAgentRef?.apps.getInstance(instanceId)),
   })
 
   const mountLaunchedPanel = (panel: HarnessPanel) => {
@@ -256,5 +257,10 @@ export function getConformance1PanelState(
     return undefined
   }
 
-  return { instanceId: panel.instanceId, state: instance.status }
+  const status = instance.status
+  if (status !== "pending" && status !== "connected") {
+    return undefined
+  }
+
+  return { instanceId: panel.instanceId, state: status }
 }

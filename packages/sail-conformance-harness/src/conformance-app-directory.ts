@@ -1,7 +1,7 @@
 import type { DirectoryApp } from "@finos/sail-desktop-agent"
 
 import conformanceAppDirectory from "../conformance-appd.json"
-import localConformanceAppDirectory from "../2.2-conformance-tests/directories/local-conformance.json"
+import localConformanceAppDirectory from "@robmoffat/fdc3-conformance/dist/directories/localhost-conformance.json"
 
 export type ConformanceToolboxProfile = "hosted" | "local"
 
@@ -9,7 +9,7 @@ export type ConformanceFdc3Version = "2.2" | "3.0"
 
 export const CONFORMANCE_HOSTED_ORIGIN = "https://fdc3.finos.org/toolbox/fdc3-conformance"
 
-/** Local FINOS dev server root (no `/toolbox/fdc3-conformance` prefix). */
+/** Local FINOS toolbox root served from the harness (no `/toolbox/fdc3-conformance` prefix). */
 export const CONFORMANCE_LOCAL_ORIGIN = "http://localhost:3001"
 
 const PROFILE_CONFIG: Record<
@@ -72,7 +72,7 @@ export type LoadedConformanceApplications = ConformanceToolboxConfig & {
 
 export function loadConformanceApplications(options?: {
   profile?: ConformanceToolboxProfile
-  /** Override local rewrite target (default: {@link CONFORMANCE_LOCAL_ORIGIN}). Use sail-web origin for same-origin iframe adoption. */
+  /** Override local rewrite target (default: {@link CONFORMANCE_LOCAL_ORIGIN}). */
   localOrigin?: string
 }): LoadedConformanceApplications {
   const config = resolveConformanceToolboxProfile(options?.profile)
@@ -84,10 +84,8 @@ export function loadConformanceApplications(options?: {
     }
   }
 
-  // The local profile serves the vendored 2.2 toolbox build, which ships its own
-  // directory already rebased to CONFORMANCE_LOCAL_ORIGIN. It differs from the
-  // hosted fixture in two ways that matter: it adds `Conformance1Headless`, and it
-  // drops `IntentAppLId` (that path 404s in this build — see HEADLESS.md §2).
+  // Local profile: directory shipped with `@robmoffat/fdc3-conformance`, already
+  // rebased to http://localhost:3001 (served via Vite `publicDir`).
   const localApps = structuredClone(localConformanceAppDirectory.applications as DirectoryApp[])
   const localOrigin = options?.localOrigin ?? CONFORMANCE_LOCAL_ORIGIN
 

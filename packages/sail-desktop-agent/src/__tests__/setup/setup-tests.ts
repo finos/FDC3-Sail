@@ -1,17 +1,10 @@
 /**
- * Test Setup Configuration
- *
- * Global test setup for the sail-desktop-agent package tests.
- * Configures testing environment and shared utilities.
+ * Vitest setup for sail-desktop-agent unit tests.
  */
 
-// Global test configuration
-globalThis.console.log = (...args: unknown[]) => {
-  // Suppress console.log during tests unless VERBOSE_TESTS is set
-  if (process.env.VERBOSE_TESTS) {
-    console.info(...args)
-  }
-}
+import { afterEach, vi } from "vite-plus/test"
 
-// Setup complete
-console.info("Desktop Agent test setup complete")
+afterEach(() => {
+  vi.clearAllMocks()
+  vi.restoreAllMocks()
+})

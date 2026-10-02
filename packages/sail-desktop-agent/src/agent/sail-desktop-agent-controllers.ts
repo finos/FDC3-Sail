@@ -1,10 +1,5 @@
 /**
  * Host controller factories for {@link SailDesktopAgent}.
- *
- * Each factory combines a narrow "backing" of already-bound agent operations (the class keeps
- * the underlying methods private) with `appConnection` event wiring into the public grouped
- * controller shape (`apps`, `channels`, `intentResolver`). Extracted from `sail-desktop-agent.ts`
- * to keep the class file focused on agent state and DACP routing.
  */
 
 import type { BrowserTypes, Context } from "@finos/fdc3"
@@ -12,11 +7,6 @@ import type { AppConnectionMetadata } from "../app-connection/browser-app-connec
 import type { AgentAppConnection } from "../app-connection/types"
 import type { DirectoryApp } from "../app-directory/types"
 import { NoChannelFoundError } from "../errors/fdc3-errors"
-import {
-  handleJoinUserChannelRequest,
-  handleLeaveCurrentChannelRequest,
-} from "../handlers/channels/handlers"
-import type { DACPHandlerParams } from "../handlers/types"
 import type {
   HostIntentResolverChoice,
   HostIntentResolverHandler,
@@ -27,8 +17,6 @@ import type {
   IntentResolutionRequest,
 } from "../host-contracts"
 import type { Logger } from "../logging/logger"
-import { getInstance, getUserChannel } from "../state/selectors"
-import type { AgentState } from "../state/types"
 import type {
   DesktopAgentAppInstance,
   DesktopAgentOpenOptions,
@@ -147,71 +135,25 @@ export function createIntentResolverController(
   }
 }
 
-/** Backing operations {@link changeAppUserChannel} / {@link changeAppChannel} wrap. */
-interface ChannelOperationsBacking {
-  getState: () => AgentState
-  createHandlerParams: (instanceId: string) => DACPHandlerParams
+/** Backing for host-initiated user-channel join/leave. */
+export interface ChannelChangeBacking {
   getUserChannels: () => BrowserTypes.Channel[]
+  setAppUserChannel: (instanceId: string, channelId: string | null) => void
   appConnection: AgentAppConnection
   channelChangeTimeoutMs: number
 }
 
 /**
  * Host-initiated user channel join or leave for an app instance.
- *
- * Runs the same DACP join/leave handlers as app-originated requests but does not
- * require an app MessagePort to receive the response. When no apps registered
- * `channelChanged` event listeners, emits a `channelChangedEvent` on the app edge
- * so host UI can observe membership changes.
+ * Waits for the app-connection `channelChanged` event (or times out).
  */
-export function changeAppUserChannel(
-  backing: Pick<ChannelOperationsBacking, "getState" | "createHandlerParams">,
-  instanceId: string,
-  channelId: string | null,
-): void {
-  const state = backing.getState()
-  if (channelId !== null && !getUserChannel(state, channelId)) {
-    throw new NoChannelFoundError(`Channel ${channelId} does not exist`)
-  }
-
-  const params = backing.createHandlerParams(instanceId)
-  const requestUuid = crypto.randomUUID()
-  const instance = getInstance(state, instanceId)
-  const source: BrowserTypes.AppIdentifier = {
-    appId: instance?.appId ?? "unknown",
-    instanceId,
-  }
-  const meta: BrowserTypes.AppRequestMessageMeta = {
-    requestUuid,
-    timestamp: new Date(),
-    source,
-  }
-
-  const hostInitiated = { hostInitiated: true as const }
-
-  if (channelId !== null) {
-    handleJoinUserChannelRequest(
-      { type: "joinUserChannelRequest", payload: { channelId }, meta },
-      params,
-      hostInitiated,
-    )
-  } else {
-    handleLeaveCurrentChannelRequest(
-      { type: "leaveCurrentChannelRequest", payload: {}, meta },
-      params,
-      hostInitiated,
-    )
-  }
-}
-
-/** Promise + timeout + `channelChanged` correlation over {@link changeAppUserChannel}. */
 export function changeAppChannel(
-  backing: ChannelOperationsBacking,
+  backing: ChannelChangeBacking,
   instanceId: string,
   channelId: string | null,
 ): Promise<void> {
   if (channelId !== null && !backing.getUserChannels().find(channel => channel.id === channelId)) {
-    return Promise.reject(new Error(`Channel "${channelId}" does not exist`))
+    return Promise.reject(new NoChannelFoundError(`Channel "${channelId}" does not exist`))
   }
 
   return new Promise<void>((resolve, reject) => {
@@ -235,7 +177,7 @@ export function changeAppChannel(
     backing.appConnection.on?.("channelChanged", handleChannelChanged)
 
     try {
-      changeAppUserChannel(backing, instanceId, channelId)
+      backing.setAppUserChannel(instanceId, channelId)
     } catch (error) {
       cleanup()
       reject(error instanceof Error ? error : new Error(String(error)))
@@ -243,10 +185,6 @@ export function changeAppChannel(
   })
 }
 
-/**
- * Wraps the agent's own channel operations with the two members it cannot supply itself:
- * `getAppChannel` (derived) and `onAppChannelChange` (`appConnection` event wiring).
- */
 export function createChannelsController(
   backing: Omit<SailDesktopAgentChannels, "getAppChannel" | "onAppChannelChange">,
   appConnection: AgentAppConnection,
@@ -271,10 +209,6 @@ export function createChannelsController(
   }
 }
 
-/**
- * Wraps the agent's own app-directory and instance operations with the four members it cannot
- * supply itself — all of which are `appConnection` lifecycle wiring.
- */
 export function createAppsController(
   backing: Omit<
     SailDesktopAgentApps,
@@ -285,8 +219,6 @@ export function createAppsController(
   return {
     ...backing,
     disconnect: instanceId => {
-      // Prefer the graceful host-initiated disconnect (sends WCP6Goodbye) when the edge
-      // supports it; fall back to the plain teardown every AgentAppConnection provides.
       if (appConnection.disconnectAppByInstanceId) {
         appConnection.disconnectAppByInstanceId(instanceId)
       } else {
@@ -354,7 +286,6 @@ export function wireIntentResolver(
           ...(response?.intent ? { intent: response.intent } : {}),
         })
       } catch (error) {
-        // Host resolver throw is not the same as user cancel — log before settling null.
         logger.error(
           `[SailDesktopAgent] Host intent resolver threw; cancelling resolution for ${payload.requestId}:`,
           error instanceof Error ? error : new Error(String(error)),

@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test"
 
 /**
- * Drives the FDC3 2.2 conformance suite headlessly against the harness.
+ * Drives the FDC3 2.2 conformance suite against the harness via Playwright:
+ * open Conformance1, click Run, scrape `#mocha`.
  *
- * The harness serves the vendored toolbox build (see vite.config.ts `publicDir`),
- * so the conformance app, the 16 mock apps and the app directory all live on
- * http://localhost:3001 — same-origin with the harness, which WCP host-instance
- * adoption requires. See HEADLESS.md for the signalling contract.
+ * The harness serves `@robmoffat/fdc3-conformance` (see vite.config.ts `publicDir`),
+ * so the conformance app, mock apps and app directory all live on
+ * http://localhost:3001 — same-origin with the harness for WCP host-instance adoption.
  */
 /**
  * Escape hatch for images that already ship a Chromium whose build number does not
@@ -53,7 +53,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev:e2e",
-    url: "http://localhost:3001/directories/local-conformance.json",
+    url: "http://localhost:3001/directories/localhost-conformance.json",
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     stdout: "pipe",

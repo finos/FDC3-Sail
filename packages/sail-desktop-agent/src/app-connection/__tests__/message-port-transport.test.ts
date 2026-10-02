@@ -67,6 +67,7 @@ function createMinimalWCPContext(): AppConnectionContext {
     },
     pendingDisconnects: new Map(),
     recentlyDisconnected: new Map(),
+    handshakeRouting: new Map(),
     emit,
     logger: consoleLogger,
   }
