@@ -3,7 +3,9 @@ import fmtConfig from "./.oxfmtrc.json"
 
 export default defineConfig({
   staged: {
-    "packages/*/src/**/*.{ts,tsx}": "vp check --fix",
+    // Restored main-branch packages keep PascalCase filenames; exclude them from
+    // the v3 kebab-case / oxlint gate (same as .oxlintrc.json ignorePatterns).
+    "packages/!(da-impl|sail-v2-common|sail-v2-web)*/src/**/*.{ts,tsx}": "vp check --fix",
     "website/**/*.{ts,tsx}": "vp check --fix",
   },
   lint: {
@@ -32,8 +34,9 @@ export default defineConfig({
       "**/yarn.lock",
       "**/pnpm-lock.yaml",
       "**/assets/",
-      // Vendored FDC3 2.2 conformance toolbox build — generated upstream, not ours to fix.
-      "packages/sail-conformance-harness/2.2-conformance-tests/**",
+      "packages/da-impl/**",
+      "packages/sail-v2-common/**",
+      "packages/sail-v2-web/**",
     ],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",

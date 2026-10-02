@@ -21,6 +21,8 @@ export default defineConfig({
   publicDir: conformanceDist,
   server: {
     port: 3001,
+    // Fail instead of drifting to 3002+ — directory fixtures and Playwright assume 3001.
+    strictPort: true,
     // Headless/CI runs have no browser to open.
     open: !process.env.CI && !process.env.HARNESS_NO_OPEN,
     // Reload when @finos/sail-desktop-agent dist changes (package resolves to dist/, not src/)
