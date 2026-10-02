@@ -3,7 +3,14 @@
  * overrides plus inbound WCP/DACP routing onto {@link receive}.
  */
 
-import type { AppIdentifier, AppIntent, AppMetadata, BrowserTypes, Context } from "@finos/fdc3"
+import {
+  OpenError,
+  type AppIdentifier,
+  type AppIntent,
+  type AppMetadata,
+  type BrowserTypes,
+  type Context,
+} from "@finos/fdc3"
 import {
   AbstractFDC3ServerInstance,
   ChannelType,
@@ -149,7 +156,7 @@ export abstract class SailDesktopAgentServer extends AbstractFDC3ServerInstance 
 
     const catalogApps = this.directory.retrieveAppsById(appId)
     if (catalogApps.length === 0) {
-      throw new Error(`App not found in directory: ${appId}`)
+      throw new Error(OpenError.AppNotFound)
     }
 
     const instanceId = this.createUUID()

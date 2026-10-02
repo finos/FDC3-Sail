@@ -6,7 +6,7 @@
  * {@link AbstractFDC3ServerInstance.post}.
  */
 
-import type { AppMetadata, BrowserTypes } from "@finos/fdc3"
+import { OpenError, type AppMetadata, type BrowserTypes } from "@finos/fdc3"
 import {
   BasicDirectory,
   BroadcastHandlerV2,
@@ -329,7 +329,7 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
     const appIdentifier = resolveOpenAppIdentifier(app, options)
     const catalogApps = this.directory.retrieveAppsById(appIdentifier.appId)
     if (catalogApps.length === 0) {
-      throw new Error(`App not found in directory: ${appIdentifier.appId}`)
+      throw new Error(OpenError.AppNotFound)
     }
 
     const payload: BrowserTypes.OpenRequestPayload = {
