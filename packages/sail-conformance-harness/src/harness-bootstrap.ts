@@ -76,12 +76,15 @@ export function createHarnessBootstrap(options?: {
   appId?: string
 }): HarnessBootstrap {
   const debug = options?.debug ?? HARNESS_DEBUG
+  // Local toolbox URLs must match the page origin (same-origin iframe) so WCP can
+  // read `window.name` for host-instance adoption. Vite may bind 3002+ if 3001 is busy.
+  const localOrigin = typeof window !== "undefined" ? window.location.origin : undefined
   const {
     applications: conformanceApps,
     fdc3Version,
     profile,
     origin,
-  } = loadConformanceApplications()
+  } = loadConformanceApplications(localOrigin ? { localOrigin } : undefined)
   const appId = options?.appId ?? DEFAULT_HARNESS_APP_ID
   const conformance1InstanceId = crypto.randomUUID()
   const conformance1Url = extractAppUrl(conformanceApps, appId)

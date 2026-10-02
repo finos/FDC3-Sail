@@ -109,11 +109,19 @@ Starts the Socket.IO-based app in `packages/sail-v2-web` against the same `da-im
 
 ```bash
 npm run dev:conformance
-# or locally against the published 2.2 toolbox:
+# local 2.2 / 3.0 toolboxes (same-origin on :3001):
 npm run dev:local -w @finos/sail-conformance-harness
+npm run dev:local:3.0 -w @finos/sail-conformance-harness
 ```
 
-Open http://localhost:3001. Unattended runs: `npm run test:conformance -w @finos/sail-conformance-harness` (Playwright selects suite **All**, clicks **Run**, scrapes `#mocha`).
+Open http://localhost:3001. Unattended runs:
+
+```bash
+npm run test:conformance:2.2 -w @finos/sail-conformance-harness
+npm run test:conformance:3.0 -w @finos/sail-conformance-harness
+```
+
+(Playwright selects suite **All**, clicks **Run**, scrapes `#mocha` until Mocha ends.)
 
 See the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development) for the full command reference.
 

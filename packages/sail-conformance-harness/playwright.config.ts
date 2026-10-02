@@ -1,12 +1,14 @@
 import { defineConfig, devices } from "@playwright/test"
 
 /**
- * Drives the FDC3 2.2 conformance suite against the harness via Playwright:
+ * Drives the FDC3 conformance suite against the harness via Playwright:
  * open Conformance1, click Run, scrape `#mocha`.
  *
- * The harness serves `@robmoffat/fdc3-conformance` (see vite.config.ts `publicDir`),
- * so the conformance app, mock apps and app directory all live on
+ * The harness serves `@robmoffat/fdc3-conformance-{2.2|3.0}` (see vite.config.ts
+ * `publicDir`), so the conformance app, mock apps and app directory all live on
  * http://localhost:3001 — same-origin with the harness for WCP host-instance adoption.
+ *
+ * Select the toolbox with `CONFORMANCE_FDC3_VERSION=2.2|3.0` (default 2.2).
  */
 /**
  * Escape hatch for images that already ship a Chromium whose build number does not
@@ -14,6 +16,7 @@ import { defineConfig, devices } from "@playwright/test"
  * Playwright's own download is used.
  */
 const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+const fdc3Version = process.env.CONFORMANCE_FDC3_VERSION === "3.0" ? "3.0" : "2.2"
 
 export default defineConfig({
   testDir: "./e2e",
@@ -58,5 +61,10 @@ export default defineConfig({
     timeout: 180_000,
     stdout: "pipe",
     stderr: "pipe",
+    env: {
+      ...process.env,
+      CONFORMANCE_FDC3_VERSION: fdc3Version,
+      VITE_CONFORMANCE_FDC3_VERSION: fdc3Version,
+    },
   },
 })

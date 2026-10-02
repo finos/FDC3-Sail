@@ -7,14 +7,16 @@ import {
   compareToBaseline,
   formatRegressionReport,
   loadBaseline,
+  resolveConformanceFdc3Version,
   summariseResult,
 } from "./conformance-baseline"
-import { awaitMochaResult } from "./mocha-scrape"
+import { awaitMochaResult, installMochaEndHook } from "./mocha-scrape"
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
 const ARTIFACTS = join(PACKAGE_ROOT, "artifacts")
+const fdc3Version = resolveConformanceFdc3Version()
 
-test("FDC3 2.2 conformance suite runs via UI and mocha scrape", async ({ page }) => {
+test(`FDC3 ${fdc3Version} conformance suite runs via UI and mocha scrape`, async ({ page }) => {
   mkdirSync(ARTIFACTS, { recursive: true })
 
   await page.goto("/?appId=Conformance1")
@@ -25,6 +27,16 @@ test("FDC3 2.2 conformance suite runs via UI and mocha scrape", async ({ page })
   const frame = page.frameLocator('iframe[src*="/apps/app/index.html"]')
   await frame.locator("#testSuite option").first().waitFor({ state: "attached", timeout: 120_000 })
   await frame.locator("#testSuite").selectOption({ label: "All" })
+
+  // Mocha paints `li.test` nodes as each case runs. Without an end hook / suite total,
+  // gaps between suites look "finished" and the scrape returns a short prefix (~23 tests).
+  const mochaFrame = page.frames().find(f => f.url().includes("/apps/app/index.html"))
+  if (!mochaFrame) {
+    throw new Error("Conformance iframe not found before Run")
+  }
+  const hooked = await installMochaEndHook(mochaFrame)
+  expect(hooked, "mocha.run end hook installed in conformance iframe").toBe(true)
+
   await frame.locator("#runButton").click()
 
   const outcome = await awaitMochaResult(page).catch(async (error: unknown) => {
@@ -57,13 +69,13 @@ test("FDC3 2.2 conformance suite runs via UI and mocha scrape", async ({ page })
 
   expect(outcome.status, outcome.error ?? "run did not complete").toBe("complete")
 
-  console.log(summariseResult(outcome))
+  console.log(`FDC3 ${fdc3Version}: ${summariseResult(outcome)}`)
 
-  const baseline = loadBaseline()
+  const baseline = loadBaseline(fdc3Version)
   if (!baseline) {
     console.log(
-      "No committed baseline found — writing artifacts/conformance.json only. " +
-        "Copy it to e2e/conformance-baseline-2.2.json to start gating on regressions.",
+      `No committed baseline found — writing artifacts/conformance.json only. ` +
+        `Copy it to e2e/conformance-baseline-${fdc3Version}.json to start gating on regressions.`,
     )
     return
   }
@@ -74,7 +86,7 @@ test("FDC3 2.2 conformance suite runs via UI and mocha scrape", async ({ page })
   if (diff.fixed.length > 0) {
     console.log(
       `${diff.fixed.length} test(s) now passing that the baseline expects to fail:\n  ${diff.fixed.join("\n  ")}\n` +
-        "Refresh e2e/conformance-baseline-2.2.json to lock the improvement in.",
+        `Refresh e2e/conformance-baseline-${fdc3Version}.json to lock the improvement in.`,
     )
   }
 

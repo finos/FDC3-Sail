@@ -4,17 +4,30 @@ import { defineConfig, lazyPlugins } from "vite-plus"
 import react from "@vitejs/plugin-react"
 
 const require = createRequire(import.meta.url)
-const conformanceDist = join(
-  dirname(require.resolve("@robmoffat/fdc3-conformance/package.json")),
-  "dist",
-)
+
+/** FDC3 conformance toolbox version served as Vite `publicDir` (same-origin with the harness). */
+export function resolveConformanceFdc3Version(
+  raw: string | undefined = process.env.CONFORMANCE_FDC3_VERSION ??
+    process.env.VITE_CONFORMANCE_FDC3_VERSION,
+): "2.2" | "3.0" {
+  return raw === "3.0" ? "3.0" : "2.2"
+}
+
+const fdc3Version = resolveConformanceFdc3Version()
+const conformancePackage =
+  fdc3Version === "3.0" ? "@robmoffat/fdc3-conformance-3.0" : "@robmoffat/fdc3-conformance-2.2"
+const conformanceDist = join(dirname(require.resolve(`${conformancePackage}/package.json`)), "dist")
 
 export default defineConfig({
   plugins: lazyPlugins(() => [react()]),
+  // Ensure the client bundle sees the same version the publicDir was chosen for.
+  define: {
+    "import.meta.env.VITE_CONFORMANCE_FDC3_VERSION": JSON.stringify(fdc3Version),
+  },
   optimizeDeps: {
     exclude: ["@finos/sail-desktop-agent"],
   },
-  // Published FDC3 2.2 toolbox (`@robmoffat/fdc3-conformance`), served at the harness
+  // Published toolbox (`@robmoffat/fdc3-conformance-{2.2|3.0}`), served at the harness
   // origin so `/apps/...`, `/lib/...` and `/directories/...` match the URLs in
   // `directories/localhost-conformance.json`. Same-origin is required for WCP
   // host-instance adoption (`window.name`).

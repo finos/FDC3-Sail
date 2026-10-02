@@ -1,7 +1,8 @@
 import type { DirectoryApp } from "@finos/sail-desktop-agent"
 
 import conformanceAppDirectory from "../conformance-appd.json"
-import localConformanceAppDirectory from "@robmoffat/fdc3-conformance/dist/directories/localhost-conformance.json"
+import localConformanceAppDirectory22 from "@robmoffat/fdc3-conformance-2.2/dist/directories/localhost-conformance.json"
+import localConformanceAppDirectory30 from "@robmoffat/fdc3-conformance-3.0/dist/directories/localhost-conformance.json"
 
 export type ConformanceToolboxProfile = "hosted" | "local"
 
@@ -12,30 +13,53 @@ export const CONFORMANCE_HOSTED_ORIGIN = "https://fdc3.finos.org/toolbox/fdc3-co
 /** Local FINOS toolbox root served from the harness (no `/toolbox/fdc3-conformance` prefix). */
 export const CONFORMANCE_LOCAL_ORIGIN = "http://localhost:3001"
 
-const PROFILE_CONFIG: Record<
-  ConformanceToolboxProfile,
-  { origin: string; fdc3Version: ConformanceFdc3Version }
-> = {
-  hosted: { origin: CONFORMANCE_HOSTED_ORIGIN, fdc3Version: "3.0" },
-  local: { origin: CONFORMANCE_LOCAL_ORIGIN, fdc3Version: "2.2" },
-}
-
 export type ConformanceToolboxConfig = {
   profile: ConformanceToolboxProfile
   origin: string
   fdc3Version: ConformanceFdc3Version
 }
 
+export function resolveConformanceFdc3Version(raw?: string | null): ConformanceFdc3Version {
+  return raw === "3.0" ? "3.0" : "2.2"
+}
+
 export function resolveConformanceToolboxProfile(
   profile?: ConformanceToolboxProfile,
+  fdc3Version?: ConformanceFdc3Version,
 ): ConformanceToolboxConfig {
   const resolvedProfile = profile ?? readConformanceToolboxProfileFromEnv()
-  return { profile: resolvedProfile, ...PROFILE_CONFIG[resolvedProfile] }
+  if (resolvedProfile === "hosted") {
+    return {
+      profile: "hosted",
+      origin: CONFORMANCE_HOSTED_ORIGIN,
+      // Hosted FINOS site is the 3.0 toolbox.
+      fdc3Version: "3.0",
+    }
+  }
+
+  const version =
+    fdc3Version ??
+    resolveConformanceFdc3Version(
+      import.meta.env.VITE_CONFORMANCE_FDC3_VERSION ??
+        (typeof process !== "undefined" ? process.env.CONFORMANCE_FDC3_VERSION : undefined),
+    )
+
+  return {
+    profile: "local",
+    origin: CONFORMANCE_LOCAL_ORIGIN,
+    fdc3Version: version,
+  }
 }
 
 function readConformanceToolboxProfileFromEnv(): ConformanceToolboxProfile {
   const raw = import.meta.env.VITE_CONFORMANCE_TOOLBOX
   return raw === "local" ? "local" : "hosted"
+}
+
+function localDirectoryForVersion(version: ConformanceFdc3Version): {
+  applications: unknown[]
+} {
+  return version === "3.0" ? localConformanceAppDirectory30 : localConformanceAppDirectory22
 }
 
 function replaceOriginInValue(value: unknown, fromOrigin: string, toOrigin: string): unknown {
@@ -72,10 +96,11 @@ export type LoadedConformanceApplications = ConformanceToolboxConfig & {
 
 export function loadConformanceApplications(options?: {
   profile?: ConformanceToolboxProfile
+  fdc3Version?: ConformanceFdc3Version
   /** Override local rewrite target (default: {@link CONFORMANCE_LOCAL_ORIGIN}). */
   localOrigin?: string
 }): LoadedConformanceApplications {
-  const config = resolveConformanceToolboxProfile(options?.profile)
+  const config = resolveConformanceToolboxProfile(options?.profile, options?.fdc3Version)
 
   if (config.profile === "hosted") {
     return {
@@ -84,9 +109,11 @@ export function loadConformanceApplications(options?: {
     }
   }
 
-  // Local profile: directory shipped with `@robmoffat/fdc3-conformance`, already
-  // rebased to http://localhost:3001 (served via Vite `publicDir`).
-  const localApps = structuredClone(localConformanceAppDirectory.applications as DirectoryApp[])
+  // Local profile: directory shipped with the versioned `@robmoffat/fdc3-conformance-*`
+  // package, already rebased to http://localhost:3001 (served via Vite `publicDir`).
+  const localApps = structuredClone(
+    localDirectoryForVersion(config.fdc3Version).applications as DirectoryApp[],
+  )
   const localOrigin = options?.localOrigin ?? CONFORMANCE_LOCAL_ORIGIN
 
   return {

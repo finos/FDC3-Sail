@@ -6,17 +6,21 @@
   "scripts": {
     "dev": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
     "dev:local": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
+    "dev:local:3.0": "CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
     "dev:e2e": "HARNESS_NO_OPEN=1 npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent --prefix ../.. && HARNESS_NO_OPEN=1 vp dev --mode toolbox-local",
     "build": "vp build",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
     "test:watch": "vp test",
-    "test:conformance": "playwright test"
+    "test:conformance": "playwright test",
+    "test:conformance:2.2": "CONFORMANCE_FDC3_VERSION=2.2 VITE_CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:conformance:3.0": "CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 playwright test"
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
     "@finos/sail-desktop-agent": "*",
-    "@robmoffat/fdc3-conformance": "^2.2.3-test.1",
+    "@robmoffat/fdc3-conformance-2.2": "npm:@robmoffat/fdc3-conformance@2.2.3-test.1",
+    "@robmoffat/fdc3-conformance-3.0": "npm:@robmoffat/fdc3-conformance@3.0.0-test.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

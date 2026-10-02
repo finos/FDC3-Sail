@@ -12,16 +12,66 @@ export type MochaSnapshot = {
   pending: number
   durationMs: number
   tests: ConformanceTestResult[]
-  /** True when Mocha has painted stats and every listed test has a terminal state. */
+  /** Mocha's known suite size once tests are registered / the runner has started. */
+  expectedTotal: number
+  /** True when Mocha's runner has emitted `end` (via the harness wrap of `mocha.run`). */
+  mochaEnded: boolean
+  /**
+   * True when the run is actually complete: every listed test is terminal AND we have
+   * either Mocha's `end` event or a completed count that matches the registered total.
+   * Matching only on "all visible `li.test` are terminal" is wrong — Mocha paints tests
+   * as they run, so mid-suite gaps look finished.
+   */
   finished: boolean
+}
+
+type ConformanceMochaWindow = Window & {
+  mocha?: {
+    run: (...args: unknown[]) => { on?: (event: string, cb: () => void) => void }
+    suite?: { total?: () => number }
+    runner?: { total?: number }
+  }
+  __sailConformanceMochaEnded?: boolean
+}
+
+/**
+ * Wrap `mocha.run` in the conformance iframe so we can observe the runner `end` event.
+ * Call once after the iframe has loaded and before clicking Run.
+ */
+export async function installMochaEndHook(frame: Frame): Promise<boolean> {
+  return frame.evaluate(() => {
+    const w = window as ConformanceMochaWindow
+    if (!w.mocha || typeof w.mocha.run !== "function") {
+      return false
+    }
+    const runFn = w.mocha.run as typeof w.mocha.run & { __sailWrapped?: boolean }
+    if (runFn.__sailWrapped) {
+      w.__sailConformanceMochaEnded = false
+      return true
+    }
+    const original = w.mocha.run.bind(w.mocha)
+    const wrapped = ((...args: unknown[]) => {
+      w.__sailConformanceMochaEnded = false
+      const runner = original(...args)
+      runner?.on?.("end", () => {
+        w.__sailConformanceMochaEnded = true
+      })
+      return runner
+    }) as typeof w.mocha.run & { __sailWrapped?: boolean }
+    wrapped.__sailWrapped = true
+    w.mocha.run = wrapped
+    w.__sailConformanceMochaEnded = false
+    return true
+  })
 }
 
 /**
  * Read Mocha's HTML reporter from the conformance iframe `#mocha` root.
  *
  * Mocha marks completed tests with `.pass` / `.fail` / `.pending`. While a run is
- * in progress, some `li.test` nodes may lack those classes; `finished` is false
- * until every test has a terminal class and `#mocha-stats` is present.
+ * in progress, some `li.test` nodes may lack those classes (e.g. `.running`);
+ * `finished` stays false until Mocha ends or the completed count matches the
+ * registered suite total.
  */
 export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
   return frame.evaluate(() => {
@@ -29,6 +79,15 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
     if (!root) {
       return null
     }
+
+    const w = window as ConformanceMochaWindow
+    const expectedTotal =
+      (typeof w.mocha?.runner?.total === "number" && w.mocha.runner.total > 0
+        ? w.mocha.runner.total
+        : undefined) ??
+      (typeof w.mocha?.suite?.total === "function" ? w.mocha.suite.total() : 0) ??
+      0
+    const mochaEnded = w.__sailConformanceMochaEnded === true
 
     const stats = document.querySelector("#mocha-stats")
     const passesText = stats?.querySelector(".passes em")?.textContent ?? "0"
@@ -97,6 +156,7 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
     const passes = Number(passesText) || tests.filter(t => t.state === "passed").length
     const failures = Number(failuresText) || tests.filter(t => t.state === "failed").length
     const pending = tests.filter(t => t.state === "pending").length
+    const completed = passes + failures + pending
     // Mocha duration is often like "12.3s" — parse loosely.
     let durationMs = 0
     const durationMatch = durationText.match(/([\d.]+)\s*(ms|s)?/i)
@@ -106,13 +166,20 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
       durationMs = unit === "s" ? value * 1000 : value
     }
 
+    const matchedTotal =
+      expectedTotal > 0 && completed >= expectedTotal && tests.length >= expectedTotal
+    const finished =
+      Boolean(stats) && unfinished === 0 && tests.length > 0 && (mochaEnded || matchedTotal)
+
     return {
       passes,
       failures,
       pending,
       durationMs,
       tests,
-      finished: Boolean(stats) && unfinished === 0 && tests.length > 0,
+      expectedTotal,
+      mochaEnded,
+      finished,
     }
   })
 }
@@ -147,14 +214,14 @@ export async function awaitMochaResult(
     const snap = await scrapeMocha(current)
     if (snap) {
       const completed = snap.passes + snap.failures + snap.pending
-      const progress = `${completed} (pass=${snap.passes} fail=${snap.failures} pending=${snap.pending})`
+      const progress = `${completed}/${snap.expectedTotal || "?"} (pass=${snap.passes} fail=${snap.failures} pending=${snap.pending}${snap.mochaEnded ? " ended" : ""})`
       if (progress !== lastProgress) {
         lastProgress = progress
         console.log(`  conformance ${progress}`)
       }
 
       if (snap.finished) {
-        const fingerprint = `${snap.passes}:${snap.failures}:${snap.pending}:${snap.tests.length}`
+        const fingerprint = `${snap.passes}:${snap.failures}:${snap.pending}:${snap.tests.length}:${snap.expectedTotal}:${snap.mochaEnded}`
         if (fingerprint === lastFingerprint) {
           stableFinishedCount += 1
         } else {
