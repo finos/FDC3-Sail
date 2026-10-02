@@ -55,6 +55,8 @@ graph BT
   Finance --> DA
   Finance --> Platform
   Finance --> Theme
+
+  Harness ~~~ One ~~~ Finance ~~~ V2
 ```
 
 ### Packages and apps
