@@ -30,17 +30,47 @@
 
 If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
 
-FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard: a browser-first FDC3 2.2 **Desktop Agent** (`@finos/sail-desktop-agent`) that other packages compose into a broader **interoperability platform** (`@finos/sail-platform`) and two example shells. For how the pieces fit together — package ownership, entry points, and what's implemented vs. planned — see the [Architecture Overview](https://finos.github.io/FDC3-Sail/docs/architecture/overview) on the documentation site; this README does not repeat it.
+FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: `@finos/sail-desktop-agent` owns WCP and `MessagePort` connections in the page, and hosts `@finos/fdc3-sail-da-impl` for FDC3 2.2 and 3.0 DACP behavior. Shells and `@finos/sail-platform` compose that agent into example workspaces.
+
+For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://finos.github.io/FDC3-Sail/docs/architecture/overview); this README does not repeat it.
+
+```mermaid
+graph BT
+  Engine["@finos/fdc3-sail-da-impl"]
+  Theme["@finos/sail-theme"]
+  Platform["@finos/sail-platform"]
+  Common["@finos/fdc3-sail-common"]
+  DA["@finos/sail-desktop-agent"]
+  V2["@finos/fdc3-sail-web"]
+  Harness["@finos/sail-conformance-harness"]
+  One["@finos/sail-one"]
+  Finance["@finos/sail-finance"]
+
+  DA --> Engine
+  V2 --> Engine
+  V2 --> Common
+  Harness --> DA
+  One --> DA
+  One --> Platform
+  Finance --> DA
+  Finance --> Platform
+  Finance --> Theme
+
+  Harness ~~~ One ~~~ Finance ~~~ V2
+```
 
 ### Packages and apps
 
 | Package | Description |
 |---|---|
-| [`packages/sail-desktop-agent`](packages/sail-desktop-agent/) | Browser-first FDC3 2.2 Desktop Agent |
+| [`packages/da-impl`](packages/da-impl/) | FDC3 engine (`@finos/fdc3-sail-da-impl`) — 2.2 and 3.0 handlers behind `FDC3ServerInstance` |
+| [`packages/sail-desktop-agent`](packages/sail-desktop-agent/) | Browser host for that engine — WCP, MessagePorts, `AppLauncher` / intent UI contracts |
 | [`packages/sail-platform`](packages/sail-platform/) | Composition layer — host UI seams, pluggable storage, lifecycle |
 | [`packages/sail-theme`](packages/sail-theme/) | Shared brand theme — design tokens and assets |
 | [`packages/sail-finance`](packages/sail-finance/) | Example shell — finance-specific workspace dashboard |
 | [`packages/sail-one`](packages/sail-one/) | Example shell — domain-neutral tab-and-grid canvas |
+| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Minimal host for FINOS FDC3 conformance (`@robmoffat/fdc3-conformance`) |
+| [`packages/sail-v2-common`](packages/sail-v2-common/) / [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `da-impl`) |
 
 Full documentation, including per-package guides, lives at **[https://finos.github.io/FDC3-Sail/docs/](https://finos.github.io/FDC3-Sail/docs/)** (built from [`website/`](website/) via GitHub Pages).
 
@@ -59,17 +89,47 @@ cd FDC3-Sail
 npm install
 ```
 
-### Running the Browser App
+### Running the browser shells (current path)
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000 in your browser. FDC3 apps loaded in iframes will connect automatically via WCP. (To run the `sail-one` shell instead, use `npm run dev:one` — see the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development) for details and every other command.)
+Open http://localhost:3000. FDC3 apps in iframes connect via WCP. Use `npm run dev:one` for the `sail-one` shell.
+
+### Running the previous Sail UI
+
+```bash
+npm run dev:v2
+```
+
+Starts the Socket.IO-based app in `packages/sail-v2-web` against the same `da-impl` engine.
+
+### Conformance harness
+
+```bash
+npm run dev:conformance
+# local 2.2 / 3.0 toolboxes (same-origin on :3001):
+npm run dev:local -w @finos/sail-conformance-harness
+npm run dev:local:3.0 -w @finos/sail-conformance-harness
+```
+
+Open http://localhost:3001. Unattended runs:
+
+```bash
+npm run test:conformance:2.2 -w @finos/sail-conformance-harness
+npm run test:conformance:3.0 -w @finos/sail-conformance-harness
+```
+
+(Playwright selects suite **All**, clicks **Run**, scrapes `#mocha` until Mocha ends.)
+
+See the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development) for the full command reference.
 
 ## Development
 
-This repository is documented on the site, not in this README: environment setup, the full command reference (build, test, lint, typecheck), code quality gates, and the npm publishing process all live in the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development).
+Environment setup, build/test/lint/typecheck, quality gates, and publishing are documented in the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development), not in this README.
+
+Engine behavior for FDC3 2.2 and 3.0 is covered by Cucumber in `packages/da-impl` (`npm run test -w @finos/fdc3-sail-da-impl`).
 
 ## Meetings
 
@@ -82,7 +142,7 @@ Meeting agendas and minutes are tracked through GitHub issues with the `meeting`
 
 ## Status
 
-FDC3 Sail targets full [FDC3 2.2](https://fdc3.finos.org/docs/api/spec) conformance. It is currently in active development and **not yet ready for production use**. Contributions and bug reports are welcome.
+FDC3 Sail targets [FDC3 2.2](https://fdc3.finos.org/docs/api/spec) conformance and is extending toward FDC3 3.0 via `da-impl`'s versioned handlers. It is in active development and **not yet ready for production use**. Contributions and bug reports are welcome.
 
 ## Mailing List
 

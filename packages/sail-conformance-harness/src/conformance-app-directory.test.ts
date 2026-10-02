@@ -22,8 +22,8 @@ describe("loadConformanceApplications", () => {
     })
   })
 
-  it("rewrites hosted URLs to localhost:3001 and targets FDC3 2.2 for local profile", () => {
-    const loaded = loadConformanceApplications({ profile: "local" })
+  it("targets FDC3 2.2 for local profile by default", () => {
+    const loaded = loadConformanceApplications({ profile: "local", fdc3Version: "2.2" })
 
     expect(loaded.profile).toBe("local")
     expect(loaded.fdc3Version).toBe("2.2")
@@ -37,6 +37,17 @@ describe("loadConformanceApplications", () => {
     const mockApp = loaded.applications.find(app => app.appId === "MockAppId")
     expect(mockApp?.details).toMatchObject({
       url: `${CONFORMANCE_LOCAL_ORIGIN}/apps/general/index.html`,
+    })
+  })
+
+  it("targets FDC3 3.0 for local profile when requested", () => {
+    const loaded = loadConformanceApplications({ profile: "local", fdc3Version: "3.0" })
+
+    expect(loaded.profile).toBe("local")
+    expect(loaded.fdc3Version).toBe("3.0")
+    const conformance1 = loaded.applications.find(app => app.appId === "Conformance1")
+    expect(conformance1?.details).toMatchObject({
+      url: `${CONFORMANCE_LOCAL_ORIGIN}/apps/app/index.html`,
     })
   })
 

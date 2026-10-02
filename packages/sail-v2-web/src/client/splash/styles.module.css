@@ -1,0 +1,50 @@
+.splashContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  color: #111;
+}
+
+.splashLogo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.splashLogoImage {
+  width: 6rem;
+  height: 6rem;
+}
+
+.splashTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.splashText {
+  max-width: 36rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.repoLabel {
+  margin: 0;
+  font-weight: 600;
+}
+
+.repoLink {
+  color: #0a66c2;
+  font-weight: 500;
+}
+
+.linksRow {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}

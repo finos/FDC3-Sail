@@ -1,18 +1,14 @@
 /**
  * FDC3-Sail product defaults for Desktop Agent configuration.
- *
- * Single source of truth for implementation metadata, user channels, and timing
- * defaults. `SailDesktopAgent` merges these with caller overrides in its constructor.
  */
 
 import type { BrowserTypes } from "@finos/fdc3"
 import pkg from "../../package.json"
-import { DACP_TIMEOUTS } from "../dacp/dacp-constants"
 import type { SailDesktopAgentConfig, SailDesktopAgentOptions } from "./sail-desktop-agent-types"
 import { DEFAULT_FDC3_USER_CHANNELS } from "./default-user-channels"
 import type { AgentAppConnection } from "../app-connection/types"
 
-export type { ValidationMode } from "../dacp/validate-dacp-message"
+export type { ValidationMode } from "../app-connection/inbound-validation"
 
 export type SailDesktopAgentMetadata = Pick<
   BrowserTypes.ImplementationMetadata,
@@ -37,7 +33,7 @@ export const DEFAULT_SAIL_DESKTOP_AGENT_CONFIG = {
   userChannels: DEFAULT_FDC3_USER_CHANNELS,
   logPayloadDetail: "metadata" as const,
   validation: "warn" as const,
-  openContextListenerTimeoutMs: DACP_TIMEOUTS.MINIMUM_APP_LAUNCH,
+  openContextListenerTimeoutMs: 15_000,
   pendingIntentTimeoutMs: 90_000,
   heartbeatEnabled: true,
   heartbeatIntervalMs: 30_000,
@@ -77,12 +73,6 @@ function mergeImplementationMetadata(
 
 /**
  * Merge FDC3-Sail product defaults with caller options.
- * Used by `SailDesktopAgent`'s constructor; exported for tests and pre-built config.
- *
- * Accepts `SailDesktopAgentOptions<AgentAppConnection>` — the widest edge bound — because this
- * function only merges and forwards `appConnection`, never inspects its specific edge type. That
- * lets `SailDesktopAgent<TEdge>`'s constructor call it with `SailDesktopAgentOptions<TEdge>` for
- * any `TEdge`, not just the default `BrowserAppConnection`.
  */
 export function resolveDesktopAgentConfig(
   options: SailDesktopAgentOptions<AgentAppConnection> = {},

@@ -72,16 +72,19 @@ export type HarnessBootstrap = {
  */
 export function createHarnessBootstrap(options?: {
   debug?: boolean
-  /** App to mount on startup. Use `Conformance1Headless` for an unattended run (HEADLESS.md). */
+  /** App to mount on startup. Playwright uses `Conformance1` and clicks Run. */
   appId?: string
 }): HarnessBootstrap {
   const debug = options?.debug ?? HARNESS_DEBUG
+  // Local toolbox URLs must match the page origin (same-origin iframe) so WCP can
+  // read `window.name` for host-instance adoption. Vite may bind 3002+ if 3001 is busy.
+  const localOrigin = typeof window !== "undefined" ? window.location.origin : undefined
   const {
     applications: conformanceApps,
     fdc3Version,
     profile,
     origin,
-  } = loadConformanceApplications()
+  } = loadConformanceApplications(localOrigin ? { localOrigin } : undefined)
   const appId = options?.appId ?? DEFAULT_HARNESS_APP_ID
   const conformance1InstanceId = crypto.randomUUID()
   const conformance1Url = extractAppUrl(conformanceApps, appId)
@@ -129,7 +132,8 @@ export function createHarnessBootstrap(options?: {
   openWithContextCleanup = createOpenWithContextCleanupScheduler({
     instanceCleanup,
     popupWatcher,
-    hasAgentInstance: instanceId => Boolean(desktopAgentRef?.apps.getInstance(instanceId)),
+    hasAgentInstance: (instanceId: string) =>
+      Boolean(desktopAgentRef?.apps.getInstance(instanceId)),
   })
 
   const mountLaunchedPanel = (panel: HarnessPanel) => {
@@ -256,5 +260,10 @@ export function getConformance1PanelState(
     return undefined
   }
 
-  return { instanceId: panel.instanceId, state: instance.status }
+  const status = instance.status
+  if (status !== "pending" && status !== "connected") {
+    return undefined
+  }
+
+  return { instanceId: panel.instanceId, state: status }
 }

@@ -8,7 +8,7 @@ import type { AppConnectionRegistry } from "../app-connection-registry"
 import { isAppMessage } from "./wcp-types"
 import type { Logger } from "../../logging/logger"
 import type { EmitFunction } from "../app-connection-events"
-import { applyInboundValidationPolicy, type ValidationMode } from "../../dacp/validate-dacp-message"
+import { applyInboundValidationPolicy, type ValidationMode } from "../inbound-validation"
 
 export interface WCPRoutingContext {
   connectionRegistry: AppConnectionRegistry

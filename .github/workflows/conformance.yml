@@ -1,6 +1,7 @@
 name: FDC3 Conformance
 
 on:
+  pull_request:
   schedule:
     - cron: "0 3 * * *" # Nightly at 3 AM UTC
   workflow_dispatch: # Allow manual triggering
@@ -16,7 +17,11 @@ defaults:
 jobs:
   conformance:
     runs-on: ubuntu-latest
-    # A full suite run is ~5 minutes; the ceiling covers install, browser download and a
+    strategy:
+      fail-fast: false
+      matrix:
+        fdc3_version: ["2.2", "3.0"]
+    # A full suite run is ~5–7 minutes; the ceiling covers install, browser download and a
     # hung agent (playwright.config.ts allows the test itself 15 minutes).
     timeout-minutes: 30
     permissions:
@@ -37,19 +42,19 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # The harness resolves @finos/sail-desktop-agent from its `dist`, not its `src`, and
-      # `dist` is gitignored — so on a clean runner the agent must be built first. The
-      # webServer command does this too, but building here surfaces a build failure as a
-      # build failure rather than as a webServer timeout.
+      # Agent resolves @finos/fdc3-sail-da-impl from its dist; harness resolves
+      # @finos/sail-desktop-agent from dist. Build both before the suite.
       - name: Build desktop agent
-        run: npm run build -w @finos/sail-desktop-agent
+        run: |
+          npm run build -w @finos/fdc3-sail-da-impl
+          npm run build -w @finos/sail-desktop-agent
 
-      # Fails on any regression against e2e/conformance-baseline-2.2.json, which is
-      # currently empty — every one of the 83 tests must pass. The spec asserts on the
-      # conformance.json payload, not on the screenshot: during development a stale JSON, a
-      # contaminated run and a plausible-looking-but-mostly-blank PNG each gave a confident
-      # wrong answer.
-      - name: Run FDC3 2.2 conformance suite
+      # Local toolbox packages (@robmoffat/fdc3-conformance-{2.2|3.0}) are served same-origin
+      # on :3001. Fails on any regression against e2e/conformance-baseline-${version}.json.
+      - name: Run FDC3 ${{ matrix.fdc3_version }} conformance suite
+        env:
+          CONFORMANCE_FDC3_VERSION: ${{ matrix.fdc3_version }}
+          VITE_CONFORMANCE_FDC3_VERSION: ${{ matrix.fdc3_version }}
         run: npm run test:conformance -w @finos/sail-conformance-harness
 
       # `if: always()` so a failing run still uploads conformance.json, the diff and the
@@ -58,7 +63,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: conformance-results
+          name: conformance-results-${{ matrix.fdc3_version }}
           path: |
             packages/sail-conformance-harness/artifacts/
             packages/sail-conformance-harness/test-results/

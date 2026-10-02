@@ -1,7 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": { "correctness": "off" },
-  "ignorePatterns": ["packages/sail-conformance-harness/2.2-conformance-tests/**"],
+  "ignorePatterns": [
+    "packages/da-impl/**",
+    "packages/sail-v2-common/**",
+    "packages/sail-v2-web/**"
+  ],
   "overrides": [
     {
       "files": ["packages/sail-desktop-agent/**"],

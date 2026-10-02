@@ -60,4 +60,4 @@ jobs:
         run: npm test -- --run
 
       - name: Test (Cucumber)
-        run: npm run test:cucumber -w @finos/sail-desktop-agent
+        run: npm run test -w @finos/fdc3-sail-da-impl

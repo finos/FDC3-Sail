@@ -2,7 +2,8 @@
  * Browser-resident FDC3 app connection listener.
  *
  * Owns WCP1–3 handshake (postMessage), per-instance MessagePorts, and WCP6 lifecycle.
- * DACP traffic is forwarded to {@link SailDesktopAgent} via {@link onAppMessage}.
+ * All app MessagePort traffic (DACP + WCP4) is forwarded to {@link SailDesktopAgent}
+ * via {@link onAppMessage}.
  */
 
 import { type Logger, type LogPayloadDetail, consoleLogger } from "../logging/logger"
@@ -11,7 +12,7 @@ import type {
   AppRequestMessage,
   WebConnectionProtocolMessage,
 } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
-import type { ValidationMode } from "../dacp/validate-dacp-message"
+import type { ValidationMode } from "./inbound-validation"
 import {
   handleWCP1Hello as handleWCP1HelloHandshake,
   type WCPHandshakeContext,
@@ -34,8 +35,6 @@ import {
 } from "./wcp/wcp-connection-management"
 import { AppConnectionEventEmitter } from "./wcp/app-connection-event-emitter"
 import { clearPendingWcpSourceWindow, setPendingWcpSourceWindow } from "./wcp/pending-source-window"
-import { resolveInstanceId } from "../state/selectors/wcp-handshake-routing"
-import type { AgentState, StateSetter } from "../state/types"
 import type { HostIntentResolverPayload, HostIntentResolverResponse } from "../host-contracts"
 import {
   DEFAULT_INTENT_RESOLUTION_TIMEOUT_MS,
@@ -49,20 +48,9 @@ import { AppConnectionRegistry } from "./app-connection-registry"
 export type { AppConnectionMetadata, AppConnectionOptions } from "./wcp/wcp-types"
 export type { AppConnectionEvents } from "./app-connection-events"
 
-/**
- * Browser edge options: host-settable WCP handshake config plus values threaded from
- * {@link SailDesktopAgent} — validation mode, log payload detail, and the advertised FDC3 version.
- */
 type BrowserAppConnectionOptions = AppConnectionOptions & {
   validation?: ValidationMode
-  /** How much DACP/WCP payload to include in MessagePortTransport debug logs. */
   logPayloadDetail?: LogPayloadDetail
-  /**
-   * FDC3 version to advertise in WCP3Handshake. Threaded from the agent's
-   * `implementationMetadata.fdc3Version` so WCP3, WCP5, `getInfo` and `closeRequest` gating
-   * all read one setting. Not part of {@link AppConnectionOptions} — hosts set the version on
-   * `implementationMetadata`, not here.
-   */
   fdc3Version: string
 }
 
@@ -72,7 +60,6 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
   private options: Required<AppConnectionOptions>
   private validation: ValidationMode
   private logPayloadDetail: LogPayloadDetail
-  /** Agent-threaded `implementationMetadata.fdc3Version`, advertised in WCP3Handshake. */
   private fdc3Version: string
   private isStarted = false
   private appMessageHandler?: AppMessageHandler
@@ -83,9 +70,9 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     string,
     { metadata: AppConnectionMetadata; disconnectedAt: number }
   >()
+  /** temp handshake id → validated instanceId */
+  private handshakeRouting = new Map<string, string>()
   private cleanupInterval?: ReturnType<typeof setInterval>
-  private getAgentState?: () => AgentState
-  private setAgentState?: StateSetter
   private onInstanceTeardown?: (instanceId: string) => void
 
   constructor(options: BrowserAppConnectionOptions) {
@@ -121,11 +108,6 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
         this.updateConnectionMetadata(temp, actual, appId),
       disconnectApp: instanceId => this.disconnectHandshakeApp(instanceId),
     })
-  }
-
-  bindAgentState(access: { getAgentState: () => AgentState; setAgentState: StateSetter }): void {
-    this.getAgentState = access.getAgentState
-    this.setAgentState = access.setAgentState
   }
 
   /** Wire unified instance teardown from {@link SailDesktopAgent.disconnectInstance}. */
@@ -200,7 +182,7 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     instanceId: string,
   ): AppRequestMessage | WebConnectionProtocolMessage {
     const currentMeta =
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- message crosses the MessagePort trust boundary; app-authored `meta` is stripped and re-stamped here, so the declared type is an assumption, not a guarantee.
+      // oxlint-disable-next-line typescript/no-unnecessary-condition -- message crosses the MessagePort trust boundary
       "meta" in message && message.meta && typeof message.meta === "object"
         ? message.meta
         : undefined
@@ -210,9 +192,6 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     const storedSourceWindow = storedConnection?.source
     const trustedAppId = storedConnection?.appId
 
-    // Strip app-authored identity fields before spreading — DA determines source/origin.
-    // `hostInstanceId` is included: handlers resolve identity from it, so an app that
-    // supplies its own could act as any other live instance.
     const {
       source: _appSource,
       messageOrigin: _appMessageOrigin,
@@ -228,7 +207,6 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
       instanceId,
     }
 
-    // Absence of a trusted origin must clear the field — never keep the client's value.
     if (storedMessageOrigin) {
       nextMetaRecord.messageOrigin = storedMessageOrigin
     } else {
@@ -258,8 +236,7 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
   }
 
   private disconnectApp(instanceId: string): void {
-    const state = this.getAgentState?.()
-    const resolvedInstanceId = state ? resolveInstanceId(state, instanceId) : instanceId
+    const resolvedInstanceId = this.handshakeRouting.get(instanceId) ?? instanceId
     clearPendingWcpSourceWindow(this, instanceId)
     if (resolvedInstanceId !== instanceId) {
       clearPendingWcpSourceWindow(this, resolvedInstanceId)
@@ -267,16 +244,6 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     disconnectApp(this.getConnectionContext(), resolvedInstanceId)
   }
 
-  /**
-   * Disconnect a connection still keyed by its temporary handshake id, using that id exactly.
-   *
-   * Unlike {@link disconnectApp}, this does NOT resolve through the `temp -> validated` link that
-   * {@link updateConnectionMetadata} records on WCP5 success. Both callers are handshake-scoped and
-   * are handed a temp id: the pre-WCP5 handshake timeout, and a WCP5 failure response (always
-   * addressed to the temp id — see `sendFailureResponse`'s `getInboundInstanceId()` fallback).
-   * Resolving either forward would disconnect the live connection that a *different*, successful
-   * handshake had already established under that same temp id.
-   */
   private disconnectHandshakeApp(instanceId: string): void {
     clearPendingWcpSourceWindow(this, instanceId)
     disconnectApp(this.getConnectionContext(), instanceId)
@@ -294,14 +261,12 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     return getConnection(this.getConnectionContext(), instanceId)
   }
 
-  /** Host launcher id when `window.name` was cleared before WCP1. */
   resolveHostIdentifierForSource(source: Window): string | undefined {
     return this.options.resolveHostIdentifier(source)
   }
 
   pruneAppConnection(instanceId: string): void {
-    const state = this.getAgentState?.()
-    const resolvedInstanceId = state ? resolveInstanceId(state, instanceId) : instanceId
+    const resolvedInstanceId = this.handshakeRouting.get(instanceId) ?? instanceId
     clearPendingWcpSourceWindow(this, instanceId)
     if (resolvedInstanceId !== instanceId) {
       clearPendingWcpSourceWindow(this, resolvedInstanceId)
@@ -367,10 +332,9 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
       options: this.options,
       pendingDisconnects: this.pendingDisconnects,
       recentlyDisconnected: this.recentlyDisconnected,
+      handshakeRouting: this.handshakeRouting,
       emit: this.emit.bind(this),
       logger: this.options.logger,
-      getAgentState: this.getAgentState,
-      setAgentState: this.setAgentState,
       onInstanceTeardown: this.onInstanceTeardown,
     }
   }

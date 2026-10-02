@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -7,75 +7,46 @@ import {
   compareToBaseline,
   formatRegressionReport,
   loadBaseline,
+  resolveConformanceFdc3Version,
   summariseResult,
-  type ConformanceResult,
 } from "./conformance-baseline"
-
-/** Prefix of the single-line console message carrying the final result. */
-const RESULT_SENTINEL = "FDC3_CONFORMANCE_RESULT"
-/** Prefix of the per-test console progress messages. */
-const STATUS_SENTINEL = "FDC3_CONFORMANCE_STATUS"
+import { awaitMochaResult, installMochaEndHook } from "./mocha-scrape"
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
 const ARTIFACTS = join(PACKAGE_ROOT, "artifacts")
+const fdc3Version = resolveConformanceFdc3Version()
 
-/**
- * Resolves with the conformance result as soon as any page in the context prints
- * the sentinel.
- *
- * The conformance app runs in an iframe on the harness page, so `page.on('console')`
- * covers it — but the mock apps are launched as popups (`forceNewWindow`), which are
- * separate pages, hence the `context.on('page')` subscription too.
- */
-function awaitResult(page: Page): Promise<ConformanceResult> {
-  return new Promise(resolve => {
-    let lastProgress = ""
-
-    const onConsole = (msg: { text(): string }) => {
-      const text = msg.text()
-      if (text.startsWith(RESULT_SENTINEL)) {
-        resolve(JSON.parse(text.slice(RESULT_SENTINEL.length + 1)) as ConformanceResult)
-        return
-      }
-      if (text.startsWith(STATUS_SENTINEL)) {
-        const { completed, total } = JSON.parse(text.slice(STATUS_SENTINEL.length + 1)) as {
-          completed: number
-          total: number
-        }
-        const progress = `${completed}/${total}`
-        // One line per change, not per event — this ends up in CI logs.
-        if (progress !== lastProgress) {
-          lastProgress = progress
-          console.log(`  conformance ${progress}`)
-        }
-      }
-    }
-
-    page.on("console", onConsole)
-    page.context().on("page", opened => opened.on("console", onConsole))
-  })
-}
-
-test("FDC3 2.2 conformance suite runs headlessly", async ({ page }) => {
+test(`FDC3 ${fdc3Version} conformance suite runs via UI and mocha scrape`, async ({ page }) => {
   mkdirSync(ARTIFACTS, { recursive: true })
 
-  // Subscribe before navigating so no sentinel is missed.
-  const resultPromise = awaitResult(page)
+  await page.goto("/?appId=Conformance1")
 
-  await page.goto("/?appId=Conformance1Headless")
+  // Conformance1 mounts as an iframe; #testSuite options are filled after getAgent().
+  const iframe = page.locator('iframe[src*="/apps/app/index.html"]')
+  await iframe.waitFor({ state: "attached", timeout: 60_000 })
+  const frame = page.frameLocator('iframe[src*="/apps/app/index.html"]')
+  await frame.locator("#testSuite option").first().waitFor({ state: "attached", timeout: 120_000 })
+  await frame.locator("#testSuite").selectOption({ label: "All" })
 
-  const outcome = await resultPromise.catch(async (error: unknown) => {
+  // Mocha paints `li.test` nodes as each case runs. Without an end hook / suite total,
+  // gaps between suites look "finished" and the scrape returns a short prefix (~23 tests).
+  const mochaFrame = page.frames().find(f => f.url().includes("/apps/app/index.html"))
+  if (!mochaFrame) {
+    throw new Error("Conformance iframe not found before Run")
+  }
+  const hooked = await installMochaEndHook(mochaFrame)
+  expect(hooked, "mocha.run end hook installed in conformance iframe").toBe(true)
+
+  await frame.locator("#runButton").click()
+
+  const outcome = await awaitMochaResult(page).catch(async (error: unknown) => {
     await page.screenshot({ path: join(ARTIFACTS, "conformance-timeout.png"), fullPage: true })
     throw error
   })
 
   writeFileSync(join(ARTIFACTS, "conformance.json"), `${JSON.stringify(outcome, null, 2)}\n`)
 
-  // #mocha is a long scrolling list inside a fixed-height iframe. Screenshotting the element
-  // alone yields an image the full height of the list but with only the slice that fits the
-  // iframe's viewport actually painted — the rest comes out blank. Grow the iframe to its
-  // content height first so every row renders. Same-origin, because the toolbox is served from
-  // the harness origin (see `publicDir` in vite.config.ts).
+  // Grow the iframe so a full-height #mocha screenshot includes every row.
   await page
     .evaluate(() => {
       const iframe = document.querySelector<HTMLIFrameElement>(
@@ -89,36 +60,33 @@ test("FDC3 2.2 conformance suite runs headlessly", async ({ page }) => {
     })
     .catch(() => 0)
 
-  const frame = page.frameLocator('iframe[src*="/apps/app/index.html"]')
   await frame
     .locator("#mocha")
     .screenshot({ path: join(ARTIFACTS, "conformance.png") })
     .catch(() => {
-      // Best-effort: an `error` result means the list never rendered.
+      // Best-effort: a broken mocha tree means the list never rendered.
     })
 
   expect(outcome.status, outcome.error ?? "run did not complete").toBe("complete")
 
-  console.log(summariseResult(outcome))
+  console.log(`FDC3 ${fdc3Version}: ${summariseResult(outcome)}`)
 
-  const baseline = loadBaseline()
+  const baseline = loadBaseline(fdc3Version)
   if (!baseline) {
     console.log(
-      "No committed baseline found — writing artifacts/conformance.json only. " +
-        "Copy it to e2e/conformance-baseline-2.2.json to start gating on regressions.",
+      `No committed baseline found — writing artifacts/conformance.json only. ` +
+        `Copy it to e2e/conformance-baseline-${fdc3Version}.json to start gating on regressions.`,
     )
     return
   }
 
-  // Gate on regressions against the committed baseline rather than on zero failures:
-  // the suite has known failures, so an absolute gate would be red from day one.
   const diff = compareToBaseline(outcome, baseline)
   writeFileSync(join(ARTIFACTS, "conformance-diff.json"), `${JSON.stringify(diff, null, 2)}\n`)
 
   if (diff.fixed.length > 0) {
     console.log(
       `${diff.fixed.length} test(s) now passing that the baseline expects to fail:\n  ${diff.fixed.join("\n  ")}\n` +
-        "Refresh e2e/conformance-baseline-2.2.json to lock the improvement in.",
+        `Refresh e2e/conformance-baseline-${fdc3Version}.json to lock the improvement in.`,
     )
   }
 

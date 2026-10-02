@@ -9,9 +9,10 @@
   },
   "scripts": {
     "clean": "npm run clean --workspaces",
-    "build": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
+    "build": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/sail-desktop-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
     "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
     "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
+    "dev:v2": "npm run build -w @finos/fdc3-sail-da-impl -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
     "dev:conformance": "npm run dev -w @finos/sail-conformance-harness",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
@@ -22,7 +23,7 @@
     "test": "vp test",
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
-    "validate": "npm run format && npm run build && npm run lint && npm run typecheck && npm run conformance:inventory:check -w @finos/sail-docs && npm run docs:build && npm test -- --run && npm run test:cucumber -w @finos/sail-desktop-agent",
+    "validate": "npm run format && npm run build && npm run lint && npm run typecheck && npm run conformance:inventory:check -w @finos/sail-docs && npm run docs:build && npm test -- --run && npm run test -w @finos/fdc3-sail-da-impl",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release:publish": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform && changeset publish",
@@ -43,6 +44,9 @@
     "vitest": "4.1.10"
   },
   "workspaces": [
+    "packages/da-impl",
+    "packages/sail-v2-common",
+    "packages/sail-v2-web",
     "packages/sail-desktop-agent",
     "packages/sail-theme",
     "packages/sail-platform",

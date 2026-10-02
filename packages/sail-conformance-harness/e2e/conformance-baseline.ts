@@ -31,16 +31,30 @@ export type ConformanceBaseline = {
   failing: string[]
 }
 
-export const BASELINE_PATH = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "conformance-baseline-2.2.json",
-)
+export type ConformanceFdc3Version = "2.2" | "3.0"
 
-export function loadBaseline(): ConformanceBaseline | undefined {
-  if (!existsSync(BASELINE_PATH)) {
+export function resolveConformanceFdc3Version(
+  raw: string | undefined = process.env.CONFORMANCE_FDC3_VERSION ??
+    process.env.VITE_CONFORMANCE_FDC3_VERSION,
+): ConformanceFdc3Version {
+  return raw === "3.0" ? "3.0" : "2.2"
+}
+
+export function baselinePathForVersion(version: ConformanceFdc3Version): string {
+  return join(dirname(fileURLToPath(import.meta.url)), `conformance-baseline-${version}.json`)
+}
+
+/** @deprecated Prefer {@link baselinePathForVersion} — kept for callers that assume 2.2. */
+export const BASELINE_PATH = baselinePathForVersion("2.2")
+
+export function loadBaseline(
+  version: ConformanceFdc3Version = resolveConformanceFdc3Version(),
+): ConformanceBaseline | undefined {
+  const path = baselinePathForVersion(version)
+  if (!existsSync(path)) {
     return undefined
   }
-  return JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as ConformanceBaseline
+  return JSON.parse(readFileSync(path, "utf8")) as ConformanceBaseline
 }
 
 export type BaselineDiff = {

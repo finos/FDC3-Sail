@@ -1,35 +1,30 @@
 /**
- * FDC3 Desktop Agent entry point.
+ * FDC3 Desktop Agent — extends {@link SailDesktopAgentServer} (da-impl host).
  *
- * Owns agent state, host APIs, DACP/WCP routing over {@link SailDesktopAgent.appConnection},
- * and the grouped host controllers (`apps`, `channels`, `intentResolver`) a shell wires into
- * its UI. Production defaults `appConnection` to a real {@link BrowserAppConnection}; tests
- * may inject a lighter edge via the same-named constructor option.
+ * Browser WCP1–3 + MessagePort stay on {@link BrowserAppConnection}; all DACP
+ * (including WCP4) is forwarded to {@link AbstractFDC3ServerInstance.receive} /
+ * {@link AbstractFDC3ServerInstance.post}.
  */
 
-import type { AppLauncher } from "../host-contracts/app-launcher"
-import { routeDACPMessage } from "../handlers"
-import { cleanupInstanceDacpState } from "../handlers/instance-teardown"
-import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identity-validation"
-import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
-import type { DACPHandlerParams } from "../handlers/types"
-import { applyInboundValidationPolicy, type ValidationMode } from "../dacp/validate-dacp-message"
-import type { IntentResolutionCallback } from "../handlers/intent-resolution-callback"
-import type { DirectoryApp } from "../app-directory/types"
+import { OpenError, type AppMetadata, type BrowserTypes } from "@finos/fdc3"
 import {
-  addApp as addDirectoryApp,
-  addApplications,
-  loadDirectoryIntoState,
-  removeApplicationsByAppId,
-} from "../state/mutators/app-directory"
-import { retrieveAllApps, retrieveAppsById } from "../app-directory/app-directory-queries"
-import type { BrowserTypes } from "@finos/fdc3"
-import type { AgentState, RunningAppIdentifier, StateSetter } from "../state/types"
-import { createInitialState, createStateWithOverrides } from "../state/initial-state"
+  BasicDirectory,
+  BroadcastHandlerV2,
+  BroadcastHandlerV3,
+  ChannelType,
+  HeartbeatHandlerV2,
+  IntentHandlerV2,
+  IntentHandlerV3,
+  OpenHandlerV2,
+  OpenHandlerV3,
+  State,
+  type DirectoryApp as DaDirectoryApp,
+  type HandlersByVersion,
+  type MessageHandler,
+} from "@finos/fdc3-sail-da-impl"
 import { consoleLogger, type Logger, type LogPayloadDetail } from "../logging/logger"
 import { resolveDesktopAgentConfig, type SailDesktopAgentMetadata } from "./default-config"
-import { getAllInstances, getAllUserChannels, getInstance } from "../state/selectors"
-import { connectInstance } from "../state/mutators"
+import type { ValidationMode } from "../app-connection/inbound-validation"
 import type { AgentAppConnection } from "../app-connection/types"
 import {
   BrowserAppConnection,
@@ -41,6 +36,9 @@ import {
   type IntentResolver,
   type IntentResolverUIMethods,
 } from "../host-contracts"
+import type { AppLauncher } from "../host-contracts/app-launcher"
+import { fetchAppDirectory, mergeAppsWithoutDuplicates } from "../app-directory/fetch-app-directory"
+import type { DirectoryApp } from "../app-directory/types"
 import {
   changeAppChannel,
   createAppsController,
@@ -54,7 +52,12 @@ import {
   type SailDesktopAgentHostControllers,
 } from "./sail-desktop-agent-controllers"
 import {
-  mapToDesktopAgentAppInstance,
+  createHandlerLog,
+  mapStateToStatus,
+  mapUserChannelsToChannelState,
+  SailDesktopAgentServer,
+} from "./sail-desktop-agent-server"
+import {
   resolveOpenAppIdentifier,
   type DesktopAgentAppInstance,
   type DesktopAgentOpenOptions,
@@ -62,59 +65,30 @@ import {
 } from "./sail-desktop-agent-types"
 
 /**
- * FDC3-Sail's Desktop Agent implementation.
- *
- * Construct it, implement {@link AppLauncher}, and wire host UI through the grouped
- * controllers (`intentResolver`, `channels`, `apps`). The app-connection edge (WCP handshake,
- * per-app `MessagePort`, routing) is owned as {@link SailDesktopAgent.appConnection}.
- *
- * Generic in the edge type (`TEdge`) so `appConnection` types as the real
- * {@link BrowserAppConnection} for default construction, and as the injected edge's own type
- * for tests — see {@link SailDesktopAgentOptions}.
+ * FDC3-Sail Desktop Agent backed by `@finos/fdc3-sail-da-impl`.
  */
-export class SailDesktopAgent<
-  TEdge extends AgentAppConnection = BrowserAppConnection,
-> implements SailDesktopAgentHostControllers {
-  private state: AgentState
-  private appLauncher?: AppLauncher
-  private requestIntentResolution?: IntentResolutionCallback
+export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConnection>
+  extends SailDesktopAgentServer
+  implements SailDesktopAgentHostControllers
+{
+  protected readonly directory: BasicDirectory
+  protected appLauncher?: AppLauncher
   private validation: ValidationMode
-  private logger: Logger
+  protected logger: Logger
   private logPayloadDetail: LogPayloadDetail
-  private isStarted: boolean = false
-  private implementationMetadata: SailDesktopAgentMetadata
-  private openContextListenerTimeoutMs: number
-  private pendingIntentTimeoutMs: number
-  private heartbeatEnabled: boolean
-  private heartbeatIntervalMs: number
-  private heartbeatTimeoutMs: number
-  /**
-   * Inbound DACP/WCP routing edge. Defaults to a fresh {@link BrowserAppConnection}
-   * (constructor is inert — no `window`, no listeners); tests may inject via the
-   * `appConnection` constructor option.
-   */
-  readonly appConnection: TEdge
-  private readonly channelChangeTimeoutMs: number
+  private isStarted = false
+  protected implementationMetadata: SailDesktopAgentMetadata
+  private channelChangeTimeoutMs: number
 
+  readonly appConnection: TEdge
   readonly intentResolver: IntentResolverUIMethods
   readonly channels: SailDesktopAgentChannels
   readonly apps: SailDesktopAgentApps
   /**
-   * Settles when every constructor `appDirectories` URL load has finished
-   * (fulfilled or rejected). Resolves immediately when none were configured.
+   * Settles when every constructor `appDirectories` URL load has finished.
    */
   readonly directoriesLoaded: Promise<void>
 
-  /**
-   * Options are optional only when `TEdge` is the default {@link BrowserAppConnection} (or a
-   * widening like `AgentAppConnection`); once narrowed to a non-default edge (e.g.
-   * `SailDesktopAgent<DacpTestAppConnection>`), `SailDesktopAgentOptions<TEdge>` itself requires
-   * `appConnection`, so the argument can no longer be omitted — see that type's doc comment.
-   * Modeled as a conditional tuple rest-param (rather than `options: SailDesktopAgentOptions<TEdge>
-   * = {}`) because a plain default value is checked once against the *unresolved* `TEdge` at this
-   * declaration, not per call site, and can't express "optional for the default type parameter,
-   * required otherwise".
-   */
   constructor(
     ...args: BrowserAppConnection extends TEdge
       ? [options?: SailDesktopAgentOptions<TEdge>]
@@ -123,44 +97,57 @@ export class SailDesktopAgent<
     const options = (args[0] ?? {}) as SailDesktopAgentOptions<TEdge>
     const { intentResolver: providedIntentResolver, ...localOptions } = options
     const config = resolveDesktopAgentConfig(localOptions)
+    const logger = config.logger ?? consoleLogger
 
-    this.implementationMetadata = config.desktopAgentMetadata
-    this.openContextListenerTimeoutMs = config.openContextListenerTimeoutMs
-    this.pendingIntentTimeoutMs = config.pendingIntentTimeoutMs
-    this.heartbeatEnabled = config.heartbeatEnabled
-    this.heartbeatIntervalMs = config.heartbeatIntervalMs
-    this.heartbeatTimeoutMs = config.heartbeatTimeoutMs
-    this.channelChangeTimeoutMs = config.channelChangeTimeoutMs
-    // userChannels config seeds state once; runtime reads use state.channels.user only.
-    this.state = config.initialState
-      ? createStateWithOverrides(config.initialState, config.userChannels)
-      : createInitialState(config.userChannels)
+    const intentTimeoutMs = config.pendingIntentTimeoutMs
+    const openHandlerTimeoutMs = config.openContextListenerTimeoutMs
+    const v2: MessageHandler[] = [
+      new BroadcastHandlerV2(createHandlerLog(logger, "BroadcastHandlerV2")),
+      new IntentHandlerV2(intentTimeoutMs, createHandlerLog(logger, "IntentHandlerV2")),
+      new OpenHandlerV2(openHandlerTimeoutMs, createHandlerLog(logger, "OpenHandlerV2")),
+    ]
+    const v3: MessageHandler[] = [
+      new BroadcastHandlerV3(createHandlerLog(logger, "BroadcastHandlerV3")),
+      new IntentHandlerV3(intentTimeoutMs, createHandlerLog(logger, "IntentHandlerV3")),
+      new OpenHandlerV3(openHandlerTimeoutMs, createHandlerLog(logger, "OpenHandlerV3")),
+    ]
 
-    if (config.apps) {
-      for (const app of config.apps) {
-        this.state = addDirectoryApp(this.state, app)
-      }
+    if (config.heartbeatEnabled) {
+      const hb = new HeartbeatHandlerV2(
+        config.heartbeatIntervalMs,
+        config.heartbeatTimeoutMs,
+        config.heartbeatTimeoutMs * 2,
+        createHandlerLog(logger, "HeartbeatHandler"),
+      )
+      v2.push(hb)
+      v3.push(hb)
     }
 
+    const handlersByVersion: HandlersByVersion = { "2.2": v2, "3.0": v3 }
+    const channelStates = mapUserChannelsToChannelState(config.userChannels)
+    super(handlersByVersion, channelStates)
+
+    this.directory = new BasicDirectory([...(config.apps ?? [])] as DaDirectoryApp[])
+    this.implementationMetadata = config.desktopAgentMetadata
+    this.channelChangeTimeoutMs = config.channelChangeTimeoutMs
     this.appLauncher = config.appLauncher
     this.validation = config.validation
-    this.logger = config.logger ?? consoleLogger
+    this.logger = logger
     this.logPayloadDetail = config.logPayloadDetail
 
-    // Injected test edge, or a fresh BrowserAppConnection (inert until start). Cast is only
-    // for the default branch where `TEdge` is `BrowserAppConnection`.
     this.appConnection = (config.appConnection ??
       new BrowserAppConnection({
         ...localOptions.appConnectionOptions,
         logger: this.logger,
         validation: this.validation,
         logPayloadDetail: this.logPayloadDetail,
-        // Single source of truth: WCP3 advertises the same version WCP5, getInfo and
-        // closeRequest gating read.
         fdc3Version: this.implementationMetadata.fdc3Version,
       })) as TEdge
 
-    this.bindEdgeCallbacks()
+    this.appConnection.setOnInstanceTeardown(instanceId => {
+      void this.disconnectInstance(instanceId)
+    })
+
     const controllers = this.buildControllers(providedIntentResolver, localOptions)
     this.intentResolver = controllers.intentResolver
     this.channels = controllers.channels
@@ -182,36 +169,6 @@ export class SailDesktopAgent<
     }
   }
 
-  /**
-   * Wire edge → agent callbacks after `appConnection` is assigned.
-   * Intent-resolution wiring only when the edge declares that capability (browser: yes;
-   * minimal test edges: no — raiseIntent auto-selects the first handler).
-   */
-  private bindEdgeCallbacks(): void {
-    if (typeof this.appConnection.requestIntentResolution === "function") {
-      const conn = this.appConnection
-      this.requestIntentResolution = request => conn.requestIntentResolution!(request)
-    }
-
-    this.appConnection.bindAgentState?.({
-      getAgentState: () => this.getState(),
-      setAgentState: callback => {
-        this.setState(callback)
-      },
-    })
-
-    this.appConnection.setOnInstanceTeardown(instanceId => {
-      this.disconnectInstance(instanceId)
-    })
-
-    this.appConnection.setOnAgentDisconnect?.(() => {
-      this.handleDisconnect()
-    })
-  }
-
-  /**
-   * Build grouped host controllers and wire intent-resolver / lifecycle listeners on the edge.
-   */
   private buildControllers(
     providedIntentResolver: IntentResolver | undefined,
     localOptions: Omit<SailDesktopAgentOptions<TEdge>, "intentResolver">,
@@ -222,7 +179,6 @@ export class SailDesktopAgent<
     const hostIntentResolver =
       providedIntentResolver ??
       createHostIntentResolver({
-        // Host UI times out slightly before the WCP edge so the edge owns the hard deadline.
         timeoutMs: Math.max(0, wcpIntentResolutionTimeout - 1000),
       })
     const resolverUI = hasIntentResolverUI(hostIntentResolver) ? hostIntentResolver : undefined
@@ -231,13 +187,12 @@ export class SailDesktopAgent<
     const channels = createChannelsController(
       {
         getUserChannels: () => this.getUserChannels(),
-        getAppChannelId: instanceId => this.getAppUserChannelId(instanceId),
+        getAppChannelId: instanceId => this.getCurrentChannel(instanceId)?.id ?? null,
         changeAppChannel: (instanceId, channelId) =>
           changeAppChannel(
             {
-              getState: () => this.state,
-              createHandlerParams: id => this.createHandlerParams(id),
               getUserChannels: () => this.getUserChannels(),
+              setAppUserChannel: (id, ch) => this.setAppUserChannel(id, ch),
               appConnection: this.appConnection,
               channelChangeTimeoutMs: this.channelChangeTimeoutMs,
             },
@@ -250,7 +205,7 @@ export class SailDesktopAgent<
     const apps = createAppsController(
       {
         add: app => this.addApp(app),
-        addAll: apps => this.addApps(apps),
+        addAll: appsToAdd => this.addApps(appsToAdd),
         addDirectory: url => this.addAppDirectory(url),
         remove: appId => this.removeApp(appId),
         getAll: () => this.getApps(),
@@ -270,9 +225,7 @@ export class SailDesktopAgent<
     return { intentResolver, channels, apps }
   }
 
-  /**
-   * Start the Desktop Agent, activating the app connection edge.
-   */
+  /** Start the Desktop Agent, activating the app connection edge. */
   start(): void {
     if (this.isStarted) {
       throw new Error("DesktopAgent is already started")
@@ -286,172 +239,83 @@ export class SailDesktopAgent<
     this.isStarted = true
   }
 
-  /**
-   * Stop the Desktop Agent and clean up resources.
-   */
+  /** Stop the Desktop Agent and clean up resources. */
   stop(): void {
     if (!this.isStarted) {
       return
     }
-
     this.appConnection.stop()
+    void this.shutdown()
     this.isStarted = false
   }
 
-  /**
-   * Inbound edge dispatch: WCP4/WCP6 on this agent path, else DACP from apps.
-   * WCP1–3 stay on `window.postMessage` in {@link BrowserAppConnection}.
-   */
-  private async handleMessage(message: unknown): Promise<void> {
-    if (!message || typeof message !== "object") {
-      return
-    }
+  // --- Host / shell API ---
 
-    const messageType = (message as { type?: string }).type
-    if (!messageType) {
-      return
+  private setAppUserChannel(instanceId: string, channelId: string | null): void {
+    const channel = channelId === null ? null : this.getChannelById(channelId)
+    if (channelId !== null && !channel) {
+      throw new Error(`Channel "${channelId}" does not exist`)
     }
-
-    if (messageType.startsWith("WCP")) {
-      this.dispatchWcpMessage(message, messageType)
-      return
-    }
-
-    // Only process messages FROM apps (have source.instanceId).
-    // Messages TO apps (destination only) pass through without processing.
-    const instanceId = this.extractInstanceId(message)
-    if (!instanceId) {
-      return
-    }
-
-    await routeDACPMessage(message, this.createHandlerParams(instanceId))
+    this.setCurrentChannel(instanceId, channel)
+    this.appConnection.notifyChannelMembershipChanged?.(instanceId, channelId)
   }
 
-  private extractInstanceId(message: unknown): string | null {
-    if (!message || typeof message !== "object") {
-      return null
-    }
-
-    const messageObj = message as {
-      meta?: { source?: { instanceId?: string } }
-    }
-    return messageObj.meta?.source?.instanceId || null
-  }
-
-  /**
-   * WCP messages that share the app MessagePort with DACP after handshake.
-   * One switch: identity validation, goodbye cleanup, or warn+drop.
-   */
-  private dispatchWcpMessage(message: unknown, messageType: string): void {
-    const meta = (message as { meta?: { connectionAttemptUuid?: string; source?: unknown } }).meta
-
-    // Browser MessagePort path already validated in bridgeAppPort before enrichment;
-    // enriched WCP4 carries Sail-injected meta.source and must not be re-checked
-    // (those fields fail the FDC3 WCP schema).
-    const isBrowserEnrichedWcp4 =
-      messageType === "WCP4ValidateAppIdentity" && meta?.source !== undefined
-    if (
-      !isBrowserEnrichedWcp4 &&
-      applyInboundValidationPolicy(message, {
-        logger: this.logger,
-        validation: this.validation,
-      }) === "rejected"
-    ) {
-      return
-    }
-
-    switch (messageType) {
-      case "WCP4ValidateAppIdentity": {
-        const connectionAttemptUuid = meta?.connectionAttemptUuid
-        if (!connectionAttemptUuid) {
-          this.logger.warn("[WCP4] Missing connectionAttemptUuid, cannot route message")
-          return
-        }
-        handleWcp4ValidateAppIdentity(
-          message,
-          this.createHandlerParams(`temp-${connectionAttemptUuid}`),
-        )
-        return
-      }
-      case "WCP6Goodbye": {
-        const instanceId = this.extractInstanceId(message)
-        if (!instanceId) {
-          this.logger.warn("[WCP] Missing instanceId, cannot route message", { messageType })
-          return
-        }
-        cleanupInstanceDacpState(this.createHandlerParams(instanceId))
-        return
-      }
-      default:
-        this.logger.warn(`[WCP] Unhandled message type on agent edge: ${messageType}`)
-    }
-  }
-
-  private handleDisconnect(): void {
-    const allInstances = Object.values(this.state.instances)
-    for (const instance of allInstances) {
-      const params = this.createHandlerParams(instance.instanceId)
-      cleanupInstanceDacpState(params)
-    }
-  }
-
-  private createHandlerParams(instanceId: string): DACPHandlerParams {
-    const conn = this.appConnection
-    const responses = createDacpResponseDispatcherFromDelivery(conn, message =>
-      conn.connectionRegistry.sendToAppInstance(message),
-    )
-
-    return {
-      responses,
-      instanceId,
-      getState: () => this.getState(),
-      setState: callback => this.setState(callback),
-      appLauncher: this.appLauncher,
-      requestIntentResolution: this.requestIntentResolution,
-      validation: this.validation,
-      logger: this.logger,
-      logPayloadDetail: this.logPayloadDetail,
-      implementationMetadata: this.implementationMetadata,
-      openContextListenerTimeoutMs: this.openContextListenerTimeoutMs,
-      pendingIntentTimeoutMs: this.pendingIntentTimeoutMs,
-      heartbeatEnabled: this.heartbeatEnabled,
-      heartbeatIntervalMs: this.heartbeatIntervalMs,
-      heartbeatTimeoutMs: this.heartbeatTimeoutMs,
-      disconnectInstance: instanceId => this.disconnectInstance(instanceId),
-      notifyChannelMembershipChanged: conn.notifyChannelMembershipChanged?.bind(conn),
-    }
-  }
-
-  getState(): AgentState {
-    return this.state
-  }
-
-  private setState(callback: Parameters<StateSetter>[0]): void {
-    this.state = callback(this.state)
+  private getUserChannels(): BrowserTypes.Channel[] {
+    return this.getChannelStates()
+      .filter(c => c.type === ChannelType.user)
+      .map(c => ({
+        id: c.id,
+        type: "user" as const,
+        displayMetadata: c.displayMetadata,
+      }))
   }
 
   private addApp(app: DirectoryApp): void {
-    this.state = addDirectoryApp(this.state, app)
+    this.directory.allApps = mergeAppsWithoutDuplicates(this.directory.allApps, [
+      app as DaDirectoryApp,
+    ])
   }
 
   private addApps(apps: DirectoryApp[]): void {
-    this.state = addApplications(this.state, apps)
+    this.directory.allApps = mergeAppsWithoutDuplicates(
+      this.directory.allApps,
+      apps as DaDirectoryApp[],
+    )
   }
 
   private async addAppDirectory(url: string): Promise<void> {
-    this.state = await loadDirectoryIntoState(this.state, url, this.logger)
+    const apps = await fetchAppDirectory(url)
+    this.directory.allApps = mergeAppsWithoutDuplicates(this.directory.allApps, apps)
+  }
+
+  /**
+   * Pre-register a host-minted instance id (e.g. iframe `name`) as Pending so
+   * WCP4 identity validation can adopt it.
+   */
+  registerPendingHostInstance(params: { appId: string; instanceId: string }): void {
+    if (this.getInstanceDetails(params.instanceId)) {
+      return
+    }
+    this.setInstanceDetails(params.instanceId, {
+      appId: params.appId,
+      instanceId: params.instanceId,
+      state: State.Pending,
+      fdc3Version: this.implementationMetadata.fdc3Version === "3.0" ? "3.0" : "2.2",
+    })
   }
 
   private removeApp(appId: string): void {
-    this.state = removeApplicationsByAppId(this.state, appId)
+    this.directory.allApps = this.directory.allApps.filter(
+      a => a.appId.toLowerCase() !== appId.toLowerCase(),
+    )
   }
 
   private getApps(): DirectoryApp[] {
-    return retrieveAllApps(this.state.appDirectory)
+    return this.directory.retrieveAllApps()
   }
 
   private getApp(appId: string): DirectoryApp | undefined {
-    return retrieveAppsById(this.state.appDirectory, appId)[0]
+    return this.directory.retrieveAppsById(appId)[0]
   }
 
   private async openApp(
@@ -463,9 +327,9 @@ export class SailDesktopAgent<
     }
 
     const appIdentifier = resolveOpenAppIdentifier(app, options)
-    const catalogApps = retrieveAppsById(this.state.appDirectory, appIdentifier.appId)
+    const catalogApps = this.directory.retrieveAppsById(appIdentifier.appId)
     if (catalogApps.length === 0) {
-      throw new Error(`App not found in directory: ${appIdentifier.appId}`)
+      throw new Error(OpenError.AppNotFound)
     }
 
     const payload: BrowserTypes.OpenRequestPayload = {
@@ -473,11 +337,13 @@ export class SailDesktopAgent<
       ...(options?.context !== undefined ? { context: options.context } : {}),
     }
 
-    const launched = await this.appLauncher.launch(payload, catalogApps[0]!)
+    const launched = await this.appLauncher.launch(payload, catalogApps[0] as AppMetadata)
     if (launched.instanceId) {
-      this.registerPendingHostInstance({
+      this.setInstanceDetails(launched.instanceId, {
         appId: launched.appId,
         instanceId: launched.instanceId,
+        state: State.Pending,
+        fdc3Version: this.implementationMetadata.fdc3Version === "3.0" ? "3.0" : "2.2",
       })
     }
 
@@ -485,24 +351,27 @@ export class SailDesktopAgent<
   }
 
   private getAppInstances(): DesktopAgentAppInstance[] {
-    return getAllInstances(this.state).map(mapToDesktopAgentAppInstance)
+    return this.instances
+      .filter(i => i.state !== State.Terminated)
+      .map(i => ({
+        appId: i.appId,
+        instanceId: i.instanceId,
+        status: mapStateToStatus(i.state),
+        currentUserChannel: this.getCurrentChannel(i.instanceId)?.id ?? null,
+      }))
   }
 
   private getAppInstance(instanceId: string): DesktopAgentAppInstance | undefined {
-    const instance = getInstance(this.state, instanceId)
-    return instance ? mapToDesktopAgentAppInstance(instance) : undefined
-  }
-
-  registerPendingHostInstance(params: RunningAppIdentifier): void {
-    if (getInstance(this.state, params.instanceId)) {
-      return
+    const instance = this.getInstanceDetails(instanceId)
+    if (!instance || instance.state === State.Terminated) {
+      return undefined
     }
-
-    this.state = connectInstance(this.state, {
-      instanceId: params.instanceId,
-      appId: params.appId,
-      metadata: { name: params.appId },
-    })
+    return {
+      appId: instance.appId,
+      instanceId: instance.instanceId,
+      status: mapStateToStatus(instance.state),
+      currentUserChannel: this.getCurrentChannel(instanceId)?.id ?? null,
+    }
   }
 
   private getAppConnection(instanceId: string): AppConnectionMetadata | undefined {
@@ -513,13 +382,10 @@ export class SailDesktopAgent<
     return this.appConnection.getConnections()
   }
 
-  disconnectInstance(instanceId: string): void {
-    cleanupInstanceDacpState(this.createHandlerParams(instanceId))
+  async disconnectInstance(instanceId: string): Promise<void> {
+    await this.cleanupApp(instanceId)
+    await this.setAppState(instanceId, State.Terminated)
     this.appConnection.pruneAppConnection(instanceId)
-  }
-
-  exportState(): string {
-    return JSON.stringify(this.state, null, 2)
   }
 
   getIsStarted(): boolean {
@@ -528,14 +394,5 @@ export class SailDesktopAgent<
 
   getImplementationMetadata(): SailDesktopAgentMetadata {
     return this.implementationMetadata
-  }
-
-  private getUserChannels(): BrowserTypes.Channel[] {
-    return getAllUserChannels(this.state)
-  }
-
-  private getAppUserChannelId(instanceId: string): string | null {
-    const instance = getInstance(this.state, instanceId)
-    return instance?.currentUserChannel ?? null
   }
 }
