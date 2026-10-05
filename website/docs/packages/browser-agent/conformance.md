@@ -125,21 +125,9 @@ adoption. The harness scripts always use local mode:
 | `dev:browser:2.2` / `test:browser:2.2` | `@robmoffat/fdc3-conformance-2.2` on `http://localhost:3001` | 2.2 |
 | `dev:browser:3.0` / `test:browser:3.0` | `@robmoffat/fdc3-conformance-3.0` on `http://localhost:3001` | 3.0 |
 
-`sail-finance` still uses `VITE_CONFORMANCE_TOOLBOX` via `.env.toolbox-local` and `dev:local`:
-
-- **`@finos/sail-conformance-harness`** — `npm run dev:browser:2.2` (or `:3.0`) — see
-  [@finos/sail-conformance-harness](../conformance-harness/overview).
-- **`@finos/sail-finance`** — `npm run dev:local -w @finos/sail-finance` passes
-  `--mode toolbox-local` through to that package's Vite dev server (`predev` builds the agent
-  and platform first).
-
-`sail-finance` always loads the same conformance app-directory fixture and merges it into its own
-app directory alongside the public FINOS app directory (`https://directory.fdc3.finos.org/v2/apps`)
-— that merge is unconditional, in every dev mode. What `VITE_CONFORMANCE_TOOLBOX=local` changes is
-only the **origin** those conformance apps resolve to: hosted FINOS URLs by default, rewritten to
-`sail-finance`'s own origin (so they load same-origin, which `window.name` / WCP4 host-instance
-adoption requires) when the local profile is active. The harness serves the published toolbox
-`dist/` as Vite `publicDir` on its own origin instead.
+Conformance toolbox runs use **`@finos/sail-conformance-harness`** only
+(`npm run dev:browser:2.2` / `:3.0`). `@finos/sail-finance` is the product shell and does not
+host the toolbox.
 
 ## Playwright status
 

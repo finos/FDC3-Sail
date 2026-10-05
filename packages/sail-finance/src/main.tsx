@@ -3,12 +3,6 @@ import { createRoot } from "react-dom/client"
 import { SailDesktopAgent, type AppLauncher } from "@finos/sail-browser-agent"
 import type { AppMetadata } from "@finos/fdc3"
 
-import { loadConformanceApplications } from "../../sail-conformance-harness/src/conformance-app-directory"
-import { createHarnessIntentResolver } from "../../sail-conformance-harness/src/intent-resolver-wiring"
-import {
-  installHarnessInboundAppMessageObserver,
-  parseMockAppControlTeardownBroadcast,
-} from "../../sail-conformance-harness/src/harness-finos-teardown"
 import { bootstrapDockviewPopoutShell, isDockviewPopoutShell } from "./utils/dockview-popout"
 
 import "./index.css"
@@ -103,67 +97,10 @@ if (isDockviewPopoutShell()) {
     },
   }
 
-  const conformance = loadConformanceApplications({
-    // Same-origin with sail-finance so WCP host-instance adoption works via the /apps proxy.
-    localOrigin: window.location.origin,
-  })
-
-  // `dev:local` (VITE_CONFORMANCE_TOOLBOX=local) is a FINOS toolbox measurement run, not the
-  // product shell: conformance apps only (the public directory inflates findIntent counts), no
-  // heartbeat to kill a ~9-minute suite, and no modal resolver waiting on a human.
-  const isToolboxRun = conformance.profile === "local"
-
-  const toolboxOverrides = isToolboxRun
-    ? {
-        heartbeatEnabled: false,
-        implementationMetadata: { fdc3Version: conformance.fdc3Version },
-        intentResolver: createHarnessIntentResolver(),
-        // Teardown rides inside `broadcastRequest` on the `app-control` channel; metadata-only
-        // logs hide it. Matches the harness debug profile.
-        logPayloadDetail: "full" as const,
-      }
-    : { appDirectories: [FINOS_APP_DIRECTORY_URL] }
-
-  console.info(
-    `[Sail] Conformance toolbox: ${conformance.profile} — FDC3 target ${conformance.fdc3Version} — origin ${conformance.origin}${isToolboxRun ? " — toolbox profile ON (heartbeat off, auto intent resolve, conformance apps only)" : ""}`,
-  )
-
   const agent = new SailDesktopAgent({
     appLauncher,
-    apps: [...conformance.applications],
-    ...toolboxOverrides,
+    appDirectories: [FINOS_APP_DIRECTORY_URL],
   })
-
-  if (isToolboxRun) {
-    // FINOS mocks answer Conformance1's `closeWindow` with `windowClosed` on `app-control`, then
-    // behave as if gone. No DACP message asks the host to destroy the container, so without this
-    // the scenario passes while the iframe panel leaks. Must be installed before `start()`.
-    installHarnessInboundAppMessageObserver(agent.appConnection, message => {
-      // Diagnostic at warn level on purpose: vite forwards warn/error to the dev-server
-      // terminal and drops log/info, so this is the only teardown trace visible outside DevTools.
-      const record = message as {
-        type?: string
-        meta?: { source?: { appId?: string; instanceId?: string } }
-        payload?: { channelId?: string; context?: { type?: string } }
-      }
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- unvalidated DACP wire cast
-      if (record?.type === "broadcastRequest" && record.payload?.channelId === "app-control") {
-        console.warn(
-          `[SailProbe] app-control context=${record.payload.context?.type} from=${record.meta?.source?.appId}/${record.meta?.source?.instanceId}`,
-        )
-      }
-
-      const teardown = parseMockAppControlTeardownBroadcast(message)
-      if (!teardown) {
-        return
-      }
-      // Defer so Conformance1 receives `windowClosed` before the MessagePort is torn down.
-      setTimeout(() => {
-        console.warn(`[Sail] FINOS teardown: closing ${teardown.appId} (${teardown.instanceId})`)
-        void appLauncher.close?.(teardown.instanceId)
-      }, 0)
-    })
-  }
 
   agent.start()
 
