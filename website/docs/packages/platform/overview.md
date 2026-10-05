@@ -18,7 +18,7 @@ describe themselves with the same types.
 ## Scope boundary
 
 The package holds no FDC3. Intents, contexts, channels, app directories, and the DACP/WCP wire
-protocols all live in [`@finos/sail-desktop-agent`](../desktop-agent/overview) — **import that
+protocols all live in [`@finos/sail-browser-agent`](../browser-agent/overview) — **import that
 package directly**. Nothing is re-exported from it here, deliberately: a host that can see FDC3
 types through `sail-platform` cannot tell which package owns what.
 
@@ -233,9 +233,9 @@ their port, not a limitation of the package.
 
 ## Related
 
-- [@finos/sail-desktop-agent](../desktop-agent/overview) — the FDC3 engine. A host imports it
+- [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine. A host imports it
   directly; this package does not wrap it.
-- [Desktop Agent integrator guide](../desktop-agent/integrator-guide) — building a host on the agent.
+- [Desktop Agent integrator guide](../browser-agent/integrator-guide) — building a host on the agent.
 - [Architecture Overview](../../architecture/overview) — package ownership and boundaries.
 - [@finos/sail-finance](../sail-finance/overview) · [@finos/sail-one](../sail-one/overview) — the two
   example UIs.

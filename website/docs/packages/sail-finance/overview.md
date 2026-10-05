@@ -77,7 +77,7 @@ repo, since it couples the product app to a test fixture.
 
 ## Related
 
-- [@finos/sail-desktop-agent](../desktop-agent/overview) — the FDC3 engine this shell constructs.
+- [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine this shell constructs.
 - [@finos/sail-platform](../platform/overview) — workspaces, layouts, and storage.
 - [@finos/sail-one](../sail-one/overview) — the domain-neutral sibling shell.
 - [Architecture Overview](../../architecture/overview) — package ownership and how the two compose.

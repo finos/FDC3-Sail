@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-desktop-agent"
+import type { DirectoryApp } from "@finos/sail-browser-agent"
 import { getServerState } from "../../state"
 import { installLocalStorage } from "../../state/__tests__/local-storage-mock"
-import { getAllContextTypes, getAllIntentNames } from "../custom-apps"
+import { getAllContextTypes, getAllIntentNames } from "../custom-apps-helpers"
 
 describe("getAllIntentNames", () => {
   beforeEach(() => {

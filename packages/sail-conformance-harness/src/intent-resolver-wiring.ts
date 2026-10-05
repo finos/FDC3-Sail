@@ -1,4 +1,4 @@
-import type { IntentResolver } from "@finos/sail-desktop-agent"
+import type { IntentResolver } from "@finos/sail-browser-agent"
 import { selectIntentHandler } from "./intent-resolution"
 import type { IntentResolutionRequest as HarnessIntentResolutionRequest } from "./types"
 

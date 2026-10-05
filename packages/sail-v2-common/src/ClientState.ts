@@ -7,7 +7,7 @@ import {
   WscpPairing,
 } from "./message-types"
 import { Context } from "@finos/fdc3-context"
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp } from "@finos/sail-headless-agent"
 
 /**
  * @deprecated Prefer the stable WSCP endpoint (`/fdc3/ws`) plus sharedSecret.

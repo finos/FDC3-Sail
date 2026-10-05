@@ -6,13 +6,13 @@ sidebar_position: 4
 
 FDC3 user channels can be changed in two ways. Sail supports both at the protocol level; **Sail Web uses host-controlled chrome** by default.
 
-For **one agent per browsing context** and why host chrome must not poll `getState()`, see [Integrator guide — One Desktop Agent per context](../packages/desktop-agent/integrator-guide.md#one-desktop-agent-per-context).
+For **one agent per browsing context** and why host chrome must not poll `getState()`, see [Integrator guide — One Desktop Agent per context](../packages/browser-agent/integrator-guide.md#one-desktop-agent-per-context).
 
 ## Roles
 
 | Layer | Responsibility |
 |-------|----------------|
-| **`@finos/sail-desktop-agent`** | FDC3 engine: DACP handlers, agent state, WCP routing, events to apps. Stays **protocol-pure** — no Sail UI, no “chrome” concepts. |
+| **`@finos/sail-browser-agent`** | FDC3 engine: DACP handlers, agent state, WCP routing, events to apps. Stays **protocol-pure** — no Sail UI, no “chrome” concepts. |
 | **`@finos/sail-platform`** | No role here. It holds workspaces, layouts and storage; channels are FDC3 and belong to the agent. |
 | **`@finos/sail-finance`** (example host) | React chrome (`ChannelSelector`), connection store, tiles around iframes. |
 
@@ -105,6 +105,6 @@ a different question from which channel its app has joined.
 
 ## Related work
 
-- Integrator singleton + channel reactivity: [Desktop Agent integrator guide](../packages/desktop-agent/integrator-guide.md#one-desktop-agent-per-context)
+- Integrator singleton + channel reactivity: [Desktop Agent integrator guide](../packages/browser-agent/integrator-guide.md#one-desktop-agent-per-context)
 - Architecture overview: [Overview](./overview.md) (Sail-controlled UI)
 - Workspaces and layouts: [@finos/sail-platform](../packages/platform/overview)

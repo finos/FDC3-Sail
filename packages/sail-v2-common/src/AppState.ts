@@ -1,4 +1,4 @@
-import { DirectoryApp, Fdc3ApiVersion, State } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, Fdc3ApiVersion, State } from "@finos/sail-headless-agent"
 import { AppHosting } from "./app-hosting"
 import { SailAppStateArgs } from "./message-types"
 import { ServerState } from "./ServerState"

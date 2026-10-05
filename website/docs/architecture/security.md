@@ -9,7 +9,7 @@ today, what it deliberately does not, and where a deployment has to make its own
 
 ## What the Desktop Agent enforces `[implemented]`
 
-Admission happens during **WCP4 identity validation**, in `@finos/sail-desktop-agent`
+Admission happens during **WCP4 identity validation**, in `@finos/sail-browser-agent`
 (`app-connection/wcp/wcp-identity-validation.ts`). Two checks run, both required by the FDC3
 standard, and both fail closed:
 
@@ -35,7 +35,7 @@ If it returns, a reimplementation must fail closed, and must reconstruct `connec
 from the `temp-` instance id during early handshake, or it will fail to reply to exactly the
 connections it is meant to reject.
 
-If it returns, it belongs in `@finos/sail-desktop-agent` as agent configuration, beside the WCP4
+If it returns, it belongs in `@finos/sail-browser-agent` as agent configuration, beside the WCP4
 check above — not in a wrapper package that cannot see the wire. `@finos/sail-platform` holds
 workspaces, layouts and storage, and has no dependency on the agent at all.
 
@@ -54,8 +54,8 @@ the directory.
 
 ## Related
 
-- [@finos/sail-desktop-agent](../packages/desktop-agent/overview) — where admission is enforced.
-- [Desktop Agent integrator guide](../packages/desktop-agent/integrator-guide) — supplying the app
+- [@finos/sail-browser-agent](../packages/browser-agent/overview) — where admission is enforced.
+- [Desktop Agent integrator guide](../packages/browser-agent/integrator-guide) — supplying the app
   directory a host admits from.
 - [@finos/sail-platform](../packages/platform/overview) — workspaces, layouts and storage; no FDC3,
   no admission role.

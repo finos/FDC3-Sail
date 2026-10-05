@@ -1,4 +1,4 @@
-import type { DirectoryApp } from "@finos/sail-desktop-agent"
+import type { DirectoryApp } from "@finos/sail-browser-agent"
 
 import conformanceAppDirectory from "../conformance-appd.json"
 import localConformanceAppDirectory22 from "@robmoffat/fdc3-conformance-2.2/dist/directories/localhost-conformance.json"

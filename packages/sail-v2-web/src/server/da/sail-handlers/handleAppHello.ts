@@ -3,7 +3,7 @@ import {
   AppHelloArgs,
   SailHostManifest,
 } from "@finos/fdc3-sail-common"
-import { State, WebAppDetails } from "@finos/fdc3-sail-da-impl"
+import { State, WebAppDetails } from "@finos/sail-headless-agent"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { SailData } from "../SailFDC3ServerInstance"
 import { Connection } from "../connection/Connection"

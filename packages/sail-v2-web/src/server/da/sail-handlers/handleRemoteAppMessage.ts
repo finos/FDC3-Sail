@@ -7,7 +7,7 @@ import {
   WscpConnectFailed,
   WscpDesktopAgentConnect,
 } from "@finos/fdc3-sail-common"
-import { Fdc3ApiVersion, State } from "@finos/fdc3-sail-da-impl"
+import { Fdc3ApiVersion, State } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 import { WebSocketConnection } from "../connection"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"

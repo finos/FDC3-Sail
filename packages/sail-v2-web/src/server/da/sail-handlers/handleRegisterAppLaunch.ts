@@ -1,5 +1,5 @@
 import { DesktopAgentRegisterAppLaunchArgs } from "@finos/fdc3-sail-common"
-import { State } from "@finos/fdc3-sail-da-impl"
+import { State } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { createLogger } from "../../logger"

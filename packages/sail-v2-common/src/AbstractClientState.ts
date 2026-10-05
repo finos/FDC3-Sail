@@ -1,4 +1,4 @@
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { AppPanel, ClientState, IntentResolution } from "./ClientState"
 import {
   ContextHistory,

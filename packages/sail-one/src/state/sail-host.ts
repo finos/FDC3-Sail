@@ -4,7 +4,7 @@ import {
   type DirectoryApp,
   type IntentResolutionRequest,
   type WebAppDetails,
-} from "@finos/sail-desktop-agent"
+} from "@finos/sail-browser-agent"
 import type { AppIdentifier, AppMetadata, BrowserTypes } from "@finos/fdc3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"

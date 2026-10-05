@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "vp build",
-    "predev": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform",
+    "predev": "npm run build -w @finos/sail-browser-agent -w @finos/sail-platform",
     "dev": "vp dev",
     "preview": "vp preview",
     "format": "vp fmt --check .",
@@ -28,9 +28,9 @@
     "typescript-plugin-css-modules": "^5.1.0"
   },
   "dependencies": {
-    "@finos/fdc3": "^2.2.3",
-    "@finos/fdc3-schema": "^2.2.1-beta.3",
-    "@finos/sail-desktop-agent": "*",
+    "@finos/fdc3": "3.0.0-alpha.5",
+    "@finos/fdc3-schema": "3.0.0-alpha.5",
+    "@finos/sail-browser-agent": "*",
     "@finos/sail-platform": "*",
     "color": "^5.0.0",
     "gridstack": "^12.6.0",

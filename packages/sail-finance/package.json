@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
-    "predev": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform",
+    "predev": "npm run build -w @finos/sail-browser-agent -w @finos/sail-platform",
     "dev": "vp dev",
     "predev:local": "npm run predev",
     "dev:local": "vp dev --mode toolbox-local",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
-    "@finos/sail-desktop-agent": "*",
+    "@finos/sail-browser-agent": "*",
     "@finos/sail-platform": "*",
     "@tailwindcss/vite": "^4.1.12",
     "class-variance-authority": "^0.7.1",

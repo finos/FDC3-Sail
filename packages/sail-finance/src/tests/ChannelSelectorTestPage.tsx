@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import type { BrowserTypes } from "@finos/fdc3"
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import { ChannelSelector } from "../components/ChannelSelector"
 import { SailDesktopAgentProvider } from "../contexts"

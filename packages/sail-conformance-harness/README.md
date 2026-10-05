@@ -1,6 +1,6 @@
 # @finos/sail-conformance-harness
 
-Minimal React host for the [FDC3 conformance toolbox](https://fdc3.finos.org/toolbox/fdc3-conformance/) — wires only `@finos/sail-desktop-agent` (no full Sail stack). Local runs use published static sites from `@robmoffat/fdc3-conformance` (2.2 and 3.0 packages, aliased in this workspace).
+Minimal React host for the [FDC3 conformance toolbox](https://fdc3.finos.org/toolbox/fdc3-conformance/) — wires only `@finos/sail-browser-agent` (no full Sail stack). Local runs use published static sites from `@robmoffat/fdc3-conformance` (2.2 and 3.0 packages, aliased in this workspace).
 
 ## Documentation
 

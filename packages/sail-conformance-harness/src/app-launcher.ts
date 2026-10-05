@@ -1,4 +1,4 @@
-import type { AppLauncher, DirectoryApp } from "@finos/sail-desktop-agent"
+import type { AppLauncher, DirectoryApp } from "@finos/sail-browser-agent"
 import type { AppIdentifier, AppMetadata, BrowserTypes } from "@finos/fdc3"
 import type { HarnessLaunchMode, HarnessPanel } from "./types"
 

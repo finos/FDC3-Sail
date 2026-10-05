@@ -2,13 +2,13 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": { "correctness": "off" },
   "ignorePatterns": [
-    "packages/da-impl/**",
+    "packages/sail-headless-agent/**",
     "packages/sail-v2-common/**",
     "packages/sail-v2-web/**"
   ],
   "overrides": [
     {
-      "files": ["packages/sail-desktop-agent/**"],
+      "files": ["packages/sail-browser-agent/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -21,7 +21,7 @@
                   "@finos/sail-one",
                   "**/sail-platform/**"
                 ],
-                "message": "sail-desktop-agent is the engine: it must not depend on the platform or any shell."
+                "message": "sail-browser-agent is the engine: it must not depend on the platform or any shell."
               }
             ]
           }

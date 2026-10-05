@@ -1,4 +1,4 @@
-import { State } from "@finos/fdc3-sail-da-impl"
+import { State } from "@finos/sail-headless-agent"
 import { ConnectionContext } from "./types"
 import { WebSocketConnection } from "../connection"
 import { createLogger } from "../../logger"

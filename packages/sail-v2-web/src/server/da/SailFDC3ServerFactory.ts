@@ -12,7 +12,7 @@ import {
   OpenHandlerV3,
   LogFunction,
   HandlersByVersion,
-} from "@finos/fdc3-sail-da-impl"
+} from "@finos/sail-headless-agent"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { SailDirectory } from "../appd/SailDirectory"
 import { SocketIOConnection } from "./connection"

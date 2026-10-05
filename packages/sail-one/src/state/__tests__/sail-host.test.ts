@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-desktop-agent"
+import type { DirectoryApp } from "@finos/sail-browser-agent"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"

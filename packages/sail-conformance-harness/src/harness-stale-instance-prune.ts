@@ -1,4 +1,4 @@
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import type { PopupCloseWatcher } from "./popup-launcher"
 
@@ -27,7 +27,7 @@ export function pruneStalePendingHostInstances(options: {
       continue
     }
 
-    desktopAgent.disconnectInstance(instance.instanceId)
+    void desktopAgent.disconnectInstance(instance.instanceId)
     pruned.push(instance.instanceId)
   }
 

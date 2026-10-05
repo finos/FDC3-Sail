@@ -1,6 +1,6 @@
 import { useContext } from "react"
 import { useStore } from "zustand"
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import type { AppDirectoryStore } from "../stores/app-directory-store"
 import type { ConnectionStore } from "../stores/connection-store"

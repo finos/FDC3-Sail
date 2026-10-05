@@ -7,7 +7,7 @@ import {
   HandlersByVersion,
   InstanceID,
   State,
-} from "@finos/fdc3-sail-da-impl"
+} from "@finos/sail-headless-agent"
 import { getIcon, SailDirectory } from "../appd/SailDirectory"
 import { Connection } from "./connection/Connection"
 import {

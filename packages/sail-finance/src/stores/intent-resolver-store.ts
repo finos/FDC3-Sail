@@ -4,7 +4,7 @@ import type {
   IntentHandler as HostIntentHandler,
   IntentResolutionRequest,
   SailDesktopAgent,
-} from "@finos/sail-desktop-agent"
+} from "@finos/sail-browser-agent"
 
 /**
  * Handler option for intent resolution

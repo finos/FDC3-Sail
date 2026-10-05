@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-desktop-agent"
+import type { DirectoryApp } from "@finos/sail-browser-agent"
 
 import { createHarnessAppLauncher, resolveHarnessLaunchMode } from "./app-launcher"
 import { HARNESS_POPUP_FEATURES, openHarnessPopup } from "./popup-launcher"

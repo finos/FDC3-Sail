@@ -42,12 +42,12 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # Agent resolves @finos/fdc3-sail-da-impl from its dist; harness resolves
-      # @finos/sail-desktop-agent from dist. Build both before the suite.
+      # Agent resolves @finos/sail-headless-agent from its dist; harness resolves
+      # @finos/sail-browser-agent from dist. Build both before the suite.
       - name: Build desktop agent
         run: |
-          npm run build -w @finos/fdc3-sail-da-impl
-          npm run build -w @finos/sail-desktop-agent
+          npm run build -w @finos/sail-headless-agent
+          npm run build -w @finos/sail-browser-agent
 
       # Local toolbox packages (@robmoffat/fdc3-conformance-{2.2|3.0}) are served same-origin
       # on :3001. Fails on any regression against e2e/conformance-baseline-${version}.json.

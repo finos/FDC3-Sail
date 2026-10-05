@@ -1,6 +1,6 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { SailDesktopAgent, type AppLauncher } from "@finos/sail-desktop-agent"
+import { SailDesktopAgent, type AppLauncher } from "@finos/sail-browser-agent"
 import type { AppMetadata } from "@finos/fdc3"
 
 import { loadConformanceApplications } from "../../sail-conformance-harness/src/conformance-app-directory"

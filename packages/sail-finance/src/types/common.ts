@@ -1,5 +1,5 @@
 // App directory shapes come from the Desktop Agent, which owns FDC3.
-export type { DirectoryApp, WebAppDetails } from "@finos/sail-desktop-agent"
+export type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
 
 /**
  * A user channel as this shell paints it.

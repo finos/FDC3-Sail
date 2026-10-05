@@ -18,7 +18,7 @@ export default defineConfig({
       "node:fs",
       "node:fs/promises",
       // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent / sail-platform trigger reload
-      "@finos/sail-desktop-agent",
+      "@finos/sail-browser-agent",
       "@finos/sail-platform",
     ],
   },
@@ -64,7 +64,7 @@ export default defineConfig({
       ignored: [
         "**/node_modules/**",
         "**/.git/**",
-        "!**/node_modules/@finos/sail-desktop-agent/**",
+        "!**/node_modules/@finos/sail-browser-agent/**",
         "!**/node_modules/@finos/sail-platform/**",
       ],
     },

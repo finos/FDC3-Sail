@@ -4,7 +4,7 @@ import {
   DEFAULT_FDC3_USER_CHANNELS,
   SailDesktopAgent,
   type DirectoryApp,
-} from "@finos/sail-desktop-agent"
+} from "@finos/sail-browser-agent"
 
 import { loadConformanceApplications } from "./conformance-app-directory"
 import { createHarnessAppLauncher } from "./app-launcher"

@@ -25,7 +25,7 @@ export default defineConfig({
     "import.meta.env.VITE_CONFORMANCE_FDC3_VERSION": JSON.stringify(fdc3Version),
   },
   optimizeDeps: {
-    exclude: ["@finos/sail-desktop-agent"],
+    exclude: ["@finos/sail-browser-agent"],
   },
   // Published toolbox (`@robmoffat/fdc3-conformance-{2.2|3.0}`), served at the harness
   // origin so `/apps/...`, `/lib/...` and `/directories/...` match the URLs in
@@ -38,12 +38,12 @@ export default defineConfig({
     strictPort: true,
     // Headless/CI runs have no browser to open.
     open: !process.env.CI && !process.env.HARNESS_NO_OPEN,
-    // Reload when @finos/sail-desktop-agent dist changes (package resolves to dist/, not src/)
+    // Reload when @finos/sail-browser-agent dist changes (package resolves to dist/, not src/)
     watch: {
       ignored: [
         "**/node_modules/**",
         "**/.git/**",
-        "!**/node_modules/@finos/sail-desktop-agent/**",
+        "!**/node_modules/@finos/sail-browser-agent/**",
       ],
     },
   },

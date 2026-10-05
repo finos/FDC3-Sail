@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp } from "@finos/sail-headless-agent"
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard"
 import {

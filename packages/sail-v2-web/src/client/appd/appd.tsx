@@ -8,7 +8,7 @@ import {
 } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { AppHosting } from "@finos/fdc3-sail-common"
 import { AppMetadata, Image } from "@finos/fdc3"
 

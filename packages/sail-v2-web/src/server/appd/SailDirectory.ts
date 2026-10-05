@@ -1,4 +1,4 @@
-import { BasicDirectory, DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import { BasicDirectory, DirectoryApp } from "@finos/sail-headless-agent"
 import { FDC3_WEBSOCKET_PROPERTY } from "@finos/fdc3-sail-common"
 import { createLogger } from "../logger"
 import fs from "node:fs/promises"
