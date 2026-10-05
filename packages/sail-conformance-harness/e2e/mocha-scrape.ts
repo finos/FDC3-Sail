@@ -4,7 +4,7 @@ import type {
   ConformanceResult,
   ConformanceTestResult,
   ConformanceTestState,
-} from "./conformance-baseline"
+} from "./conformance-result"
 
 export type MochaSnapshot = {
   passes: number

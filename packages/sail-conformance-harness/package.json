@@ -4,17 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
-    "dev:local": "npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
-    "dev:local:3.0": "CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
-    "dev:e2e": "HARNESS_NO_OPEN=1 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && HARNESS_NO_OPEN=1 vp dev --mode toolbox-local",
+    "dev:browser:2.2": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
+    "dev:browser:3.0": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
+    "dev:browser:web-2.2": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
+    "dev:browser:web-3.0": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
     "build": "vp build",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
     "test:watch": "vp test",
-    "test:conformance": "playwright test",
-    "test:conformance:2.2": "CONFORMANCE_FDC3_VERSION=2.2 VITE_CONFORMANCE_FDC3_VERSION=2.2 playwright test",
-    "test:conformance:3.0": "CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_FDC3_VERSION=3.0 playwright test"
+    "test:browser:2.2": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:browser:3.0": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 playwright test",
+    "test:browser:web-2.2": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:browser:web-3.0": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 playwright test"
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",

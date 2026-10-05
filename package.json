@@ -13,7 +13,6 @@
     "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
     "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
     "dev:v2": "npm run build -w @finos/sail-headless-agent -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
-    "dev:conformance": "npm run dev -w @finos/sail-conformance-harness",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
     "lint": "vp lint . && oxlint -c .oxlintrc.json packages",

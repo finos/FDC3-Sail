@@ -2,7 +2,10 @@
 
 interface ImportMetaEnv {
   readonly VITE_CONFORMANCE_TOOLBOX?: "hosted" | "local"
-  readonly VITE_CONFORMANCE_FDC3_VERSION?: "2.2" | "3.0"
+  /** Injected by vite.config.ts `define` from `CONFORMANCE_TOOLBOX` / mode env. */
+  readonly CONFORMANCE_TOOLBOX?: "hosted" | "local"
+  /** Injected by vite.config.ts `define` from `CONFORMANCE_FDC3_VERSION`. */
+  readonly CONFORMANCE_FDC3_VERSION?: "2.2" | "3.0"
 }
 
 interface ImportMeta {

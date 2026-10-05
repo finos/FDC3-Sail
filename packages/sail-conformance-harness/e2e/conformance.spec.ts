@@ -4,12 +4,10 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import {
-  compareToBaseline,
-  formatRegressionReport,
-  loadBaseline,
+  formatFailureReport,
   resolveConformanceFdc3Version,
   summariseResult,
-} from "./conformance-baseline"
+} from "./conformance-result"
 import { awaitMochaResult, installMochaEndHook } from "./mocha-scrape"
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
@@ -71,24 +69,6 @@ test(`FDC3 ${fdc3Version} conformance suite runs via UI and mocha scrape`, async
 
   console.log(`FDC3 ${fdc3Version}: ${summariseResult(outcome)}`)
 
-  const baseline = loadBaseline(fdc3Version)
-  if (!baseline) {
-    console.log(
-      `No committed baseline found — writing artifacts/conformance.json only. ` +
-        `Copy it to e2e/conformance-baseline-${fdc3Version}.json to start gating on regressions.`,
-    )
-    return
-  }
-
-  const diff = compareToBaseline(outcome, baseline)
-  writeFileSync(join(ARTIFACTS, "conformance-diff.json"), `${JSON.stringify(diff, null, 2)}\n`)
-
-  if (diff.fixed.length > 0) {
-    console.log(
-      `${diff.fixed.length} test(s) now passing that the baseline expects to fail:\n  ${diff.fixed.join("\n  ")}\n` +
-        `Refresh e2e/conformance-baseline-${fdc3Version}.json to lock the improvement in.`,
-    )
-  }
-
-  expect(formatRegressionReport(diff)).toBe("")
+  expect(outcome.failures ?? 0, formatFailureReport(outcome)).toBe(0)
+  expect(formatFailureReport(outcome)).toBe("")
 })

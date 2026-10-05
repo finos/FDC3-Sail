@@ -50,12 +50,9 @@ jobs:
           npm run build -w @finos/sail-browser-agent
 
       # Local toolbox packages (@robmoffat/fdc3-conformance-{2.2|3.0}) are served same-origin
-      # on :3001. Fails on any regression against e2e/conformance-baseline-${version}.json.
+      # on :3001. Fails if any toolbox test fails.
       - name: Run FDC3 ${{ matrix.fdc3_version }} conformance suite
-        env:
-          CONFORMANCE_FDC3_VERSION: ${{ matrix.fdc3_version }}
-          VITE_CONFORMANCE_FDC3_VERSION: ${{ matrix.fdc3_version }}
-        run: npm run test:conformance -w @finos/sail-conformance-harness
+        run: npm run test:browser:${{ matrix.fdc3_version }} -w @finos/sail-conformance-harness
 
       # `if: always()` so a failing run still uploads conformance.json, the diff and the
       # screenshot — those are what you need to diagnose it.

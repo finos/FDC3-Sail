@@ -1,4 +1,0 @@
-{
-  "note": "Headless FDC3 3.0 baseline: `npm run test:conformance:3.0 -w @finos/sail-conformance-harness` (suite=All) against @finos/sail-browser-agent via @robmoffat/fdc3-conformance@3.0.0-test.0. EMPTY until the first green matrix run — any entry added here suppresses a real regression, so prefer fixing the defect. Refresh from artifacts/conformance.json only if a genuinely unfixable failure is agreed with a human.",
-  "failing": []
-}

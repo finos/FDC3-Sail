@@ -23,8 +23,13 @@ packages/sail-browser-agent/html/
 packages/sail-browser-agent/test-results.xml
 packages/sail-browser-agent/reports/**/*
 
+packages/sail-headless-agent/cucumber-report.html
+packages/sail-headless-agent/test-results.xml
+packages/sail-headless-agent/coverage/
+packages/sail-headless-agent/.nyc_output/
+
 packages/sail-finance/playwright-report/index.html
 
-# Conformance harness Playwright output (e2e/conformance-baseline-2.2.json is committed)
+# Conformance harness Playwright output
 packages/sail-conformance-harness/artifacts/
 packages/sail-conformance-harness/test-results/

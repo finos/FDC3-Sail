@@ -108,17 +108,15 @@ Starts the Socket.IO-based app in `packages/sail-v2-web` against the same `sail-
 ### Conformance harness
 
 ```bash
-npm run dev:conformance
-# local 2.2 / 3.0 toolboxes (same-origin on :3001):
-npm run dev:local -w @finos/sail-conformance-harness
-npm run dev:local:3.0 -w @finos/sail-conformance-harness
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness
+npm run dev:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
 Open http://localhost:3001. Unattended runs:
 
 ```bash
-npm run test:conformance:2.2 -w @finos/sail-conformance-harness
-npm run test:conformance:3.0 -w @finos/sail-conformance-harness
+npm run test:browser:2.2 -w @finos/sail-conformance-harness
+npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
 (Playwright selects suite **All**, clicks **Run**, scrapes `#mocha` until Mocha ends.)

@@ -22,6 +22,14 @@ describe("loadConformanceApplications", () => {
     })
   })
 
+  it("honors an explicit FDC3 version for the hosted profile", () => {
+    const loaded = loadConformanceApplications({ profile: "hosted", fdc3Version: "2.2" })
+
+    expect(loaded.profile).toBe("hosted")
+    expect(loaded.fdc3Version).toBe("2.2")
+    expect(loaded.origin).toBe(CONFORMANCE_HOSTED_ORIGIN)
+  })
+
   it("targets FDC3 2.2 for local profile by default", () => {
     const loaded = loadConformanceApplications({ profile: "local", fdc3Version: "2.2" })
 

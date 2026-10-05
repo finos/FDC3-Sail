@@ -38,7 +38,7 @@ npm run dev
 Starts Desktop Agent (watch), platform API (watch), and Sail web UI on **http://localhost:3000**.
 
 ```bash
-npm run dev:conformance   # FDC3 toolbox clean room on :3001
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness   # FDC3 toolbox clean room on :3001
 npm run docs:dev          # Documentation site (use --port 3002 if web app is running)
 ```
 
@@ -75,8 +75,8 @@ npm run dev
 # Same, but with the sail-one shell instead of sail-finance
 npm run dev:one
 
-# FDC3 conformance toolbox host
-npm run dev:conformance
+# FDC3 conformance toolbox host (local 2.2; use :3.0 for 3.0)
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness
 
 # Start documentation site
 npm run docs:dev

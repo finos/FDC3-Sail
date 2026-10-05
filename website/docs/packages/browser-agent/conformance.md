@@ -15,7 +15,7 @@ them:
 2. **The FINOS FDC3 conformance toolbox**, run live in a browser against
    `@finos/sail-conformance-harness` — a different, browser/WCP-integrated signal with its own
    pass/fail exports. See [@finos/sail-conformance-harness](../conformance-harness/overview) for
-   how that harness is wired, and [Conformance baseline status](#conformance-baseline-status)
+   how that harness is wired, and [Playwright status](#playwright-status)
    below for why this page does not currently state a pass rate.
 
 For how `@finos/sail-browser-agent` fits into the rest of the stack, see the
@@ -93,7 +93,7 @@ all; **n/a** means outside the FDC3 conformance pack's public-API surface.
 
 | Conformance area | Feature file | Status | Notes |
 |---|---|---|---|
-| `getInfo` / implementation metadata | `apps/apps.feature` | partial | Core metadata assertions covered by Cucumber; the live-toolbox path is a separate, unmeasured signal — see [Conformance baseline status](#conformance-baseline-status) |
+| `getInfo` / implementation metadata | `apps/apps.feature` | partial | Core metadata assertions covered by Cucumber; the live-toolbox path is a separate signal — see [Playwright status](#playwright-status) |
 | User channels (list, join, leave, current, `displayMetadata`) | `channels/user-channels.feature` | covered | MockTransport coverage of API behavior |
 | App channels (create, broadcast, listeners) | `channels/app-channels.feature` | covered | MockTransport coverage of API behavior |
 | Private channels | `channels/private-channel.feature` | covered | Includes `AccessDenied` grant checks |
@@ -116,22 +116,20 @@ all; **n/a** means outside the FDC3 conformance pack's public-API surface.
 
 ## Toolbox local dev (`toolbox-local` / `VITE_CONFORMANCE_TOOLBOX`) **`[implemented]`**
 
-Running the FINOS toolbox against a **local** copy (instead of the hosted
-`https://fdc3.finos.org/toolbox/fdc3-conformance`) is a supported dev mode, controlled by the
-`VITE_CONFORMANCE_TOOLBOX` Vite env var:
+Running the FINOS toolbox against a **local** same-origin copy (instead of the hosted
+`https://fdc3.finos.org/toolbox/fdc3-conformance`) is the supported path for WCP host-instance
+adoption. The harness scripts always use local mode:
 
-| Profile | Env | Toolbox origin | FDC3 target |
-|---|---|---|---|
-| Hosted (default) | — | `https://fdc3.finos.org/toolbox/fdc3-conformance` | 3.0 |
-| Local FINOS dev | `VITE_CONFORMANCE_TOOLBOX=local` | `http://localhost:3001` | 2.2 |
+| Script | Toolbox | FDC3 target |
+|---|---|---|
+| `dev:browser:2.2` / `test:browser:2.2` | `@robmoffat/fdc3-conformance-2.2` on `http://localhost:3001` | 2.2 |
+| `dev:browser:3.0` / `test:browser:3.0` | `@robmoffat/fdc3-conformance-3.0` on `http://localhost:3001` | 3.0 |
 
-Two workspaces read this variable, each via its own `.env.toolbox-local` and a `dev:local` npm
-script that passes Vite's `--mode toolbox-local`:
+`sail-finance` still uses `VITE_CONFORMANCE_TOOLBOX` via `.env.toolbox-local` and `dev:local`:
 
-- **`@finos/sail-conformance-harness`** — `npm run dev:local -w @finos/sail-conformance-harness`
-  runs the harness itself against the local toolbox on port 3001. See
+- **`@finos/sail-conformance-harness`** — `npm run dev:browser:2.2` (or `:3.0`) — see
   [@finos/sail-conformance-harness](../conformance-harness/overview).
-- **`@finos/sail-finance`** — `npm run dev:local -w @finos/sail-finance` passes the same
+- **`@finos/sail-finance`** — `npm run dev:local -w @finos/sail-finance` passes
   `--mode toolbox-local` through to that package's Vite dev server (`predev` builds the agent
   and platform first).
 
@@ -140,35 +138,28 @@ app directory alongside the public FINOS app directory (`https://directory.fdc3.
 — that merge is unconditional, in every dev mode. What `VITE_CONFORMANCE_TOOLBOX=local` changes is
 only the **origin** those conformance apps resolve to: hosted FINOS URLs by default, rewritten to
 `sail-finance`'s own origin (so they load same-origin, which `window.name` / WCP4 host-instance
-adoption requires) when the local profile is active. The harness does the same origin rewrite
-against its own origin instead. Vite proxies `/apps`, `/lib`, and a couple of static assets to the
-hosted FINOS toolbox so the rewritten URLs still resolve when running locally.
+adoption requires) when the local profile is active. The harness serves the published toolbox
+`dist/` as Vite `publicDir` on its own origin instead.
 
-## Conformance baseline status
+## Playwright status
 
-**83 of 83 passing, against an empty baseline.**
+**83 of 83 passing (FDC3 2.2 local toolbox).**
 
 `@finos/sail-conformance-harness` runs the FINOS toolbox in a real browser under Playwright:
 
 ```bash
-npm run test:conformance -w @finos/sail-conformance-harness
+npm run test:browser:2.2 -w @finos/sail-conformance-harness
+npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
-A run takes roughly five minutes and covers 21 suites. Results are compared against
-`e2e/conformance-baseline-2.2.json`, which lists tests that are *allowed* to fail. **That list
-is currently empty**, so every one of the 83 tests must pass or the run fails. There is no tolerated
-failure to hide a regression behind.
-
-The three titles that used to sit in that baseline were not toolbox flakiness — they were two real
-defects in Sail: concurrent same-appId launches losing an instance registration, and a plain
-`fdc3.open()` resolving before the launched app had connected. Both are fixed, which is why the list
-is empty. Adding an entry back suppresses a real regression; fix the defect instead.
+A run takes roughly five minutes and covers 21 suites. **Any toolbox failure fails the run** —
+there is no allowlist.
 
 ### Nightly CI
 
 `.github/workflows/conformance.yml` runs the suite nightly at **03:00 UTC**, and on demand via
-**`workflow_dispatch`** from the Actions tab. It gates on regressions against the baseline and
-uploads its artifacts either way.
+**`workflow_dispatch`** from the Actions tab. It fails on any toolbox failure and uploads
+artifacts either way.
 
 :::note
 GitHub only fires scheduled workflows from a repository's **default branch**. On any other branch

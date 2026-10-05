@@ -28,31 +28,31 @@ export function resolveConformanceToolboxProfile(
   fdc3Version?: ConformanceFdc3Version,
 ): ConformanceToolboxConfig {
   const resolvedProfile = profile ?? readConformanceToolboxProfileFromEnv()
+  const versionFromEnv =
+    import.meta.env.CONFORMANCE_FDC3_VERSION ??
+    (typeof process !== "undefined" ? process.env.CONFORMANCE_FDC3_VERSION : undefined)
+
   if (resolvedProfile === "hosted") {
     return {
       profile: "hosted",
       origin: CONFORMANCE_HOSTED_ORIGIN,
-      // Hosted FINOS site is the 3.0 toolbox.
-      fdc3Version: "3.0",
+      // FINOS website is the 3.0 toolbox; still honor an explicit version for the DA target.
+      fdc3Version: fdc3Version ?? resolveConformanceFdc3Version(versionFromEnv ?? "3.0"),
     }
   }
-
-  const version =
-    fdc3Version ??
-    resolveConformanceFdc3Version(
-      import.meta.env.VITE_CONFORMANCE_FDC3_VERSION ??
-        (typeof process !== "undefined" ? process.env.CONFORMANCE_FDC3_VERSION : undefined),
-    )
 
   return {
     profile: "local",
     origin: CONFORMANCE_LOCAL_ORIGIN,
-    fdc3Version: version,
+    fdc3Version: fdc3Version ?? resolveConformanceFdc3Version(versionFromEnv),
   }
 }
 
 function readConformanceToolboxProfileFromEnv(): ConformanceToolboxProfile {
-  const raw = import.meta.env.VITE_CONFORMANCE_TOOLBOX
+  const raw =
+    (typeof process !== "undefined" ? process.env.CONFORMANCE_TOOLBOX : undefined) ??
+    import.meta.env.CONFORMANCE_TOOLBOX ??
+    import.meta.env.VITE_CONFORMANCE_TOOLBOX
   return raw === "local" ? "local" : "hosted"
 }
 
