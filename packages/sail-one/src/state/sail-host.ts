@@ -130,6 +130,11 @@ export class SailHost implements ServerState {
       appLauncher: this.createAppLauncher(),
       apps: props.customApps,
       userChannels: tabsToChannels(props.channels),
+      // Cross-origin iframes block reading event.source.name; map Window → launcher id
+      // the same way the FDC3 demo uses getInstanceForWindow for WCP4 adoption.
+      appConnectionOptions: {
+        resolveHostIdentifier: source => getAppState().getInstanceIdForWindow(source),
+      },
       onAppConnected: metadata => {
         this.instanceStates.set(metadata.instanceId, AppInstanceState.Connected)
         const panel = getClientState()
@@ -192,6 +197,8 @@ export class SailHost implements ServerState {
         const instanceTitle = queued?.instanceTitle ?? getAppState().createTitle(app)
 
         this.instanceStates.set(instanceId, AppInstanceState.Pending)
+        // Pre-register before the browsing context can WCP1 (demo setInstanceDetails timing).
+        this.agent?.registerPendingHostInstance({ appId: app.appId, instanceId })
 
         if (hosting === AppHosting.Tab) {
           const url = (app.details as WebAppDetails).url
