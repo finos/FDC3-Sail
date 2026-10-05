@@ -6,7 +6,7 @@
     "clean": "rimraf dist",
     "build": "npx vp build",
     "dev": "npm run build -w @finos/fdc3-sail-common --prefix ../.. && nodemon -w src/server -x tsx src/server/main.ts  --trace-uncaught",
-    "apps": "npx --yes @finos/fdc3-example-apps@prerelease",
+    "apps": "fdc3-example-apps",
     "conformance-2.2": "npx --yes @robmoffat/fdc3-conformance@2.2.3-test.1",
     "conformance-3.0": "npx --yes @robmoffat/fdc3-conformance@3.0.0-test.0",
     "dev:apps:2.2": "concurrently -k -n sail,apps,conf -c blue,magenta,green \"npm run dev\" \"npm run apps\" \"npm run conformance-2.2\"",

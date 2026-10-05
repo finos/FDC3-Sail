@@ -70,10 +70,8 @@ npm run dev -w @finos/sail-finance   # this package only
 
 Dev server: **http://localhost:3000** (`vite.config.ts:36`).
 
-Conformance apps used in local development come from
-`packages/sail-conformance-harness/src/conformance-app-directory`, imported by relative path
-(`main.tsx`) alongside the standard FINOS app directory — the one `.oxlintrc.json` exception in the
-repo, since it couples the product app to a test fixture.
+Uses the public FINOS app directory. For FDC3 conformance toolbox runs, use
+[@finos/sail-conformance-harness](../conformance-harness/overview).
 
 ## Related
 

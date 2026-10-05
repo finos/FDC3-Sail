@@ -7,7 +7,6 @@ export default defineConfig({
       "packages/sail-browser-agent/vitest.config.ts",
       "packages/sail-platform/vitest.config.ts",
       "packages/sail-finance/vitest.config.ts",
-      "packages/sail-conformance-harness/vitest.config.ts",
       "packages/sail-one/vitest.config.ts",
     ],
   },

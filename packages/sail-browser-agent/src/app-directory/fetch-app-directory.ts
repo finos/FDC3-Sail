@@ -25,6 +25,15 @@ export function parseDirectoryData(data: DirectoryApp[] | DirectoryData): Direct
 }
 
 export function validateApplication(app: DirectoryApp, source?: string): void {
+  // AppD records sometimes omit `title` (e.g. FINOS conformance MockAppId) — fall back.
+  if (!app.title) {
+    const withName = app as DirectoryApp & { name?: string }
+    if (typeof withName.name === "string" && withName.name.length > 0) {
+      app.title = withName.name
+    } else if (app.appId) {
+      app.title = app.appId
+    }
+  }
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- unvalidated remote JSON
   if (!app.appId || !app.title || !app.type || !app.details) {
     const sourceInfo = source ? ` in ${source}` : ""
@@ -34,20 +43,44 @@ export function validateApplication(app: DirectoryApp, source?: string): void {
   }
 }
 
-export function validateApplications(applications: DirectoryApp[], source?: string): void {
+/**
+ * Validate apps from a directory. Invalid entries are skipped with a warning so one
+ * bad record (common in published conformance fixtures) does not discard the rest.
+ */
+export function validateApplications(
+  applications: DirectoryApp[],
+  source?: string,
+): DirectoryApp[] {
+  const valid: DirectoryApp[] = []
   for (const app of applications) {
-    validateApplication(app, source)
+    try {
+      validateApplication(app, source)
+      valid.push(app)
+    } catch (error) {
+      consoleLogger.warn(
+        `Skipping invalid application${source ? ` in ${source}` : ""}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    }
   }
+  return valid
 }
 
 function normalizeDirectoryUrl(url: string): string {
   try {
     const urlObj = new URL(url)
-    if (urlObj.pathname.endsWith("/v2/apps")) {
+    const pathname = urlObj.pathname.replace(/\/$/, "") || "/"
+    // Already an AppD REST endpoint
+    if (pathname.endsWith("/v2/apps")) {
       return url
     }
-    const basePath = urlObj.pathname.replace(/\/$/, "")
-    urlObj.pathname = `${basePath}/v2/apps`
+    // Static App Directory JSON (local conformance / example-apps / hosted snapshots)
+    if (pathname.endsWith(".json")) {
+      return url
+    }
+    // Treat as AppD base URL and append the REST collection path
+    urlObj.pathname = `${pathname}/v2/apps`
     return urlObj.toString()
   } catch {
     return url
@@ -73,8 +106,7 @@ export async function fetchAppDirectory(url: string): Promise<DaDirectoryApp[]> 
 
     const data = (await response.json()) as DirectoryData | { applications?: DirectoryApp[] }
     const applications = parseDirectoryData(data as DirectoryApp[] | DirectoryData)
-    validateApplications(applications, normalizedUrl)
-    return applications as DaDirectoryApp[]
+    return validateApplications(applications, normalizedUrl) as DaDirectoryApp[]
   } catch (error) {
     throw new Error(
       `Failed to fetch from ${url}: ${error instanceof Error ? error.message : String(error)}`,

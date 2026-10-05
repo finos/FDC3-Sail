@@ -22,7 +22,6 @@ npm run dev:browser:2.2 -w @finos/sail-conformance-harness
 Dev server: **http://localhost:3001**
 
 ```bash
-npm test -w @finos/sail-conformance-harness
 npm run typecheck -w @finos/sail-conformance-harness
 ```
 
@@ -47,10 +46,8 @@ npm run dev:browser:2.2 -w @finos/sail-conformance-harness
 npm run dev:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
-`sail-finance` still has a `dev:local` mode (`npm run dev:local -w @finos/sail-finance`) that
-rewrites conformance app URLs to its own origin. See
-[FDC3 conformance traceability — toolbox local dev](../browser-agent/conformance#toolbox-local-dev-toolbox-local--vite_conformance_toolbox-implemented)
-for that path.
+Conformance toolbox runs belong in this package (`dev:browser:*` / `test:browser:*`), not
+`@finos/sail-finance`.
 
 ## Playwright gate
 
