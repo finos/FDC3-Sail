@@ -20,13 +20,8 @@ export type ConformanceResult = {
   tests?: ConformanceTestResult[]
 }
 
-export type ConformanceFdc3Version = "2.2" | "3.0"
-
-export function resolveConformanceFdc3Version(
-  raw: string | undefined = process.env.CONFORMANCE_FDC3_VERSION,
-): ConformanceFdc3Version {
-  return raw === "3.0" ? "3.0" : "2.2"
-}
+export type { ConformanceFdc3Version } from "./hosts"
+export { resolveConformanceFdc3Version } from "./hosts"
 
 export function summariseResult(result: ConformanceResult): string {
   const seconds = result.durationMs ? (result.durationMs / 1000).toFixed(1) : "?"

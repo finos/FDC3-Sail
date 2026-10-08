@@ -5,17 +5,20 @@
   "type": "module",
   "scripts": {
     "dev:browser:2.2": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
-    "dev:browser:3.0": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev --mode toolbox-local\"",
-    "dev:browser:web-2.2": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
-    "dev:browser:web-3.0": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
+    "dev:browser:3.0": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent --prefix ../.. && CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 concurrently -k -n agent,harness \"npm run dev -w @finos/sail-browser-agent --prefix ../..\" \"vp dev\"",
     "build": "vp build",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
     "test:watch": "vp test",
-    "test:browser:2.2": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=2.2 playwright test",
-    "test:browser:3.0": "CONFORMANCE_TOOLBOX=local CONFORMANCE_FDC3_VERSION=3.0 playwright test",
-    "test:browser:web-2.2": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=2.2 playwright test",
-    "test:browser:web-3.0": "CONFORMANCE_TOOLBOX=hosted CONFORMANCE_FDC3_VERSION=3.0 playwright test"
+    "test:browser": "playwright test",
+    "test:browser:sail-one:2.2": "CONFORMANCE_HOST=sail-one CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:browser:sail-one:3.0": "CONFORMANCE_HOST=sail-one CONFORMANCE_FDC3_VERSION=3.0 playwright test",
+    "test:browser:sail-finance:2.2": "CONFORMANCE_HOST=sail-finance CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:browser:sail-finance:3.0": "CONFORMANCE_HOST=sail-finance CONFORMANCE_FDC3_VERSION=3.0 playwright test",
+    "test:browser:sail-v2-web:2.2": "CONFORMANCE_HOST=sail-v2-web CONFORMANCE_FDC3_VERSION=2.2 playwright test",
+    "test:browser:sail-v2-web:3.0": "CONFORMANCE_HOST=sail-v2-web CONFORMANCE_FDC3_VERSION=3.0 playwright test",
+    "test:browser:2.2": "npm run test:browser:sail-finance:2.2",
+    "test:browser:3.0": "npm run test:browser:sail-finance:3.0"
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",

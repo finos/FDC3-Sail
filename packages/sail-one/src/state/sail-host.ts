@@ -1,6 +1,8 @@
 import {
   SailDesktopAgent,
   createPopupCloseWatcher,
+  createProgrammaticIntentResolver,
+  isConformanceAutoResolve,
   type AppLauncher,
   type DirectoryApp,
   type IntentResolutionRequest,
@@ -112,6 +114,8 @@ export interface ServerState {
   getInstanceIdForHostWindow(windowRef: Window): string | undefined
   findHostWindow(instanceId: string): Window | undefined
   forgetHostWindow(instanceId: string): void
+  /** Open a directory app by id (deep-link / CI). */
+  openDirectoryApp(appId: string): Promise<string>
   getKnownApps(): DirectoryApp[]
   getApplications(): Promise<DirectoryApp[]>
   getAppInstanceState(instanceId: string): AppInstanceState | undefined
@@ -193,6 +197,7 @@ export class SailHost implements ServerState {
   }
 
   private async startAgent(props: SailClientStateArgs): Promise<void> {
+    const autoResolve = isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE)
     const agent = new SailDesktopAgent({
       appLauncher: this.createAppLauncher(),
       apps: props.customApps,
@@ -200,6 +205,18 @@ export class SailHost implements ServerState {
       implementationMetadata: {
         fdc3Version: resolveSailOneFdc3Version(),
       },
+      ...(autoResolve
+        ? {
+            intentResolver: createProgrammaticIntentResolver({
+              log: (message, detail) => {
+                console.log(
+                  message.replace("[ProgrammaticIntentResolver]", "[SailHost]"),
+                  detail ?? "",
+                )
+              },
+            }),
+          }
+        : {}),
       // Default resolveHostIdentifier uses the agent's host-window registry
       // (hosts call registerHostWindow / AppState.registerAppWindow on iframe load).
       onAppConnected: metadata => {
@@ -228,10 +245,14 @@ export class SailHost implements ServerState {
       agent.channels.onAppChannelChange(() => {
         this.notify()
       }),
-      agent.intentResolver.onRequest(request => {
-        this.presentIntentResolution(request)
-      }),
     )
+    if (!autoResolve) {
+      this.unsubscribes.push(
+        agent.intentResolver.onRequest(request => {
+          this.presentIntentResolution(request)
+        }),
+      )
+    }
 
     this.lastChannelKey = channelIdKey(props.channels)
     this.lastCustomAppsKey = JSON.stringify(props.customApps)
@@ -360,6 +381,17 @@ export class SailHost implements ServerState {
 
   forgetHostWindow(instanceId: string): void {
     this.agent?.forgetHostWindow(instanceId)
+  }
+
+  async openDirectoryApp(appId: string): Promise<string> {
+    if (!this.agent) {
+      throw new Error("Desktop Agent not registered")
+    }
+    const identifier = await this.agent.apps.open(appId)
+    if (!identifier.instanceId) {
+      throw new Error(`Desktop Agent returned no instance id for ${appId}`)
+    }
+    return identifier.instanceId
   }
 
   getKnownApps(): DirectoryApp[] {

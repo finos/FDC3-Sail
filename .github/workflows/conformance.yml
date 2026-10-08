@@ -20,10 +20,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        host: [sail-one, sail-finance, sail-v2-web]
         fdc3_version: ["2.2", "3.0"]
-    # A full suite run is ~5–7 minutes; the ceiling covers install, browser download and a
-    # hung agent (playwright.config.ts allows the test itself 15 minutes).
-    timeout-minutes: 30
+    # Full suite ~5–7 minutes plus host/toolbox startup; ceiling covers hung agents.
+    timeout-minutes: 40
     permissions:
       contents: read
       actions: write
@@ -37,30 +37,34 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Only Chromium: playwright.config.ts declares a single chromium project, and the suite
-      # opens real popup windows so it does not run cross-browser.
+      # Only Chromium: the suite opens real popup windows so it does not run cross-browser.
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # Agent resolves @finos/sail-headless-agent from its dist; harness resolves
-      # @finos/sail-browser-agent from dist. Build both before the suite.
-      - name: Build desktop agent
+      # Playwright webServer builds host deps; pre-build shared packages to fail fast.
+      - name: Build shared packages
         run: |
-          npm run build -w @finos/sail-headless-agent
-          npm run build -w @finos/sail-browser-agent
+          if [ "${{ matrix.host }}" = "sail-v2-web" ]; then
+            npm run build -w @finos/fdc3-sail-common
+          else
+            npm run build -w @finos/sail-headless-agent
+            npm run build -w @finos/sail-browser-agent
+            npm run build -w @finos/sail-platform
+          fi
 
-      # Local toolbox packages (@robmoffat/fdc3-conformance-{2.2|3.0}) are served same-origin
-      # on :3001. Fails if any toolbox test fails.
-      - name: Run FDC3 ${{ matrix.fdc3_version }} conformance suite
-        run: npm run test:browser:${{ matrix.fdc3_version }} -w @finos/sail-conformance-harness
+      # Matrix cell: product Desktop Agent × FDC3 version.
+      # 2.2 starts local toolbox on :3001; 3.0 uses hosted fdc3.finos.org AppD.
+      - name: Run ${{ matrix.host }} FDC3 ${{ matrix.fdc3_version }} conformance
+        run: >
+          CONFORMANCE_HOST=${{ matrix.host }}
+          CONFORMANCE_FDC3_VERSION=${{ matrix.fdc3_version }}
+          npm run test:browser -w @finos/sail-conformance-harness
 
-      # `if: always()` so a failing run still uploads conformance.json, the diff and the
-      # screenshot — those are what you need to diagnose it.
       - name: Upload conformance artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: conformance-results-${{ matrix.fdc3_version }}
+          name: conformance-${{ matrix.host }}-${{ matrix.fdc3_version }}
           path: |
             packages/sail-conformance-harness/artifacts/
             packages/sail-conformance-harness/test-results/

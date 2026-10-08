@@ -121,7 +121,19 @@ window.addEventListener("load", () => {
     if (isFdc3UserInterfaceHandshake(e.data)) {
       renderIntentResolver(null)
     } else if (isFdc3UserInterfaceResolve(e.data)) {
-      renderIntentResolver(e.data.payload)
+      const payload = e.data.payload
+      // CI / conformance: auto-pick first intent + first app (no modal).
+      if (import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE === "1") {
+        const firstIntent = payload.appIntents?.[0]
+        const firstApp = firstIntent?.apps?.[0]
+        const intentName = firstIntent?.intent?.name ?? null
+        if (firstApp && intentName) {
+          console.log("[Sail v2] Auto-resolving intent", { intentName, app: firstApp })
+          void callback(intentName, firstApp, null)
+          return
+        }
+      }
+      renderIntentResolver(payload)
     }
   })
 

@@ -39,6 +39,17 @@ export {
 /** App directory types for Sail shells (looser than sail-headless-agent openapi types). */
 export type { DirectoryApp, WebAppDetails } from "./app-directory/types"
 
+/** Shared conformance AppD / toolbox helpers (from `@finos/sail-headless-agent`). */
+export {
+  HOSTED_CONFORMANCE_3_0_DIRECTORY_URL,
+  LOCAL_CONFORMANCE_2_2_DIRECTORY_URL,
+  isConformanceAutoResolve,
+  resolveConformanceDirectoryUrl,
+  resolveConformanceFdc3Version,
+  resolveDeepLinkAppId,
+  type ConformanceFdc3Version,
+} from "@finos/sail-headless-agent"
+
 export type {
   AppConnectionMetadata,
   AppConnectionOptions,

@@ -31,3 +31,13 @@ export { createPopupCloseWatcher } from "./popup-close-watcher"
 
 export type { HostWindowRegistry } from "./host-window-registry"
 export { createHostWindowRegistry } from "./host-window-registry"
+
+export type {
+  ProgrammaticIntentHandlerOption,
+  ProgrammaticIntentResolutionRequest,
+  ProgrammaticIntentResolverOptions,
+} from "./programmatic-intent-resolver"
+export {
+  createProgrammaticIntentResolver,
+  selectIntentHandler,
+} from "./programmatic-intent-resolver"

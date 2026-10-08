@@ -34,7 +34,8 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    // CI / Playwright sets CI=1; avoid stealing focus from the test browser.
+    open: !process.env.CI,
     proxy: {
       // Hosted FDC3 3.0 toolbox (same path as sail-one / website-conformance.json apps).
       "/apps": {

@@ -290,7 +290,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   fdc3Version(): string {
-    return "3.0"
+    // CI / conformance matrix: `SAIL_FDC3_VERSION=2.2|3.0` (default 3.0).
+    return process.env.SAIL_FDC3_VERSION === "2.2" ? "2.2" : "3.0"
   }
 
   private convertToTabDetail(channel: ChannelState): TabDetail {
