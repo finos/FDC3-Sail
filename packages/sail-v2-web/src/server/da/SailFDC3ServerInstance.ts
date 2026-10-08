@@ -29,10 +29,10 @@ import {
   TabDetail,
   WscpPairing,
 } from "@finos/fdc3-sail-common"
-import { BrowserTypes } from "@finos/fdc3-schema"
-import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard"
+import { BrowserTypes } from "@finos/fdc3-schema-v3"
+import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard-v3"
 import { v4 as uuidv4 } from "uuid"
-import { ChannelChangedEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { ChannelChangedEvent } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { mapChannels } from "./SailFDC3ServerFactory"
 import { SocketIOConnection } from "./connection"
 import { createLogger } from "../logger"

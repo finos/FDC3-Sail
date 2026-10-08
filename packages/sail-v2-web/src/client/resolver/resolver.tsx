@@ -1,6 +1,7 @@
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { AppIdentifier, Context, Intent } from "@finos/fdc3"
+import { Context } from "@finos/fdc3-context-v3"
+import { AppIdentifier, Intent } from "@finos/fdc3-standard-v3"
 import { useState } from "react"
 import {
   AugmentedAppIntent,

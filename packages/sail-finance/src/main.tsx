@@ -99,7 +99,10 @@ if (isDockviewPopoutShell()) {
 
   const agent = new SailDesktopAgent({
     appLauncher,
-    appDirectories: [FINOS_APP_DIRECTORY_URL],
+    appDirectories: [
+      FINOS_APP_DIRECTORY_URL,
+      "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json",
+    ],
   })
 
   agent.start()

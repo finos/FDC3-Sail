@@ -8,7 +8,7 @@ import { Popup, PopupHeaderButton } from "../popups/popup"
 import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
 import { getIcon } from "../icon/app-icon"
 import { AppHosting } from "../state"
-import type { Image } from "@finos/fdc3"
+import type { Image } from "@finos/fdc3-standard-v3"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 

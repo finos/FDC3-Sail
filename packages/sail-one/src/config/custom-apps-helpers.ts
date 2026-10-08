@@ -1,4 +1,4 @@
-import { ContextTypes, Intents } from "@finos/fdc3"
+import { ContextTypes, Intents } from "@finos/fdc3-standard-v3"
 import { getServerState } from "../state"
 
 export const CONTEXT_TYPES: string[] = Object.values(ContextTypes)

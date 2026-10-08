@@ -6,7 +6,7 @@ import {
   SailClientStateArgs,
   WscpPairing,
 } from "./message-types"
-import { Context } from "@finos/fdc3-context"
+import { Context } from "@finos/fdc3-context-v3"
 import { DirectoryApp } from "@finos/sail-headless-agent"
 
 /**

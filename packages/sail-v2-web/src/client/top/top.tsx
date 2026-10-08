@@ -1,4 +1,4 @@
-import { Context } from "@finos/fdc3-context"
+import { Context } from "@finos/fdc3-context-v3"
 import styles from "./styles.module.css"
 
 export const Empty = () => {

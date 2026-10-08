@@ -1,4 +1,4 @@
-import { BroadcastRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { BroadcastRequest } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { ConnectionContext } from "./types"
 import { createLogger } from "../../logger"
 

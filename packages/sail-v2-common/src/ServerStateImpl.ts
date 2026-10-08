@@ -1,6 +1,6 @@
 import { DirectoryApp } from "@finos/sail-headless-agent"
 import { io, Socket } from "socket.io-client"
-import { AppIdentifier, ResolveError } from "@finos/fdc3-standard"
+import { AppIdentifier, ResolveError } from "@finos/fdc3-standard-v3"
 import {
   DA_DIRECTORY_LISTING,
   DA_HELLO,

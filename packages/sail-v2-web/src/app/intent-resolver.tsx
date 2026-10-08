@@ -1,10 +1,11 @@
-import { BrowserTypes, AppIdentifier } from "@finos/fdc3"
+import { BrowserTypes } from "@finos/fdc3-schema-v3"
+import { AppIdentifier } from "@finos/fdc3-standard-v3"
 import { createRoot } from "react-dom/client"
 import { ResolverPanel } from "../client/resolver/resolver"
 import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { AugmentedAppIntent } from "@finos/fdc3-sail-common"
 import { channels, handleChannelUpdates, setAppChannel } from "./util"
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction

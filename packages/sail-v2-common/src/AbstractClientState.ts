@@ -7,7 +7,7 @@ import {
   TabDetail,
   WscpPairing,
 } from "./message-types"
-import { Context } from "@finos/fdc3-context"
+import { Context } from "@finos/fdc3-context-v3"
 import { v4 as uuidv4 } from "uuid"
 
 export abstract class AbstractClientState implements ClientState {

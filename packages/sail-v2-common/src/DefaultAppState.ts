@@ -3,7 +3,7 @@ import { AppHosting } from "./app-hosting"
 import { DirectoryApp, WebAppDetails, State, Fdc3ApiVersion } from "@finos/sail-headless-agent"
 import { normalizeIdentityUrl } from "./normalizeIdentityUrl"
 import { SailAppStateArgs } from "./message-types"
-import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { ServerState } from "./ServerState"
 import { ClientState } from "./ClientState"
 

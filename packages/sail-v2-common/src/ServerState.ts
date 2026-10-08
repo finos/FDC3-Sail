@@ -1,7 +1,7 @@
 import { DirectoryApp } from "@finos/sail-headless-agent"
 import { AppHosting } from "./app-hosting"
 import { SailClientStateArgs } from "./message-types"
-import { AppIdentifier } from "@finos/fdc3-standard"
+import { AppIdentifier } from "@finos/fdc3-standard-v3"
 import { ClientState } from "./ClientState"
 import { AppState } from "./AppState"
 

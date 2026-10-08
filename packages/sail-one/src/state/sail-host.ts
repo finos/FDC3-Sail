@@ -5,7 +5,8 @@ import {
   type IntentResolutionRequest,
   type WebAppDetails,
 } from "@finos/sail-browser-agent"
-import type { AppIdentifier, AppMetadata, BrowserTypes } from "@finos/fdc3"
+import type { BrowserTypes } from "@finos/fdc3-schema-v3"
+import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
 import { resolveSailOneFdc3Version } from "./fdc3-target"

@@ -1,7 +1,7 @@
 import { AppRegistration, DirectoryApp } from "@finos/sail-headless-agent"
 import { AppHosting } from "./app-hosting"
-import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard"
-import { Context } from "@finos/fdc3-context"
+import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard-v3"
+import { Context } from "@finos/fdc3-context-v3"
 import { AppPanel } from "./ClientState"
 
 export type TabDetail = {

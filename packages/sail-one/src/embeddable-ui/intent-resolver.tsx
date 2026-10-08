@@ -1,10 +1,11 @@
-import type { AppIdentifier, BrowserTypes } from "@finos/fdc3"
+import type { BrowserTypes } from "@finos/fdc3-schema-v3"
+import type { AppIdentifier } from "@finos/fdc3-standard-v3"
 import { createRoot } from "react-dom/client"
 import { ResolverPanel } from "../resolver/resolver"
 import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import type { AugmentedAppIntent, TabDetail } from "../state"
 import { connectUserInterfacePort, postIframeRestyle } from "./iframe-port"
 
