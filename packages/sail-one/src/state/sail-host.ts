@@ -33,14 +33,37 @@ export enum AppInstanceState {
  * A launch the shell initiated itself, waiting to be paired with the instance id
  * minted by the shell's own {@link AppLauncher}.
  *
- * Apps opened by the user (via the app directory) carry an explicit hosting
- * choice; apps opened by another app through `fdc3.open()` have no queued intent
- * and default to {@link AppHosting.Frame}.
+ * Shell-initiated opens (app directory) queue an explicit hosting choice. Agent-
+ * initiated opens (`fdc3.open` / intents) have no queue entry — hosting then comes
+ * from `hostManifests.sail.forceNewWindow`, else {@link AppHosting.Frame}.
  */
 type PendingLaunchIntent = {
   appId: string
   hosting: AppHosting
   instanceTitle: string
+}
+
+/** Read Sail `forceNewWindow` from directory / catalog app metadata. */
+function sailForceNewWindow(app: Pick<DirectoryApp, "hostManifests">): boolean {
+  const sailManifest = app.hostManifests?.sail ?? {}
+  if (typeof sailManifest === "string") {
+    return false
+  }
+  return sailManifest.forceNewWindow === true
+}
+
+/**
+ * Hosting for an {@link AppLauncher} launch: queued shell intent wins; otherwise
+ * honor `hostManifests.sail.forceNewWindow` (same rule as sail-v2-web / harness).
+ */
+function resolveLaunchHosting(
+  queued: PendingLaunchIntent | undefined,
+  app: DirectoryApp,
+): AppHosting {
+  if (queued) {
+    return queued.hosting
+  }
+  return sailForceNewWindow(app) ? AppHosting.Tab : AppHosting.Frame
 }
 
 export interface ServerState {
@@ -205,7 +228,7 @@ export class SailHost implements ServerState {
         const queuedIdx = this.pendingLaunches.findIndex(p => p.appId === app.appId)
         const queued = queuedIdx >= 0 ? this.pendingLaunches.splice(queuedIdx, 1)[0] : undefined
 
-        const hosting = queued?.hosting ?? AppHosting.Frame
+        const hosting = resolveLaunchHosting(queued, app)
         const instanceTitle = queued?.instanceTitle ?? getAppState().createTitle(app)
 
         this.instanceStates.set(instanceId, AppInstanceState.Pending)
