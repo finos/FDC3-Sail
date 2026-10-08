@@ -164,14 +164,23 @@ export abstract class SailDesktopAgentServer extends AbstractFDC3ServerInstance 
     const payload: BrowserTypes.OpenRequestPayload = {
       app: { appId, instanceId },
     }
-    const launched = await this.appLauncher.launch(payload, catalogApps[0] as AppMetadata)
-    const id = launched.instanceId ?? instanceId
-    this.setInstanceDetails(id, {
-      appId: launched.appId,
-      instanceId: id,
+    // Pending before launch so WCP1 can race the browsing context safely.
+    this.setInstanceDetails(instanceId, {
+      appId,
+      instanceId,
       state: State.Pending,
       fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
     })
+    const launched = await this.appLauncher.launch(payload, catalogApps[0] as AppMetadata)
+    const id = launched.instanceId ?? instanceId
+    if (id !== instanceId) {
+      this.setInstanceDetails(id, {
+        appId: launched.appId,
+        instanceId: id,
+        state: State.Pending,
+        fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
+      })
+    }
     return id
   }
 

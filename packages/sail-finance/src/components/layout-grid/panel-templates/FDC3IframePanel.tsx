@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import type { IDockviewPanelProps } from "dockview"
 
 import { useSailDesktopAgent, useConnectionStore } from "../../../contexts"
@@ -49,7 +49,7 @@ export const FDC3Panel = ({ api, panel }: FDC3PanelProps) => {
 
   console.log(`[FDC3Panel] Rendering panel: ${panel.panelId} with URL: ${panel.url}`)
 
-  // Pre-register host instance id and panel mapping before WCP4 / iframe load.
+  // Panel mapping for connection-store; remounts re-register Pending for WCP adoption.
   useEffect(() => {
     api.setRenderer(FDC3_PANEL_RENDERER)
     agent.registerPendingHostInstance({ appId: panel.appId, instanceId: panel.panelId })
@@ -62,11 +62,25 @@ export const FDC3Panel = ({ api, panel }: FDC3PanelProps) => {
     api.setTitle(panel.title)
   }, [panel.title, api])
 
+  const registerIframeWindow = useCallback(
+    (iframe: HTMLIFrameElement | null) => {
+      const win = iframe?.contentWindow
+      if (win) {
+        agent.registerHostWindow(win, panel.panelId)
+      }
+    },
+    [agent, panel.panelId],
+  )
+
   return (
     <iframe
+      ref={registerIframeWindow}
       src={panel.url}
       name={panel.panelId}
-      onLoad={() => console.log(`[FDC3Panel] ${panel.panelId} - Iframe loaded successfully`)}
+      onLoad={event => {
+        registerIframeWindow(event.currentTarget)
+        console.log(`[FDC3Panel] ${panel.panelId} - Iframe loaded successfully`)
+      }}
       onError={e => console.error(`[FDC3Panel] ${panel.panelId} - Iframe load error:`, e)}
       style={{
         width: "100%",

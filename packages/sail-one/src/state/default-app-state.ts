@@ -27,8 +27,6 @@ export function normalizeIdentityUrl(identityUrl: string): string {
 }
 
 export class DefaultAppState implements AppState {
-  windowInformation = new Map<Window, string>()
-
   getDirectoryAppForUrl(identityUrl: string): DirectoryApp | undefined {
     const strippedIdentityUrl = normalizeIdentityUrl(identityUrl)
     const applications: DirectoryApp[] = getServerState().getKnownApps()
@@ -42,28 +40,21 @@ export class DefaultAppState implements AppState {
     })
   }
 
+  /** Delegates to the Desktop Agent host-window registry. */
   registerAppWindow(window: Window, instanceId: string): void {
-    this.windowInformation.set(window, instanceId)
+    getServerState().registerHostWindow(window, instanceId)
   }
 
   getInstanceIdForWindow(window: Window): string | undefined {
-    return this.windowInformation.get(window)
+    return getServerState().getInstanceIdForHostWindow(window)
   }
 
   findWindow(instanceId: string): Window | undefined {
-    for (const [win, id] of this.windowInformation.entries()) {
-      if (id === instanceId) {
-        return win
-      }
-    }
-    return undefined
+    return getServerState().findHostWindow(instanceId)
   }
 
   forgetWindow(instanceId: string): void {
-    const win = this.findWindow(instanceId)
-    if (win) {
-      this.windowInformation.delete(win)
-    }
+    getServerState().forgetHostWindow(instanceId)
   }
 
   createTitle(detail: DirectoryApp): string {

@@ -34,6 +34,8 @@ import {
 import { DEFAULT_INTENT_RESOLUTION_TIMEOUT_MS } from "../app-connection/wcp/wcp-types"
 import {
   createHostIntentResolver,
+  createHostWindowRegistry,
+  type HostWindowRegistry,
   type IntentResolver,
   type IntentResolverUIMethods,
 } from "../host-contracts"
@@ -90,6 +92,9 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
    */
   readonly directoriesLoaded: Promise<void>
 
+  /** Window → instanceId map for WCP hostIdentifier when `window.name` is unreadable. */
+  private readonly hostWindows: HostWindowRegistry = createHostWindowRegistry()
+
   constructor(
     ...args: BrowserAppConnection extends TEdge
       ? [options?: SailDesktopAgentOptions<TEdge>]
@@ -139,6 +144,10 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
     this.appConnection = (config.appConnection ??
       new BrowserAppConnection({
         ...localOptions.appConnectionOptions,
+        // Default: host registry. Hosts may still override resolveHostIdentifier.
+        resolveHostIdentifier:
+          localOptions.appConnectionOptions?.resolveHostIdentifier ??
+          (source => this.hostWindows.getInstanceId(source)),
         logger: this.logger,
         validation: this.validation,
         logPayloadDetail: this.logPayloadDetail,
@@ -296,6 +305,10 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
    * Pre-register a host-minted instance id (e.g. iframe `name`) as Pending so
    * WCP4 identity validation can adopt it.
    * Wire version is provisional until WCP1 negotiation updates it.
+   *
+   * Prefer relying on {@link openApp} / server `open`, which register Pending
+   * before {@link AppLauncher.launch}. Use this for shell remounts or host
+   * paths that do not go through those entry points.
    */
   registerPendingHostInstance(params: { appId: string; instanceId: string }): void {
     if (this.getInstanceDetails(params.instanceId)) {
@@ -307,6 +320,29 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
       state: State.Pending,
       fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
     })
+  }
+
+  /**
+   * Record the browsing-context {@link Window} for a launcher instance id.
+   * Used as the default {@link AppConnectionOptions.resolveHostIdentifier}.
+   */
+  registerHostWindow(windowRef: Window, instanceId: string): void {
+    this.hostWindows.register(windowRef, instanceId)
+  }
+
+  /** Reverse of {@link registerHostWindow} for WCP hostIdentifier lookup. */
+  getInstanceIdForHostWindow(windowRef: Window): string | undefined {
+    return this.hostWindows.getInstanceId(windowRef)
+  }
+
+  /** Find a registered browsing context (e.g. to close a tab window). */
+  findHostWindow(instanceId: string): Window | undefined {
+    return this.hostWindows.findWindow(instanceId)
+  }
+
+  /** Drop registry entries when the host tears down a container. */
+  forgetHostWindow(instanceId: string): void {
+    this.hostWindows.forget(instanceId)
   }
 
   /**
@@ -370,22 +406,22 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
       throw new Error(OpenError.AppNotFound)
     }
 
+    const instanceId = appIdentifier.instanceId ?? this.createUUID()
     const payload: BrowserTypes.OpenRequestPayload = {
-      app: appIdentifier,
+      app: { appId: appIdentifier.appId, instanceId },
       ...(options?.context !== undefined ? { context: options.context } : {}),
     }
 
+    // Pending before launch so WCP1 can race the browsing context safely.
+    this.registerPendingHostInstance({ appId: appIdentifier.appId, instanceId })
+
     const launched = await this.appLauncher.launch(payload, catalogApps[0] as AppMetadata)
-    if (launched.instanceId) {
-      this.setInstanceDetails(launched.instanceId, {
-        appId: launched.appId,
-        instanceId: launched.instanceId,
-        state: State.Pending,
-        fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
-      })
+    const id = launched.instanceId ?? instanceId
+    if (id !== instanceId) {
+      this.registerPendingHostInstance({ appId: launched.appId, instanceId: id })
     }
 
-    return launched
+    return { appId: launched.appId, instanceId: id }
   }
 
   private getAppInstances(): DesktopAgentAppInstance[] {
@@ -420,10 +456,20 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
     return this.appConnection.getConnections()
   }
 
+  override async close(instanceId: string): Promise<void> {
+    // Forget after AppLauncher.close so hosts can still findHostWindow to tear down.
+    try {
+      await super.close(instanceId)
+    } finally {
+      this.forgetHostWindow(instanceId)
+    }
+  }
+
   async disconnectInstance(instanceId: string): Promise<void> {
     await this.cleanupApp(instanceId)
     await this.setAppState(instanceId, State.Terminated)
     this.appConnection.pruneAppConnection(instanceId)
+    this.forgetHostWindow(instanceId)
   }
 
   getIsStarted(): boolean {

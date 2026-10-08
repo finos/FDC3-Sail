@@ -148,7 +148,10 @@ export function createHarnessBootstrap(options?: {
 
     if (panel.launchMode === "popup") {
       const popup = openHarnessPopup(panel, {
-        onPopupCreated: opened => popupWatcher.registerPopup(panel.instanceId, opened),
+        onPopupCreated: opened => {
+          popupWatcher.registerPopup(panel.instanceId, opened)
+          desktopAgentRef?.registerHostWindow(opened, panel.instanceId)
+        },
       })
       if (!popup) {
         console.error(
@@ -183,9 +186,9 @@ export function createHarnessBootstrap(options?: {
     },
     appConnectionOptions: {
       // Sail host UI is wired externally (no injected resolver/selector iframes).
+      // Default resolveHostIdentifier uses the agent's host-window registry.
       getIntentResolverUrl: () => false,
       getChannelSelectorUrl: () => false,
-      resolveHostIdentifier: source => popupWatcher.findInstanceIdForPopup(source),
     },
     logPayloadDetail: debug ? "full" : "metadata",
     onAppConnected: (metadata: AppConnectionMetadata) => {
@@ -194,6 +197,7 @@ export function createHarnessBootstrap(options?: {
         openWithContextCleanup.cancelOrphanPopupCleanup(metadata.hostIdentifier)
       }
       popupWatcher.remapPopupByWindow(metadata.source, metadata.instanceId)
+      desktopAgent.registerHostWindow(metadata.source, metadata.instanceId)
       console.log(
         `[ConformanceHarness] WCP connected: ${metadata.appId} (${metadata.instanceId}) hostIdentifier=${metadata.hostIdentifier ?? "n/a"}`,
       )

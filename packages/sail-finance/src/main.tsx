@@ -12,6 +12,17 @@ import { ChannelSelectorTestPage } from "./tests/ChannelSelectorTestPage"
 
 const FINOS_APP_DIRECTORY_URL = "https://directory.fdc3.finos.org/v2/apps"
 
+/** Local `@finos/fdc3-example-apps` App Directory (`npm run apps`). */
+const EXAMPLE_APPS_DIRECTORY_URL = "http://localhost:4005/static/generated/fdc3-example-apps.json"
+
+/**
+ * FDC3 3.0 conformance App Directory (hosted toolbox on fdc3.finos.org).
+ * Optional override: `VITE_CONFORMANCE_DIRECTORY_URL`.
+ */
+const CONFORMANCE_3_0_DIRECTORY_URL =
+  import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL ??
+  "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json"
+
 const isChannelSelectorE2e =
   new URLSearchParams(window.location.search).get("e2e") === "channel-selector"
 
@@ -60,6 +71,7 @@ if (isDockviewPopoutShell()) {
         throw new Error(`App ${appMetadata.appId} has no URL in metadata`)
       }
 
+      // Agent registers Pending before launch; shell only mounts the panel/iframe.
       const panel = {
         panelId: instanceId,
         appId: appMetadata.appId,
@@ -101,7 +113,8 @@ if (isDockviewPopoutShell()) {
     appLauncher,
     appDirectories: [
       FINOS_APP_DIRECTORY_URL,
-      "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json",
+      EXAMPLE_APPS_DIRECTORY_URL,
+      CONFORMANCE_3_0_DIRECTORY_URL,
     ],
   })
 

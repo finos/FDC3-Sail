@@ -36,24 +36,24 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      // Local toolbox profile: conformance pages load under /apps; scripts/CSS use /lib.
+      // Hosted FDC3 3.0 toolbox (same path as sail-one / website-conformance.json apps).
       "/apps": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/lib": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/screenshots": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/finos-icon-256.png": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },

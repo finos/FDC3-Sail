@@ -28,3 +28,6 @@ export type { ChannelControl, ChannelSelectionRequest } from "./channel-control"
 
 export type { PopupCloseWatcher, PopupCloseWatcherOptions } from "./popup-close-watcher"
 export { createPopupCloseWatcher } from "./popup-close-watcher"
+
+export type { HostWindowRegistry } from "./host-window-registry"
+export { createHostWindowRegistry } from "./host-window-registry"

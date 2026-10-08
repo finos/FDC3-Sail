@@ -3,7 +3,7 @@ import type { DirectoryApp, SailDesktopAgent } from "@finos/sail-browser-agent"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
-import { getAppState, getClientState } from "../index"
+import { getClientState } from "../index"
 import { installLocalStorage } from "./local-storage-mock"
 
 function makeWebApp(
@@ -160,12 +160,12 @@ describe("SailHost", () => {
     )
 
     const instanceId = await host.registerAppLaunch("demo-app", AppHosting.Tab, null, "Demo Tab")
-    expect(getAppState().findWindow(instanceId)).toBe(fakeWindow)
+    expect(host.findHostWindow(instanceId)).toBe(fakeWindow)
 
     await host.closeAppInstance(instanceId)
 
     expect(fakeWindow.close).toHaveBeenCalled()
-    expect(getAppState().findWindow(instanceId)).toBeUndefined()
+    expect(host.findHostWindow(instanceId)).toBeUndefined()
     expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
   })
 
@@ -184,7 +184,7 @@ describe("SailHost", () => {
     const instanceId = identifier.instanceId!
 
     expect(openSpy).toHaveBeenCalledWith("https://app.example/force", instanceId)
-    expect(getAppState().findWindow(instanceId)).toBe(fakeWindow)
+    expect(host.findHostWindow(instanceId)).toBe(fakeWindow)
 
     await host.closeAppInstance(instanceId)
     expect(fakeWindow.close).toHaveBeenCalled()
@@ -212,7 +212,7 @@ describe("SailHost", () => {
     await vi.advanceTimersByTimeAsync(150)
 
     expect(disconnectSpy).toHaveBeenCalledWith(instanceId)
-    expect(getAppState().findWindow(instanceId)).toBeUndefined()
+    expect(host.findHostWindow(instanceId)).toBeUndefined()
     expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
 
     vi.useRealTimers()

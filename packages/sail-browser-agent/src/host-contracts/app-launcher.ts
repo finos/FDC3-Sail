@@ -26,10 +26,14 @@ export interface AppLauncher {
    * identity validation can adopt it as the validated WCP5 id.
    *
    * The Desktop Agent will handle:
-   * - Pre-registering the launcher instanceId as PENDING until WCP4 completes
+   * - Minting `request.app.instanceId` when absent
+   * - Pre-registering that instanceId as PENDING **before** calling `launch` (so WCP1 can race the browsing context)
    * - Joining any requested channel (if applicable)
    * - Delivering launch context (if specified)
    * - Sending the FDC3 response
+   *
+   * Hosts should call the Desktop Agent's `registerHostWindow` when the iframe/tab
+   * `Window` is available so WCP can resolve hostIdentifier for cross-origin frames.
    *
    * @param request - Launch request with app identifier and context
    * @param appMetadata - App metadata from directory (for launch details)
