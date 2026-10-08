@@ -1,4 +1,5 @@
 import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
+import { resolveSailForceNewWindow } from "./force-new-window"
 import { getClientState, getServerState } from "./index"
 
 export enum AppHosting {
@@ -97,10 +98,11 @@ export class DefaultAppState implements AppState {
     }
 
     const sailManifest = detail.hostManifests?.sail ?? {}
-    const forceNewWindow =
+    const manifestForceNewWindow =
       (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ?? false
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: hostManifests.sail is Record<string, unknown>
+    const forceNewWindow = resolveSailForceNewWindow(manifestForceNewWindow === true)
     const hosting: AppHosting =
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: hostManifests.sail is Record<string, unknown>, the `as`-free `?? false` erases the type's optionality but the source JSON can still omit forceNewWindow
       (forceNewWindow ? AppHosting.Tab : undefined) ?? destination ?? AppHosting.Frame
     const instanceTitle = this.createTitle(detail)
     const channel = hosting === AppHosting.Tab ? null : getClientState().getActiveTab().id

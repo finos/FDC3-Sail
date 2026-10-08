@@ -12,6 +12,7 @@ import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
 import { resolveSailOneFdc3Version } from "./fdc3-target"
+import { resolveSailForceNewWindow } from "./force-new-window"
 import { getAppState, getClientState } from "./index"
 
 /**
@@ -45,13 +46,13 @@ type PendingLaunchIntent = {
   instanceTitle: string
 }
 
-/** Read Sail `forceNewWindow` from directory / catalog app metadata. */
+/** Read Sail `forceNewWindow` from directory / catalog app metadata (env may override). */
 function sailForceNewWindow(app: Pick<DirectoryApp, "hostManifests">): boolean {
   const sailManifest = app.hostManifests?.sail ?? {}
   if (typeof sailManifest === "string") {
-    return false
+    return resolveSailForceNewWindow(false)
   }
-  return sailManifest.forceNewWindow === true
+  return resolveSailForceNewWindow(sailManifest.forceNewWindow === true)
 }
 
 /**
