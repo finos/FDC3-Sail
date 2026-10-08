@@ -197,4 +197,10 @@ export interface AppConnectionMetadata {
    * {@link AppConnectionOptions.resolveHostIdentifier} when the app clears `window.name`.
    */
   hostIdentifier?: string
+
+  /**
+   * Wire FDC3 API version negotiated at WCP1 from the app's Hello payload,
+   * capped at the Desktop Agent's maximum supported version.
+   */
+  fdc3Version?: "2.2" | "3.0"
 }

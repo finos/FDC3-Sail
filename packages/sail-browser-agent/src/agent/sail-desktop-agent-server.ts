@@ -26,6 +26,7 @@ import type { AgentAppConnection } from "../app-connection/types"
 import type { AppLauncher } from "../host-contracts/app-launcher"
 import type { Logger } from "../logging/logger"
 import type { SailDesktopAgentMetadata } from "./default-config"
+import { toFdc3ApiVersion } from "./fdc3-version"
 import type { DesktopAgentAppInstanceStatus } from "./sail-desktop-agent-types"
 
 export function createHandlerLog(logger: Logger, name: string): LogFunction {
@@ -169,7 +170,7 @@ export abstract class SailDesktopAgentServer extends AbstractFDC3ServerInstance 
       appId: launched.appId,
       instanceId: id,
       state: State.Pending,
-      fdc3Version: this.implementationMetadata.fdc3Version === "3.0" ? "3.0" : "2.2",
+      fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
     })
     return id
   }

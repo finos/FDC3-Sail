@@ -24,6 +24,7 @@ import {
 } from "@finos/sail-headless-agent"
 import { consoleLogger, type Logger, type LogPayloadDetail } from "../logging/logger"
 import { resolveDesktopAgentConfig, type SailDesktopAgentMetadata } from "./default-config"
+import { toFdc3ApiVersion } from "./fdc3-version"
 import type { ValidationMode } from "../app-connection/inbound-validation"
 import type { AgentAppConnection } from "../app-connection/types"
 import {
@@ -235,6 +236,9 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
     this.appConnection.onAppMessage(message => {
       void this.handleMessage(message)
     })
+    this.appConnection.on?.("fdc3VersionNegotiated", payload => {
+      this.applyNegotiatedFdc3Version(payload)
+    })
 
     this.isStarted = true
   }
@@ -291,6 +295,7 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
   /**
    * Pre-register a host-minted instance id (e.g. iframe `name`) as Pending so
    * WCP4 identity validation can adopt it.
+   * Wire version is provisional until WCP1 negotiation updates it.
    */
   registerPendingHostInstance(params: { appId: string; instanceId: string }): void {
     if (this.getInstanceDetails(params.instanceId)) {
@@ -300,7 +305,40 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
       appId: params.appId,
       instanceId: params.instanceId,
       state: State.Pending,
-      fdc3Version: this.implementationMetadata.fdc3Version === "3.0" ? "3.0" : "2.2",
+      fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
+    })
+  }
+
+  /**
+   * Apply the WCP1-negotiated wire version onto the Pending AppRegistration so
+   * sail-headless-agent `handlersFor` routes DACP to the matching v2/v3 set.
+   */
+  private applyNegotiatedFdc3Version(payload: {
+    tempInstanceId: string
+    hostIdentifier?: string
+    fdc3Version: "2.2" | "3.0"
+  }): void {
+    const targetId =
+      payload.hostIdentifier && this.getInstanceDetails(payload.hostIdentifier)
+        ? payload.hostIdentifier
+        : payload.tempInstanceId
+
+    const existing = this.getInstanceDetails(targetId)
+    if (existing) {
+      this.setInstanceDetails(targetId, {
+        ...existing,
+        fdc3Version: payload.fdc3Version,
+      })
+      return
+    }
+
+    // Orphan handshake (no host pre-registration yet): keep version on a temp Pending row
+    // so receive() during WCP4 uses the negotiated handler set.
+    this.setInstanceDetails(payload.tempInstanceId, {
+      appId: "unknown",
+      instanceId: payload.tempInstanceId,
+      state: State.Pending,
+      fdc3Version: payload.fdc3Version,
     })
   }
 
@@ -343,7 +381,7 @@ export class SailDesktopAgent<TEdge extends AgentAppConnection = BrowserAppConne
         appId: launched.appId,
         instanceId: launched.instanceId,
         state: State.Pending,
-        fdc3Version: this.implementationMetadata.fdc3Version === "3.0" ? "3.0" : "2.2",
+        fdc3Version: toFdc3ApiVersion(this.implementationMetadata.fdc3Version),
       })
     }
 

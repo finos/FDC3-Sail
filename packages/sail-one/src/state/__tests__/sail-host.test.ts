@@ -3,6 +3,7 @@ import type { DirectoryApp } from "@finos/sail-browser-agent"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
+import { getAppState, getClientState } from "../index"
 import { installLocalStorage } from "./local-storage-mock"
 
 function makeWebApp(appId: string, url: string): DirectoryApp {
@@ -106,5 +107,51 @@ describe("SailHost", () => {
     await expect(
       host.registerAppLaunch("demo-app", AppHosting.Frame, null, "Demo"),
     ).rejects.toThrow("Desktop Agent not registered")
+  })
+
+  it("closeAppInstance removes a frame panel and marks the instance terminated", async () => {
+    const host = new SailHost()
+    await host.registerDesktopAgent(clientArgs())
+
+    const instanceId = await host.registerAppLaunch("demo-app", AppHosting.Frame, "One", "Demo 1")
+    expect(
+      getClientState()
+        .getPanels()
+        .some(p => p.panelId === instanceId),
+    ).toBe(true)
+
+    await host.closeAppInstance(instanceId)
+
+    expect(
+      getClientState()
+        .getPanels()
+        .some(p => p.panelId === instanceId),
+    ).toBe(false)
+    expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
+  })
+
+  it("closeAppInstance closes a tab window and forgets it", async () => {
+    const host = new SailHost()
+    await host.registerDesktopAgent(clientArgs())
+
+    const fakeWindow = {
+      closed: false,
+      close: vi.fn(() => {
+        fakeWindow.closed = true
+      }),
+    }
+    vi.stubGlobal(
+      "open",
+      vi.fn(() => fakeWindow),
+    )
+
+    const instanceId = await host.registerAppLaunch("demo-app", AppHosting.Tab, null, "Demo Tab")
+    expect(getAppState().findWindow(instanceId)).toBe(fakeWindow)
+
+    await host.closeAppInstance(instanceId)
+
+    expect(fakeWindow.close).toHaveBeenCalled()
+    expect(getAppState().findWindow(instanceId)).toBeUndefined()
+    expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
   })
 })

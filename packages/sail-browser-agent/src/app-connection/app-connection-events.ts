@@ -16,6 +16,16 @@ export interface AppConnectionEvents {
   /** Fired when WCP handshake fails before identity validation. */
   handshakeFailed: (error: Error, connectionAttemptUuid: string) => void
 
+  /**
+   * Fired at WCP1 after negotiating the per-connection FDC3 wire version
+   * (so the Desktop Agent can stamp Pending AppRegistration.fdc3Version).
+   */
+  fdc3VersionNegotiated: (payload: {
+    tempInstanceId: string
+    hostIdentifier?: string
+    fdc3Version: "2.2" | "3.0"
+  }) => void
+
   /** Fired when an app's user channel membership changes; null means no channel. */
   channelChanged: (instanceId: string, channelId: string | null) => void
 

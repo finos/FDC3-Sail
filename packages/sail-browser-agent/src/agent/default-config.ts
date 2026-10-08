@@ -17,7 +17,10 @@ export type SailDesktopAgentMetadata = Pick<
   Pick<Required<BrowserTypes.ImplementationMetadata>, "optionalFeatures">
 
 export const DEFAULT_SAIL_DESKTOP_AGENT_METADATA: SailDesktopAgentMetadata = {
-  fdc3Version: "2.2",
+  // Maximum supported wire version. Per-app version is negotiated from WCP1Hello
+  // (see negotiateFdc3Version) so both 2.2 and 3.0 apps use the matching
+  // sail-headless-agent handler set.
+  fdc3Version: "3.0",
   provider: "FDC3-Sail",
   providerVersion: pkg.version,
   optionalFeatures: {

@@ -51,6 +51,7 @@ export type { AppConnectionEvents } from "./app-connection-events"
 type BrowserAppConnectionOptions = AppConnectionOptions & {
   validation?: ValidationMode
   logPayloadDetail?: LogPayloadDetail
+  /** Desktop Agent maximum supported FDC3 version (WCP1 negotiation cap). */
   fdc3Version: string
 }
 
@@ -344,7 +345,7 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
       ...this.getRoutingContext(),
       options: this.options,
       logPayloadDetail: this.logPayloadDetail,
-      fdc3Version: this.fdc3Version,
+      maxFdc3Version: this.fdc3Version,
     }
   }
 }

@@ -9,17 +9,17 @@ import type {
 } from "./wcp-types"
 import { resolveHostIdentifierFromSource } from "./wcp-host-identifier"
 import type { LogPayloadDetail } from "../../logging/logger"
+import { negotiateFdc3Version } from "../../agent/fdc3-version"
 
 export interface WCPHandshakeContext extends WCPRoutingContext {
   options: Required<AppConnectionOptions>
   /** Host-configured payload detail for MessagePortTransport logs. */
   logPayloadDetail: LogPayloadDetail
   /**
-   * FDC3 version advertised in WCP3Handshake. Threaded from the agent's
-   * `implementationMetadata.fdc3Version` — the single source of truth, shared with WCP5,
-   * `getInfo` and `closeRequest` gating.
+   * Desktop Agent maximum supported FDC3 version (from implementationMetadata).
+   * Per-connection wire version is negotiated from WCP1Hello against this cap.
    */
-  fdc3Version: string
+  maxFdc3Version: string
 }
 
 /**
@@ -29,8 +29,9 @@ export interface WCPHandshakeContext extends WCPRoutingContext {
  * 1. Create MessageChannel
  * 2. Wrap port2 as MessagePortTransport
  * 3. Bridge app port messages into BrowserAppConnection routing
- * 4. Send WCP3Handshake with port1 to app
- * 5. Store connection metadata
+ * 4. Negotiate FDC3 wire version from Hello payload
+ * 5. Send WCP3Handshake with port1 to app
+ * 6. Store connection metadata
  */
 export function handleWCP1Hello(
   event: MessageEvent<WCP1HelloMessage>,
@@ -70,6 +71,8 @@ export function handleWCP1Hello(
   const sourceWindow = event.source as Window
   const hostIdentifier = resolveHostIdentifierFromSource(sourceWindow, context.options)
 
+  const fdc3Version = negotiateFdc3Version(message.payload.fdc3Version, context.maxFdc3Version)
+
   // Store connection metadata
   const metadata: AppConnectionMetadata = {
     instanceId,
@@ -80,10 +83,17 @@ export function handleWCP1Hello(
     port: channel.port2,
     connectedAt: new Date(),
     hostIdentifier,
+    fdc3Version,
   }
   context.connectionRegistry.connections.set(instanceId, metadata)
   context.connectionRegistry.messagePortTransports.set(instanceId, appTransport)
   context.connectionRegistry.transportToInstanceId.set(appTransport, instanceId)
+
+  context.emit("fdc3VersionNegotiated", {
+    tempInstanceId: instanceId,
+    hostIdentifier,
+    fdc3Version,
+  })
 
   // Create WCP3Handshake response
   const handshake: WCP3HandshakeMessage = {
@@ -93,7 +103,7 @@ export function handleWCP1Hello(
       timestamp: new Date().toISOString(),
     },
     payload: {
-      fdc3Version: context.fdc3Version,
+      fdc3Version,
       intentResolverUrl: context.options.getIntentResolverUrl(instanceId) ?? false,
       channelSelectorUrl: context.options.getChannelSelectorUrl(instanceId) ?? false,
     },

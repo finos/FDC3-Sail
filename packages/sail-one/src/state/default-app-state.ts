@@ -15,6 +15,8 @@ export interface AppOpenDetails {
 export interface AppState {
   registerAppWindow(window: Window, instanceId: string): void
   getInstanceIdForWindow(window: Window): string | undefined
+  findWindow(instanceId: string): Window | undefined
+  forgetWindow(instanceId: string): void
   createTitle(detail: DirectoryApp): string
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
 }
@@ -45,6 +47,22 @@ export class DefaultAppState implements AppState {
 
   getInstanceIdForWindow(window: Window): string | undefined {
     return this.windowInformation.get(window)
+  }
+
+  findWindow(instanceId: string): Window | undefined {
+    for (const [win, id] of this.windowInformation.entries()) {
+      if (id === instanceId) {
+        return win
+      }
+    }
+    return undefined
+  }
+
+  forgetWindow(instanceId: string): void {
+    const win = this.findWindow(instanceId)
+    if (win) {
+      this.windowInformation.delete(win)
+    }
   }
 
   createTitle(detail: DirectoryApp): string {

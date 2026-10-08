@@ -8,6 +8,7 @@ import {
 import type { AppIdentifier, AppMetadata, BrowserTypes } from "@finos/fdc3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
+import { resolveSailOneFdc3Version } from "./fdc3-target"
 import { getAppState, getClientState } from "./index"
 
 /**
@@ -53,6 +54,11 @@ export interface ServerState {
     channel: string | null,
     instanceTitle: string,
   ): Promise<string>
+  /**
+   * Tear down the host container for an instance (frame panel or tab window).
+   * Used by {@link AppLauncher.close} when an app calls `fdc3.close()`.
+   */
+  closeAppInstance(instanceId: string): Promise<void>
   getKnownApps(): DirectoryApp[]
   getApplications(): Promise<DirectoryApp[]>
   getAppInstanceState(instanceId: string): AppInstanceState | undefined
@@ -104,6 +110,8 @@ export class SailHost implements ServerState {
 
   private pendingLaunches: PendingLaunchIntent[] = []
   private instanceStates = new Map<string, AppInstanceState>()
+  /** Hosting mode chosen at launch — used by {@link closeAppInstance}. */
+  private instanceHosting = new Map<string, AppHosting>()
 
   private loadedDirectoryUrls = new Set<string>()
   private lastChannelKey: string | null = null
@@ -130,6 +138,9 @@ export class SailHost implements ServerState {
       appLauncher: this.createAppLauncher(),
       apps: props.customApps,
       userChannels: tabsToChannels(props.channels),
+      implementationMetadata: {
+        fdc3Version: resolveSailOneFdc3Version(),
+      },
       // Cross-origin iframes block reading event.source.name; map Window → launcher id
       // the same way the FDC3 demo uses getInstanceForWindow for WCP4 adoption.
       appConnectionOptions: {
@@ -197,6 +208,7 @@ export class SailHost implements ServerState {
         const instanceTitle = queued?.instanceTitle ?? getAppState().createTitle(app)
 
         this.instanceStates.set(instanceId, AppInstanceState.Pending)
+        this.instanceHosting.set(instanceId, hosting)
         // Pre-register before the browsing context can WCP1 (demo setInstanceDetails timing).
         this.agent?.registerPendingHostInstance({ appId: app.appId, instanceId })
 
@@ -205,6 +217,7 @@ export class SailHost implements ServerState {
           const win = window.open(url, instanceId)
           if (!win) {
             this.instanceStates.delete(instanceId)
+            this.instanceHosting.delete(instanceId)
             throw new Error("Failed to open window")
           }
           getAppState().registerAppWindow(win, instanceId)
@@ -216,13 +229,37 @@ export class SailHost implements ServerState {
         return { appId: app.appId, instanceId }
       },
 
-      close: (instanceId: string) => {
-        void getClientState().removePanel(instanceId)
-        this.instanceStates.set(instanceId, AppInstanceState.Terminated)
-        this.notify()
-        return Promise.resolve()
-      },
+      close: (instanceId: string) => this.closeAppInstance(instanceId),
     }
+  }
+
+  /**
+   * Sail-web equivalent of `DefaultAppState.closeApp`: await container teardown
+   * before the Desktop Agent prunes the WCP connection.
+   */
+  async closeAppInstance(instanceId: string): Promise<void> {
+    const hosting =
+      this.instanceHosting.get(instanceId) ??
+      (getClientState()
+        .getPanels()
+        .some(p => p.panelId === instanceId)
+        ? AppHosting.Frame
+        : AppHosting.Tab)
+
+    if (hosting === AppHosting.Frame) {
+      await getClientState().removePanel(instanceId)
+      getAppState().forgetWindow(instanceId)
+    } else {
+      const win = getAppState().findWindow(instanceId)
+      getAppState().forgetWindow(instanceId)
+      if (win && !win.closed) {
+        win.close()
+      }
+    }
+
+    this.instanceStates.set(instanceId, AppInstanceState.Terminated)
+    this.instanceHosting.delete(instanceId)
+    this.notify()
   }
 
   getKnownApps(): DirectoryApp[] {
@@ -333,6 +370,7 @@ export class SailHost implements ServerState {
     this.agent?.stop()
     this.agent = null
     this.instanceStates.clear()
+    this.instanceHosting.clear()
     this.pendingLaunches = []
 
     await this.startAgent(cs)
