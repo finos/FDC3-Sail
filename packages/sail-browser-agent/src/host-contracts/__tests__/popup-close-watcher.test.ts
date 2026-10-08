@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 
-import { createPopupCloseWatcher } from "./popup-launcher"
+import { createPopupCloseWatcher } from "../popup-close-watcher"
 
 function createMockPopup(closed = false): Window {
   return { closed } as Window
@@ -88,8 +88,7 @@ describe("createPopupCloseWatcher", () => {
     expect(close).toHaveBeenCalledOnce()
   })
 
-  it("closePopup returns false and warns when window.close has no effect", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+  it("closePopup returns false when window.close has no effect", () => {
     const popup = createMockPopup(false)
     Object.assign(popup, { close: vi.fn() })
 
@@ -97,11 +96,7 @@ describe("createPopupCloseWatcher", () => {
     watcher.registerPopup("instance-e", popup)
 
     expect(watcher.closePopup("instance-e")).toBe(false)
-    expect(warnSpy).toHaveBeenCalledWith(
-      "[ConformanceHarness] Browsing context still open after close() for instance-e",
-    )
 
-    warnSpy.mockRestore()
     watcher.stop()
   })
 

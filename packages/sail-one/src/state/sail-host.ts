@@ -1,8 +1,10 @@
 import {
   SailDesktopAgent,
+  createPopupCloseWatcher,
   type AppLauncher,
   type DirectoryApp,
   type IntentResolutionRequest,
+  type PopupCloseWatcher,
   type WebAppDetails,
 } from "@finos/sail-browser-agent"
 import type { BrowserTypes } from "@finos/fdc3-schema-v3"
@@ -64,6 +66,22 @@ function resolveLaunchHosting(
     return queued.hosting
   }
   return sailForceNewWindow(app) ? AppHosting.Tab : AppHosting.Frame
+}
+
+/**
+ * Open a browser tab for `forceNewWindow` / Tab hosting (same idea as sail-v2).
+ * Uses the instance id as `window.name` (not `"_blank"`) so WCP can adopt it;
+ * omits features so the browser opens a tab rather than a popup.
+ */
+function openSailAppTab(url: string, instanceId: string, onOpened?: (win: Window) => void): Window {
+  const win = window.open(url, instanceId)
+  if (!win) {
+    throw new Error("Failed to open window")
+  }
+
+  getAppState().registerAppWindow(win, instanceId)
+  onOpened?.(win)
+  return win
 }
 
 export interface ServerState {
@@ -142,6 +160,12 @@ export class SailHost implements ServerState {
   private lastCustomAppsKey: string | null = null
 
   private unsubscribes: (() => void)[] = []
+  /** Detects 2.2 mock `window.close()` so Chrome does not keep a Connected zombie. */
+  private popupWatcher: PopupCloseWatcher = createPopupCloseWatcher({
+    onPopupClosed: instanceId => {
+      void this.handlePopupClosed(instanceId)
+    },
+  })
 
   addStateChangeCallback(cb: () => void): void {
     this.callbacks.push(cb)
@@ -174,7 +198,7 @@ export class SailHost implements ServerState {
         this.instanceStates.set(metadata.instanceId, AppInstanceState.Connected)
         const panel = getClientState()
           .getPanels()
-          .find(p => p.panelId === metadata.instanceId)
+          .find(p => p.panelId === metadata.instanceId || p.panelId === metadata.hostIdentifier)
         if (panel) {
           void this.setUserChannel(metadata.instanceId, panel.tabId)
         }
@@ -238,13 +262,16 @@ export class SailHost implements ServerState {
 
         if (hosting === AppHosting.Tab) {
           const url = (app.details as WebAppDetails).url
-          const win = window.open(url, instanceId)
-          if (!win) {
+          try {
+            openSailAppTab(url, instanceId, win => {
+              this.popupWatcher.registerPopup(instanceId, win)
+            })
+          } catch (e) {
+            this.popupWatcher.unregisterPopup(instanceId)
             this.instanceStates.delete(instanceId)
             this.instanceHosting.delete(instanceId)
-            throw new Error("Failed to open window")
+            throw e
           }
-          getAppState().registerAppWindow(win, instanceId)
         } else {
           getClientState().newPanel(app, instanceId, instanceTitle)
         }
@@ -270,6 +297,8 @@ export class SailHost implements ServerState {
         ? AppHosting.Frame
         : AppHosting.Tab)
 
+    this.popupWatcher.unregisterPopup(instanceId)
+
     if (hosting === AppHosting.Frame) {
       await getClientState().removePanel(instanceId)
       getAppState().forgetWindow(instanceId)
@@ -283,6 +312,23 @@ export class SailHost implements ServerState {
 
     this.instanceStates.set(instanceId, AppInstanceState.Terminated)
     this.instanceHosting.delete(instanceId)
+    this.notify()
+  }
+
+  /**
+   * Popup was closed externally (e.g. 2.2 mock `window.close()`). Drop host
+   * bookkeeping and disconnect the agent instance so the next raiseIntent opens
+   * a fresh window instead of targeting a Chrome zombie.
+   */
+  private async handlePopupClosed(instanceId: string): Promise<void> {
+    getAppState().forgetWindow(instanceId)
+    this.instanceStates.set(instanceId, AppInstanceState.Terminated)
+    this.instanceHosting.delete(instanceId)
+    try {
+      await this.agent?.disconnectInstance(instanceId)
+    } catch (e) {
+      console.warn(`[SailHost] disconnect after popup close failed for ${instanceId}`, e)
+    }
     this.notify()
   }
 
@@ -391,6 +437,12 @@ export class SailHost implements ServerState {
       unsubscribe()
     })
     this.unsubscribes = []
+    this.popupWatcher.stop()
+    this.popupWatcher = createPopupCloseWatcher({
+      onPopupClosed: instanceId => {
+        void this.handlePopupClosed(instanceId)
+      },
+    })
     this.agent?.stop()
     this.agent = null
     this.instanceStates.clear()

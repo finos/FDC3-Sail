@@ -1,18 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-browser-agent"
+import type { DirectoryApp, SailDesktopAgent } from "@finos/sail-browser-agent"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
 import { getAppState, getClientState } from "../index"
 import { installLocalStorage } from "./local-storage-mock"
 
-function makeWebApp(appId: string, url: string): DirectoryApp {
+function makeWebApp(
+  appId: string,
+  url: string,
+  hostManifests?: DirectoryApp["hostManifests"],
+): DirectoryApp {
   return {
     appId,
     name: appId,
     title: appId,
     type: "web",
     details: { url },
+    ...(hostManifests ? { hostManifests } : {}),
+  }
+}
+
+function hostAgent(host: SailHost): SailDesktopAgent {
+  return (host as unknown as { agent: SailDesktopAgent }).agent
+}
+
+function fakePopupWindow() {
+  return {
+    closed: false,
+    name: "",
+    close: vi.fn(function close(this: { closed: boolean }) {
+      this.closed = true
+    }),
   }
 }
 
@@ -134,12 +153,7 @@ describe("SailHost", () => {
     const host = new SailHost()
     await host.registerDesktopAgent(clientArgs())
 
-    const fakeWindow = {
-      closed: false,
-      close: vi.fn(() => {
-        fakeWindow.closed = true
-      }),
-    }
+    const fakeWindow = fakePopupWindow()
     vi.stubGlobal(
       "open",
       vi.fn(() => fakeWindow),
@@ -153,5 +167,54 @@ describe("SailHost", () => {
     expect(fakeWindow.close).toHaveBeenCalled()
     expect(getAppState().findWindow(instanceId)).toBeUndefined()
     expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
+  })
+
+  it("agent-driven open honors hostManifests.sail.forceNewWindow as a browser tab", async () => {
+    const forceApp = makeWebApp("force-tab-app", "https://app.example/force", {
+      sail: { forceNewWindow: true },
+    })
+    const host = new SailHost()
+    await host.registerDesktopAgent(clientArgs({ customApps: [forceApp] }))
+
+    const fakeWindow = fakePopupWindow()
+    const openSpy = vi.fn(() => fakeWindow)
+    vi.stubGlobal("open", openSpy)
+
+    const identifier = await hostAgent(host).apps.open("force-tab-app")
+    const instanceId = identifier.instanceId!
+
+    expect(openSpy).toHaveBeenCalledWith("https://app.example/force", instanceId)
+    expect(getAppState().findWindow(instanceId)).toBe(fakeWindow)
+
+    await host.closeAppInstance(instanceId)
+    expect(fakeWindow.close).toHaveBeenCalled()
+  })
+
+  it("disconnects the agent when a tab is closed externally (2.2 window.close)", async () => {
+    vi.useFakeTimers()
+    const forceApp = makeWebApp("force-tab-app", "https://app.example/force", {
+      sail: { forceNewWindow: true },
+    })
+    const host = new SailHost()
+    await host.registerDesktopAgent(clientArgs({ customApps: [forceApp] }))
+
+    const fakeWindow = fakePopupWindow()
+    vi.stubGlobal(
+      "open",
+      vi.fn(() => fakeWindow),
+    )
+
+    const identifier = await hostAgent(host).apps.open("force-tab-app")
+    const instanceId = identifier.instanceId!
+    const disconnectSpy = vi.spyOn(hostAgent(host), "disconnectInstance")
+
+    fakeWindow.closed = true
+    await vi.advanceTimersByTimeAsync(150)
+
+    expect(disconnectSpy).toHaveBeenCalledWith(instanceId)
+    expect(getAppState().findWindow(instanceId)).toBeUndefined()
+    expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
+
+    vi.useRealTimers()
   })
 })

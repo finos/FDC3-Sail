@@ -25,3 +25,6 @@ export type {
 export { createHostIntentResolver } from "./intent-resolver"
 
 export type { ChannelControl, ChannelSelectionRequest } from "./channel-control"
+
+export type { PopupCloseWatcher, PopupCloseWatcherOptions } from "./popup-close-watcher"
+export { createPopupCloseWatcher } from "./popup-close-watcher"
