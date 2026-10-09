@@ -79,6 +79,18 @@ export type DesktopAgentRegisterAppLaunchArgs = {
 }
 
 /**
+ * Client → server: a Tab browsing context was closed externally (e.g. 2.2 mock
+ * `window.close()`). Terminate the instance so findIntent/raiseIntent do not
+ * keep a Connected zombie.
+ */
+export const DA_APP_WINDOW_CLOSED = "da-app-window-closed"
+
+export type DesktopAgentAppWindowClosedArgs = {
+  userSessionId: string
+  instanceId: string
+}
+
+/**
  * Sent by the browser desktop agent to the server to request a directory listing.
  */
 export const DA_DIRECTORY_LISTING = "da-directory-listing"

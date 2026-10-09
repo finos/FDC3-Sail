@@ -34,6 +34,13 @@ export class Grids extends Component<GridsProps> {
 }
 
 const AppFrame = ({ panel }: { panel: AppPanel }) => {
+  const registerWindow = (iframe: HTMLIFrameElement | null) => {
+    const contentWindow = iframe?.contentWindow
+    if (contentWindow) {
+      getAppState().registerAppWindow(contentWindow, panel.panelId)
+    }
+  }
+
   return (
     <iframe
       src={panel.url}
@@ -41,14 +48,13 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
       name={panel.panelId}
       slot={"slot_" + panel.panelId}
       className={styles.iframe}
+      onLoad={(e) => {
+        registerWindow(e.currentTarget)
+      }}
       ref={(ref) => {
+        // Register ASAP for WCP1Hello; onLoad re-registers after navigation.
         setTimeout(() => {
-          // this is a bit hacky but we need to track the window objects
-          // in the app state so we make sure we know who we're talking to
-          if (ref) {
-            const contentWindow = ref.contentWindow
-            getAppState().registerAppWindow(contentWindow!, panel.panelId)
-          }
+          registerWindow(ref)
         }, 10)
       }}
     />

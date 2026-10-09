@@ -29,6 +29,11 @@ export interface ServerState {
   ): Promise<string>
 
   /**
+   * Notify the server that a Tab window closed externally (popup watcher).
+   */
+  reportAppWindowClosed(instanceId: string): Promise<void>
+
+  /**
    * Allows the client to query the app directory from the server,
    * used to display the App Picker.
    */

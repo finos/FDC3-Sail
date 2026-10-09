@@ -9,6 +9,9 @@ import { ClientState } from "./ClientState"
 
 export class DefaultAppState implements AppState {
   windowInformation = new Map<Window, string>()
+  /** Tab/popup windows polled for `window.closed` (2.2 mock window.close()). */
+  private popupWindows = new Map<string, Window>()
+  private popupPollId: ReturnType<typeof setInterval> | undefined
   states: SailAppStateArgs = []
   callbacks: (() => void)[] = []
   cs: ClientState | null = null
@@ -49,16 +52,65 @@ export class DefaultAppState implements AppState {
 
   getDirectoryAppForUrl(identityUrl: string): DirectoryApp | undefined {
     const strippedIdentityUrl = normalizeIdentityUrl(identityUrl)
+    let identityPathname = ""
+    try {
+      identityPathname = new URL(identityUrl).pathname.replace(/\/+$/, "")
+    } catch {
+      identityPathname = strippedIdentityUrl
+    }
+
     const applications: DirectoryApp[] = this.cs?.getKnownApps() ?? []
     const firstMatchingApp = applications.find((x) => {
       const d = x.details as WebAppDetails
-      return (
-        d.url == strippedIdentityUrl ||
-        d.url == identityUrl ||
+      if (!d?.url) {
+        return false
+      }
+      const dirUrl = normalizeIdentityUrl(d.url)
+      if (
+        dirUrl === strippedIdentityUrl ||
+        d.url === identityUrl ||
         (d.url.startsWith("/") && identityUrl.endsWith(d.url))
-      ) // allows for local urls
+      ) {
+        return true
+      }
+      // Absolute AppD URLs vs identityUrl on a different host (Vite vs static CDN).
+      try {
+        const dirPath = new URL(d.url, window.location.origin).pathname.replace(
+          /\/+$/,
+          "",
+        )
+        return dirPath.length > 1 && dirPath === identityPathname
+      } catch {
+        return false
+      }
     })
-    return firstMatchingApp
+    if (firstMatchingApp) {
+      return firstMatchingApp
+    }
+
+    // Fallback: panel already registered for this identity URL (deep-link Frame).
+    const panel = (this.cs?.getPanels() ?? []).find((p) => {
+      if (!p.url) {
+        return false
+      }
+      const panelUrl = normalizeIdentityUrl(p.url)
+      if (panelUrl === strippedIdentityUrl || p.url === identityUrl) {
+        return true
+      }
+      try {
+        const panelPath = new URL(p.url, window.location.origin).pathname.replace(
+          /\/+$/,
+          "",
+        )
+        return panelPath.length > 1 && panelPath === identityPathname
+      } catch {
+        return false
+      }
+    })
+    if (panel) {
+      return applications.find((a) => a.appId === panel.appId)
+    }
+    return undefined
   }
 
   init(ss: ServerState, cs: ClientState): void {
@@ -77,10 +129,19 @@ export class DefaultAppState implements AppState {
 
           console.log("Received: " + JSON.stringify(event.data))
 
-          const appD = this.getDirectoryAppForUrl(data.payload.identityUrl)
-          const appId = appD?.appId
+          let appD = this.getDirectoryAppForUrl(data.payload.identityUrl)
           this.getInstanceIdForWindow(source)
             .then((instanceId) => {
+              // Last-resort: resolve appId from the panel registered for this instance.
+              if (!appD && instanceId) {
+                const panel = this.cs?.getPanels().find((p) => p.panelId === instanceId)
+                if (panel) {
+                  appD = (this.cs?.getKnownApps() ?? []).find(
+                    (a) => a.appId === panel.appId,
+                  )
+                }
+              }
+              const appId = appD?.appId
               if (appD && instanceId) {
                 source.postMessage(
                   {
@@ -118,6 +179,45 @@ export class DefaultAppState implements AppState {
     this.windowInformation.set(window, instanceId)
   }
 
+  private startPopupPolling(): void {
+    if (this.popupPollId !== undefined || this.popupWindows.size === 0) {
+      return
+    }
+    this.popupPollId = setInterval(() => {
+      for (const [instanceId, win] of this.popupWindows) {
+        if (win.closed) {
+          this.popupWindows.delete(instanceId)
+          this.windowInformation.delete(win)
+          void this.getServerState()
+            .reportAppWindowClosed(instanceId)
+            .catch((e: unknown) => {
+              console.warn(
+                `[Sail v2] reportAppWindowClosed failed for ${instanceId}`,
+                e,
+              )
+            })
+        }
+      }
+      if (this.popupWindows.size === 0 && this.popupPollId !== undefined) {
+        clearInterval(this.popupPollId)
+        this.popupPollId = undefined
+      }
+    }, 100)
+  }
+
+  private registerPopup(instanceId: string, win: Window): void {
+    this.popupWindows.set(instanceId, win)
+    this.startPopupPolling()
+  }
+
+  private unregisterPopup(instanceId: string): void {
+    this.popupWindows.delete(instanceId)
+    if (this.popupWindows.size === 0 && this.popupPollId !== undefined) {
+      clearInterval(this.popupPollId)
+      this.popupPollId = undefined
+    }
+  }
+
   async closeApp(instanceId: string, hosting: AppHosting): Promise<void> {
     if (hosting === AppHosting.Frame) {
       await this.getClientState().removePanel(instanceId)
@@ -127,6 +227,7 @@ export class DefaultAppState implements AppState {
 
     if (hosting === AppHosting.Tab) {
       const win = this.findWindow(instanceId)
+      this.unregisterPopup(instanceId)
       this.forgetWindow(instanceId)
       if (win && !win.closed) {
         win.close()
@@ -222,12 +323,14 @@ export class DefaultAppState implements AppState {
         this.getServerState()
           .registerAppLaunch(detail.appId, hosting, null, instanceTitle)
           .then((instanceId) => {
+            // Use instanceId as window.name so closePopupForInstance / mocks can match.
             const w = window.open(
               (detail.details as WebAppDetails).url,
-              "_blank",
+              instanceId,
             )
             if (w) {
               this.registerAppWindow(w, instanceId)
+              this.registerPopup(instanceId, w)
               resolve({ instanceId, channel: null, instanceTitle })
             } else {
               throw new Error("Failed to open window")

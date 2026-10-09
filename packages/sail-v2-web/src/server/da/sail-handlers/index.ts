@@ -1,4 +1,5 @@
 import {
+  DA_APP_WINDOW_CLOSED,
   DA_DIRECTORY_LISTING,
   APP_HELLO,
   DA_HELLO,
@@ -30,6 +31,7 @@ export {
 import { handleDAHello } from "./handleDAHello"
 import { handleDirectoryListing } from "./handleDirectoryListing"
 import { handleRegisterAppLaunch } from "./handleRegisterAppLaunch"
+import { handleAppWindowClosed } from "./handleAppWindowClosed"
 import { handleClientState } from "./handleClientState"
 import { handleChannelChange } from "./handleChannelChange"
 import { handleAppHello } from "./handleAppHello"
@@ -58,6 +60,10 @@ export function handleAllMessageTypes(
 
   connection.on(DA_REGISTER_APP_LAUNCH, (props: any, callback: any) => {
     handleRegisterAppLaunch(factory, props, callback)
+  })
+
+  connection.on(DA_APP_WINDOW_CLOSED, async (props: any, callback: any) => {
+    await handleAppWindowClosed(factory, props, callback)
   })
 
   connection.on(SAIL_CLIENT_STATE, async (props: any, callback: any) => {

@@ -1,10 +1,15 @@
-import { DirectoryApp } from "@finos/sail-headless-agent"
+import {
+  DirectoryApp,
+  isConformanceAutoResolve,
+} from "@finos/sail-headless-agent"
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard-v3"
 import {
+  DA_APP_WINDOW_CLOSED,
   DA_DIRECTORY_LISTING,
   DA_HELLO,
   DA_REGISTER_APP_LAUNCH,
+  DesktopAgentAppWindowClosedArgs,
   DesktopAgentDirectoryListingArgs,
   DesktopAgentHelloArgs,
   DesktopAgentRegisterAppLaunchArgs,
@@ -56,9 +61,7 @@ export class ServerStateImpl implements ServerState {
       userSessionId,
     } as DesktopAgentDirectoryListingArgs)
     const out = response as DirectoryApp[]
-    this.cs!.setKnownApps(out).catch((e) => {
-      console.error("Error setting known apps", e)
-    })
+    await this.cs!.setKnownApps(out)
     return out
   }
 
@@ -84,6 +87,16 @@ export class ServerStateImpl implements ServerState {
       } as DesktopAgentRegisterAppLaunchArgs,
     )
     return instanceId
+  }
+
+  async reportAppWindowClosed(instanceId: string): Promise<void> {
+    if (!this.socket) {
+      return
+    }
+    await this.socket.emitWithAck(DA_APP_WINDOW_CLOSED, {
+      userSessionId: this.cs!.getUserSessionID(),
+      instanceId,
+    } as DesktopAgentAppWindowClosedArgs)
   }
 
   async sendClientState(cs: SailClientStateArgs): Promise<void> {
@@ -177,6 +190,35 @@ export class ServerStateImpl implements ServerState {
     })
 
     this.socket.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
+      // CI / Playwright: skip host ResolverPanel modal.
+      // Vite injects import.meta.env in the browser bundle (typed loosely for tsc).
+      const autoResolveRaw = (
+        import.meta as { env?: { VITE_CONFORMANCE_AUTO_RESOLVE?: string } }
+      ).env?.VITE_CONFORMANCE_AUTO_RESOLVE
+      if (isConformanceAutoResolve(autoResolveRaw)) {
+        const firstIntent = data.appIntents?.[0]
+        const firstApp = firstIntent?.apps?.[0]
+        const intentName = firstIntent?.intent?.name ?? null
+        if (firstApp && intentName) {
+          console.log("[Sail v2] Auto-resolving host intent", {
+            intentName,
+            app: firstApp,
+          })
+          callback({
+            appIntents: [
+              {
+                intent: { name: intentName },
+                apps: [firstApp],
+              },
+            ],
+            channel: null,
+            requestId: data.requestId,
+            error: null,
+          })
+          return
+        }
+      }
+
       this.cs!.setIntentResolution({
         appIntents: data.appIntents,
         context: data.context,
