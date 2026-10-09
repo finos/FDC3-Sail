@@ -176,8 +176,13 @@ export class DefaultAppState implements AppState {
                   )
                 }
               }
-              const appId = appD?.appId
-              if (appD && instanceId) {
+              const appId =
+                appD?.appId ??
+                (instanceId
+                  ? this.cs?.getPanels().find((p) => p.panelId === instanceId)
+                      ?.appId
+                  : undefined)
+              if (appId && instanceId) {
                 source.postMessage(
                   {
                     type: "WCP2LoadUrl",
@@ -188,7 +193,7 @@ export class DefaultAppState implements AppState {
                     payload: {
                       iframeUrl:
                         window.location.origin +
-                        `/html/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId ?? "unknown"}`,
+                        `/html/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId}`,
                     },
                   },
                   origin,

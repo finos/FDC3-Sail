@@ -1,18 +1,15 @@
 /**
  * Product Desktop Agents under test for the conformance Playwright matrix.
  *
- * Suite App Directory URLs live here (downstream of DA implementations):
- * - 3.0 → hosted on fdc3.finos.org (no local toolbox process)
- * - 2.2 → local `@robmoffat/fdc3-conformance` on :3001
+ * Both FDC3 versions serve the toolbox locally from `@robmoffat/fdc3-conformance`
+ * on :3001 (HTTP). Suite App Directory URLs live here — not in DA packages.
  */
 
 export type ConformanceHostId = "sail-one" | "sail-finance" | "sail-v2-web"
 export type ConformanceFdc3Version = "2.2" | "3.0"
 
-export const HOSTED_CONFORMANCE_3_0_DIRECTORY_URL =
-  "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json"
-
-export const LOCAL_CONFORMANCE_2_2_DIRECTORY_URL =
+/** Shared App Directory URL for the local toolbox process on :3001. */
+export const LOCAL_CONFORMANCE_DIRECTORY_URL =
   "http://localhost:3001/directories/localhost-conformance.json"
 
 export type ConformanceHostConfig = {
@@ -78,13 +75,17 @@ export function resolveConformanceFdc3Version(
   return raw === "2.2" ? "2.2" : "3.0"
 }
 
-export function resolveConformanceDirectoryUrl(version: ConformanceFdc3Version): string {
-  if (process.env.CONFORMANCE_DIRECTORY_URL) {
-    return process.env.CONFORMANCE_DIRECTORY_URL
-  }
+export function resolveConformanceDirectoryUrl(
+  _version: ConformanceFdc3Version,
+): string {
+  return process.env.CONFORMANCE_DIRECTORY_URL ?? LOCAL_CONFORMANCE_DIRECTORY_URL
+}
+
+/** npm package that serves the local toolbox for a matrix cell. */
+export function resolveLocalToolboxPackage(version: ConformanceFdc3Version): string {
   return version === "2.2"
-    ? LOCAL_CONFORMANCE_2_2_DIRECTORY_URL
-    : HOSTED_CONFORMANCE_3_0_DIRECTORY_URL
+    ? "@robmoffat/fdc3-conformance@2.2.3-test.1"
+    : "@robmoffat/fdc3-conformance@3.0.0-beta.1"
 }
 
 /** Env vars passed into the host Vite/Node process for a matrix cell. */
@@ -119,9 +120,9 @@ export function startHostCommand(
   return `${envPrefix} npm run dev -w ${host.workspace} --prefix ../..`
 }
 
-/** Local 2.2 toolbox only — 3.0 is hosted on fdc3.finos.org. */
-export function startLocalToolbox2_2Command(): string {
-  return "npx --yes @robmoffat/fdc3-conformance@2.2.3-test.1"
+/** Start the local `@robmoffat/fdc3-conformance` toolbox for the matrix cell. */
+export function startLocalToolboxCommand(version: ConformanceFdc3Version): string {
+  return `npx --yes ${resolveLocalToolboxPackage(version)}`
 }
 
 function shellQuote(value: string): string {

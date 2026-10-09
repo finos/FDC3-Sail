@@ -26,8 +26,8 @@ Suite App Directory URLs are owned by `@finos/sail-conformance-harness`. Hosts r
 
 | FDC3 version | Toolbox | App Directory |
 |---|---|---|
-| **3.0** | **Hosted** on `fdc3.finos.org` (no local toolbox process) | `https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json` |
-| **2.2** | **Local** — Playwright starts `@robmoffat/fdc3-conformance` on `:3001` | `http://localhost:3001/directories/localhost-conformance.json` |
+| **3.0** | **Local** — Playwright starts `@robmoffat/fdc3-conformance@3.0.0-beta.1` on `:3001` | `http://localhost:3001/directories/localhost-conformance.json` |
+| **2.2** | **Local** — Playwright starts `@robmoffat/fdc3-conformance@2.2.3-test.1` on `:3001` | `http://localhost:3001/directories/localhost-conformance.json` |
 
 Hosts are started with `VITE_AUTO_RESOLVE=1` (programmatic intent pick) and open Conformance1 via `?appId=Conformance1&fdc3Directory=<url>&noSplash=1`.
 

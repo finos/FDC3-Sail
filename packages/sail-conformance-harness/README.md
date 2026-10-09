@@ -48,7 +48,7 @@ npm run test:browser:web-3.0 -w @finos/sail-conformance-harness
 
 The e2e spec opens `Conformance1`, selects **All**, clicks **Run**, and polls `#mocha` until Mocha's runner ends (or completed count matches the suite total). Artifacts land in `artifacts/`. The gate is **zero failures**. Nightly CI runs the host × version matrix (see `.github/workflows/conformance.yml`).
 
-Chromium is launched with `--allow-running-insecure-content` so HTTPS hosted 3.0 toolbox apps can load HTTP `embed.html` on `sail-v2-web` (WCP2 adaptor iframe).
+Both 2.2 and 3.0 cells serve the toolbox from `@robmoffat/fdc3-conformance` on `http://localhost:3001` (no hosted HTTPS apps in the Playwright matrix).
 
 ## License
 

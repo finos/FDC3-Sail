@@ -54,7 +54,7 @@ jobs:
           fi
 
       # Matrix cell: product Desktop Agent × FDC3 version.
-      # 2.2 starts local toolbox on :3001; 3.0 uses hosted fdc3.finos.org AppD.
+      # Both 2.2 and 3.0 start @robmoffat/fdc3-conformance locally on :3001.
       - name: Run ${{ matrix.host }} FDC3 ${{ matrix.fdc3_version }} conformance
         run: >
           CONFORMANCE_HOST=${{ matrix.host }}
