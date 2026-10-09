@@ -6,10 +6,17 @@ import {
   normalizeUrlPathname,
   urlsReferToSameApp,
 } from "./normalizeIdentityUrl"
-import { SailAppStateArgs } from "./message-types"
+import {
+  APP_HELLO,
+  AppHelloArgs,
+  FDC3_APP_EVENT,
+  FDC3_DA_EVENT,
+  SailAppStateArgs,
+} from "./message-types"
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { ServerState } from "./ServerState"
 import { ClientState } from "./ClientState"
+import { io } from "socket.io-client"
 
 export class DefaultAppState implements AppState {
   windowInformation = new Map<Window, string>()
@@ -176,22 +183,23 @@ export class DefaultAppState implements AppState {
                   )
                 }
               }
-              const appId = appD?.appId
-              if (appD && instanceId) {
-                source.postMessage(
-                  {
-                    type: "WCP2LoadUrl",
-                    meta: {
-                      connectionAttemptUuid: data.meta.connectionAttemptUuid,
-                      timestamp: new Date(),
-                    },
-                    payload: {
-                      iframeUrl:
-                        window.location.origin +
-                        `/html/embed.html?connectionAttemptUuid=${data.meta.connectionAttemptUuid}&desktopAgentId=${cs.getUserSessionID()}&instanceId=${instanceId}&appId=${appId ?? "unknown"}`,
-                    },
-                  },
+              const appId =
+                appD?.appId ??
+                (instanceId
+                  ? this.cs?.getPanels().find((p) => p.panelId === instanceId)
+                      ?.appId
+                  : undefined)
+              if (appId && instanceId) {
+                // Direct WCP3 (browser-agent style). Avoid WCP2LoadUrl → embed.html:
+                // HTTPS hosted apps (fdc3.finos.org) cannot load HTTP localhost
+                // embed iframes (mixed content), which left Conformance1 Pending.
+                this.completeDirectWcpHandshake(
+                  source,
                   origin,
+                  data,
+                  instanceId,
+                  appId,
+                  cs.getUserSessionID(),
                 )
               } else {
                 console.error(
@@ -208,6 +216,89 @@ export class DefaultAppState implements AppState {
         }
       })
     }
+  }
+
+  /**
+   * Parent-side WCP1→WCP3 handshake with MessageChannel + socket.io bridge.
+   * Same role as `embed.html`, but safe for cross-origin HTTPS apps.
+   */
+  private completeDirectWcpHandshake(
+    source: Window,
+    origin: string,
+    data: WebConnectionProtocol1Hello,
+    instanceId: string,
+    appId: string,
+    userSessionId: string,
+  ): void {
+    const channel = new MessageChannel()
+    const socket = io()
+    const clientVersion = data.payload?.fdc3Version
+    const fdc3Version =
+      clientVersion && clientVersion.startsWith("3") ? "3.0" : "2.2"
+
+    socket.on("connect", () => {
+      void (async () => {
+        try {
+          socket.on(FDC3_DA_EVENT, (msg: unknown) => {
+            channel.port2.postMessage(msg)
+          })
+          channel.port2.onmessage = (event: MessageEvent) => {
+            socket.emit(FDC3_APP_EVENT, event.data, instanceId)
+          }
+
+          const hosting: unknown = await socket.emitWithAck(APP_HELLO, {
+            userSessionId,
+            instanceId,
+            appId,
+            fdc3Version,
+          } as AppHelloArgs)
+
+          if (hosting == null) {
+            console.error(
+              "[Sail v2] APP_HELLO rejected for direct WCP handshake",
+              { instanceId, appId },
+            )
+            socket.close()
+            return
+          }
+
+          const suffix = `?desktopAgentId=${userSessionId}&instanceId=${instanceId}`
+          const isTab = hosting === AppHosting.Tab || hosting === "Tab"
+          const intentResolverUrl = isTab
+            ? `${window.location.origin}/html/ui/intent-resolver.html${suffix}`
+            : undefined
+          const channelSelectorUrl = isTab
+            ? `${window.location.origin}/html/ui/channel-selector.html${suffix}`
+            : undefined
+
+          source.postMessage(
+            {
+              type: "WCP3Handshake",
+              meta: {
+                connectionAttemptUuid: data.meta.connectionAttemptUuid,
+                timestamp: new Date(),
+              },
+              payload: {
+                fdc3Version,
+                intentResolverUrl,
+                channelSelectorUrl,
+              },
+            },
+            origin,
+            [channel.port1],
+          )
+          console.log("[Sail v2] Direct WCP3Handshake sent", {
+            instanceId,
+            appId,
+            fdc3Version,
+            origin,
+          })
+        } catch (e: unknown) {
+          console.error("[Sail v2] Direct WCP handshake failed", e)
+          socket.close()
+        }
+      })()
+    })
   }
 
   registerAppWindow(window: Window, instanceId: string): void {
