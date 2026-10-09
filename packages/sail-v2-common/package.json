@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "clean": "npx rimraf dist",
+    "prebuild": "npm run build -w @finos/sail-env --prefix ../..",
     "build": "tsc"
   },
   "main": "dist/index.js",
