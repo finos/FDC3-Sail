@@ -2,18 +2,17 @@ import {
   SailDesktopAgent,
   createPopupCloseWatcher,
   createProgrammaticIntentResolver,
-  isConformanceAutoResolve,
   type AppLauncher,
   type DirectoryApp,
   type IntentResolutionRequest,
   type PopupCloseWatcher,
   type WebAppDetails,
 } from "@finos/sail-browser-agent"
+import { isAutoResolve, SAIL_MAX_FDC3_VERSION } from "@finos/sail-env"
 import type { BrowserTypes } from "@finos/fdc3-schema-v3"
 import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
-import { resolveSailOneFdc3Version } from "./fdc3-target"
 import { resolveSailForceNewWindow } from "./force-new-window"
 import { getAppState, getClientState } from "./index"
 
@@ -197,13 +196,13 @@ export class SailHost implements ServerState {
   }
 
   private async startAgent(props: SailClientStateArgs): Promise<void> {
-    const autoResolve = isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE)
+    const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
     const agent = new SailDesktopAgent({
       appLauncher: this.createAppLauncher(),
       apps: props.customApps,
       userChannels: tabsToChannels(props.channels),
       implementationMetadata: {
-        fdc3Version: resolveSailOneFdc3Version(),
+        fdc3Version: SAIL_MAX_FDC3_VERSION,
       },
       ...(autoResolve
         ? {

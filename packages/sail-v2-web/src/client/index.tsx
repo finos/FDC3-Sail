@@ -3,13 +3,10 @@ import { createRoot } from "react-dom/client"
 import { AppHosting, getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
 import {
-  isConformanceAutoResolve,
-  resolveConformanceDirectoryUrl,
-  resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
-  resolveDeepLinkConformanceDirectory,
-  shouldUseConformanceOnlyAppD,
-} from "@finos/sail-headless-agent"
+  resolveNoSplash,
+  resolveSoleFdc3Directory,
+} from "@finos/sail-env"
 
 const container = document.getElementById("app")
 const root = createRoot(container!)
@@ -23,50 +20,15 @@ getAppState().addStateChangeCallback(() => {
   root.render(<Frame cs={getClientState()} as={getAppState()} />)
 })
 
-async function ensureConformanceDirectory(): Promise<void> {
-  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
-  const deepLinkDirectory = resolveDeepLinkConformanceDirectory(window.location.search)
-  // Only inject for CI / deep-link / explicit directory override — not every interactive session.
-  const wantsConformance =
-    Boolean(import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL) ||
-    Boolean(deepLinkDirectory) ||
-    isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE) ||
-    Boolean(deepLinkAppId)
-  if (!wantsConformance) {
-    return
-  }
-
-  const url = resolveConformanceDirectoryUrl({
-    version: resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION),
-    override:
-      deepLinkDirectory ?? import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+async function ensureSoleFdc3Directory(): Promise<void> {
+  const url = resolveSoleFdc3Directory({
+    search: window.location.search,
+    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
   })
-  const conformanceOnly = shouldUseConformanceOnlyAppD({
-    autoResolve: import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE,
-    directoryOverride:
-      deepLinkDirectory ?? import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
-    deepLinkAppId,
-  })
-
-  if (conformanceOnly) {
-    // Replace FINOS/example catalogs so findIntent counts match the toolbox AppD.
-    await getClientState().setDirectories([{ label: "FDC3 Conformance", url, active: true }])
+  if (!url) {
     return
   }
-
-  const dirs = getClientState().getDirectories()
-  if (dirs.some(d => d.url === url || d.url === `${url}/`)) {
-    await getClientState().setDirectories(
-      dirs.map(d =>
-        d.url === url || d.url === `${url}/` ? { ...d, active: true } : d,
-      ),
-    )
-    return
-  }
-  await getClientState().setDirectories([
-    ...dirs,
-    { label: "FDC3 Conformance", url, active: true },
-  ])
+  await getClientState().setDirectories([{ label: "App Directory", url, active: true }])
 }
 
 function sleep(ms: number): Promise<void> {
@@ -104,14 +66,9 @@ async function openDeepLinkApp(appId: string): Promise<void> {
 }
 
 async function bootstrap(): Promise<void> {
-  await ensureConformanceDirectory()
+  await ensureSoleFdc3Directory()
 
-  // Splash modal intercepts pointer events over panels — hide for CI / deep-link.
-  const skipSplash =
-    isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE) ||
-    Boolean(import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL) ||
-    Boolean(resolveDeepLinkAppId(window.location.search))
-  if (skipSplash) {
+  if (resolveNoSplash(window.location.search)) {
     await getClientState().setSplashScreenVisible(false)
   }
 

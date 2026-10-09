@@ -72,6 +72,15 @@ export function handleWCP1Hello(
   const hostIdentifier = resolveHostIdentifierFromSource(sourceWindow, context.options)
 
   const fdc3Version = negotiateFdc3Version(message.payload.fdc3Version, context.maxFdc3Version)
+  if (!fdc3Version) {
+    context.logger.warn("WCP1Hello rejected: unsupported or missing fdc3Version", {
+      requested: message.payload.fdc3Version,
+      maxSupported: context.maxFdc3Version,
+    })
+    channel.port1.close()
+    channel.port2.close()
+    return
+  }
 
   // Store connection metadata
   const metadata: AppConnectionMetadata = {

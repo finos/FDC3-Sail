@@ -50,12 +50,15 @@ webServers.push({
   timeout: 180_000,
   stdout: "pipe",
   stderr: "pipe",
-  // Ensure VITE_* / SAIL_* reach the host process (not only via shell prefixes).
+  // Ensure VITE_* reach the host process (not only via shell prefixes).
   env: {
     ...process.env,
     ...hostProcessEnv(host, fdc3Version),
   },
 })
+
+/** Allow HTTPS hosted apps (fdc3.finos.org) to load HTTP embed.html on sail-v2. */
+const chromiumLaunchArgs = ["--allow-running-insecure-content"]
 
 export default defineConfig({
   testDir: "./e2e",
@@ -82,9 +85,11 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        ...(chromiumExecutable
-          ? { channel: undefined, launchOptions: { executablePath: chromiumExecutable } }
-          : {}),
+        launchOptions: {
+          args: chromiumLaunchArgs,
+          ...(chromiumExecutable ? { executablePath: chromiumExecutable } : {}),
+        },
+        ...(chromiumExecutable ? { channel: undefined } : {}),
       },
     },
   ],

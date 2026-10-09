@@ -3,7 +3,7 @@
  *
  * `implementationMetadata.fdc3Version` is the Desktop Agent's **maximum** supported
  * version. Per-connection wire version is negotiated from WCP1Hello (see
- * {@link negotiateFdc3Version}), matching sail-web `embed.ts`.
+ * {@link negotiateFdc3Version}). Sail has no canonical version — it adapts to the app.
  */
 
 import type { Fdc3ApiVersion } from "@finos/sail-headless-agent"
@@ -43,21 +43,37 @@ export function isFdc3VersionAtLeast(version: string, target: string): boolean {
 }
 
 /**
- * Cap the client's WCP1 `payload.fdc3Version` at the Desktop Agent's maximum
- * supported API version. Same rule as sail-web embed `negotiateFdc3Version`.
+ * Map the client's WCP1 `payload.fdc3Version` onto a supported handler set,
+ * capped by the Desktop Agent's maximum. Returns `null` when the request is
+ * missing or unsupported (e.g. 1.x / 4.x, or 3.x when max is 2.2).
  */
 export function negotiateFdc3Version(
   clientVersion: string | undefined,
   maxSupported: string = "3.0",
-): Fdc3ApiVersion {
+): Fdc3ApiVersion | null {
+  if (!clientVersion) {
+    return null
+  }
+
+  const parsed = parseFdc3Version(clientVersion)
+  if (!parsed) {
+    return null
+  }
+
+  let requested: Fdc3ApiVersion | null = null
+  if (parsed.major === 3) {
+    requested = "3.0"
+  } else if (parsed.major === 2) {
+    requested = "2.2"
+  } else {
+    return null
+  }
+
   const max: Fdc3ApiVersion = isFdc3VersionAtLeast(maxSupported, "3.0") ? "3.0" : "2.2"
-  if (max === "2.2") {
-    return "2.2"
+  if (requested === "3.0" && max === "2.2") {
+    return null
   }
-  if (clientVersion && clientVersion.startsWith("3")) {
-    return "3.0"
-  }
-  return "2.2"
+  return requested
 }
 
 /** Map advertised metadata version onto the headless-agent handler key. */

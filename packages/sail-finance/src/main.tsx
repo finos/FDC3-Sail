@@ -3,14 +3,15 @@ import { createRoot } from "react-dom/client"
 import {
   createPopupCloseWatcher,
   createProgrammaticIntentResolver,
-  isConformanceAutoResolve,
-  resolveConformanceDirectoryUrl,
-  resolveConformanceFdc3Version,
-  resolveDeepLinkAppId,
   SailDesktopAgent,
-  shouldUseConformanceOnlyAppD,
   type AppLauncher,
 } from "@finos/sail-browser-agent"
+import {
+  isAutoResolve,
+  resolveDeepLinkAppId,
+  resolveSoleFdc3Directory,
+  SAIL_MAX_FDC3_VERSION,
+} from "@finos/sail-env"
 import type { AppMetadata } from "@finos/fdc3"
 
 import { bootstrapDockviewPopoutShell, isDockviewPopoutShell } from "./utils/dockview-popout"
@@ -61,18 +62,12 @@ if (isDockviewPopoutShell()) {
   // This ensures the agent is listening for WCP1Hello messages when getAgent() is called
   console.log("[Sail] Initializing FDC3 Desktop Agent")
 
-  const fdc3Version = resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION)
-  const conformanceDirectoryUrl = resolveConformanceDirectoryUrl({
-    version: fdc3Version,
-    override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+  const soleDirectoryUrl = resolveSoleFdc3Directory({
+    search: window.location.search,
+    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
   })
-  const autoResolve = isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE)
+  const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
   const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
-  const conformanceOnlyAppD = shouldUseConformanceOnlyAppD({
-    autoResolve,
-    directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
-    deepLinkAppId,
-  })
 
   /** Assigned after construction so the popup watcher can disconnect instances. */
   let agent: SailDesktopAgent | null = null
@@ -184,11 +179,11 @@ if (isDockviewPopoutShell()) {
 
   agent = new SailDesktopAgent({
     appLauncher,
-    appDirectories: conformanceOnlyAppD
-      ? [conformanceDirectoryUrl]
-      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL, conformanceDirectoryUrl],
+    appDirectories: soleDirectoryUrl
+      ? [soleDirectoryUrl]
+      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL],
     implementationMetadata: {
-      fdc3Version,
+      fdc3Version: SAIL_MAX_FDC3_VERSION,
     },
     ...(autoResolve
       ? {
@@ -204,10 +199,9 @@ if (isDockviewPopoutShell()) {
   agent.start()
 
   console.log("[Sail] FDC3 Browser Desktop Agent started and listening for connections", {
-    fdc3Version,
-    conformanceDirectoryUrl,
+    maxFdc3Version: SAIL_MAX_FDC3_VERSION,
+    soleDirectoryUrl,
     autoResolve,
-    conformanceOnlyAppD,
   })
 
   if (deepLinkAppId) {

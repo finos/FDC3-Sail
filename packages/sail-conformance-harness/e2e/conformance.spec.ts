@@ -64,11 +64,12 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
   })
 
   // Pass AppD URL in the query so hosts that miss Vite env (e.g. ViteExpress) still
-  // load only the conformance directory for this cell.
+  // load only that directory for this cell.
   const directoryUrl = resolveConformanceDirectoryUrl(fdc3Version)
   const deepLink = new URLSearchParams({
     appId: "Conformance1",
-    conformanceDirectory: directoryUrl,
+    fdc3Directory: directoryUrl,
+    noSplash: "1",
   })
   await page.goto(`/?${deepLink.toString()}`)
 

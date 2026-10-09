@@ -9,8 +9,8 @@
     "apps": "fdc3-example-apps",
     "conformance-2.2": "npx --yes @robmoffat/fdc3-conformance@2.2.3-test.1",
     "dev:apps": "concurrently -k -n sail,apps -c blue,magenta \"npm run dev\" \"npm run apps\"",
-    "dev:apps:2.2": "concurrently -k -n sail,apps,conf -c blue,magenta,green \"SAIL_FDC3_VERSION=2.2 VITE_FDC3_VERSION=2.2 npm run dev\" \"npm run apps\" \"npm run conformance-2.2\"",
-    "dev:apps:3.0": "concurrently -k -n sail,apps -c blue,magenta \"SAIL_FDC3_VERSION=3.0 VITE_FDC3_VERSION=3.0 npm run dev\" \"npm run apps\"",
+    "dev:apps:2.2": "concurrently -k -n sail,apps,conf -c blue,magenta,green \"VITE_FDC3_DIRECTORY_URL=http://localhost:3001/directories/localhost-conformance.json VITE_AUTO_RESOLVE=1 npm run dev\" \"npm run apps\" \"npm run conformance-2.2\"",
+    "dev:apps:3.0": "concurrently -k -n sail,apps -c blue,magenta \"VITE_FDC3_DIRECTORY_URL=https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json npm run dev\" \"npm run apps\"",
     "prod": "pm2 start pm2.config.js"
   },
   "main": "src/server/main.js",
@@ -39,6 +39,7 @@
     "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0-beta.1",
     "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0-beta.1",
     "@finos/fdc3-sail-common": "0.0.0",
+    "@finos/sail-env": "*",
     "@finos/sail-headless-agent": "0.0.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",

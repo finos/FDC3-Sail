@@ -1,7 +1,5 @@
-import {
-  DirectoryApp,
-  isConformanceAutoResolve,
-} from "@finos/sail-headless-agent"
+import { DirectoryApp } from "@finos/sail-headless-agent"
+import { isAutoResolve } from "@finos/sail-env"
 import { io, Socket } from "socket.io-client"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard-v3"
 import {
@@ -190,9 +188,9 @@ export class ServerStateImpl implements ServerState {
       // CI / Playwright: skip host ResolverPanel modal.
       // Vite injects import.meta.env in the browser bundle (typed loosely for tsc).
       const autoResolveRaw = (
-        import.meta as { env?: { VITE_CONFORMANCE_AUTO_RESOLVE?: string } }
-      ).env?.VITE_CONFORMANCE_AUTO_RESOLVE
-      if (isConformanceAutoResolve(autoResolveRaw)) {
+        import.meta as { env?: { VITE_AUTO_RESOLVE?: string } }
+      ).env?.VITE_AUTO_RESOLVE
+      if (isAutoResolve(autoResolveRaw)) {
         const firstIntent = data.appIntents?.[0]
         const firstApp = firstIntent?.apps?.[0]
         const intentName = firstIntent?.intent?.name ?? null

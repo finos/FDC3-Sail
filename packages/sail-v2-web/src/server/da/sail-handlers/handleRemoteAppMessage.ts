@@ -7,7 +7,7 @@ import {
   WscpConnectFailed,
   WscpDesktopAgentConnect,
 } from "@finos/fdc3-sail-common"
-import { Fdc3ApiVersion, State } from "@finos/sail-headless-agent"
+import { State } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 import { WebSocketConnection } from "../connection"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
@@ -197,13 +197,11 @@ function registerRemoteInstance(
   title: string | undefined,
 ): string {
   const newInstanceId = "sail-remote-" + uuid()
-  const daVersion = session.fdc3Version()
-  const fdc3Version: Fdc3ApiVersion = daVersion.startsWith("3") ? "3.0" : "2.2"
+  // fdc3Version left unset until the remote negotiates; handlers default to 2.2.
   session.setInstanceDetails(newInstanceId, {
     instanceId: newInstanceId,
     state: State.Pending,
     appId,
-    fdc3Version,
     connection,
     hosting: AppHosting.Remote,
     channel: null,

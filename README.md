@@ -37,6 +37,7 @@ For package ownership, entry points, and what's implemented vs. planned, see the
 ```mermaid
 graph BT
   Engine["@finos/sail-headless-agent"]
+  Env["@finos/sail-env"]
   Theme["@finos/sail-theme"]
   Platform["@finos/sail-platform"]
   Common["@finos/fdc3-sail-common"]
@@ -49,12 +50,16 @@ graph BT
   DA --> Engine
   V2 --> Engine
   V2 --> Common
+  V2 --> Env
   Harness --> DA
+  Harness --> Env
   One --> DA
   One --> Platform
+  One --> Env
   Finance --> DA
   Finance --> Platform
   Finance --> Theme
+  Finance --> Env
 
   Harness ~~~ One ~~~ Finance ~~~ V2
 ```
@@ -63,13 +68,14 @@ graph BT
 
 | Package | Description |
 |---|---|
+| [`packages/sail-env`](packages/sail-env/README.md) | Shared host bootstrap — query params (`appId`, `fdc3Directory`, `noSplash`) and Vite env (`VITE_FDC3_DIRECTORY_URL`, `VITE_AUTO_RESOLVE`). See [README](packages/sail-env/README.md). |
 | [`packages/sail-headless-agent`](packages/sail-headless-agent/) | FDC3 engine (`@finos/sail-headless-agent`) — 2.2 and 3.0 handlers behind `FDC3ServerInstance` |
 | [`packages/sail-browser-agent`](packages/sail-browser-agent/) | Browser host for that engine — WCP, MessagePorts, `AppLauncher` / intent UI contracts |
 | [`packages/sail-platform`](packages/sail-platform/) | Composition layer — host UI seams, pluggable storage, lifecycle |
 | [`packages/sail-theme`](packages/sail-theme/) | Shared brand theme — design tokens and assets |
 | [`packages/sail-finance`](packages/sail-finance/) | Example shell — finance-specific workspace dashboard |
 | [`packages/sail-one`](packages/sail-one/) | Example shell — domain-neutral tab-and-grid canvas |
-| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Minimal host for FINOS FDC3 conformance (`@robmoffat/fdc3-conformance`) |
+| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance against product hosts |
 | [`packages/sail-v2-common`](packages/sail-v2-common/) / [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
 
 Full documentation, including per-package guides, lives at **[https://finos.github.io/FDC3-Sail/docs/](https://finos.github.io/FDC3-Sail/docs/)** (built from [`website/`](website/) via GitHub Pages).

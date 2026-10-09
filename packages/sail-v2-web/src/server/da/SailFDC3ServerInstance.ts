@@ -290,8 +290,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   fdc3Version(): string {
-    // CI / conformance matrix: `SAIL_FDC3_VERSION=2.2|3.0` (default 3.0).
-    return process.env.SAIL_FDC3_VERSION === "2.2" ? "2.2" : "3.0"
+    // Advertised maximum — per-app wire version comes from WCP / APP_HELLO.
+    return "3.0"
   }
 
   private convertToTabDetail(channel: ChannelState): TabDetail {

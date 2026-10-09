@@ -3,7 +3,7 @@ import { createProgrammaticIntentResolver, type IntentResolver } from "@finos/sa
 /**
  * Build a host {@link IntentResolver} that picks handlers programmatically
  * (no modal UI) — used by the minimal harness host and by product shells under
- * `VITE_CONFORMANCE_AUTO_RESOLVE=1`.
+ * `VITE_AUTO_RESOLVE=1`.
  */
 export function createHarnessIntentResolver(debug = false): IntentResolver {
   return createProgrammaticIntentResolver({

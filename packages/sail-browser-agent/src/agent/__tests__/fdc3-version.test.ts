@@ -9,11 +9,17 @@ describe("negotiateFdc3Version", () => {
 
   it("selects 2.2 when the client requests 2.x even if the DA max is 3.0", () => {
     expect(negotiateFdc3Version("2.2", "3.0")).toBe("2.2")
-    expect(negotiateFdc3Version(undefined, "3.0")).toBe("2.2")
   })
 
-  it("caps at 2.2 when the DA max is 2.2", () => {
-    expect(negotiateFdc3Version("3.0", "2.2")).toBe("2.2")
+  it("rejects missing or unsupported client versions", () => {
+    expect(negotiateFdc3Version(undefined, "3.0")).toBeNull()
+    expect(negotiateFdc3Version("1.2", "3.0")).toBeNull()
+    expect(negotiateFdc3Version("4.0", "3.0")).toBeNull()
+    expect(negotiateFdc3Version("not-a-version", "3.0")).toBeNull()
+  })
+
+  it("rejects 3.x when the DA max is 2.2", () => {
+    expect(negotiateFdc3Version("3.0", "2.2")).toBeNull()
     expect(negotiateFdc3Version("2.2", "2.2")).toBe("2.2")
   })
 })

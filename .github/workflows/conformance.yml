@@ -22,10 +22,6 @@ jobs:
       matrix:
         host: [sail-one, sail-finance, sail-v2-web]
         fdc3_version: ["2.2", "3.0"]
-        exclude:
-          # Finance 2.2 still needs reliable forceNewWindow / tab-close teardown.
-          - host: sail-finance
-            fdc3_version: "2.2"
     # Full suite ~5–7 minutes plus host/toolbox startup; ceiling covers hung agents.
     timeout-minutes: 40
     permissions:

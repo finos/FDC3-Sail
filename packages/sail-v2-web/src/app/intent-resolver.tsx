@@ -123,7 +123,7 @@ window.addEventListener("load", () => {
     } else if (isFdc3UserInterfaceResolve(e.data)) {
       const payload = e.data.payload
       // CI / conformance: auto-pick first intent + first app (no modal).
-      if (import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE === "1") {
+      if (import.meta.env.VITE_AUTO_RESOLVE === "1") {
         const firstIntent = payload.appIntents?.[0]
         const firstApp = firstIntent?.apps?.[0]
         const intentName = firstIntent?.intent?.name ?? null

@@ -111,7 +111,7 @@ export const createIntentResolverStore = (agent: SailDesktopAgent) => {
   const { intentResolver, apps } = agent
 
   // CI programmatic resolver owns resolution — do not also open the modal / cancel path.
-  if (import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE === "1") {
+  if (import.meta.env.VITE_AUTO_RESOLVE === "1") {
     return store
   }
 

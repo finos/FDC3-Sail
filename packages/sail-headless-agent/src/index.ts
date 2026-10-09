@@ -44,18 +44,6 @@ import {
   PrivateChannelDisconnectServerInstanceEvent,
   ShutdownServerInstanceEvent,
 } from "./FDC3ServerInstanceEvents"
-import {
-  HOSTED_CONFORMANCE_3_0_DIRECTORY_URL,
-  LOCAL_CONFORMANCE_2_2_DIRECTORY_URL,
-  isConformanceAutoResolve,
-  resolveConformanceDirectoryUrl,
-  resolveConformanceFdc3Version,
-  resolveDeepLinkAppId,
-  resolveDeepLinkConformanceDirectory,
-  shouldUseConformanceOnlyAppD,
-  type ConformanceFdc3Version,
-} from "./conformance-env"
-
 // Default exports keep prior names pointing at v2 for backward compatibility
 export {
   type InstanceID,
@@ -98,13 +86,4 @@ export {
   PrivateChannelDisconnectServerInstanceEvent,
   ChannelChangedServerInstanceEvent,
   ShutdownServerInstanceEvent,
-  HOSTED_CONFORMANCE_3_0_DIRECTORY_URL,
-  LOCAL_CONFORMANCE_2_2_DIRECTORY_URL,
-  isConformanceAutoResolve,
-  resolveConformanceDirectoryUrl,
-  resolveConformanceFdc3Version,
-  resolveDeepLinkAppId,
-  resolveDeepLinkConformanceDirectory,
-  shouldUseConformanceOnlyAppD,
-  type ConformanceFdc3Version,
 }

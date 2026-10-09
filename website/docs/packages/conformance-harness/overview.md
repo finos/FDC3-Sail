@@ -18,19 +18,18 @@ GitHub Actions (`.github/workflows/conformance.yml`) runs:
 | `sail-finance` | 3000 | `@finos/sail-finance` |
 | `sail-v2-web` | 8090 | `@finos/fdc3-sail-web` |
 
-× FDC3 versions **`2.2`** and **`3.0`** (five cells, `fail-fast: false`).
-`sail-finance` × **`2.2`** is excluded from CI until forceNewWindow / tab-close teardown is reliable.
+× FDC3 versions **`2.2`** and **`3.0`** (six cells, `fail-fast: false`).
 
 ### Toolbox sourcing
 
-Shared constants and resolvers live in `@finos/sail-headless-agent` (`conformance-env`) and are re-exported from `@finos/sail-browser-agent`.
+Suite App Directory URLs are owned by `@finos/sail-conformance-harness`. Hosts receive a concrete directory via `VITE_FDC3_DIRECTORY_URL` / `?fdc3Directory=` (see `@finos/sail-env` README in the monorepo).
 
 | FDC3 version | Toolbox | App Directory |
 |---|---|---|
 | **3.0** | **Hosted** on `fdc3.finos.org` (no local toolbox process) | `https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/directories/website-conformance.json` |
 | **2.2** | **Local** — Playwright starts `@robmoffat/fdc3-conformance` on `:3001` | `http://localhost:3001/directories/localhost-conformance.json` |
 
-Hosts are started with `VITE_CONFORMANCE_AUTO_RESOLVE=1` (programmatic intent pick) and open Conformance1 via `?appId=Conformance1`.
+Hosts are started with `VITE_AUTO_RESOLVE=1` (programmatic intent pick) and open Conformance1 via `?appId=Conformance1&fdc3Directory=<url>&noSplash=1`.
 
 ## Quick start (one cell)
 
@@ -57,7 +56,7 @@ Artifacts land in gitignored `packages/sail-conformance-harness/artifacts/` (`co
 - **Runner** — Playwright config + `e2e/hosts.ts` + mocha scrape (`e2e/mocha-scrape.ts`)
 - **Hosts under test** — product shells (`sail-one`, `sail-finance`, `sail-v2-web`), not this package’s Vite app
 - **Optional local host** — the React harness under `src/` remains for browser-agent debugging (`dev:browser:*`); CI does not use it as the SUT
-- **Intent resolution** — `createProgrammaticIntentResolver` from `@finos/sail-browser-agent` when `VITE_CONFORMANCE_AUTO_RESOLVE=1`
+- **Intent resolution** — `createProgrammaticIntentResolver` from `@finos/sail-browser-agent` when `VITE_AUTO_RESOLVE=1`
 
 ## Related
 

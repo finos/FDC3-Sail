@@ -7,14 +7,20 @@ import { isWebConnectionProtocol1Hello } from "@finos/fdc3-schema-v3/dist/genera
 const appWindow = window.parent
 let parentOrigin: string | null = null
 
-/** Negotiate DA wire version from the client's WCP1Hello fdc3Version. */
+/** Negotiate DA wire version from the client's WCP1Hello; null if unsupported. */
 function negotiateFdc3Version(
   clientVersion: string | undefined,
-): "2.2" | "3.0" {
-  if (clientVersion && clientVersion.startsWith("3")) {
+): "2.2" | "3.0" | null {
+  if (!clientVersion) {
+    return null
+  }
+  if (clientVersion.startsWith("3")) {
     return "3.0"
   }
-  return "2.2"
+  if (clientVersion.startsWith("2")) {
+    return "2.2"
+  }
+  return null
 }
 
 function doSocketConnection(
@@ -32,6 +38,16 @@ function doSocketConnection(
       const fdc3Version = negotiateFdc3Version(
         messageData.payload?.fdc3Version,
       )
+      if (!fdc3Version) {
+        console.error(
+          "[Sail v2 embed] Unsupported or missing fdc3Version",
+          messageData.payload?.fdc3Version,
+        )
+        socket.close()
+        channel.port1.close()
+        channel.port2.close()
+        return
+      }
 
       const response = await socket.emitWithAck(APP_HELLO, {
         userSessionId: sessionId,

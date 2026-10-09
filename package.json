@@ -9,10 +9,10 @@
   },
   "scripts": {
     "clean": "npm run clean --workspaces",
-    "build": "npm run build -w @finos/sail-headless-agent -w @finos/sail-browser-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
+    "build": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-browser-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
     "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
     "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
-    "dev:v2": "npm run build -w @finos/sail-headless-agent -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
+    "dev:v2": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
     "lint": "vp lint . && oxlint -c .oxlintrc.json packages",
@@ -44,6 +44,7 @@
     "vitest": "4.1.10"
   },
   "workspaces": [
+    "packages/sail-env",
     "packages/sail-headless-agent",
     "packages/sail-v2-common",
     "packages/sail-v2-web",
