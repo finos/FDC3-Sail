@@ -8,7 +8,7 @@ import {
   resolveConformanceFdc3Version,
   summariseResult,
 } from "./conformance-result"
-import { resolveConformanceHostId } from "./hosts"
+import { resolveConformanceDirectoryUrl, resolveConformanceHostId } from "./hosts"
 import { awaitMochaResult, installMochaEndHook } from "./mocha-scrape"
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
@@ -63,7 +63,14 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
     consoleLines.push(`[${msg.type()}] ${msg.text()}`)
   })
 
-  await page.goto("/?appId=Conformance1")
+  // Pass AppD URL in the query so hosts that miss Vite env (e.g. ViteExpress) still
+  // load only the conformance directory for this cell.
+  const directoryUrl = resolveConformanceDirectoryUrl(fdc3Version)
+  const deepLink = new URLSearchParams({
+    appId: "Conformance1",
+    conformanceDirectory: directoryUrl,
+  })
+  await page.goto(`/?${deepLink.toString()}`)
 
   // Fail fast if the host deep-link open already reported an error.
   await page
@@ -108,10 +115,12 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
     )
   }
 
-  // sail-v2 welcome splash can sit above the panel iframe and steal clicks.
-  const splashClose = page.getByRole("button", { name: "Close" })
-  if (await splashClose.isVisible().catch(() => false)) {
-    await splashClose.click()
+  // sail-v2 welcome splash sits above panels and steals clicks — dismiss only on that host.
+  if (hostId === "sail-v2-web") {
+    const splashClose = page.getByRole("button", { name: "Close" })
+    if (await splashClose.isVisible().catch(() => false)) {
+      await splashClose.click()
+    }
   }
 
   const frame = page.frameLocator(CONFORMANCE_IFRAME)
@@ -125,8 +134,12 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
   const hooked = await installMochaEndHook(mochaFrame)
   expect(hooked, "mocha.run end hook installed in conformance iframe").toBe(true)
 
-  // force: host chrome (splash / overlays) must not block the in-iframe Run control.
-  await frame.locator("#runButton").click({ force: true })
+  if (hostId === "sail-v2-web") {
+    // Host chrome must not block the in-iframe Run control.
+    await frame.locator("#runButton").click({ force: true })
+  } else {
+    await frame.locator("#runButton").click()
+  }
 
   const outcome = await awaitMochaResult(page).catch(async (error: unknown) => {
     await page.screenshot({

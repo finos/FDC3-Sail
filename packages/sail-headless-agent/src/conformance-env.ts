@@ -52,12 +52,14 @@ export function isConformanceAutoResolve(raw?: string | null): boolean {
 export function shouldUseConformanceOnlyAppD(options?: {
   autoResolve?: boolean | string | null
   directoryOverride?: string | null
+  /** Deep-link opens (e.g. `?appId=Conformance1`) imply an unattended CI-style session. */
+  deepLinkAppId?: string | null
 }): boolean {
   const auto =
     typeof options?.autoResolve === "boolean"
       ? options.autoResolve
       : isConformanceAutoResolve(options?.autoResolve)
-  return auto || Boolean(options?.directoryOverride)
+  return auto || Boolean(options?.directoryOverride) || Boolean(options?.deepLinkAppId)
 }
 
 /**
@@ -71,4 +73,18 @@ export function resolveDeepLinkAppId(
     typeof search === "string" ? new URLSearchParams(search) : search
   const appId = params.get("appId")
   return appId && appId.length > 0 ? appId : undefined
+}
+
+/**
+ * Optional deep-link override for the conformance App Directory URL
+ * (`?conformanceDirectory=https://…`). Useful when Vite `import.meta.env`
+ * is not reliably injected (e.g. some ViteExpress setups).
+ */
+export function resolveDeepLinkConformanceDirectory(
+  search: string | URLSearchParams,
+): string | undefined {
+  const params =
+    typeof search === "string" ? new URLSearchParams(search) : search
+  const url = params.get("conformanceDirectory")
+  return url && url.length > 0 ? url : undefined
 }

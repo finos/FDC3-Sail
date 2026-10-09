@@ -7,6 +7,7 @@ import {
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  resolveDeepLinkConformanceDirectory,
   shouldUseConformanceOnlyAppD,
 } from "@finos/sail-headless-agent"
 
@@ -23,25 +24,32 @@ getAppState().addStateChangeCallback(() => {
 })
 
 async function ensureConformanceDirectory(): Promise<void> {
+  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
+  const deepLinkDirectory = resolveDeepLinkConformanceDirectory(window.location.search)
   // Only inject for CI / deep-link / explicit directory override — not every interactive session.
   const wantsConformance =
     Boolean(import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL) ||
+    Boolean(deepLinkDirectory) ||
     isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE) ||
-    Boolean(resolveDeepLinkAppId(window.location.search))
+    Boolean(deepLinkAppId)
   if (!wantsConformance) {
     return
   }
 
   const url = resolveConformanceDirectoryUrl({
     version: resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION),
-    override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+    override:
+      deepLinkDirectory ?? import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
   })
   const conformanceOnly = shouldUseConformanceOnlyAppD({
     autoResolve: import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE,
-    directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+    directoryOverride:
+      deepLinkDirectory ?? import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+    deepLinkAppId,
   })
 
   if (conformanceOnly) {
+    // Replace FINOS/example catalogs so findIntent counts match the toolbox AppD.
     await getClientState().setDirectories([{ label: "FDC3 Conformance", url, active: true }])
     return
   }

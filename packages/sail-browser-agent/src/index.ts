@@ -47,6 +47,7 @@ export {
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  resolveDeepLinkConformanceDirectory,
   shouldUseConformanceOnlyAppD,
   type ConformanceFdc3Version,
 } from "@finos/sail-headless-agent"

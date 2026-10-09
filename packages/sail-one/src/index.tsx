@@ -32,6 +32,7 @@ async function ensureConformanceDirectory(): Promise<void> {
     return
   }
 
+  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
   const url = resolveConformanceDirectoryUrl({
     version: resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION),
     override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
@@ -39,6 +40,7 @@ async function ensureConformanceDirectory(): Promise<void> {
   const conformanceOnly = shouldUseConformanceOnlyAppD({
     autoResolve: import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE,
     directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+    deepLinkAppId,
   })
 
   if (conformanceOnly) {
