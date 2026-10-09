@@ -18,7 +18,8 @@ GitHub Actions (`.github/workflows/conformance.yml`) runs:
 | `sail-finance` | 3000 | `@finos/sail-finance` |
 | `sail-v2-web` | 8090 | `@finos/fdc3-sail-web` |
 
-× FDC3 versions **`2.2`** and **`3.0`** (six cells, `fail-fast: false`).
+× FDC3 versions **`2.2`** and **`3.0`** (five cells, `fail-fast: false`).
+`sail-finance` × **`2.2`** is excluded from CI until forceNewWindow / tab-close teardown is reliable.
 
 ### Toolbox sourcing
 
