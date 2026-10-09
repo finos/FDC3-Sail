@@ -1,6 +1,7 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import {
+  createPopupCloseWatcher,
   createProgrammaticIntentResolver,
   isConformanceAutoResolve,
   resolveConformanceDirectoryUrl,
@@ -27,6 +28,26 @@ const EXAMPLE_APPS_DIRECTORY_URL = "http://localhost:4005/static/generated/fdc3-
 const isChannelSelectorE2e =
   new URLSearchParams(window.location.search).get("e2e") === "channel-selector"
 
+type AppMetadataWithManifest = AppMetadata & {
+  details?: { url?: string }
+  hostManifests?: { sail?: unknown }
+}
+
+/** 2.2 conformance mocks set `hostManifests.sail.forceNewWindow` for tab/popup launches. */
+function shouldForceNewWindow(appMetadata: AppMetadataWithManifest): boolean {
+  const sailManifest = appMetadata.hostManifests?.sail
+  return (
+    typeof sailManifest === "object" &&
+    sailManifest !== null &&
+    (sailManifest as { forceNewWindow?: boolean }).forceNewWindow === true
+  )
+}
+
+function extractAppUrl(appMetadata: AppMetadataWithManifest): string | undefined {
+  const details = appMetadata.details
+  return details && typeof details.url === "string" ? details.url : undefined
+}
+
 if (isDockviewPopoutShell()) {
   bootstrapDockviewPopoutShell()
 } else if (isChannelSelectorE2e) {
@@ -46,15 +67,70 @@ if (isDockviewPopoutShell()) {
     override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
   })
   const autoResolve = isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE)
+  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
   const conformanceOnlyAppD = shouldUseConformanceOnlyAppD({
     autoResolve,
     directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+    deepLinkAppId,
   })
+
+  /** Assigned after construction so the popup watcher can disconnect instances. */
+  let agent: SailDesktopAgent | null = null
+  /** Deep-link / Playwright Conformance1 must stay an iframe on the host page. */
+  let forceFrameForNextLaunch = false
+
+  const popupWatcher = createPopupCloseWatcher({
+    onPopupClosed: instanceId => {
+      console.log(`[Sail] Popup closed for ${instanceId} — disconnecting agent instance`)
+      void agent?.disconnectInstance(instanceId).catch((e: unknown) => {
+        console.warn(`[Sail] disconnect after popup close failed for ${instanceId}`, e)
+      })
+    },
+  })
+
+  const removePanelIfPresent = (instanceId: string): boolean => {
+    const workspaceStore = useWorkspaceStore.getState()
+    for (const workspace of workspaceStore.workspaces.values()) {
+      for (const [tabId, tab] of workspace.layout.tabs) {
+        if (tab.panels.has(instanceId)) {
+          workspaceStore.removePanel(workspace.uuid, tabId, instanceId)
+          console.log(`[Sail] Closed app panel ${instanceId}`, {
+            workspaceId: workspace.uuid,
+            tabId,
+          })
+          return true
+        }
+      }
+    }
+    return false
+  }
 
   const appLauncher: AppLauncher = {
     // eslint-disable-next-line @typescript-eslint/require-await -- async so a throw rejects the returned promise
     launch: async (request, appMetadata: AppMetadata) => {
       const instanceId = request.app.instanceId || crypto.randomUUID()
+      const metadata = appMetadata as AppMetadataWithManifest
+      const url = extractAppUrl(metadata)
+      if (!url) {
+        throw new Error(`App ${appMetadata.appId} has no URL in metadata`)
+      }
+
+      const preferFrame = forceFrameForNextLaunch
+      forceFrameForNextLaunch = false
+      const openAsTab = !preferFrame && shouldForceNewWindow(metadata)
+
+      if (openAsTab) {
+        // Top-level browsing context so 2.2 mocks can `window.close()` and tear down.
+        const win = window.open(url, instanceId)
+        if (!win) {
+          throw new Error(`Failed to open window for ${appMetadata.appId}`)
+        }
+        agent?.registerHostWindow(win, instanceId)
+        popupWatcher.registerPopup(instanceId, win)
+        console.log(`[Sail] Launched app ${appMetadata.appId} as tab ${instanceId}`, { url })
+        return { appId: request.app.appId, instanceId }
+      }
+
       const workspaceStore = useWorkspaceStore.getState()
       const { activeWorkspaceId } = workspaceStore
 
@@ -70,17 +146,6 @@ if (isDockviewPopoutShell()) {
       const activeTabId = workspace.layout.activeTabId
       if (!activeTabId) {
         throw new Error(`No active tab in workspace ${activeWorkspaceId}`)
-      }
-
-      const details =
-        "details" in appMetadata ? (appMetadata as { details?: unknown }).details : undefined
-      const detailsUrl =
-        details && typeof details === "object" && "url" in details
-          ? (details as { url?: unknown }).url
-          : undefined
-      const url = typeof detailsUrl === "string" ? detailsUrl : undefined
-      if (!url) {
-        throw new Error(`App ${appMetadata.appId} has no URL in metadata`)
       }
 
       // Agent registers Pending before launch; shell only mounts the panel/iframe.
@@ -103,25 +168,21 @@ if (isDockviewPopoutShell()) {
     },
 
     close: (instanceId: string) => {
-      const workspaceStore = useWorkspaceStore.getState()
-      for (const workspace of workspaceStore.workspaces.values()) {
-        for (const [tabId, tab] of workspace.layout.tabs) {
-          if (tab.panels.has(instanceId)) {
-            workspaceStore.removePanel(workspace.uuid, tabId, instanceId)
-            console.log(`[Sail] Closed app panel ${instanceId}`, {
-              workspaceId: workspace.uuid,
-              tabId,
-            })
-            return Promise.resolve()
-          }
-        }
+      if (popupWatcher.hasPopup(instanceId)) {
+        popupWatcher.closePopupForInstance(instanceId)
+        agent?.forgetHostWindow(instanceId)
+        console.log(`[Sail] Closed app tab ${instanceId}`)
+        return Promise.resolve()
       }
-      console.warn(`[Sail] close: no panel found for instance ${instanceId}`)
+
+      if (!removePanelIfPresent(instanceId)) {
+        console.warn(`[Sail] close: no panel/tab found for instance ${instanceId}`)
+      }
       return Promise.resolve()
     },
   }
 
-  const agent = new SailDesktopAgent({
+  agent = new SailDesktopAgent({
     appLauncher,
     appDirectories: conformanceOnlyAppD
       ? [conformanceDirectoryUrl]
@@ -149,8 +210,9 @@ if (isDockviewPopoutShell()) {
     conformanceOnlyAppD,
   })
 
-  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
   if (deepLinkAppId) {
+    // Conformance1 declares forceNewWindow; Playwright scrapes the host-page iframe.
+    forceFrameForNextLaunch = true
     void agent.directoriesLoaded
       .then(() => agent.apps.open(deepLinkAppId))
       .then(id => {
