@@ -46,6 +46,21 @@ export function isConformanceAutoResolve(raw?: string | null): boolean {
 }
 
 /**
+ * CI / Playwright cells should load **only** the conformance App Directory so
+ * `findIntent` counts are not inflated by FINOS public + example-apps catalogs.
+ */
+export function shouldUseConformanceOnlyAppD(options?: {
+  autoResolve?: boolean | string | null
+  directoryOverride?: string | null
+}): boolean {
+  const auto =
+    typeof options?.autoResolve === "boolean"
+      ? options.autoResolve
+      : isConformanceAutoResolve(options?.autoResolve)
+  return auto || Boolean(options?.directoryOverride)
+}
+
+/**
  * Deep-link app id from a query string (`?appId=Conformance1`).
  * Pass `window.location.search` or any `?…` / `URLSearchParams` value.
  */

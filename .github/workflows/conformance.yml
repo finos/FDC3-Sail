@@ -45,6 +45,7 @@ jobs:
       - name: Build shared packages
         run: |
           if [ "${{ matrix.host }}" = "sail-v2-web" ]; then
+            npm run build -w @finos/sail-headless-agent
             npm run build -w @finos/fdc3-sail-common
           else
             npm run build -w @finos/sail-headless-agent

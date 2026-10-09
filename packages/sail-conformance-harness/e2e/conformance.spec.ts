@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type ConsoleMessage, type Page } from "@playwright/test"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -22,13 +22,92 @@ const hostId = resolveConformanceHostId()
  */
 const CONFORMANCE_IFRAME = 'iframe[src*="/apps/app/index.html"]'
 
+type HostWindowFlags = {
+  __sailConformanceOpenError?: string
+  __sailConformanceReady?: string
+}
+
+async function readHostOpenError(page: Page): Promise<string | undefined> {
+  return page.evaluate(() => {
+    const w = window as unknown as HostWindowFlags
+    return w.__sailConformanceOpenError
+  })
+}
+
+async function dumpHostDiagnostics(page: Page, consoleLines: string[]): Promise<string> {
+  const openError = await readHostOpenError(page).catch(() => undefined)
+  const ready = await page
+    .evaluate(() => (window as unknown as HostWindowFlags).__sailConformanceReady)
+    .catch(() => undefined)
+  const iframeCount = await page.locator("iframe").count().catch(() => -1)
+  const iframeSrcs = await page
+    .locator("iframe")
+    .evaluateAll(els => els.map(el => (el as HTMLIFrameElement).src || "(no src)"))
+    .catch(() => [] as string[])
+
+  return [
+    `host=${hostId} fdc3=${fdc3Version}`,
+    `ready=${ready ?? "(unset)"}`,
+    `openError=${openError ?? "(none)"}`,
+    `iframeCount=${iframeCount}`,
+    `iframeSrcs=${JSON.stringify(iframeSrcs)}`,
+    `consoleTail:\n${consoleLines.slice(-40).join("\n")}`,
+  ].join("\n")
+}
+
 test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
   mkdirSync(ARTIFACTS, { recursive: true })
 
+  const consoleLines: string[] = []
+  page.on("console", (msg: ConsoleMessage) => {
+    consoleLines.push(`[${msg.type()}] ${msg.text()}`)
+  })
+
   await page.goto("/?appId=Conformance1")
 
+  // Fail fast if the host deep-link open already reported an error.
+  await page
+    .waitForFunction(
+      () => {
+        const w = window as unknown as HostWindowFlags
+        return Boolean(w.__sailConformanceOpenError) || Boolean(w.__sailConformanceReady)
+      },
+      undefined,
+      { timeout: 90_000 },
+    )
+    .catch(async () => {
+      // Continue to iframe wait — some hosts may not set markers yet.
+    })
+
+  const earlyError = await readHostOpenError(page)
+  if (earlyError) {
+    await page.screenshot({
+      path: join(ARTIFACTS, `conformance-open-error-${hostId}-${fdc3Version}.png`),
+      fullPage: true,
+    })
+    throw new Error(`Host deep-link open failed: ${earlyError}`)
+  }
+
   const iframe = page.locator(CONFORMANCE_IFRAME)
-  await iframe.waitFor({ state: "attached", timeout: 120_000 })
+  try {
+    await iframe.waitFor({ state: "attached", timeout: 120_000 })
+  } catch (error: unknown) {
+    await page.screenshot({
+      path: join(ARTIFACTS, `conformance-iframe-timeout-${hostId}-${fdc3Version}.png`),
+      fullPage: true,
+    })
+    const diagnostics = await dumpHostDiagnostics(page, consoleLines)
+    writeFileSync(
+      join(ARTIFACTS, `conformance-iframe-timeout-${hostId}-${fdc3Version}.txt`),
+      `${diagnostics}\n`,
+    )
+    throw new Error(
+      `Timed out waiting for Conformance1 iframe.\n${diagnostics}\nOriginal: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    )
+  }
+
   const frame = page.frameLocator(CONFORMANCE_IFRAME)
   await frame.locator("#testSuite option").first().waitFor({ state: "attached", timeout: 120_000 })
   await frame.locator("#testSuite").selectOption({ label: "All" })

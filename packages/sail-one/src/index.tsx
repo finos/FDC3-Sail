@@ -6,13 +6,20 @@ import {
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  shouldUseConformanceOnlyAppD,
 } from "@finos/sail-browser-agent"
-import { getClientState, getServerState, bindClientStateToHost } from "./state"
+import { AppHosting, getClientState, getServerState, bindClientStateToHost } from "./state"
 import { useSailState } from "./state/use-sail-state"
 
 function App() {
   useSailState()
   return <Frame cs={getClientState()} />
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 }
 
 async function ensureConformanceDirectory(): Promise<void> {
@@ -29,6 +36,17 @@ async function ensureConformanceDirectory(): Promise<void> {
     version: resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION),
     override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
   })
+  const conformanceOnly = shouldUseConformanceOnlyAppD({
+    autoResolve: import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE,
+    directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+  })
+
+  if (conformanceOnly) {
+    // CI must not keep FINOS / other catalogs active — findIntent counts inflate otherwise.
+    await getClientState().setDirectories([{ label: "FDC3 Conformance", url, active: true }])
+    return
+  }
+
   const dirs = getClientState().getDirectories()
   if (dirs.some(d => d.url === url)) {
     // Ensure active for CI even if a persisted session had it off.
@@ -43,9 +61,29 @@ async function ensureConformanceDirectory(): Promise<void> {
   await getClientState().setDirectories([...dirs, { label: "FDC3 Conformance", url, active: true }])
 }
 
+async function waitForDirectoryApp(appId: string, timeoutMs = 60_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const apps = getServerState().getKnownApps()
+    if (apps.some(a => a.appId === appId)) {
+      return
+    }
+    await sleep(250)
+  }
+  throw new Error(`Timed out waiting for directory app ${appId}`)
+}
+
 async function openDeepLinkApp(appId: string): Promise<void> {
-  const instanceId = await getServerState().openDirectoryApp(appId)
+  await waitForDirectoryApp(appId)
+  // Conformance1 declares forceNewWindow; Playwright scrapes the host page iframe.
+  const instanceId = await getServerState().registerAppLaunch(
+    appId,
+    AppHosting.Frame,
+    getClientState().getActiveTab().id,
+    appId,
+  )
   console.log(`[Sail] Deep-linked open ${appId}`, { instanceId })
+  ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady = appId
 }
 
 async function bootstrap(): Promise<void> {
@@ -68,6 +106,8 @@ async function bootstrap(): Promise<void> {
       await openDeepLinkApp(deepLinkAppId)
     } catch (e: unknown) {
       console.error(`[Sail] Deep-link open failed for ${deepLinkAppId}`, e)
+      ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
+        e instanceof Error ? e.message : String(e)
     }
   }
 }

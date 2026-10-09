@@ -50,7 +50,7 @@ export const CONFORMANCE_HOSTS: Record<ConformanceHostId, ConformanceHostConfig>
     id: "sail-v2-web",
     url: "http://localhost:8090",
     workspace: "@finos/fdc3-sail-web",
-    buildWorkspaces: ["@finos/fdc3-sail-common"],
+    buildWorkspaces: ["@finos/sail-headless-agent", "@finos/fdc3-sail-common"],
   },
 }
 

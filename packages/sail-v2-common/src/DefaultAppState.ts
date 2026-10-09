@@ -214,10 +214,9 @@ export class DefaultAppState implements AppState {
       const forceNewWindow =
         (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ??
         false
+      // Explicit destination (e.g. deep-link Frame for Playwright) wins over manifest.
       const hosting: AppHosting =
-        (forceNewWindow ? AppHosting.Tab : undefined) ??
-        destination ??
-        AppHosting.Frame
+        destination ?? (forceNewWindow ? AppHosting.Tab : AppHosting.Frame)
       const instanceTitle = this.createTitle(detail)
       if (hosting == AppHosting.Tab) {
         this.getServerState()

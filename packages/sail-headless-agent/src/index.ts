@@ -51,6 +51,7 @@ import {
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  shouldUseConformanceOnlyAppD,
   type ConformanceFdc3Version,
 } from "./conformance-env"
 
@@ -102,5 +103,6 @@ export {
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  shouldUseConformanceOnlyAppD,
   type ConformanceFdc3Version,
 }

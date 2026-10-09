@@ -7,6 +7,7 @@ import {
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
   SailDesktopAgent,
+  shouldUseConformanceOnlyAppD,
   type AppLauncher,
 } from "@finos/sail-browser-agent"
 import type { AppMetadata } from "@finos/fdc3"
@@ -45,6 +46,10 @@ if (isDockviewPopoutShell()) {
     override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
   })
   const autoResolve = isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE)
+  const conformanceOnlyAppD = shouldUseConformanceOnlyAppD({
+    autoResolve,
+    directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+  })
 
   const appLauncher: AppLauncher = {
     // eslint-disable-next-line @typescript-eslint/require-await -- async so a throw rejects the returned promise
@@ -118,7 +123,9 @@ if (isDockviewPopoutShell()) {
 
   const agent = new SailDesktopAgent({
     appLauncher,
-    appDirectories: [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL, conformanceDirectoryUrl],
+    appDirectories: conformanceOnlyAppD
+      ? [conformanceDirectoryUrl]
+      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL, conformanceDirectoryUrl],
     implementationMetadata: {
       fdc3Version,
     },
@@ -139,6 +146,7 @@ if (isDockviewPopoutShell()) {
     fdc3Version,
     conformanceDirectoryUrl,
     autoResolve,
+    conformanceOnlyAppD,
   })
 
   const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
@@ -147,9 +155,13 @@ if (isDockviewPopoutShell()) {
       .then(() => agent.apps.open(deepLinkAppId))
       .then(id => {
         console.log(`[Sail] Deep-linked open ${deepLinkAppId}`, id)
+        ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady =
+          deepLinkAppId
       })
       .catch((err: unknown) => {
         console.error(`[Sail] Deep-link open failed for ${deepLinkAppId}`, err)
+        ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
+          err instanceof Error ? err.message : String(err)
       })
   }
 

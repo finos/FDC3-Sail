@@ -1,12 +1,13 @@
 import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
-import { getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
+import { AppHosting, getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
 import {
   isConformanceAutoResolve,
   resolveConformanceDirectoryUrl,
   resolveConformanceFdc3Version,
   resolveDeepLinkAppId,
+  shouldUseConformanceOnlyAppD,
 } from "@finos/sail-headless-agent"
 
 const container = document.getElementById("app")
@@ -35,6 +36,16 @@ async function ensureConformanceDirectory(): Promise<void> {
     version: resolveConformanceFdc3Version(import.meta.env.VITE_FDC3_VERSION),
     override: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
   })
+  const conformanceOnly = shouldUseConformanceOnlyAppD({
+    autoResolve: import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE,
+    directoryOverride: import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL,
+  })
+
+  if (conformanceOnly) {
+    await getClientState().setDirectories([{ label: "FDC3 Conformance", url, active: true }])
+    return
+  }
+
   const dirs = getClientState().getDirectories()
   if (dirs.some(d => d.url === url || d.url === `${url}/`)) {
     await getClientState().setDirectories(
@@ -78,8 +89,10 @@ async function waitForDirectoryApp(
 
 async function openDeepLinkApp(appId: string): Promise<void> {
   const detail = await waitForDirectoryApp(appId)
-  const opened = await getAppState().open(detail)
+  // Explicit Frame destination must win over Conformance1 forceNewWindow for Playwright.
+  const opened = await getAppState().open(detail, AppHosting.Frame)
   console.log(`[Sail v2] Deep-linked open ${appId}`, opened)
+  ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady = appId
 }
 
 async function bootstrap(): Promise<void> {
@@ -93,6 +106,8 @@ async function bootstrap(): Promise<void> {
       await openDeepLinkApp(deepLinkAppId)
     } catch (e: unknown) {
       console.error(`[Sail v2] Deep-link open failed for ${deepLinkAppId}`, e)
+      ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
+        e instanceof Error ? e.message : String(e)
     }
   }
 }
