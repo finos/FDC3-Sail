@@ -1,4 +1,4 @@
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import type { HarnessInstanceCleanup } from "./harness-instance-lifecycle"
 import {

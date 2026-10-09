@@ -4,8 +4,8 @@
 
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 
-import * as sailDesktopAgent from "@finos/sail-desktop-agent"
-import { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import * as sailDesktopAgent from "@finos/sail-browser-agent"
+import { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import {
   createHarnessBootstrap,

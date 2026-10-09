@@ -31,11 +31,11 @@ Status is read off the code, not off how many hosts in this repo happen to exerc
 
 ### 2. Clear package ownership
 
-- **`@finos/sail-desktop-agent`** **`[implemented]`** — the FDC3 engine. Owns `SailDesktopAgent`, DACP
+- **`@finos/sail-browser-agent`** **`[implemented]`** — the FDC3 engine. Owns `SailDesktopAgent`, DACP
   handlers, the WCP browser app connection, host contracts, and app directory logic. It does not depend
   on the platform or any shell (enforced — see [Enforced boundaries](#enforced-boundaries) below).
   `DesktopAgent` is the internal base class `SailDesktopAgent` extends; it is `@internal` and not a
-  public entry point — see [Composition & internals](../packages/desktop-agent/composition#one-construction-path).
+  public entry point — see [Composition & internals](../packages/browser-agent/composition#one-construction-path).
 - **`@finos/sail-platform`** **`[implemented]`** — workspaces, layouts, and storage. It describes *what
   is loaded* and *how it looks*, for any host UI. It has **no dependencies** — not on the agent, not on
   FDC3, not on a UI framework — so the two packages are peers a host composes, not layers stacked on
@@ -64,20 +64,20 @@ cross-device paths are future adapters rather than current adoption paths — se
 ### 5. One Desktop Agent per browsing context **`[implemented]`**
 
 FDC3 assumes one logical Desktop Agent per user session — one channel graph, one app-instance registry,
-one intent-resolution flow. `@finos/sail-desktop-agent` does not enforce this globally (tests and
+one intent-resolution flow. `@finos/sail-browser-agent` does not enforce this globally (tests and
 advanced setups may construct more than one `DesktopAgent`), so **a browser host must enforce the
 singleton itself** — one agent per top-level `window` (tab). Creating two
 in the same tab yields split-brain: duplicate WCP listeners, conflicting instance registries, and
 channel UI that reads the wrong agent. This is a property of the package's design, not a bug to route
-around — see [Integrator guide — one Desktop Agent per context](../packages/desktop-agent/integrator-guide.md#one-desktop-agent-per-context)
+around — see [Integrator guide — one Desktop Agent per context](../packages/browser-agent/integrator-guide.md#one-desktop-agent-per-context)
 for the enforcement pattern.
 
 ## How the packages compose
 
 The two packages are **peers, not layers**. A host imports both and joins them itself; neither wraps
-the other, and `@finos/sail-platform` has no dependency on `@finos/sail-desktop-agent`.
+the other, and `@finos/sail-platform` has no dependency on `@finos/sail-browser-agent`.
 
-| | `@finos/sail-desktop-agent` | `@finos/sail-platform` |
+| | `@finos/sail-browser-agent` | `@finos/sail-platform` |
 |---|---|---|
 | Owns | FDC3: intents, contexts, channels, app directory, DACP/WCP | workspaces, layouts, storage |
 | Entry point | `new SailDesktopAgent(options)` + `.start()` | `createWorkspaceStore(options?)` |
@@ -85,7 +85,7 @@ the other, and `@finos/sail-platform` has no dependency on `@finos/sail-desktop-
 | Status | **`[implemented]`** | **`[implemented]`** |
 
 ```typescript
-import { SailDesktopAgent, type AppLauncher } from "@finos/sail-desktop-agent"
+import { SailDesktopAgent, type AppLauncher } from "@finos/sail-browser-agent"
 import { createWorkspaceStore } from "@finos/sail-platform"
 
 const workspaces = createWorkspaceStore()
@@ -107,7 +107,7 @@ one way, layout state the other, and neither package needs to know about the oth
 flowchart TB
   HOST["Host application<br/>(any shell: yours, sail-finance, or sail-one)"]
 
-  subgraph AGENT["@finos/sail-desktop-agent [implemented]"]
+  subgraph AGENT["@finos/sail-browser-agent [implemented]"]
     SDA["SailDesktopAgent<br/>DACP · WCP · intents · channels · app directory"]
     CHROME["host chrome: apps · channels · intentResolver<br/>push-based controllers"]
     SEAMS["host contracts: AppLauncher · IntentResolver · ChannelControl<br/>host implements these"]
@@ -160,7 +160,7 @@ to correct itself. `sail-one/src/state/client-state.ts` (`await load()` before
 
 ## Host-contract surface
 
-A host implements a small set of seams, all owned by `@finos/sail-desktop-agent`:
+A host implements a small set of seams, all owned by `@finos/sail-browser-agent`:
 
 | Seam | Required? | Purpose |
 |---|---|---|
@@ -199,8 +199,8 @@ SailDesktopAgent
 ```
 
 For the detailed connection flow, module ownership, and manual composition patterns, see
-[Composition & internals](../packages/desktop-agent/composition) and the
-[Desktop Agent integrator guide](../packages/desktop-agent/integrator-guide). See
+[Composition & internals](../packages/browser-agent/composition) and the
+[Desktop Agent integrator guide](../packages/browser-agent/integrator-guide). See
 [Channel selection](./channel-selection) for the boundary between host chrome and app-hosted
 selector URLs.
 
@@ -243,7 +243,7 @@ describes its intended shape only; it will be documented properly when it lands.
 The layering above is not just prose — it is a CI gate. `npm run lint` also runs
 `.oxlintrc.json`'s `no-restricted-imports` rules and fails the build if:
 
-- `@finos/sail-desktop-agent` imports the platform or any shell (the engine must not depend on what
+- `@finos/sail-browser-agent` imports the platform or any shell (the engine must not depend on what
   composes it);
 - `sail-finance` and `sail-one` import each other (shells share only `@finos/sail-theme` or the
   platform, never shell-to-shell).
@@ -255,6 +255,6 @@ Treat this as the executable version of the rules on this page, not a restatemen
 - [Deployment targets](./deployment-targets) — browser host deployment and the future native-shell direction.
 - [Channel selection](./channel-selection) — host chrome vs app-hosted channel selector flows.
 - [App admission and origin trust](./security) — what the agent enforces at WCP4, and what a deployment must arrange itself.
-- [@finos/sail-desktop-agent](../packages/desktop-agent/overview) — FDC3 engine, integrator guide, and composition diagrams.
+- [@finos/sail-browser-agent](../packages/browser-agent/overview) — FDC3 engine, integrator guide, and composition diagrams.
 - [@finos/sail-platform](../packages/platform/overview) — workspaces, layouts, and storage.
 - [@finos/sail-theme](../packages/sail-theme/overview) — the shared design-token package the two shells and this site draw from.

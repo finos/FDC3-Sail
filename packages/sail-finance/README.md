@@ -9,11 +9,10 @@ Browser deployment of FDC3 Sail — React host for the Desktop Agent, workspace 
 ## Development
 
 ```bash
-npm run dev          # from monorepo root (hosted FINOS conformance URLs)
+npm run dev          # from monorepo root
 npm run dev -w @finos/sail-finance
-npm run dev:local -w @finos/sail-finance   # local toolbox profile — same-origin /apps proxy
 ```
 
 Dev server: **http://localhost:3000**
 
-Conformance apps come from `packages/sail-conformance-harness/conformance-appd.json`. Default (`dev`) keeps hosted FINOS URLs. `dev:local` sets `VITE_CONFORMANCE_TOOLBOX=local`, rewrites those URLs to the sail-web origin, and Vite proxies `/apps` to the hosted FINOS toolbox (same pattern as the conformance harness).
+Uses the public FINOS app directory (`https://directory.fdc3.finos.org/v2/apps`). For FDC3 conformance toolbox runs, use `@finos/sail-conformance-harness` instead.

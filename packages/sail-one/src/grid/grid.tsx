@@ -251,6 +251,13 @@ function TabGrid({
 function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
   const activeTab = cs.getActiveTab()
 
+  const registerIframeWindow = (iframe: HTMLIFrameElement | null) => {
+    const win = iframe?.contentWindow
+    if (win) {
+      getAppState().registerAppWindow(win, panel.panelId)
+    }
+  }
+
   return (
     <div className={styles.content}>
       <div className={styles.contentInner}>
@@ -272,15 +279,13 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
         <div className={styles.contentBody}>
           {panel.url ? (
             <iframe
+              ref={registerIframeWindow}
               src={panel.url}
               id={"iframe_" + panel.panelId}
               name={panel.panelId}
               className={styles.iframe}
               onLoad={event => {
-                const win = event.currentTarget.contentWindow
-                if (win) {
-                  getAppState().registerAppWindow(win, panel.panelId)
-                }
+                registerIframeWindow(event.currentTarget)
               }}
             />
           ) : (

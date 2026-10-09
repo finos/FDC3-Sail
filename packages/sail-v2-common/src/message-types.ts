@@ -1,0 +1,243 @@
+import { AppRegistration, DirectoryApp } from "@finos/sail-headless-agent"
+import { AppHosting } from "./app-hosting"
+import { AppIntent, IntentMetadata, AppMetadata } from "@finos/fdc3-standard-v3"
+import { Context } from "@finos/fdc3-context-v3"
+import { AppPanel } from "./ClientState"
+
+export type TabDetail = {
+  id: string
+  icon: string
+  background: string
+}
+
+export type Directory = {
+  label: string
+  url: string
+  active: boolean
+}
+
+/**
+ * Sent when the Desktop Agent web page connects to the server.
+ */
+export const DA_HELLO = "da-hello"
+
+export type ContextHistory = { [id: string]: Context[] }
+
+/**
+ * WSCP pairing credential stored in the browser and synced to the DA server.
+ * Source of truth is LocalStorageClientState; the server keeps an in-memory mirror.
+ */
+export type WscpPairing = {
+  appId: string
+  sharedSecret: string
+  /** Assigned by the server on first successful WSCP connect; retained for resume. */
+  instanceId: string | null
+}
+
+export type DesktopAgentHelloArgs = {
+  userSessionId: string
+  directories: string[]
+  channels: TabDetail[]
+  panels: AppPanel[]
+  customApps: DirectoryApp[]
+  contextHistory: ContextHistory
+  wscpPairings: WscpPairing[]
+}
+
+/**
+ * Sent from the Desktop Agent to the server to say that the client has updated state
+ */
+export const SAIL_CLIENT_STATE = "sail-client-state"
+
+export type SailClientStateArgs = DesktopAgentHelloArgs
+
+/**
+ * Sent when an App connects to the server
+ */
+export const APP_HELLO = "app-hello"
+
+export type AppHelloArgs = {
+  userSessionId: string
+  instanceId: string
+  appId: string
+  /** Negotiated FDC3 API version for this app ("2.2" | "3.0"). */
+  fdc3Version?: "2.2" | "3.0"
+}
+
+/**
+ * Sent by the browser desktop agent to the server to say that an app is being launched,
+ * please return an instance ID.
+ */
+export const DA_REGISTER_APP_LAUNCH = "da-launch"
+
+export type DesktopAgentRegisterAppLaunchArgs = {
+  userSessionId: string
+  appId: string
+  hosting: AppHosting
+  channel: string | null
+  instanceTitle: string
+}
+
+/**
+ * Client → server: a Tab browsing context was closed externally (e.g. 2.2 mock
+ * `window.close()`). Terminate the instance so findIntent/raiseIntent do not
+ * keep a Connected zombie.
+ */
+export const DA_APP_WINDOW_CLOSED = "da-app-window-closed"
+
+export type DesktopAgentAppWindowClosedArgs = {
+  userSessionId: string
+  instanceId: string
+}
+
+/**
+ * Sent by the browser desktop agent to the server to request a directory listing.
+ */
+export const DA_DIRECTORY_LISTING = "da-directory-listing"
+
+export type DesktopAgentDirectoryListingArgs = {
+  userSessionId: string
+}
+
+/**
+ * Sent by the server to the browser desktop agent after the app has completed the FDC3 handshake.  This is a request
+ * to know which channel the app should be placed in.
+ */
+export const SAIL_CHANNEL_SETUP = "sail-channel-setup"
+
+/**
+ * A request from the da server to the da client asking it to pop up the intent resolver
+ * and figure out what intent the user wants.
+ */
+export const SAIL_INTENT_RESOLVE = "sail-intent-resolve"
+
+/**
+ * Augmented App Metadata, which allows the intent resolver to have a bit more contextual
+ * information about the apps it is showing.
+ */
+export type AugmentedAppMetadata = AppMetadata & {
+  channelData: TabDetail | null
+  instanceTitle?: string
+}
+
+export type AugmentedAppIntent = {
+  intent: IntentMetadata
+  apps: AugmentedAppMetadata[]
+}
+
+export type SailIntentResolveArgs = {
+  appIntents: AugmentedAppIntent[]
+  context: Context
+  requestId: string
+}
+
+export type SailIntentResolveResponse = {
+  appIntents: AppIntent[] // should be just one app intent if it resolves
+  requestId: string
+  channel: string | null
+  error: string | null
+}
+
+/**
+ * A request by the server to the desktop agent client to open a new panel/tab for an app to go in,
+ * and start the load process.
+ */
+export const SAIL_APP_OPEN = "sail-app-open"
+
+export type SailAppOpenArgs = {
+  appDRecord: DirectoryApp
+  channel: string | null
+  approach: AppHosting
+}
+
+export type SailAppOpenResponse = {
+  instanceId: string
+  instanceTitle: string
+}
+
+/**
+ * A message from the desktop agent browser to the server to say that it wants to change the user channel of the app.
+ */
+export const SAIL_CHANNEL_CHANGE = "sail-channel-change"
+
+export type SailChannelChangeArgs = {
+  userSessionId: string
+  channel: string | null
+  instanceId: string
+}
+
+/**
+ * A message from the server to the browser desktop agent to tell it what state the apps are in.
+ */
+export const SAIL_APP_STATE = "sail-app-state"
+
+export type SailAppStateArgs = AppRegistration[]
+
+/**
+ * A request by the server to the desktop agent client to close an app container
+ * (iframe panel or browser tab) after `fdc3.close()`.
+ */
+export const SAIL_APP_CLOSE = "sail-app-close"
+
+export type SailAppCloseArgs = {
+  instanceId: string
+  hosting: AppHosting
+}
+
+/**
+ * These two messages carry FDC3 Communication Protocol messages.
+ */
+export const FDC3_APP_EVENT = "fdc3-app-event" // from the app to the server
+export const FDC3_DA_EVENT = "fdc3-da-event" // from the server to the app
+
+/**
+ * From the channel selector and intent resolver  UIs to the server to tell it that it
+ * needs to be kept up to date with the user channel details.
+ */
+export const CHANNEL_RECEIVER_HELLO = "channel-receiver-hello"
+
+export type ChannelReceiverHelloRequest = {
+  userSessionId: string
+  instanceId: string
+}
+
+/**
+ * From the server to the channel selector/intent resolver to tell it that the channels
+ * have changed.
+ */
+export const CHANNEL_RECEIVER_UPDATE = "channel-receiver-update"
+
+export type ChannelReceiverUpdate = {
+  tabs: TabDetail[]
+}
+
+/**
+ * Sent by the intent resolver to the server to tell it that the user wants to open an app in a specific channel.
+ */
+export const SAIL_INTENT_RESOLVE_ON_CHANNEL = "sail-intent-resolve-open-channel"
+
+export type SailIntentResolveOpenChannelArgs = {
+  channel: string
+  appId: string
+}
+
+/**
+ * Sent from the server to the browser desktop agent to tell it that an app has broadcast a context.
+ */
+export const SAIL_BROADCAST_CONTEXT = "sail-broadcast-context"
+
+export type SailBroadcastContextArgs = {
+  context: Context
+  channelId: string
+}
+
+/**
+ * Sent from the server to the browser DA after a WSCP handshake assigns or resumes an instanceId.
+ */
+export const SAIL_WSCP_PAIRING_UPDATE = "sail-wscp-pairing-update"
+
+export type SailWscpPairingUpdateArgs = {
+  appId: string
+  sharedSecret: string
+  instanceId: string
+}

@@ -1,6 +1,7 @@
 name: FDC3 Conformance
 
 on:
+  pull_request:
   schedule:
     - cron: "0 3 * * *" # Nightly at 3 AM UTC
   workflow_dispatch: # Allow manual triggering
@@ -16,9 +17,13 @@ defaults:
 jobs:
   conformance:
     runs-on: ubuntu-latest
-    # A full suite run is ~5 minutes; the ceiling covers install, browser download and a
-    # hung agent (playwright.config.ts allows the test itself 15 minutes).
-    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [sail-one, sail-finance, sail-v2-web]
+        fdc3_version: ["2.2", "3.0"]
+    # Full suite ~5–7 minutes plus host/toolbox startup; ceiling covers hung agents.
+    timeout-minutes: 40
     permissions:
       contents: read
       actions: write
@@ -32,33 +37,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Only Chromium: playwright.config.ts declares a single chromium project, and the suite
-      # opens real popup windows so it does not run cross-browser.
+      # Only Chromium: the suite opens real popup windows so it does not run cross-browser.
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # The harness resolves @finos/sail-desktop-agent from its `dist`, not its `src`, and
-      # `dist` is gitignored — so on a clean runner the agent must be built first. The
-      # webServer command does this too, but building here surfaces a build failure as a
-      # build failure rather than as a webServer timeout.
-      - name: Build desktop agent
-        run: npm run build -w @finos/sail-desktop-agent
+      # Playwright webServer builds host deps; pre-build shared packages to fail fast.
+      - name: Build shared packages
+        run: |
+          if [ "${{ matrix.host }}" = "sail-v2-web" ]; then
+            npm run build -w @finos/sail-headless-agent
+            npm run build -w @finos/fdc3-sail-common
+          else
+            npm run build -w @finos/sail-headless-agent
+            npm run build -w @finos/sail-browser-agent
+            npm run build -w @finos/sail-platform
+          fi
 
-      # Fails on any regression against e2e/conformance-baseline-2.2.json, which is
-      # currently empty — every one of the 83 tests must pass. The spec asserts on the
-      # conformance.json payload, not on the screenshot: during development a stale JSON, a
-      # contaminated run and a plausible-looking-but-mostly-blank PNG each gave a confident
-      # wrong answer.
-      - name: Run FDC3 2.2 conformance suite
-        run: npm run test:conformance -w @finos/sail-conformance-harness
+      # Matrix cell: product Desktop Agent × FDC3 version.
+      # Both 2.2 and 3.0 start @robmoffat/fdc3-conformance locally on :3001.
+      - name: Run ${{ matrix.host }} FDC3 ${{ matrix.fdc3_version }} conformance
+        run: >
+          CONFORMANCE_HOST=${{ matrix.host }}
+          CONFORMANCE_FDC3_VERSION=${{ matrix.fdc3_version }}
+          npm run test:browser -w @finos/sail-conformance-harness
 
-      # `if: always()` so a failing run still uploads conformance.json, the diff and the
-      # screenshot — those are what you need to diagnose it.
       - name: Upload conformance artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: conformance-results
+          name: conformance-${{ matrix.host }}-${{ matrix.fdc3_version }}
           path: |
             packages/sail-conformance-harness/artifacts/
             packages/sail-conformance-harness/test-results/

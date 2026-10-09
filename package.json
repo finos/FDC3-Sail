@@ -9,10 +9,10 @@
   },
   "scripts": {
     "clean": "npm run clean --workspaces",
-    "build": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
-    "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
-    "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
-    "dev:conformance": "npm run dev -w @finos/sail-conformance-harness",
+    "build": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-browser-agent -w @finos/sail-platform -w @finos/sail-finance -w @finos/sail-one -w @finos/sail-conformance-harness",
+    "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
+    "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-browser-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
+    "dev:v2": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
     "lint": "vp lint . && oxlint -c .oxlintrc.json packages",
@@ -22,10 +22,10 @@
     "test": "vp test",
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
-    "validate": "npm run format && npm run build && npm run lint && npm run typecheck && npm run conformance:inventory:check -w @finos/sail-docs && npm run docs:build && npm test -- --run && npm run test:cucumber -w @finos/sail-desktop-agent",
+    "validate": "npm run format && npm run build && npm run lint && npm run typecheck && npm run conformance:inventory:check -w @finos/sail-docs && npm run docs:build && npm test -- --run && npm run test -w @finos/sail-headless-agent",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "release:publish": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform && changeset publish",
+    "release:publish": "npm run build -w @finos/sail-browser-agent -w @finos/sail-platform && changeset publish",
     "prepare": "vp config"
   },
   "overrides": {
@@ -35,6 +35,7 @@
     "css-minimizer-webpack-plugin": {
       "serialize-javascript": "7.0.5"
     },
+    "json-canonicalize": "2.0.0",
     "shell-quote": "1.10.0",
     "sockjs": {
       "uuid": "11.1.1"
@@ -43,16 +44,22 @@
     "vitest": "4.1.10"
   },
   "workspaces": [
-    "packages/sail-desktop-agent",
+    "packages/sail-env",
+    "packages/sail-headless-agent",
+    "packages/sail-v2-common",
+    "packages/sail-v2-web",
+    "packages/sail-browser-agent",
     "packages/sail-theme",
     "packages/sail-platform",
     "packages/sail-finance",
     "packages/sail-one",
     "packages/sail-conformance-harness",
+    "packages/sail-conformance-harness-2",
     "website"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
+    "@finos/fdc3-example-apps": "^3.0.0-beta.1",
     "@types/node": "^25.9.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.x",

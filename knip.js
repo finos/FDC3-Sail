@@ -41,7 +41,7 @@ const config = {
     },
   },
   workspaces: {
-    "packages/sail-desktop-agent": {
+    "packages/sail-browser-agent": {
       ignoreDependencies: ["tsx"],
       entry: ["test/step-definitions/*.steps.ts", "test/support/*.ts", "test/world/index.ts"],
     },

@@ -15,7 +15,7 @@
     "**/dist/**": true,
     "**/.git/**": true
   },
-  "cucumber.glue": ["packages/sail-desktop-agent/test/step-definitions/**/*.ts"],
+  "cucumber.glue": ["packages/sail-browser-agent/test/step-definitions/**/*.ts"],
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"

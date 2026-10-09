@@ -18,7 +18,7 @@ export default defineConfig({
       "node:fs",
       "node:fs/promises",
       // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent / sail-platform trigger reload
-      "@finos/sail-desktop-agent",
+      "@finos/sail-browser-agent",
       "@finos/sail-platform",
     ],
   },
@@ -34,26 +34,27 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    // CI / Playwright sets CI=1; avoid stealing focus from the test browser.
+    open: !process.env.CI,
     proxy: {
-      // Local toolbox profile: conformance pages load under /apps; scripts/CSS use /lib.
+      // Hosted FDC3 3.0 toolbox (same path as sail-one / website-conformance.json apps).
       "/apps": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/lib": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/screenshots": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
       "/finos-icon-256.png": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
+        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
         changeOrigin: true,
         secure: true,
       },
@@ -64,7 +65,7 @@ export default defineConfig({
       ignored: [
         "**/node_modules/**",
         "**/.git/**",
-        "!**/node_modules/@finos/sail-desktop-agent/**",
+        "!**/node_modules/@finos/sail-browser-agent/**",
         "!**/node_modules/@finos/sail-platform/**",
       ],
     },
