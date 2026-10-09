@@ -148,20 +148,17 @@ export class ServerStateImpl implements ServerState {
         data: SailAppOpenArgs,
         callback: (response: SailAppOpenResponse) => void,
       ) => {
+        // Honor server `approach` (forceNewWindow → Tab). Never infer Frame
+        // solely from channel — that left 2.2 mocks in iframes that cannot
+        // window.close(), so findIntent kept Connected zombies.
         if (data.channel) {
           await this.cs?.setActiveTabId(data.channel)
-          const openDetails = await this.as!.open(
-            data.appDRecord,
-            AppHosting.Frame,
-          )
-          callback(openDetails)
-        } else {
-          const openDetails = await this.as!.open(
-            data.appDRecord,
-            AppHosting.Tab,
-          )
-          callback(openDetails)
         }
+        const openDetails = await this.as!.open(
+          data.appDRecord,
+          data.approach,
+        )
+        callback(openDetails)
       },
     )
 

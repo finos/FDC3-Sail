@@ -29,6 +29,13 @@ export async function handleAppWindowClosed(
   try {
     // Do not call session.close() — that emits SAIL_APP_CLOSE to close a window
     // that is already gone. Mirror APP disconnect: terminate + cleanup listeners.
+    const existing = session.getInstanceDetails(instanceId)
+    if (!existing) {
+      // Already torn down (race with fdc3.close / duplicate popup poll).
+      await session.cleanupApp(instanceId)
+      callback(true)
+      return
+    }
     await session.setAppState(instanceId, State.Terminated)
     await session.cleanupApp(instanceId)
     log.info({ instanceId }, "Terminated instance after popup close")

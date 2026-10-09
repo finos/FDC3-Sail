@@ -1,6 +1,10 @@
 import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
-import { normalizeIdentityUrl } from "../src/normalizeIdentityUrl"
+import {
+  normalizeIdentityUrl,
+  normalizeUrlPathname,
+  urlsReferToSameApp,
+} from "../src/normalizeIdentityUrl"
 
 describe("normalizeIdentityUrl", () => {
   it("is idempotent", () => {
@@ -31,5 +35,21 @@ describe("normalizeIdentityUrl", () => {
         expect(n).toBe(joined.replace(/\/+$/, ""))
       }),
     )
+  })
+})
+
+describe("urlsReferToSameApp", () => {
+  it("treats index.html as equivalent to the directory path", () => {
+    expect(
+      urlsReferToSameApp(
+        "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/apps/app/index.html",
+        "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance/apps/app/",
+      ),
+    ).toBe(true)
+  })
+
+  it("normalizeUrlPathname strips index.html", () => {
+    expect(normalizeUrlPathname("/apps/app/index.html")).toBe("/apps/app")
+    expect(normalizeUrlPathname("/apps/app/")).toBe("/apps/app")
   })
 })

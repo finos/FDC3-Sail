@@ -1,7 +1,11 @@
 import { AppOpenDetails, AppState } from "./AppState"
 import { AppHosting } from "./app-hosting"
 import { DirectoryApp, WebAppDetails, State, Fdc3ApiVersion } from "@finos/sail-headless-agent"
-import { normalizeIdentityUrl } from "./normalizeIdentityUrl"
+import {
+  normalizeIdentityUrl,
+  normalizeUrlPathname,
+  urlsReferToSameApp,
+} from "./normalizeIdentityUrl"
 import { SailAppStateArgs } from "./message-types"
 import { WebConnectionProtocol1Hello } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { ServerState } from "./ServerState"
@@ -54,7 +58,7 @@ export class DefaultAppState implements AppState {
     const strippedIdentityUrl = normalizeIdentityUrl(identityUrl)
     let identityPathname = ""
     try {
-      identityPathname = new URL(identityUrl).pathname.replace(/\/+$/, "")
+      identityPathname = normalizeUrlPathname(new URL(identityUrl).pathname)
     } catch {
       identityPathname = strippedIdentityUrl
     }
@@ -65,19 +69,16 @@ export class DefaultAppState implements AppState {
       if (!d?.url) {
         return false
       }
-      const dirUrl = normalizeIdentityUrl(d.url)
       if (
-        dirUrl === strippedIdentityUrl ||
-        d.url === identityUrl ||
+        urlsReferToSameApp(d.url, identityUrl, window.location.origin) ||
         (d.url.startsWith("/") && identityUrl.endsWith(d.url))
       ) {
         return true
       }
-      // Absolute AppD URLs vs identityUrl on a different host (Vite vs static CDN).
+      // Path-only match when AppD host differs from identity host (CDN vs Vite).
       try {
-        const dirPath = new URL(d.url, window.location.origin).pathname.replace(
-          /\/+$/,
-          "",
+        const dirPath = normalizeUrlPathname(
+          new URL(d.url, window.location.origin).pathname,
         )
         return dirPath.length > 1 && dirPath === identityPathname
       } catch {
@@ -93,24 +94,57 @@ export class DefaultAppState implements AppState {
       if (!p.url) {
         return false
       }
-      const panelUrl = normalizeIdentityUrl(p.url)
-      if (panelUrl === strippedIdentityUrl || p.url === identityUrl) {
-        return true
-      }
-      try {
-        const panelPath = new URL(p.url, window.location.origin).pathname.replace(
-          /\/+$/,
-          "",
-        )
-        return panelPath.length > 1 && panelPath === identityPathname
-      } catch {
-        return false
-      }
+      return urlsReferToSameApp(p.url, identityUrl, window.location.origin)
     })
     if (panel) {
       return applications.find((a) => a.appId === panel.appId)
     }
     return undefined
+  }
+
+  /**
+   * Resolve instance id for a WCP hello source window. Prefers the registration
+   * map, then iframe[name], then panel URL / sole-panel fallbacks (cross-origin
+   * hosted 3.0 Conformance1 often loses Map identity after GridStack moves).
+   */
+  private resolveInstanceIdForHello(
+    source: Window,
+    identityUrl: string,
+  ): Promise<string | undefined> {
+    return this.getInstanceIdForWindow(source).then((fromMap) => {
+      if (fromMap) {
+        return fromMap
+      }
+
+      for (const iframe of Array.from(document.querySelectorAll("iframe"))) {
+        try {
+          if (iframe.contentWindow === source && iframe.name) {
+            this.registerAppWindow(source, iframe.name)
+            return iframe.name
+          }
+        } catch {
+          // Cross-origin name/contentWindow access can throw in edge cases.
+        }
+      }
+
+      const panels = this.cs?.getPanels() ?? []
+      const byUrl = panels.find(
+        (p) =>
+          p.url &&
+          urlsReferToSameApp(p.url, identityUrl, window.location.origin),
+      )
+      if (byUrl) {
+        this.registerAppWindow(source, byUrl.panelId)
+        return byUrl.panelId
+      }
+
+      if (panels.length === 1) {
+        this.registerAppWindow(source, panels[0].panelId)
+        return panels[0].panelId
+      }
+
+      return undefined
+    })
   }
 
   init(ss: ServerState, cs: ClientState): void {
@@ -129,8 +163,9 @@ export class DefaultAppState implements AppState {
 
           console.log("Received: " + JSON.stringify(event.data))
 
-          let appD = this.getDirectoryAppForUrl(data.payload.identityUrl)
-          this.getInstanceIdForWindow(source)
+          const identityUrl = data.payload.identityUrl
+          let appD = this.getDirectoryAppForUrl(identityUrl)
+          this.resolveInstanceIdForHello(source, identityUrl)
             .then((instanceId) => {
               // Last-resort: resolve appId from the panel registered for this instance.
               if (!appD && instanceId) {
