@@ -23,6 +23,7 @@
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
     "@finos/sail-browser-agent": "*",
+    "@finos/sail-headless-agent": "*",
     "@robmoffat/fdc3-conformance-2.2": "npm:@robmoffat/fdc3-conformance@2.2.3-test.1",
     "@robmoffat/fdc3-conformance-3.0": "npm:@robmoffat/fdc3-conformance@3.0.0-test.0",
     "react": "^19.1.0",

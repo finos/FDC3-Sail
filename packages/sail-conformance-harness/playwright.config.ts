@@ -3,6 +3,7 @@ import { defineConfig, devices, type PlaywrightTestConfig } from "@playwright/te
 import {
   buildHostCommand,
   CONFORMANCE_HOSTS,
+  hostProcessEnv,
   resolveConformanceFdc3Version,
   resolveConformanceHostId,
   startHostCommand,
@@ -49,9 +50,10 @@ webServers.push({
   timeout: 180_000,
   stdout: "pipe",
   stderr: "pipe",
+  // Ensure VITE_* / SAIL_* reach the host process (not only via shell prefixes).
   env: {
     ...process.env,
-    CI: process.env.CI ?? "1",
+    ...hostProcessEnv(host, fdc3Version),
   },
 })
 

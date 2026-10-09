@@ -11,7 +11,7 @@ import {
   resolveConformanceDirectoryUrl as resolveSharedConformanceDirectoryUrl,
   resolveConformanceFdc3Version as resolveSharedConformanceFdc3Version,
   type ConformanceFdc3Version,
-} from "@finos/sail-browser-agent"
+} from "@finos/sail-headless-agent"
 
 export type ConformanceHostId = "sail-one" | "sail-finance" | "sail-v2-web"
 export type { ConformanceFdc3Version }

@@ -23,6 +23,8 @@ const factory = new SailFDC3ServerFactory(true)
 new RemoteSocketService(httpServer, factory)
 initSailSocketIOService(httpServer, factory)
 
-app.get("/", (_req, res) => {
-  res.redirect("/html/index.html")
+app.get("/", (req, res) => {
+  // Preserve deep-link query (e.g. ?appId=Conformance1) across the SPA entry redirect.
+  const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : ""
+  res.redirect(`/html/index.html${qs}`)
 })
