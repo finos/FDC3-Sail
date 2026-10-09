@@ -97,6 +97,16 @@ async function openDeepLinkApp(appId: string): Promise<void> {
 
 async function bootstrap(): Promise<void> {
   await ensureConformanceDirectory()
+
+  // Splash modal intercepts pointer events over panels — hide for CI / deep-link.
+  const skipSplash =
+    isConformanceAutoResolve(import.meta.env.VITE_CONFORMANCE_AUTO_RESOLVE) ||
+    Boolean(import.meta.env.VITE_CONFORMANCE_DIRECTORY_URL) ||
+    Boolean(resolveDeepLinkAppId(window.location.search))
+  if (skipSplash) {
+    await getClientState().setSplashScreenVisible(false)
+  }
+
   getAppState().init(getServerState(), getClientState())
   await getServerState().registerDesktopAgent(getClientState().createArgs())
 

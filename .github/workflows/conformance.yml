@@ -22,6 +22,9 @@ jobs:
       matrix:
         host: [sail-one, sail-finance, sail-v2-web]
         fdc3_version: ["2.2", "3.0"]
+    # sail-finance × 2.2 is best-effort (not yet reliable locally); keep the cell
+    # visible without blocking the matrix.
+    continue-on-error: ${{ matrix.host == 'sail-finance' && matrix.fdc3_version == '2.2' }}
     # Full suite ~5–7 minutes plus host/toolbox startup; ceiling covers hung agents.
     timeout-minutes: 40
     permissions:

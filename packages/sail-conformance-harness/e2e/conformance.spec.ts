@@ -108,6 +108,12 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
     )
   }
 
+  // sail-v2 welcome splash can sit above the panel iframe and steal clicks.
+  const splashClose = page.getByRole("button", { name: "Close" })
+  if (await splashClose.isVisible().catch(() => false)) {
+    await splashClose.click()
+  }
+
   const frame = page.frameLocator(CONFORMANCE_IFRAME)
   await frame.locator("#testSuite option").first().waitFor({ state: "attached", timeout: 120_000 })
   await frame.locator("#testSuite").selectOption({ label: "All" })
@@ -119,7 +125,8 @@ test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
   const hooked = await installMochaEndHook(mochaFrame)
   expect(hooked, "mocha.run end hook installed in conformance iframe").toBe(true)
 
-  await frame.locator("#runButton").click()
+  // force: host chrome (splash / overlays) must not block the in-iframe Run control.
+  await frame.locator("#runButton").click({ force: true })
 
   const outcome = await awaitMochaResult(page).catch(async (error: unknown) => {
     await page.screenshot({
