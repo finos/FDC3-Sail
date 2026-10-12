@@ -1,6 +1,8 @@
 import type { GridStackPosition } from "gridstack"
 import {
   createLocalStorage,
+  EXAMPLE_APPS_DIRECTORY_URL,
+  FINOS_APP_DIRECTORY_URL,
   type LocalStorageOptions,
   type SailStorage,
 } from "@finos/sail-platform"
@@ -96,7 +98,12 @@ const STATE_KEY = "config"
 const DEFAULT_DIRECTORIES: Directory[] = [
   {
     label: "FINOS FDC3 Directory",
-    url: "https://directory.fdc3.finos.org/v2/apps",
+    url: FINOS_APP_DIRECTORY_URL,
+    active: true,
+  },
+  {
+    label: "FDC3 Example Apps (npm run apps)",
+    url: EXAMPLE_APPS_DIRECTORY_URL,
     active: true,
   },
 ]

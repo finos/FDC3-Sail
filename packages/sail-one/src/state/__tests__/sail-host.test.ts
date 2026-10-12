@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { DirectoryApp } from "@finos/sail-desktop-agent"
-import { AppInstanceState, SailHost } from "../sail-host"
+import { AppInstanceState, resolveLaunchHosting, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
 import { installLocalStorage } from "./local-storage-mock"
@@ -106,5 +106,46 @@ describe("SailHost", () => {
     await expect(
       host.registerAppLaunch("demo-app", AppHosting.Frame, null, "Demo"),
     ).rejects.toThrow("Desktop Agent not registered")
+  })
+
+  it("loads only the sole directory when one is given, ignoring saved directories", async () => {
+    const fetchMock = vi.fn(() => Promise.reject(new Error("offline")))
+    vi.stubGlobal("fetch", fetchMock)
+    const host = new SailHost({ soleDirectory: "http://localhost:3001/conformance.json" })
+
+    await host.registerDesktopAgent(clientArgs({ directories: ["https://saved.example/v2/apps"] }))
+
+    const urls = (fetchMock.mock.calls as unknown as [unknown][]).map(([url]) => String(url))
+    expect(urls).toEqual(["http://localhost:3001/conformance.json"])
+  })
+
+  it("closes the browser tab of an app launched in a new window", async () => {
+    const close = vi.fn()
+    vi.spyOn(window, "open").mockReturnValue({ close, closed: false } as unknown as Window)
+    const host = new SailHost()
+    await host.registerDesktopAgent(clientArgs())
+
+    const instanceId = await host.registerAppLaunch("demo-app", AppHosting.Tab, null, "Demo 1")
+    await host.closeAppInstance(instanceId)
+
+    expect(close).toHaveBeenCalled()
+    expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
+  })
+})
+
+describe("resolveLaunchHosting", () => {
+  const plain = makeWebApp("plain", "https://plain.example")
+  const ownWindow: DirectoryApp = { ...plain, hostManifests: { sail: { forceNewWindow: true } } }
+
+  it("uses the hosting the shell queued", () => {
+    expect(resolveLaunchHosting({ hosting: AppHosting.Frame }, ownWindow)).toBe(AppHosting.Frame)
+  })
+
+  it("opens a new window for an app-initiated launch when the manifest asks", () => {
+    expect(resolveLaunchHosting(undefined, ownWindow)).toBe(AppHosting.Tab)
+  })
+
+  it("defaults an app-initiated launch to a frame", () => {
+    expect(resolveLaunchHosting(undefined, plain)).toBe(AppHosting.Frame)
   })
 })

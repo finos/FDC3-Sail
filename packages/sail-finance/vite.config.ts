@@ -34,30 +34,8 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
-    proxy: {
-      // Local toolbox profile: conformance pages load under /apps; scripts/CSS use /lib.
-      "/apps": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/lib": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/screenshots": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/finos-icon-256.png": {
-        target: "https://fdc3.finos.org/toolbox/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-    },
+    // CI / Playwright sets CI=1; don't steal focus from the test browser.
+    open: !process.env.CI,
     // Watch workspace packages so changes in sail-desktop-agent / sail-platform
     // are picked up without restarting the dev server (negated glob = do not ignore)
     watch: {

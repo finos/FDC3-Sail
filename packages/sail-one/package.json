@@ -8,6 +8,8 @@
     "build": "vp build",
     "predev": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform",
     "dev": "vp dev",
+    "apps": "fdc3-example-apps",
+    "dev:apps": "concurrently -k -n sail,apps \"npm run dev\" \"npm run apps\"",
     "preview": "vp preview",
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
@@ -29,6 +31,7 @@
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
+    "@finos/fdc3-example-apps": "^3.0.0-beta.1",
     "@finos/fdc3-schema": "^2.2.1-beta.3",
     "@finos/sail-desktop-agent": "*",
     "@finos/sail-platform": "*",

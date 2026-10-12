@@ -17,7 +17,7 @@ describe("PlatformClientState", () => {
     installLocalStorage()
   })
 
-  it("loads default tabs and FINOS directory when storage is empty", async () => {
+  it("loads default tabs, the FINOS directory and the example apps when storage is empty", async () => {
     const state = await loadedState()
 
     expect(state.getTabs()).toHaveLength(3)
@@ -26,6 +26,11 @@ describe("PlatformClientState", () => {
       {
         label: "FINOS FDC3 Directory",
         url: "https://directory.fdc3.finos.org/v2/apps",
+        active: true,
+      },
+      {
+        label: "FDC3 Example Apps (npm run apps)",
+        url: "http://localhost:4005/static/generated/fdc3-example-apps.json",
         active: true,
       },
     ])
