@@ -382,13 +382,12 @@ function notifyChannelChanged(
   const channelListeners = getEventListeners("channelChanged", params.getState)
   const allListeners = getEventListeners(ALL_DA_EVENT_TYPES, params.getState)
   const subscribers = [...new Set([...channelListeners, ...allListeners])]
-  const subscriberInstanceIds = new Set(
-    subscribers
-      .map(listenerId => getEventListener(state, listenerId))
-      .filter(
-        (listener): listener is NonNullable<ReturnType<typeof getEventListener>> => !!listener,
-      )
-      .map(listener => listener.instanceId),
+
+  // The FDC3 2.2 `userChannelChanged` event reports the *receiving* app's own current user channel,
+  // so it must only reach listeners registered by the instance whose channel changed — other
+  // instances would otherwise read someone else's channel as their own.
+  const instanceHasChannelChangedListener = subscribers.some(
+    listenerId => getEventListener(state, listenerId)?.instanceId === instanceId,
   )
 
   // `ChannelChangedEventPayload` is an `anyOf` of two mutually exclusive branches — `{newChannelId}`
@@ -398,21 +397,11 @@ function notifyChannelChanged(
     currentChannelId: channelId,
   })
 
-  subscriberInstanceIds.forEach(subscriberInstanceId => {
-    const channelChangedEventWithRouting = {
-      ...channelChangedEvent,
-      meta: {
-        ...channelChangedEvent.meta,
-        destination: { instanceId: subscriberInstanceId },
-      },
-    }
+  // Host-initiated joins/leaves still deliver the DACP event on the app edge when the instance has
+  // no channelChanged listener, so the target instance observes its own membership changes.
+  const notifyInstance = instanceHasChannelChangedListener || !!options?.hostInitiated
 
-    responses.sendOutbound(channelChangedEventWithRouting)
-  })
-
-  // Host-initiated joins/leaves: when no app registered channelChanged listeners, deliver the
-  // DACP event on the app edge so the target instance still observes membership changes.
-  if (subscriberInstanceIds.size === 0 && options?.hostInitiated) {
+  if (notifyInstance) {
     responses.sendOutbound({
       ...channelChangedEvent,
       meta: {
@@ -425,9 +414,10 @@ function notifyChannelChanged(
   // Typed host-chrome path — always emit so redundant joins and leave still resolve host waiters.
   params.notifyChannelMembershipChanged?.(instanceId, channelId)
 
-  logger.debug("Channel changed event broadcast", {
+  logger.debug("Channel changed event dispatched", {
     instanceId,
     channelId,
-    subscribers: subscriberInstanceIds.size,
+    notified: notifyInstance,
+    hasListener: instanceHasChannelChangedListener,
   })
 }

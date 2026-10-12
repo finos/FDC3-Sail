@@ -7,14 +7,14 @@ Feature: Desktop Agent Event Listeners
     And "appId: App2, instanceId: a2" is opened with connection id "a2"
 
   @fdc3_2.2
-  Scenario: Receiving channelChanged event when another app joins a channel
+  Scenario: No channelChanged event when another app joins a channel
     When "appId: App1, instanceId: a1" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]
     And "appId: App2, instanceId: a2" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
     Then messaging will have outgoing posts
-      | msg.matches_type         | to.instanceId | msg.payload.currentChannelId |
-      | addEventListenerResponse | a1            | {null}                   |
-      | channelChangedEvent      | a1            | fdc3.channel.1           |
-      | joinUserChannelResponse  | a2            | {null}                   |
+      | msg.matches_type         | to.instanceId |
+      | addEventListenerResponse | a1            |
+      | joinUserChannelResponse  | a2            |
+    And messaging will have 0 posts matching type "channelChangedEvent"
 
   @fdc3_2.2
   Scenario: Receiving channelChanged event when I join a channel
@@ -51,7 +51,7 @@ Feature: Desktop Agent Event Listeners
       | joinUserChannelResponse          | a2            |
 
   @fdc3_2.2
-  Scenario: Multiple apps listening for channel changes
+  Scenario: Only the app that changed channel is notified when several apps listen
     When "appId: App1, instanceId: a1" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]
     And "appId: App2, instanceId: a2" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]
     And "appId: App1, instanceId: a1" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
@@ -60,21 +60,21 @@ Feature: Desktop Agent Event Listeners
       | addEventListenerResponse | a1            | {null}                   |
       | addEventListenerResponse | a2            | {null}                   |
       | channelChangedEvent      | a1            | fdc3.channel.1           |
-      | channelChangedEvent      | a2            | fdc3.channel.1           |
       | joinUserChannelResponse  | a1            | {null}                   |
+    And messaging will have 1 posts matching type "channelChangedEvent"
 
   @fdc3_2.2
   Scenario: addEventListener with null type subscribes to all event types
     When "appId: App1, instanceId: a1" adds an event listener for all event types [fdc3.addEventListener]
-    And "appId: App2, instanceId: a2" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
-    And "appId: App2, instanceId: a2" leaves the current user channel [fdc3.leaveCurrentChannel]
+    And "appId: App1, instanceId: a1" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
+    And "appId: App1, instanceId: a1" leaves the current user channel [fdc3.leaveCurrentChannel]
     Then messaging will have outgoing posts
       | msg.matches_type            | to.instanceId | msg.payload.currentChannelId |
       | addEventListenerResponse    | a1            | {null}                   |
       | channelChangedEvent         | a1            | fdc3.channel.1           |
-      | joinUserChannelResponse     | a2            | {null}                   |
+      | joinUserChannelResponse     | a1            | {null}                   |
       | channelChangedEvent         | a1            | {null}                   |
-      | leaveCurrentChannelResponse | a2            | {null}                   |
+      | leaveCurrentChannelResponse | a1            | {null}                   |
 
   @fdc3_2.2
   Scenario: Adding event listener for unsupported event type returns error
