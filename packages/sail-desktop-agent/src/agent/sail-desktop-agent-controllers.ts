@@ -160,9 +160,10 @@ interface ChannelOperationsBacking {
  * Host-initiated user channel join or leave for an app instance.
  *
  * Runs the same DACP join/leave handlers as app-originated requests but does not
- * require an app MessagePort to receive the response. When no apps registered
- * `channelChanged` event listeners, emits a `channelChangedEvent` on the app edge
- * so host UI can observe membership changes.
+ * require an app MessagePort to receive the response. Always emits a `channelChangedEvent`
+ * on the app edge for the target instance, whether or not it registered a `channelChanged`
+ * listener, so a host-driven change is never dropped. Host UI observes membership through
+ * `notifyChannelMembershipChanged`, not this event.
  */
 export function changeAppUserChannel(
   backing: Pick<ChannelOperationsBacking, "getState" | "createHandlerParams">,

@@ -110,8 +110,8 @@ export interface DACPHandlerParams {
   disconnectInstance?: (instanceId: string) => void
 
   /**
-   * Host shell notification when user-channel membership changes without a DACP
-   * channelChangedEvent on the app edge (app-originated join/leave, no listeners).
+   * Host shell notification for every user-channel membership change, independent of the
+   * DACP channelChangedEvent on the app edge (which only ever targets the changed instance).
    */
   notifyChannelMembershipChanged?: (instanceId: string, channelId: string | null) => void
 }
