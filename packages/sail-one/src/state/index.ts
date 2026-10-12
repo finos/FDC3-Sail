@@ -22,6 +22,7 @@ export function hostParams(): SailHostParams {
     search: window.location.search,
     viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
     viteAutoResolve: import.meta.env.VITE_AUTO_RESOLVE,
+    allowQueryDirectory: import.meta.env.DEV,
   })
 }
 

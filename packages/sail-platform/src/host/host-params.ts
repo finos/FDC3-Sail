@@ -19,7 +19,7 @@ export interface SailHostParams {
 /**
  * Host start-up options from the page URL and Vite env.
  *
- * A sole directory (`?fdc3Directory=`, else `VITE_FDC3_DIRECTORY_URL`) replaces the defaults, so a
+ * A sole directory (`?fdc3Directory=` when allowed, else `VITE_FDC3_DIRECTORY_URL`) replaces the defaults, so a
  * conformance run sees only its own apps; other directories inflate findIntent counts.
  * `VITE_AUTO_RESOLVE=1` turns on auto-resolve.
  */
@@ -27,9 +27,15 @@ export function readSailHostParams(options: {
   search: string
   viteDirectoryUrl?: string
   viteAutoResolve?: string
+  /**
+   * Honour `?fdc3Directory=`. Pass `import.meta.env.DEV`: in a production build a link must not
+   * be able to swap in someone else's apps.
+   */
+  allowQueryDirectory?: boolean
 }): SailHostParams {
   const query = new URLSearchParams(options.search)
-  const soleDirectory = query.get("fdc3Directory") || options.viteDirectoryUrl || undefined
+  const queryDirectory = options.allowQueryDirectory ? query.get("fdc3Directory") : null
+  const soleDirectory = queryDirectory || options.viteDirectoryUrl || undefined
   const deepLinkAppId = query.get("appId") || undefined
 
   return {

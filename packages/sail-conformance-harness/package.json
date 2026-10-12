@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
-    "dev:browser:2.2": "CONFORMANCE_FDC3_VERSION=2.2 VITE_CONFORMANCE_TOOLBOX=local npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
-    "dev:browser:3.0": "CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_TOOLBOX=local npm run build -w @finos/sail-desktop-agent --prefix ../.. && concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
+    "dev:browser:2.2": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && CONFORMANCE_FDC3_VERSION=2.2 VITE_CONFORMANCE_TOOLBOX=local concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
+    "dev:browser:3.0": "npm run build -w @finos/sail-desktop-agent --prefix ../.. && CONFORMANCE_FDC3_VERSION=3.0 VITE_CONFORMANCE_TOOLBOX=local concurrently -k -n agent,harness \"npm run dev -w @finos/sail-desktop-agent --prefix ../..\" \"vp dev\"",
     "build": "vp build",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",

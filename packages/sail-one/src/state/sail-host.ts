@@ -28,14 +28,6 @@ export enum AppInstanceState {
   Terminated = "terminated",
 }
 
-/**
- * A launch the shell initiated itself, waiting to be paired with the instance id
- * minted by the shell's own {@link AppLauncher}.
- *
- * Apps opened by the user (via the app directory) carry an explicit hosting
- * choice; apps opened by another app through `fdc3.open()` have no queued intent
- * and default to {@link AppHosting.Frame}.
- */
 export interface SailHostOptions {
   /** Load only this App Directory, in place of the user's saved list (conformance runs). */
   soleDirectory?: string
@@ -43,6 +35,14 @@ export interface SailHostOptions {
   autoResolve?: boolean
 }
 
+/**
+ * A launch the shell initiated itself, waiting to be paired with the instance id
+ * minted by the shell's own {@link AppLauncher}.
+ *
+ * Apps opened by the user (via the app directory) carry an explicit hosting
+ * choice; apps opened by another app through `fdc3.open()` have no queued intent
+ * and get their hosting from {@link resolveLaunchHosting}.
+ */
 type PendingLaunchIntent = {
   appId: string
   hosting: AppHosting
