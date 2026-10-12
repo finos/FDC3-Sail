@@ -43,12 +43,13 @@ Feature: Desktop Agent Event Listeners
   Scenario: Unsubscribing from event listener
     When "appId: App1, instanceId: a1" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]
     And "appId: App1, instanceId: a1" removes DA event listener "{lastEventListenerId}" [fdc3.removeEventListener]
-    And "appId: App2, instanceId: a2" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
+    And "appId: App1, instanceId: a1" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
     Then messaging will have outgoing posts
       | msg.matches_type                 | to.instanceId |
       | addEventListenerResponse         | a1            |
       | eventListenerUnsubscribeResponse | a1            |
-      | joinUserChannelResponse          | a2            |
+      | joinUserChannelResponse          | a1            |
+    And messaging will have 0 posts matching type "channelChangedEvent"
 
   @fdc3_2.2
   Scenario: Only the app that changed channel is notified when several apps listen

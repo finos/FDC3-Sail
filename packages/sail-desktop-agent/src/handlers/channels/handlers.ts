@@ -1,7 +1,7 @@
 import { createDACPSuccessResponse, createDACPEvent } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
-import { getEventListeners, ALL_DA_EVENT_TYPES } from "../events/handlers"
+import { ALL_DA_EVENT_TYPES } from "../events/handlers"
 import {
   getInstance,
   getUserChannel,
@@ -10,7 +10,7 @@ import {
   getChannelContext,
   getStoredContext,
   getPrivateChannel,
-  getEventListener,
+  getEventListenersForInstance,
 } from "../../state/selectors"
 import { joinUserChannel, createAppChannel } from "../../state/mutators"
 import type { BrowserTypes } from "@finos/fdc3"
@@ -378,16 +378,13 @@ function notifyChannelChanged(
     return
   }
 
-  const state = getState()
-  const channelListeners = getEventListeners("channelChanged", params.getState)
-  const allListeners = getEventListeners(ALL_DA_EVENT_TYPES, params.getState)
-  const subscribers = [...new Set([...channelListeners, ...allListeners])]
-
   // The FDC3 2.2 `userChannelChanged` event reports the *receiving* app's own current user channel,
   // so it must only reach listeners registered by the instance whose channel changed — other
   // instances would otherwise read someone else's channel as their own.
-  const instanceHasChannelChangedListener = subscribers.some(
-    listenerId => getEventListener(state, listenerId)?.instanceId === instanceId,
+  const state = getState()
+  const instanceHasChannelChangedListener = getEventListenersForInstance(state, instanceId).some(
+    listener =>
+      listener.eventType === "channelChanged" || listener.eventType === ALL_DA_EVENT_TYPES,
   )
 
   // `ChannelChangedEventPayload` is an `anyOf` of two mutually exclusive branches — `{newChannelId}`
@@ -397,8 +394,8 @@ function notifyChannelChanged(
     currentChannelId: channelId,
   })
 
-  // Host-initiated joins/leaves still deliver the DACP event on the app edge when the instance has
-  // no channelChanged listener, so the target instance observes its own membership changes.
+  // Host-initiated joins/leaves always deliver the DACP event on the app edge, even when the
+  // instance registered no channelChanged listener, so the target still observes the change.
   const notifyInstance = instanceHasChannelChangedListener || !!options?.hostInitiated
 
   if (notifyInstance) {
