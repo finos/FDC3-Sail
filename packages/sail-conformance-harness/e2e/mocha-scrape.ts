@@ -162,7 +162,8 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
     const durationMatch = durationText.match(/([\d.]+)\s*(ms|s)?/i)
     if (durationMatch) {
       const value = Number(durationMatch[1])
-      const unit = (durationMatch[2] ?? "ms").toLowerCase()
+      // The stats line reads `duration: <em>312.51</em>s`, so a bare number is seconds.
+      const unit = (durationMatch[2] ?? "s").toLowerCase()
       durationMs = unit === "s" ? value * 1000 : value
     }
 
