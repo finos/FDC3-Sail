@@ -1,7 +1,7 @@
 import type { DirectoryApp } from "@finos/sail-desktop-agent"
 
 import conformanceAppDirectory from "../conformance-appd.json"
-import localConformanceAppDirectory from "../2.2-conformance-tests/directories/local-conformance.json"
+import localConformanceAppDirectory from "@conformance-toolbox/directories/localhost-conformance.json"
 
 export type ConformanceToolboxProfile = "hosted" | "local"
 
@@ -17,7 +17,11 @@ const PROFILE_CONFIG: Record<
   { origin: string; fdc3Version: ConformanceFdc3Version }
 > = {
   hosted: { origin: CONFORMANCE_HOSTED_ORIGIN, fdc3Version: "3.0" },
-  local: { origin: CONFORMANCE_LOCAL_ORIGIN, fdc3Version: "2.2" },
+  // The served toolbox's version (CONFORMANCE_FDC3_VERSION); 2.2 under vitest.
+  local: {
+    origin: CONFORMANCE_LOCAL_ORIGIN,
+    fdc3Version: import.meta.env.VITE_CONFORMANCE_FDC3_VERSION ?? "2.2",
+  },
 }
 
 export type ConformanceToolboxConfig = {
@@ -84,11 +88,9 @@ export function loadConformanceApplications(options?: {
     }
   }
 
-  // The local profile serves the vendored 2.2 toolbox build, which ships its own
-  // directory already rebased to CONFORMANCE_LOCAL_ORIGIN. It differs from the
-  // hosted fixture in two ways that matter: it adds `Conformance1Headless`, and it
-  // drops `IntentAppLId` (that path 404s in this build — see HEADLESS.md §2).
-  const localApps = structuredClone(localConformanceAppDirectory.applications as DirectoryApp[])
+  // The local profile serves the chosen toolbox build (see vite.config.ts), whose directory is
+  // already rebased to CONFORMANCE_LOCAL_ORIGIN.
+  const localApps = structuredClone(localConformanceAppDirectory.applications)
   const localOrigin = options?.localOrigin ?? CONFORMANCE_LOCAL_ORIGIN
 
   return {

@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
 import {
   type AppConnectionMetadata,
+  createProgrammaticIntentResolver,
   DEFAULT_FDC3_USER_CHANNELS,
   SailDesktopAgent,
   type DirectoryApp,
@@ -18,7 +19,6 @@ import {
 } from "./harness-finos-teardown"
 import { createOpenWithContextCleanupScheduler } from "./harness-open-with-context-cleanup"
 import { pruneStalePendingHostInstances } from "./harness-stale-instance-prune"
-import { createHarnessIntentResolver } from "./intent-resolver-wiring"
 import { createPopupCloseWatcher, openHarnessPopup } from "./popup-launcher"
 import type { HarnessPanel } from "./types"
 
@@ -72,7 +72,7 @@ export type HarnessBootstrap = {
  */
 export function createHarnessBootstrap(options?: {
   debug?: boolean
-  /** App to mount on startup. Use `Conformance1Headless` for an unattended run (HEADLESS.md). */
+  /** App to mount on startup. */
   appId?: string
 }): HarnessBootstrap {
   const debug = options?.debug ?? HARNESS_DEBUG
@@ -171,7 +171,9 @@ export function createHarnessBootstrap(options?: {
   const desktopAgent = new SailDesktopAgent({
     apps: conformanceApps,
     appLauncher,
-    intentResolver: createHarnessIntentResolver(debug),
+    intentResolver: createProgrammaticIntentResolver({
+      log: (message, detail) => console.log(`[ConformanceHarness] ${message}`, detail),
+    }),
     heartbeatEnabled: false,
     userChannels: DEFAULT_FDC3_USER_CHANNELS,
     implementationMetadata: {
