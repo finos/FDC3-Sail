@@ -1,6 +1,6 @@
 /**
- * Browsing contexts a host launched, by instance id. Backs
- * {@link import("./sail-desktop-agent").SailDesktopAgent.registerHostWindow}.
+ * Browsing contexts a host launched, by instance id: `SailDesktopAgent.hostWindows`.
+ * Hosts `register` on launch and `forget` on teardown; `find` gets a tab back to close it.
  */
 export class HostWindowRegistry {
   private readonly windows = new Map<string, Window>()

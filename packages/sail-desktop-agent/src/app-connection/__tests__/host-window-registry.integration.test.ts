@@ -41,8 +41,8 @@ describe("SailDesktopAgent host window registry", () => {
     const second = await agent.apps.open(CHART_APP.appId)
     // `window.name` is empty, as when a cross-origin app clears it.
     const secondWindow = createWcpSourceWindow("")
-    agent.registerHostWindow(createWcpSourceWindow(""), first.instanceId!)
-    agent.registerHostWindow(secondWindow, second.instanceId!)
+    agent.hostWindows.register(createWcpSourceWindow(""), first.instanceId!)
+    agent.hostWindows.register(secondWindow, second.instanceId!)
 
     const connected = await connectWcpApp(agent, {
       connectionAttemptUuid: "registry-second",
@@ -59,11 +59,11 @@ describe("SailDesktopAgent host window registry", () => {
     const opened = await agent.apps.open(PORTFOLIO_APP.appId)
     const appWindow = createWcpSourceWindow("")
 
-    agent.registerHostWindow(appWindow, opened.instanceId!)
-    expect(agent.findHostWindow(opened.instanceId!)).toBe(appWindow)
+    agent.hostWindows.register(appWindow, opened.instanceId!)
+    expect(agent.hostWindows.find(opened.instanceId!)).toBe(appWindow)
 
-    agent.forgetHostWindow(opened.instanceId!)
-    expect(agent.findHostWindow(opened.instanceId!)).toBeUndefined()
+    agent.hostWindows.forget(opened.instanceId!)
+    expect(agent.hostWindows.find(opened.instanceId!)).toBeUndefined()
   })
 
   it("lets a host resolveHostIdentifier answer before the registry", async () => {
@@ -72,7 +72,7 @@ describe("SailDesktopAgent host window registry", () => {
     const first = await agent.apps.open(CHART_APP.appId)
     const second = await agent.apps.open(CHART_APP.appId)
     const appWindow = createWcpSourceWindow("")
-    agent.registerHostWindow(appWindow, first.instanceId!)
+    agent.hostWindows.register(appWindow, first.instanceId!)
     hostAnswer = second.instanceId
 
     const connected = await connectWcpApp(agent, {

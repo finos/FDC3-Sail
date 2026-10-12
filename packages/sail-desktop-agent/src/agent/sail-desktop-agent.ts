@@ -11,6 +11,7 @@ import type { AppLauncher } from "../host-contracts/app-launcher"
 import { routeDACPMessage } from "../handlers"
 import { cleanupInstanceDacpState } from "../handlers/instance-teardown"
 import { HostWindowRegistry } from "./host-window-registry"
+import { findClosedWindowInstanceIds } from "../app-connection/wcp/closed-windows"
 import { launchWithPendingInstance } from "../handlers/utils/launch-with-pending-instance"
 import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identity-validation"
 import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
@@ -97,7 +98,11 @@ export class SailDesktopAgent<
    */
   readonly appConnection: TEdge
   private readonly channelChangeTimeoutMs: number
-  private readonly hostWindows = new HostWindowRegistry()
+  /**
+   * Which `Window` (iframe `contentWindow` or tab) each launched app lives in. Hosts register it;
+   * WCP falls back to it when `window.name` is unreadable (cross-origin) or cleared by the app.
+   */
+  readonly hostWindows = new HostWindowRegistry()
 
   readonly intentResolver: IntentResolverUIMethods
   readonly channels: SailDesktopAgentChannels
@@ -330,6 +335,10 @@ export class SailDesktopAgent<
       return
     }
 
+    // Spec "Disconnects": never answer for, or route to, an app whose window has closed.
+    for (const closedId of findClosedWindowInstanceIds(this.appConnection.getConnections())) {
+      this.disconnectInstance(closedId)
+    }
     await routeDACPMessage(message, this.createHandlerParams(instanceId))
   }
 
@@ -507,24 +516,6 @@ export class SailDesktopAgent<
       appId: params.appId,
       metadata: { name: params.appId },
     })
-  }
-
-  /**
-   * Tell the agent which `Window` (iframe `contentWindow` or tab) an app instance lives in. WCP
-   * falls back to it when `window.name` is unreadable (cross-origin) or cleared by the app.
-   */
-  registerHostWindow(windowRef: Window, instanceId: string): void {
-    this.hostWindows.register(windowRef, instanceId)
-  }
-
-  /** The window registered for an instance, e.g. so the host can close a tab. */
-  findHostWindow(instanceId: string): Window | undefined {
-    return this.hostWindows.find(instanceId)
-  }
-
-  /** Drop a registered window when the host tears down its container. */
-  forgetHostWindow(instanceId: string): void {
-    this.hostWindows.forget(instanceId)
   }
 
   private getAppConnection(instanceId: string): AppConnectionMetadata | undefined {
