@@ -10,6 +10,7 @@
 import type { AppLauncher } from "../host-contracts/app-launcher"
 import { routeDACPMessage } from "../handlers"
 import { cleanupInstanceDacpState } from "../handlers/instance-teardown"
+import { HostWindowRegistry } from "./host-window-registry"
 import { launchWithPendingInstance } from "../handlers/utils/launch-with-pending-instance"
 import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identity-validation"
 import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
@@ -96,6 +97,7 @@ export class SailDesktopAgent<
    */
   readonly appConnection: TEdge
   private readonly channelChangeTimeoutMs: number
+  private readonly hostWindows = new HostWindowRegistry()
 
   readonly intentResolver: IntentResolverUIMethods
   readonly channels: SailDesktopAgentChannels
@@ -150,9 +152,12 @@ export class SailDesktopAgent<
 
     // Injected test edge, or a fresh BrowserAppConnection (inert until start). Cast is only
     // for the default branch where `TEdge` is `BrowserAppConnection`.
+    const hostResolve = localOptions.appConnectionOptions?.resolveHostIdentifier
     this.appConnection = (config.appConnection ??
       new BrowserAppConnection({
         ...localOptions.appConnectionOptions,
+        resolveHostIdentifier: source =>
+          hostResolve?.(source) ?? this.hostWindows.instanceIdFor(source),
         logger: this.logger,
         validation: this.validation,
         logPayloadDetail: this.logPayloadDetail,
@@ -502,6 +507,24 @@ export class SailDesktopAgent<
       appId: params.appId,
       metadata: { name: params.appId },
     })
+  }
+
+  /**
+   * Tell the agent which `Window` (iframe `contentWindow` or tab) an app instance lives in. WCP
+   * falls back to it when `window.name` is unreadable (cross-origin) or cleared by the app.
+   */
+  registerHostWindow(windowRef: Window, instanceId: string): void {
+    this.hostWindows.register(windowRef, instanceId)
+  }
+
+  /** The window registered for an instance, e.g. so the host can close a tab. */
+  findHostWindow(instanceId: string): Window | undefined {
+    return this.hostWindows.find(instanceId)
+  }
+
+  /** Drop a registered window when the host tears down its container. */
+  forgetHostWindow(instanceId: string): void {
+    this.hostWindows.forget(instanceId)
   }
 
   private getAppConnection(instanceId: string): AppConnectionMetadata | undefined {
