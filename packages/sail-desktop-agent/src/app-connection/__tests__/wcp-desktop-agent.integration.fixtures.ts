@@ -63,7 +63,7 @@ export function createHostInstanceAppLauncher(): AppLauncher {
     launch(request) {
       return Promise.resolve({
         appId: request.app.appId,
-        instanceId: request.app.instanceId ?? HOST_LAUNCHER_INSTANCE_ID,
+        instanceId: HOST_LAUNCHER_INSTANCE_ID,
       })
     },
   }

@@ -1,11 +1,12 @@
-import { DataTable, Then, When } from "@cucumber/cucumber"
+import { DataTable, Given, Then, When } from "@cucumber/cucumber"
+import expect from "expect"
 import { CustomWorld } from "../world/index.ts"
 import { contextMap, createMeta, getAppInstanceId } from "./generic.steps"
 import { matchDataSubset } from "../support/testing-utils"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import type { GetInfoRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AppInstanceState } from "../../src/state/types"
-import { getInstance, getInstancesByState } from "../../src/state/selectors"
+import { getInstance, getInstancesByAppId, getInstancesByState } from "../../src/state/selectors"
 import { connectInstance, removeInstance, updateInstanceState } from "../../src/state/mutators"
 import { retrieveAppsById } from "../../src/app-directory/app-directory-queries"
 
@@ -359,3 +360,62 @@ When(
     await this.mockTransport.receiveMessage(message)
   },
 )
+
+Given(
+  "the app launcher reuses the requested instance id and the app connects during launch",
+  function (this: CustomWorld) {
+    this.mockAppLauncher.reuseRequestedInstanceId = true
+    // The browsing context races the launcher: WCP4 arrives before launch() resolves.
+    this.mockAppLauncher.onAppLaunched = async instanceId => {
+      await sendWcp4ValidateForInstance(this, instanceId, { retainWcp5InLog: true })
+    }
+  },
+)
+
+When("the host opens app {string}", async function (this: CustomWorld, appId: string) {
+  try {
+    this.props.hostOpenResult = await this.desktopAgent.apps.open(appId)
+  } catch (error) {
+    this.props.hostOpenResult = error
+  }
+})
+
+function validatedInstanceId(world: CustomWorld): string | undefined {
+  const wcp5 = world.mockTransport
+    .getPostedMessages()
+    .find(record => record.msg.type === "WCP5ValidateAppIdentityResponse")
+  return (wcp5?.msg.payload as { instanceId?: string } | undefined)?.instanceId
+}
+
+Then(
+  "the openResponse names the instance that passed identity validation",
+  function (this: CustomWorld) {
+    const openResponse = this.mockTransport
+      .getPostedMessages()
+      .find(record => record.msg.type === "openResponse")
+    const payload = openResponse?.msg.payload as
+      | { appIdentifier?: { instanceId?: string }; error?: string }
+      | undefined
+    expect(payload?.error).toBeUndefined()
+    expect(validatedInstanceId(this)).toBeDefined()
+    expect(payload?.appIdentifier?.instanceId).toBe(validatedInstanceId(this))
+  },
+)
+
+Then(
+  "the host open resolves to the instance that passed identity validation",
+  function (this: CustomWorld) {
+    expect(this.props.hostOpenResult).not.toBeInstanceOf(Error)
+    expect(validatedInstanceId(this)).toBeDefined()
+    expect((this.props.hostOpenResult as { instanceId?: string }).instanceId).toBe(
+      validatedInstanceId(this),
+    )
+  },
+)
+
+Then("there are no pending instances of {string}", function (this: CustomWorld, appId: string) {
+  const pending = getInstancesByAppId(this.getState(), appId).filter(
+    instance => instance.state === AppInstanceState.PENDING,
+  )
+  expect(pending).toEqual([])
+})

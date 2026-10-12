@@ -10,6 +10,7 @@
 import type { AppLauncher } from "../host-contracts/app-launcher"
 import { routeDACPMessage } from "../handlers"
 import { cleanupInstanceDacpState } from "../handlers/instance-teardown"
+import { launchWithPendingInstance } from "../handlers/utils/launch-with-pending-instance"
 import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identity-validation"
 import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
 import type { DACPHandlerParams } from "../handlers/types"
@@ -473,15 +474,13 @@ export class SailDesktopAgent<
       ...(options?.context !== undefined ? { context: options.context } : {}),
     }
 
-    const launched = await this.appLauncher.launch(payload, catalogApps[0]!)
-    if (launched.instanceId) {
-      this.registerPendingHostInstance({
-        appId: launched.appId,
-        instanceId: launched.instanceId,
-      })
-    }
-
-    return launched
+    return launchWithPendingInstance({
+      appLauncher: this.appLauncher,
+      request: payload,
+      app: catalogApps[0]!,
+      getState: () => this.getState(),
+      setState: callback => this.setState(callback),
+    })
   }
 
   private getAppInstances(): DesktopAgentAppInstance[] {

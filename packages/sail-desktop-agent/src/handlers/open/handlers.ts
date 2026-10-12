@@ -14,7 +14,7 @@ import {
 import type { DirectoryApp } from "../../app-directory/types"
 import { retrieveAppsById } from "../../app-directory/app-directory-queries"
 import { getInstance, getInstancesByAppId } from "../../state/selectors"
-import { connectInstance } from "../../state/mutators"
+import { launchWithPendingInstance } from "../utils/launch-with-pending-instance"
 import { registerOpenWithContext } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
 import { teardownInstance } from "../instance-teardown"
@@ -128,42 +128,19 @@ export async function handleOpenRequest(
       hasContext: !!launchContext,
     })
 
-    // Launch the app via injected launcher
-    const appIdentifier = await appLauncher.launch(
-      {
-        app: payload.app,
-        context: launchContext,
-      },
-      appMetadata,
-    )
+    // Pending before launch, so an app that connects mid-launch adopts the id we answer with.
+    const appIdentifier = await launchWithPendingInstance({
+      appLauncher,
+      request: { app: payload.app, context: launchContext },
+      app: appMetadata,
+      getState,
+      setState: params.setState,
+    })
 
     logger.info("DACP: App launched successfully", {
       appId: appIdentifier.appId,
       instanceId: appIdentifier.instanceId,
     })
-
-    const launchedInstanceId = appIdentifier.instanceId
-    if (!launchedInstanceId) {
-      throw new ErrorOnLaunchError("App launcher did not return an instanceId")
-    }
-
-    // Pre-register host-assigned instanceId so findInstances and open-with-context
-    // can route to the launcher id before WCP4 validation completes.
-    if (!getInstance(params.getState(), launchedInstanceId)) {
-      params.setState(state =>
-        connectInstance(state, {
-          instanceId: launchedInstanceId,
-          appId: appMetadata.appId,
-          metadata: {
-            name: appMetadata.name,
-            title: appMetadata.title,
-            description: appMetadata.description,
-            icons: appMetadata.icons,
-            screenshots: appMetadata.screenshots,
-          },
-        }),
-      )
-    }
 
     // A plain open must wait for the launched app too: callers treat the resolved promise as
     // "the app is there now" and talk to it on the next line. Same pending registry as

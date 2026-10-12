@@ -60,7 +60,7 @@ describe("SailDesktopAgent", () => {
       launch: vi.fn((request: BrowserTypes.OpenRequestPayload) =>
         Promise.resolve({
           appId: request.app.appId,
-          instanceId: request.app.instanceId ?? "opened-instance",
+          instanceId: "opened-instance",
         }),
       ),
     }

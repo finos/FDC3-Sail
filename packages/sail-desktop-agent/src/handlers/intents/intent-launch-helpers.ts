@@ -1,6 +1,7 @@
 import type { Context } from "@finos/fdc3"
 import { retrieveAppsById } from "../../app-directory/app-directory-queries"
 import type { DACPHandlerParams } from "../types"
+import { launchWithPendingInstance } from "../utils/launch-with-pending-instance"
 import {
   getInstance,
   getInstancesByAppId,
@@ -46,18 +47,16 @@ export async function launchAppAndWaitForInstance(
   const existingInstances = getInstancesByAppId(state, appId)
   const existingInstanceIds = new Set(existingInstances.map(i => i.instanceId))
 
-  const launchResult = await appLauncher.launch(
-    {
+  const { instanceId: launcherInstanceId } = await launchWithPendingInstance({
+    appLauncher,
+    request: {
       app: { appId },
       context: validatedContext as Context | undefined,
     },
-    appMetadata,
-  )
-
-  const launcherInstanceId = launchResult.instanceId
-  if (!launcherInstanceId) {
-    throw new Error("App launcher did not return an instance ID")
-  }
+    app: appMetadata,
+    getState,
+    setState: params.setState,
+  })
 
   const launchTimestamp = Date.now() - 500
 

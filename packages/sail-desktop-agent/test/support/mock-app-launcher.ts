@@ -30,6 +30,12 @@ export class MockAppLauncher implements AppLauncher {
   public onInstanceCreated?: (instanceId: string, appId: string) => void
 
   /**
+   * Behave like a real host launcher: name the browsing context after
+   * `request.app.instanceId` and register nothing in agent state itself.
+   */
+  public reuseRequestedInstanceId = false
+
+  /**
    * Launch an app, returning a mock instance ID.
    * Throws error if app is configured to fail or contains "missing" in name.
    */
@@ -51,11 +57,13 @@ export class MockAppLauncher implements AppLauncher {
       throw new Error("Launch failed: process error")
     }
 
-    // Generate instance ID
-    const instanceId = `uuid-${this.nextInstanceId++}`
+    const instanceId =
+      this.reuseRequestedInstanceId && request.app.instanceId
+        ? request.app.instanceId
+        : `uuid-${this.nextInstanceId++}`
 
     // Notify tests that instance was created (so they can register it in state)
-    if (this.onInstanceCreated) {
+    if (this.onInstanceCreated && !this.reuseRequestedInstanceId) {
       this.onInstanceCreated(instanceId, appId)
     }
 

@@ -42,7 +42,7 @@ function createHostInstanceAppLauncher(): AppLauncher {
   let launchCount = 0
   return {
     launch(request) {
-      const instanceId = request.app.instanceId ?? `uuid-${launchCount++}`
+      const instanceId = `uuid-${launchCount++}`
       return Promise.resolve({ appId: request.app.appId, instanceId })
     },
   }

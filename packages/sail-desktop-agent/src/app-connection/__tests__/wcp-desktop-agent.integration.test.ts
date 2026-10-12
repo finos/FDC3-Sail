@@ -125,7 +125,7 @@ describe("session carry-over", () => {
     return {
       launch(request) {
         const launcherIds = [STALE_LAUNCHER_INSTANCE_ID, SECOND_LAUNCHER_INSTANCE_ID]
-        const instanceId = request.app.instanceId ?? launcherIds[launchCount++]
+        const instanceId = launcherIds[launchCount++]
         return Promise.resolve({ appId: request.app.appId, instanceId })
       },
     }
