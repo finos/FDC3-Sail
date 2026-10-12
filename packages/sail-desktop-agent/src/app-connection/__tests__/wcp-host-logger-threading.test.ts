@@ -17,12 +17,7 @@ import { SailDesktopAgent } from "../../agent/sail-desktop-agent"
 import { DEFAULT_FDC3_USER_CHANNELS } from "../../agent/default-user-channels"
 import { clearAllHeartbeatTimersForTesting } from "../../handlers/heartbeat/runtime"
 import type { LogPayloadDetail } from "../../logging/logger"
-import {
-  createMessageEvent,
-  createWCP1Hello,
-  flushAsyncDelivery,
-  TEST_ORIGIN,
-} from "./wcp-edge-test-helpers"
+import { createMessageEvent, createWCP1Hello, TEST_ORIGIN } from "./wcp-edge-test-helpers"
 import { PORTFOLIO_APP } from "./wcp-desktop-agent.integration.fixtures"
 
 function createAgentWithHostLogger(
@@ -103,10 +98,10 @@ describe("host logger threading through WCP MessagePortTransport", () => {
 
     const appPort = captureAppPortAfterWcp1("host-logger-transport-uuid", PORTFOLIO_APP.details.url)
     postBroadcastEventOnAppPort(appPort)
-    await flushAsyncDelivery()
-
-    expect(transportDebugCallsInclude(logger, "[MessagePortTransport]")).toBe(true)
-    expect(transportDebugCallsInclude(logger, "Received message")).toBe(true)
+    await vi.waitFor(() => {
+      expect(transportDebugCallsInclude(logger, "[MessagePortTransport]")).toBe(true)
+      expect(transportDebugCallsInclude(logger, "Received message")).toBe(true)
+    })
 
     const consoleSinks = [
       ...consoleErrorSpy.mock.calls,
@@ -130,11 +125,11 @@ describe("host logger threading through WCP MessagePortTransport", () => {
       PORTFOLIO_APP.details.url,
     )
     postBroadcastEventOnAppPort(appPort)
-    await flushAsyncDelivery()
-
-    expect(
-      transportDebugCallsInclude(logger, "[MessagePortTransport] BroadcastEvent details"),
-    ).toBe(true)
+    await vi.waitFor(() => {
+      expect(
+        transportDebugCallsInclude(logger, "[MessagePortTransport] BroadcastEvent details"),
+      ).toBe(true)
+    })
     expect(serializeLogCalls(logger.debugCalls)).toContain("fullMessage")
     expect(serializeLogCalls(logger.debugCalls)).toContain(SENSITIVE_MARKER)
   })
