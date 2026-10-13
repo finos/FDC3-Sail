@@ -17,12 +17,12 @@ defaults:
 jobs:
   conformance:
     runs-on: ubuntu-latest
-    # One cell per product host x FDC3 version. Add "3.0" once its cells pass.
+    # One cell per product host x FDC3 version.
     strategy:
       fail-fast: false
       matrix:
         host: [sail-one, sail-finance]
-        fdc3_version: ["2.2"]
+        fdc3_version: ["2.2", "3.0"]
     # A full suite run is ~5-10 minutes; the ceiling covers install, browser download and a
     # hung agent (playwright.config.ts allows the test itself 15 minutes).
     timeout-minutes: 30

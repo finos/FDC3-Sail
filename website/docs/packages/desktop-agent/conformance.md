@@ -146,7 +146,7 @@ A run fails on any failing test, and also when it loads fewer tests than
 
 `.github/workflows/conformance.yml` runs on every pull request, nightly at **03:00 UTC**, and on
 demand via **`workflow_dispatch`**. Matrix: host `[sail-one, sail-finance]` × FDC3 version
-`["2.2"]`. `"3.0"` joins once its cells pass. Each cell prints its pass, fail and total counts to
+`["2.2", "3.0"]`. Each cell prints its pass, fail and total counts to
 the job summary and uploads its artifacts either way.
 
 ## Related
