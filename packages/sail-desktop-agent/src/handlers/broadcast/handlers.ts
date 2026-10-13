@@ -418,6 +418,7 @@ function notifyContextListeners(
         ...broadcastEvent,
         meta: {
           ...broadcastEvent.meta,
+          eventUuid: crypto.randomUUID(),
           destination: { instanceId: instance.instanceId },
         },
       }
@@ -426,7 +427,7 @@ function notifyContextListeners(
         targetInstanceId: instance.instanceId,
         channelId,
         contextType: context.type,
-        eventUuid: broadcastEvent.meta.eventUuid,
+        eventUuid: broadcastEventWithRouting.meta.eventUuid,
       })
 
       if (logPayloadDetail === "full") {
