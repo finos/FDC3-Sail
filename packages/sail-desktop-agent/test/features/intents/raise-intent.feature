@@ -33,6 +33,18 @@ Feature: Raising Intents
       | msg.type            | msg.payload.error | to.instanceId |
       | raiseIntentResponse | NoAppsFound       | a1            |
 
+  # Conformance RaiseIntentFailTargetedAppResolve1: the directory says which contexts the
+  # targeted app handles for the intent, so a running instance's unfiltered listener does not
+  # widen that.
+  @fdc3_2.0
+  Scenario: Targeting an app whose directory entry does not list the context fails with NoAppsFound
+    Given "appId: listenerApp, instanceId: b1" registers an intent listener for "ViewChart" [fdc3.addIntentListener]
+    When "appId: App1, instanceId: a1" raises an intent for "ViewChart" with contextType "fdc3.instrument" on app "listenerApp" [fdc3.raiseIntent]
+    Then messaging will have outgoing posts
+      | msg.type            | msg.payload.error | to.instanceId |
+      | raiseIntentResponse | NoAppsFound       | a1            |
+    And no "intentEvent" is sent to "b1"
+
   @fdc3_2.0
   Scenario: Raising an intent that should auto-resolve (only one option)
     And "appId: App1, instanceId: a1" raises an intent for "uniqueIntent" with contextType "fdc3.instrument" [fdc3.raiseIntent]

@@ -16,7 +16,7 @@ import {
   createResolverAppIntent,
   findMatchingIntentResolutionChoice,
 } from "./intent-resolver-helpers"
-import { isDirectoryIntentCompatible } from "./intent-directory-helpers"
+import { directoryDeclaresIntent, isDirectoryIntentCompatible } from "./intent-directory-helpers"
 import { isValidContext } from "../utils/context-validation"
 import {
   attachPendingIntentTimeout,
@@ -93,16 +93,22 @@ export async function handleRaiseIntentRequest(
     const isTargetRunning =
       !!targetApp?.instanceId || (targetAppId ? runningInstances.length > 0 : false)
 
-    if (
-      targetAppId &&
-      isTargetRunning &&
-      !isDirectoryIntentCompatible(
+    // The directory's context list for a declared intent is authoritative: a running instance's
+    // unfiltered listener does not widen it (conformance RaiseIntentFailTargetedAppResolve1).
+    // Running listeners only count for intents the directory does not declare.
+    const directoryCompatible =
+      !!targetAppId &&
+      isDirectoryIntentCompatible(
         state.appDirectory,
         targetAppId,
         payload.intent,
         validatedContext.type,
-      ) &&
-      handlers.runningListeners.length === 0
+      )
+    if (
+      targetAppId &&
+      !directoryCompatible &&
+      (directoryDeclaresIntent(state.appDirectory, targetAppId, payload.intent) ||
+        (isTargetRunning && handlers.runningListeners.length === 0))
     ) {
       throw new NoAppsFoundError(`No apps found to handle intent: ${payload.intent}`)
     }
