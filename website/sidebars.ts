@@ -7,6 +7,7 @@ const sidebars: SidebarsConfig = {
     "run-sail",
     "add-your-app",
     "getting-started",
+    "faq",
     {
       type: "category",
       label: "Architecture",
