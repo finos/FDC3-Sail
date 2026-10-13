@@ -398,23 +398,22 @@ function notifyContextListeners(
   let successful = 0
   let failed = 0
 
+  const senderInstance = getInstance(state, params.instanceId)
+  const broadcastEvent = createDACPEvent(
+    "broadcastEvent",
+    {
+      channelId,
+      context,
+      originatingApp: {
+        appId: senderInstance?.appId || "unknown",
+        instanceId: params.instanceId,
+      },
+    },
+    { metadata },
+  )
+
   targets.forEach(instance => {
     try {
-      const senderInstance = getInstance(getState(), params.instanceId)
-
-      const broadcastEvent = createDACPEvent(
-        "broadcastEvent",
-        {
-          channelId,
-          context,
-          originatingApp: {
-            appId: senderInstance?.appId || "unknown",
-            instanceId: params.instanceId,
-          },
-        },
-        { metadata },
-      )
-
       const broadcastEventWithRouting = {
         ...broadcastEvent,
         meta: {
