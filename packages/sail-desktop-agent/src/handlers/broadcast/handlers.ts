@@ -33,10 +33,9 @@ import {
 } from "../private-channels/handlers"
 import { notifyContextListenerAdded } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
-import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import {
   buildContextMetadata,
-  pickAppProvidableMetadata,
+  readAppProvidableMetadata,
   type WireContextMetadata,
 } from "../../dacp/context-metadata"
 
@@ -49,12 +48,10 @@ export function handleBroadcastRequest(
 
   try {
     const { channelId, context } = message.payload
-    // Must not be read at all at 2.2 — the 2.2 JSON Schema has `additionalProperties: false`,
-    // so a 3.0 field on the wire would otherwise be silently honoured even though the message
-    // fails schema validation.
-    const broadcastAppMetadata = isFdc3VersionAtLeast(implementationMetadata.fdc3Version, "3.0")
-      ? pickAppProvidableMetadata(message.payload.metadata)
-      : undefined
+    const broadcastAppMetadata = readAppProvidableMetadata(
+      implementationMetadata.fdc3Version,
+      message.payload.metadata,
+    )
 
     if (!isValidContext(context)) {
       sendDACPErrorResponse({

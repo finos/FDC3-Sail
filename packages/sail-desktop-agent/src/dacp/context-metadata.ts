@@ -8,6 +8,7 @@
  */
 
 import type { AppIdentifier, BrowserTypes } from "@finos/fdc3"
+import { isFdc3VersionAtLeast } from "../agent/fdc3-version"
 
 /** `ContextMetadata` as it travels in DACP: the timestamp is an ISO-8601 string on the wire. */
 export type WireContextMetadata = Omit<BrowserTypes.ContextMetadata, "timestamp"> & {
@@ -50,6 +51,18 @@ export function pickAppProvidableMetadata(raw: unknown): AppProvidableContextMet
     ...(isRecord(raw.custom) && { custom: raw.custom }),
   }
   return Object.keys(picked).length > 0 ? picked : undefined
+}
+
+/**
+ * App-provided metadata from a 3.0 request payload (`broadcast`, `open`, `raiseIntent`, ...).
+ * Not read at all below 3.0: the 2.2 schema has `additionalProperties: false`, so honouring the
+ * field there would act on a message that fails validation.
+ */
+export function readAppProvidableMetadata(
+  fdc3Version: string,
+  raw: unknown,
+): AppProvidableContextMetadata | undefined {
+  return isFdc3VersionAtLeast(fdc3Version, "3.0") ? pickAppProvidableMetadata(raw) : undefined
 }
 
 /** Agent-generated `source`, `timestamp` and `traceId`, plus the app's forwarded fields. */

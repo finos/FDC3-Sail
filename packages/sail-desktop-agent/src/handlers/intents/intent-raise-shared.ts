@@ -1,4 +1,4 @@
-import type { AppIdentifier, BrowserTypes, Context } from "@finos/fdc3"
+import type { AppIdentifier, Context } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
 import { addPendingIntent, resolvePendingIntent } from "../../state/mutators"
 import {
@@ -30,7 +30,6 @@ import {
 import { findIntentHandlers, shouldWaitForIntentListenerBeforeDelivery } from "./intent-helpers"
 import { launchAppAndWaitForInstance } from "./intent-launch-helpers"
 import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
-import { pickAppProvidableMetadata } from "../../dacp/context-metadata"
 
 type ResolveAppTargetInstanceOptions = {
   appId: string
@@ -186,19 +185,6 @@ export function readRaiseNewInstance(
     return undefined
   }
   return typeof payload.newInstance === "boolean" ? payload.newInstance : undefined
-}
-
-/**
- * FDC3 3.0 app-provided metadata on a raiseIntent / raiseIntentForContext payload. Ignored below
- * 3.0, where the schema does not allow the field.
- */
-export function readRaiseAppMetadata(
-  params: DACPHandlerParams,
-  payload: { metadata?: unknown },
-): BrowserTypes.AppProvidableContextMetadata | undefined {
-  return isFdc3VersionAtLeast(params.implementationMetadata.fdc3Version, "3.0")
-    ? pickAppProvidableMetadata(payload.metadata)
-    : undefined
 }
 
 export function registerPendingIntentState(

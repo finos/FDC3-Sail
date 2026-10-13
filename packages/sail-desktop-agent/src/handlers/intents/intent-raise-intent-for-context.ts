@@ -3,6 +3,7 @@ import { type DACPHandlerParams } from "../types"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
 import type { BrowserTypes } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
+import { readAppProvidableMetadata } from "../../dacp/context-metadata"
 import {
   NoAppsFoundError,
   IntentDeliveryFailedError,
@@ -26,7 +27,6 @@ import {
   cleanupPendingIntentRequest,
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
-  readRaiseAppMetadata,
   readRaiseNewInstance,
   resolveUntargetedInstance,
   registerPendingIntentState,
@@ -94,7 +94,10 @@ function finalizeRaiseIntentForContextDelivery(
     targetInstanceId,
     targetAppId,
     requestType: "raiseIntentForContextRequest",
-    appMetadata: readRaiseAppMetadata(params, message.payload),
+    appMetadata: readAppProvidableMetadata(
+      params.implementationMetadata.fdc3Version,
+      message.payload.metadata,
+    ),
   })
   schedulePendingIntentDelivery(
     params,

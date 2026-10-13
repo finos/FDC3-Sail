@@ -2,7 +2,7 @@ import { DataTable, Given, Then, When } from "@cucumber/cucumber"
 import expect from "expect"
 import { CustomWorld } from "../world/index.ts"
 import { contextMap, createMeta, getAppInstanceId } from "./generic.steps"
-import { matchDataSubset } from "../support/testing-utils"
+import { appProvidedMetadata, matchDataSubset } from "../support/testing-utils"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import type { GetInfoRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AppInstanceState } from "../../src/state/types"
@@ -297,6 +297,32 @@ When(
       },
     }
 
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} opens app {string} with context data {string} and metadata traceId {string} signature {string} antiReplay claims {string} and custom key {string} [fdc3.open]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    open: string,
+    context: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+    customRegion: string,
+  ) {
+    await ensureAppInstanceForTesting(this, appStr)
+    const message: OpenRequest = {
+      type: "openRequest",
+      meta: createMeta(this, appStr),
+      payload: {
+        app: { appId: open },
+        context: contextMap[context],
+        metadata: appProvidedMetadata(traceId, signature, antiReplayClaims, customRegion),
+      },
+    }
     await this.mockTransport.receiveMessage(message)
   },
 )

@@ -3,6 +3,7 @@ import { type DACPHandlerParams } from "../types"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
 import type { AppIdentifier, BrowserTypes, Context } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
+import { readAppProvidableMetadata } from "../../dacp/context-metadata"
 import {
   NoAppsFoundError,
   IntentDeliveryFailedError,
@@ -22,7 +23,6 @@ import {
   cleanupPendingIntentRequest,
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
-  readRaiseAppMetadata,
   readRaiseNewInstance,
   resolveUntargetedInstance,
   registerPendingIntentState,
@@ -205,7 +205,10 @@ export async function handleRaiseIntentRequest(
       targetInstanceId,
       targetAppId: resolvedTargetAppId,
       requestType: "raiseIntentRequest",
-      appMetadata: readRaiseAppMetadata(params, payload),
+      appMetadata: readAppProvidableMetadata(
+        params.implementationMetadata.fdc3Version,
+        payload.metadata,
+      ),
     })
 
     // Newly launched apps may not have registered listeners yet, so queue delivery until ready.
