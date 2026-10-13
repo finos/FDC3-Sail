@@ -372,6 +372,36 @@ Given(
   },
 )
 
+Given(
+  "the app launcher returns its own instance id after the app connects during launch",
+  function (this: CustomWorld) {
+    // A third-party launcher: it ignores the requested id and registers nothing in agent state,
+    // while the browsing context connects as the id the agent registered PENDING.
+    this.mockAppLauncher.onInstanceCreated = undefined
+    this.mockAppLauncher.onAppLaunched = async () => {
+      const requested = this.mockAppLauncher.getLaunchHistory().at(-1)?.request.app.instanceId
+      await sendWcp4ValidateForInstance(this, requested!, { retainWcp5InLog: true })
+    }
+  },
+)
+
+When(
+  "{string} opens app {string} naming instance {string} [fdc3.open]",
+  async function (this: CustomWorld, appStr: string, open: string, instanceId: string) {
+    await ensureAppInstanceForTesting(this, appStr)
+    const message: OpenRequest = {
+      type: "openRequest",
+      meta: createMeta(this, appStr),
+      payload: { app: { appId: open, instanceId, desktopAgent: "n/a" } },
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+Then("no instance is named {string}", function (this: CustomWorld, instanceId: string) {
+  expect(getInstance(this.getState(), instanceId)).toBeUndefined()
+})
+
 When("the host opens app {string}", async function (this: CustomWorld, appId: string) {
   try {
     this.props.hostOpenResult = await this.desktopAgent.apps.open(appId)

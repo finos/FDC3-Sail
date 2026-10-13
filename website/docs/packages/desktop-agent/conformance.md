@@ -27,7 +27,7 @@ For how `@finos/sail-desktop-agent` fits into the rest of the stack, see the
 
 _This section is generated from `packages/sail-desktop-agent/test/features/` — do not hand-edit between the markers. Regenerate with `npm run conformance:inventory --workspace=@finos/sail-docs` (see `website/scripts/generate-conformance-inventory.mjs`)._
 
-**17 feature files** under `test/features/` today: **2** carry `@fdc3_2.2` (the 2.2 pack, 12 scenarios), and **8** more are `@fdc3_3.0`-only (11 scenarios) — the 3.0 profile runs both, **23** scenarios total. `@fdc3_2.0` is a scenario-level tag inside the 2.2 files marking scenarios also valid under FDC3 2.0 (**122** scenarios across **10** files).
+**17 feature files** under `test/features/` today: **2** carry `@fdc3_2.2` (the 2.2 pack, 12 scenarios), and **8** more are `@fdc3_3.0`-only (11 scenarios) — the 3.0 profile runs both, **23** scenarios total. `@fdc3_2.0` is a scenario-level tag inside the 2.2 files marking scenarios also valid under FDC3 2.0 (**124** scenarios across **10** files).
 
 #### `@fdc3_2.2` feature files
 
@@ -59,7 +59,7 @@ _This section is generated from `packages/sail-desktop-agent/test/features/` —
 cd packages/sail-desktop-agent
 npx cucumber-js --profile fdc3-2.2   # 12 scenarios
 npx cucumber-js --profile fdc3-3.0   # 23 scenarios
-npx cucumber-js --profile fdc3-2.0   # 122 scenarios
+npx cucumber-js --profile fdc3-2.0   # 124 scenarios
 ```
 
 {/* GENERATED:CONFORMANCE-INVENTORY:END */}

@@ -10,8 +10,11 @@ import { connectInstance, removeInstance } from "../../state/mutators"
  *
  * The browsing context can send WCP1 before `launch()` resolves. Minting the id first and passing
  * it as `request.app.instanceId` lets WCP4 adopt it, so the id `open()` returns is the id the app
- * connects as. A launcher that returns its own id gets that id registered instead, and a launch
- * that throws leaves nothing behind.
+ * connects as. A launcher that returns its own id gets that id registered instead, unless the app
+ * already connected as the minted one. A launch that throws leaves nothing behind.
+ *
+ * The id is always minted here, never taken from `request.app.instanceId`: an app could otherwise
+ * name an existing instance, or a `window.open` target such as `_self`.
  */
 export async function launchWithPendingInstance(params: {
   appLauncher: AppLauncher
@@ -21,8 +24,7 @@ export async function launchWithPendingInstance(params: {
   setState: StateSetter
 }): Promise<AppIdentifier & { instanceId: string }> {
   const { appLauncher, request, app, getState, setState } = params
-  const requestedInstanceId = request.app.instanceId ?? crypto.randomUUID()
-  const mintedHere = !getInstance(getState(), requestedInstanceId)
+  const mintedInstanceId = crypto.randomUUID()
 
   const registerPending = (instanceId: string) => {
     if (getInstance(getState(), instanceId)) {
@@ -42,22 +44,21 @@ export async function launchWithPendingInstance(params: {
       }),
     )
   }
-  // Only an id this call minted, and only while nothing has connected as it.
+  const mintedIsPending = () =>
+    getInstance(getState(), mintedInstanceId)?.state === AppInstanceState.PENDING
+  // Only while nothing has connected as it.
   const dropMinted = () => {
-    if (
-      mintedHere &&
-      getInstance(getState(), requestedInstanceId)?.state === AppInstanceState.PENDING
-    ) {
-      setState(state => removeInstance(state, requestedInstanceId))
+    if (mintedIsPending()) {
+      setState(state => removeInstance(state, mintedInstanceId))
     }
   }
 
-  registerPending(requestedInstanceId)
+  registerPending(mintedInstanceId)
 
   let launched: AppIdentifier
   try {
     launched = await appLauncher.launch(
-      { ...request, app: { ...request.app, instanceId: requestedInstanceId } },
+      { ...request, app: { ...request.app, instanceId: mintedInstanceId } },
       app,
     )
   } catch (error) {
@@ -71,7 +72,11 @@ export async function launchWithPendingInstance(params: {
     throw new Error("App launcher did not return an instanceId")
   }
 
-  if (launchedInstanceId !== requestedInstanceId) {
+  if (launchedInstanceId !== mintedInstanceId) {
+    if (!mintedIsPending()) {
+      // The app connected as the minted id during launch: that is the instance that exists.
+      return { ...launched, instanceId: mintedInstanceId }
+    }
     dropMinted()
     registerPending(launchedInstanceId)
   }
