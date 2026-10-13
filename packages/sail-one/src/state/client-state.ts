@@ -101,11 +101,10 @@ const DEFAULT_DIRECTORIES: Directory[] = [
     url: FINOS_APP_DIRECTORY_URL,
     active: true,
   },
-  {
-    label: "FDC3 Example Apps (npm run apps)",
-    url: EXAMPLE_APPS_DIRECTORY_URL,
-    active: true,
-  },
+  // localhost: a production build must not trust whatever serves that port.
+  ...(import.meta.env.DEV
+    ? [{ label: "FDC3 Example Apps (npm run apps)", url: EXAMPLE_APPS_DIRECTORY_URL, active: true }]
+    : []),
 ]
 
 const DEFAULT_TABS: TabDetail[] = [

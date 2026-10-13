@@ -144,7 +144,7 @@ if (isDockviewPopoutShell()) {
     search: window.location.search,
     viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
     viteAutoResolve: import.meta.env.VITE_AUTO_RESOLVE,
-    allowQueryDirectory: import.meta.env.DEV,
+    dev: import.meta.env.DEV,
   })
 
   const agent: SailDesktopAgent = new SailDesktopAgent({

@@ -7,10 +7,14 @@ import {
 
 describe("readSailHostParams", () => {
   it("loads the FINOS and example-app directories by default", () => {
-    expect(readSailHostParams({ search: "" })).toEqual({
+    expect(readSailHostParams({ search: "", dev: true })).toEqual({
       appDirectories: [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL],
       autoResolve: false,
     })
+  })
+
+  it("leaves the localhost example apps out of a production build", () => {
+    expect(readSailHostParams({ search: "" }).appDirectories).toEqual([FINOS_APP_DIRECTORY_URL])
   })
 
   it("reads the deep-linked app id", () => {
@@ -31,7 +35,7 @@ describe("readSailHostParams", () => {
     const params = readSailHostParams({
       search: "?fdc3Directory=http%3A%2F%2Fq%2Fd.json",
       viteDirectoryUrl: "http://env/d.json",
-      allowQueryDirectory: true,
+      dev: true,
     })
 
     expect(params.appDirectories).toEqual(["http://q/d.json"])
@@ -40,7 +44,7 @@ describe("readSailHostParams", () => {
   it("ignores ?fdc3Directory= unless allowed, so a link can't swap a build's directories", () => {
     const params = readSailHostParams({ search: "?fdc3Directory=http%3A%2F%2Fevil%2Fd.json" })
 
-    expect(params.appDirectories).toEqual([FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL])
+    expect(params.appDirectories).toEqual([FINOS_APP_DIRECTORY_URL])
   })
 
   it("turns on auto-resolve only for '1'", () => {

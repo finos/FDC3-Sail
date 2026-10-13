@@ -28,13 +28,14 @@ export function readSailHostParams(options: {
   viteDirectoryUrl?: string
   viteAutoResolve?: string
   /**
-   * Honour `?fdc3Directory=`. Pass `import.meta.env.DEV`: in a production build a link must not
-   * be able to swap in someone else's apps.
+   * Pass `import.meta.env.DEV`. Only a dev build honours `?fdc3Directory=` and loads the
+   * `localhost` example apps: in production a link must not swap in someone else's apps, and no
+   * local port may serve apps the Desktop Agent trusts.
    */
-  allowQueryDirectory?: boolean
+  dev?: boolean
 }): SailHostParams {
   const query = new URLSearchParams(options.search)
-  const queryDirectory = options.allowQueryDirectory ? query.get("fdc3Directory") : null
+  const queryDirectory = options.dev ? query.get("fdc3Directory") : null
   const soleDirectory = queryDirectory || options.viteDirectoryUrl || undefined
   const deepLinkAppId = query.get("appId") || undefined
 
@@ -43,7 +44,7 @@ export function readSailHostParams(options: {
     ...(soleDirectory ? { soleDirectory } : {}),
     appDirectories: soleDirectory
       ? [soleDirectory]
-      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL],
+      : [FINOS_APP_DIRECTORY_URL, ...(options.dev ? [EXAMPLE_APPS_DIRECTORY_URL] : [])],
     autoResolve: options.viteAutoResolve === "1",
   }
 }
