@@ -10,6 +10,13 @@ import { AppInstanceState } from "../types"
 export const getInstance = (state: AgentState, instanceId: string): AppInstance | undefined =>
   state.instances[instanceId]
 
+/** The FDC3 version this app was served at, or the agent's version before WCP4 has set one. */
+export const getInstanceFdc3Version = (
+  state: AgentState,
+  instanceId: string,
+  agentFdc3Version: string,
+): string => state.instances[instanceId]?.fdc3Version ?? agentFdc3Version
+
 export const getAllInstances = (state: AgentState): AppInstance[] => Object.values(state.instances)
 
 export const getInstancesByAppId = (state: AgentState, appId: string): AppInstance[] =>

@@ -197,4 +197,7 @@ export interface AppConnectionMetadata {
    * {@link AppConnectionOptions.resolveHostIdentifier} when the app clears `window.name`.
    */
   hostIdentifier?: string
+
+  /** FDC3 version offered in WCP3Handshake, negotiated from `WCP1Hello.fdc3Version`. */
+  fdc3Version?: string
 }

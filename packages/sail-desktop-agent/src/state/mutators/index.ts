@@ -8,6 +8,7 @@
 export {
   connectInstance,
   updateInstanceState,
+  setInstanceFdc3Version,
   updateInstanceActivity,
   removeInstance,
   joinUserChannel,

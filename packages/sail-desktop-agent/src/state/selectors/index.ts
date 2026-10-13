@@ -7,6 +7,7 @@
 // Instance selectors
 export {
   getInstance,
+  getInstanceFdc3Version,
   getAllInstances,
   getInstancesByAppId,
   instanceContextListenerMatchesBroadcast,

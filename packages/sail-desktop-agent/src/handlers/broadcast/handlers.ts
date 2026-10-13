@@ -33,6 +33,7 @@ import {
 } from "../private-channels/handlers"
 import { notifyContextListenerAdded } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import {
   buildContextMetadata,
   readAppProvidableMetadata,
@@ -44,12 +45,12 @@ export function handleBroadcastRequest(
   message: BrowserTypes.BroadcastRequest,
   params: DACPHandlerParams,
 ): void {
-  const { responses, instanceId, getState, setState, logger, implementationMetadata } = params
+  const { responses, instanceId, getState, setState, logger } = params
 
   try {
     const { channelId, context } = message.payload
     const broadcastAppMetadata = readAppProvidableMetadata(
-      implementationMetadata.fdc3Version,
+      callerFdc3Version(params),
       message.payload.metadata,
     )
 

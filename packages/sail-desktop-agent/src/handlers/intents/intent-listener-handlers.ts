@@ -16,6 +16,7 @@ import {
 } from "../../errors/fdc3-errors"
 import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import { getInstance, getListenersForInstance } from "../../state/selectors"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { registerIntentListener, unregisterIntentListener } from "../../state/mutators"
 import { deliverPendingIntentsForListener } from "./intent-delivery-helpers"
 import { findConflictingIntentListener } from "./intent-listener-conflict"
@@ -32,7 +33,7 @@ export function handleAddIntentListener(
   message: BrowserTypes.AddIntentListenerRequest,
   params: DACPHandlerParams,
 ): void {
-  const { responses, instanceId, getState, setState, logger, implementationMetadata } = params
+  const { responses, instanceId, getState, setState, logger } = params
 
   try {
     const payload = message.payload
@@ -47,10 +48,7 @@ export function handleAddIntentListener(
     // FDC3 3.0 addIntentListenerWithContext: `payload.contextTypes` must not be read at all at
     // 2.2 — the 2.2 JSON Schema has `additionalProperties: false`, so a 3.0 field on the wire
     // would otherwise be silently honoured even though the message fails schema validation.
-    const supportsIntentListenerContext = isFdc3VersionAtLeast(
-      implementationMetadata.fdc3Version,
-      "3.0",
-    )
+    const supportsIntentListenerContext = isFdc3VersionAtLeast(callerFdc3Version(params), "3.0")
     const contextTypes = supportsIntentListenerContext
       ? normalizeIntentListenerContextTypes(payload.contextTypes)
       : []

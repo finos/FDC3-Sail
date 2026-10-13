@@ -1,5 +1,6 @@
 import { createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
 import type { AppIdentifier, BrowserTypes, Context } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
@@ -216,10 +217,7 @@ export async function handleRaiseIntentRequest(
       targetInstanceId,
       targetAppId: resolvedTargetAppId,
       requestType: "raiseIntentRequest",
-      appMetadata: readAppProvidableMetadata(
-        params.implementationMetadata.fdc3Version,
-        payload.metadata,
-      ),
+      appMetadata: readAppProvidableMetadata(callerFdc3Version(params), payload.metadata),
     })
 
     // Newly launched apps may not have registered listeners yet, so queue delivery until ready.

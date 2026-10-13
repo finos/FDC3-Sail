@@ -30,7 +30,7 @@ function stripWcpProtocolMessagesFromLog(world: CustomWorld): void {
 async function sendWcp4ValidateForInstance(
   world: CustomWorld,
   uuid: string,
-  options?: { retainWcp5InLog?: boolean },
+  options?: { retainWcp5InLog?: boolean; fdc3Version?: string },
 ): Promise<void> {
   const instance = getInstance(world.getState(), uuid)
   if (!instance) {
@@ -68,6 +68,7 @@ async function sendWcp4ValidateForInstance(
   await world.mockTransport.receiveMessage(message, {
     sourceWindow: { hostPanel: uuid },
     messageOrigin: new URL(appUrl).origin,
+    fdc3Version: options?.fdc3Version,
   })
 
   const validatedId = world.mockTransport.lastWcp5ValidatedInstanceId
@@ -91,6 +92,7 @@ async function connectTestAppInstance(
   world: CustomWorld,
   appId: string,
   instanceId: string,
+  fdc3Version?: string,
 ): Promise<void> {
   const state = world.getState()
   const existing = getInstance(state, instanceId)
@@ -109,8 +111,12 @@ async function connectTestAppInstance(
   const inDirectory = retrieveAppsById(world.getState().appDirectory, appId).length > 0
   if (inDirectory) {
     // Background "is opened" runs WCP4 for CONNECTED state; keep WCP5 out of DACP message assertions.
-    await sendWcp4ValidateForInstance(world, instanceId, { retainWcp5InLog: false })
+    await sendWcp4ValidateForInstance(world, instanceId, { retainWcp5InLog: false, fdc3Version })
     return
+  }
+  if (fdc3Version !== undefined) {
+    // The version is negotiated at WCP4, which only runs for directory apps.
+    throw new Error(`${appId} must be in the app directory to connect at FDC3 ${fdc3Version}`)
   }
 
   world.updateState(currentState =>
@@ -160,6 +166,16 @@ When(
       this.createUUID()
     }
     await connectTestAppInstance(this, appId, uuid)
+  },
+)
+
+When(
+  "{string} is opened with connection id {string} at FDC3 {string}",
+  async function (this: CustomWorld, app: string, uuid: string, fdc3Version: string) {
+    this.props.instances = this.props.instances || {}
+    this.props.instances[app] = uuid
+    this.createUUID()
+    await connectTestAppInstance(this, resolveAppIdFromAppStr(app), uuid, fdc3Version)
   },
 )
 

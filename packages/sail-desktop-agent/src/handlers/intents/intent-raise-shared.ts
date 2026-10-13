@@ -1,5 +1,6 @@
 import type { AppIdentifier, Context } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { addPendingIntent, resolvePendingIntent } from "../../state/mutators"
 import {
   getInstance,
@@ -181,7 +182,7 @@ export function readRaiseNewInstance(
   params: DACPHandlerParams,
   payload: { newInstance?: boolean | null },
 ): boolean | undefined {
-  if (!isFdc3VersionAtLeast(params.implementationMetadata.fdc3Version, "3.0")) {
+  if (!isFdc3VersionAtLeast(callerFdc3Version(params), "3.0")) {
     return undefined
   }
   return typeof payload.newInstance === "boolean" ? payload.newInstance : undefined

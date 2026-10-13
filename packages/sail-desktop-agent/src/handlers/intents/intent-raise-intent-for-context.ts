@@ -1,5 +1,6 @@
 import { createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
 import type { BrowserTypes } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
@@ -94,10 +95,7 @@ function finalizeRaiseIntentForContextDelivery(
     targetInstanceId,
     targetAppId,
     requestType: "raiseIntentForContextRequest",
-    appMetadata: readAppProvidableMetadata(
-      params.implementationMetadata.fdc3Version,
-      message.payload.metadata,
-    ),
+    appMetadata: readAppProvidableMetadata(callerFdc3Version(params), message.payload.metadata),
   })
   schedulePendingIntentDelivery(
     params,

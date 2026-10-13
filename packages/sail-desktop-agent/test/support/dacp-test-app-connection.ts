@@ -9,12 +9,15 @@ import type { AppMessageHandler } from "../../src/app-connection/types"
 import type { AppConnectionMetadata } from "../../src/app-connection/wcp/wcp-types"
 import { setPendingWcpSourceWindow } from "../../src/app-connection/wcp/pending-source-window"
 import { setPendingWcpMessageOrigin } from "../../src/app-connection/wcp/pending-wcp4-message-origin"
+import { setPendingWcpHelloFdc3Version } from "../../src/app-connection/wcp/pending-wcp-hello-version"
 import { MockTransport, type MessageRecord } from "./mock-transport"
 
 /** Test-only WCP4 inputs `receiveMessage` cannot legally carry on the wire message. */
 export type Wcp4TestInputs = {
   sourceWindow?: unknown
   messageOrigin?: string
+  /** `WCP1Hello.fdc3Version`: the FDC3 version the app asks for. */
+  fdc3Version?: string
 }
 
 export class DacpTestAppConnection {
@@ -86,6 +89,9 @@ export class DacpTestAppConnection {
         }
         if (wcp4Inputs.messageOrigin !== undefined) {
           setPendingWcpMessageOrigin(this, tempInstanceId, wcp4Inputs.messageOrigin)
+        }
+        if (wcp4Inputs.fdc3Version !== undefined) {
+          setPendingWcpHelloFdc3Version(this, tempInstanceId, wcp4Inputs.fdc3Version)
         }
       }
     }

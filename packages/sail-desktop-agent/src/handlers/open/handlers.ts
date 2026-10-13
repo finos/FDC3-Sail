@@ -1,5 +1,5 @@
 import type { SailDesktopAgentMetadata } from "../../agent/default-config"
-import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
+import { implementationMetadataForApp, isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import { createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
@@ -14,6 +14,7 @@ import {
 import type { DirectoryApp } from "../../app-directory/types"
 import { resolveKnownAppId, retrieveAppsById } from "../../app-directory/app-directory-queries"
 import { getInstance, getInstancesByAppId } from "../../state/selectors"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { launchWithPendingInstance } from "../utils/launch-with-pending-instance"
 import { registerOpenWithContext } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
@@ -53,13 +54,17 @@ export function handleGetInfoRequest(
       }
     }
 
+    const callerMetadata = implementationMetadataForApp(
+      implementationMetadata,
+      callerFdc3Version(params),
+    )
     const resolvedImplementationMetadata: SailDesktopAgentMetadata & {
       appMetadata?: BrowserTypes.AppMetadata
     } = {
-      fdc3Version: implementationMetadata.fdc3Version,
-      provider: implementationMetadata.provider,
-      providerVersion: implementationMetadata.providerVersion,
-      optionalFeatures: implementationMetadata.optionalFeatures,
+      fdc3Version: callerMetadata.fdc3Version,
+      provider: callerMetadata.provider,
+      providerVersion: callerMetadata.providerVersion,
+      optionalFeatures: callerMetadata.optionalFeatures,
     }
 
     if (appMetadata) {
@@ -370,17 +375,10 @@ export async function handleCloseRequest(
   message: BrowserTypes.CloseRequest,
   params: DACPHandlerParams,
 ): Promise<void> {
-  const {
-    responses,
-    appLauncher,
-    logger,
-    getState,
-    implementationMetadata,
-    instanceId: targetInstanceId,
-  } = params
+  const { responses, appLauncher, logger, getState, instanceId: targetInstanceId } = params
 
-  // FDC3 3.0 behavior: closeRequest is only supported when the agent advertises 3.0.
-  if (!isFdc3VersionAtLeast(implementationMetadata.fdc3Version, "3.0")) {
+  // FDC3 3.0 behavior: closeRequest is only supported for apps served at 3.0.
+  if (!isFdc3VersionAtLeast(callerFdc3Version(params), "3.0")) {
     sendDACPErrorResponse({
       message,
       errorType: CloseError.ErrorOnClose as BrowserTypes.ResponsePayloadError,

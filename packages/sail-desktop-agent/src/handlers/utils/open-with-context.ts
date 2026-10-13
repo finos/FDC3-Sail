@@ -5,6 +5,7 @@ import { createDACPEvent, createDACPSuccessResponse } from "../../dacp/dacp-mess
 import { sendDACPResponse, sendDACPErrorResponse } from "./dacp-response-utils"
 import type { DACPHandlerParams } from "../types"
 import { getInstance, isInstanceConnected } from "../../state/selectors"
+import { callerFdc3Version } from "./caller-fdc3-version"
 import type { AgentState, PendingOpenWithContext } from "../../state/types"
 import {
   addPendingOpenWithContext,
@@ -274,7 +275,7 @@ function deliverOpenWithContext(
       instanceId: sourceInstanceId,
     }
     const appMetadata = readAppProvidableMetadata(
-      params.implementationMetadata.fdc3Version,
+      callerFdc3Version(params),
       message.payload.metadata,
     )
     const broadcastEvent = createDACPEvent(

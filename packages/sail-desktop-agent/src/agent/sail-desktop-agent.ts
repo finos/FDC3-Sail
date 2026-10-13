@@ -166,8 +166,7 @@ export class SailDesktopAgent<
         logger: this.logger,
         validation: this.validation,
         logPayloadDetail: this.logPayloadDetail,
-        // Single source of truth: WCP3 advertises the same version WCP5, getInfo and
-        // closeRequest gating read.
+        // The most WCP3 offers; each app gets min(its WCP1Hello version, this), as WCP5 does.
         fdc3Version: this.implementationMetadata.fdc3Version,
       })) as TEdge
 

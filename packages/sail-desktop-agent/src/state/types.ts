@@ -102,6 +102,12 @@ export interface AppInstance {
 
   /** Instance-specific metadata */
   instanceMetadata?: InstanceMetadata
+
+  /**
+   * FDC3 version negotiated with this app at WCP4 (see `negotiateFdc3Version`). Unset until then,
+   * and for instances that never handshake; readers fall back to the agent's version.
+   */
+  fdc3Version?: string
 }
 
 // ============================================================================
