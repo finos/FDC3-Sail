@@ -14,7 +14,6 @@ import {
   findIntentsByContext,
   appIntentForWireResponse,
 } from "./intent-helpers"
-import { launchAppAndWaitForInstance } from "./intent-launch-helpers"
 import {
   createResolverAppIntent,
   appsToIntentHandlerOptions,
@@ -28,6 +27,8 @@ import {
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
   readRaiseAppMetadata,
+  readRaiseNewInstance,
+  resolveUntargetedInstance,
   registerPendingIntentState,
   resolveAppTargetInstance,
   schedulePendingIntentDelivery,
@@ -127,6 +128,8 @@ export async function handleRaiseIntentForContextRequest(
     const validatedContext = payload.context
 
     const targetApp = normalizeTargetApp(payload.app)
+
+    const newInstance = readRaiseNewInstance(params, payload)
     validateRequestedTargetAvailability(params, targetApp)
 
     const source = getInstance(getState(), instanceId)
@@ -222,6 +225,7 @@ export async function handleRaiseIntentForContextRequest(
           validatedContext,
           preferredInstanceId: selectedTarget.instanceId,
           forceLaunch: !selectedTarget.instanceId,
+          newInstance,
         })
         targetInstanceId = resolvedTarget.targetInstanceId
         targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
@@ -251,20 +255,20 @@ export async function handleRaiseIntentForContextRequest(
           appId: targetAppId,
           validatedContext,
           runningListenerInstanceId: runningListener?.instanceId,
+          newInstance,
         })
         targetInstanceId = resolvedTarget.targetInstanceId
         targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
-      } else if (handlers.runningListeners.length > 0) {
-        targetInstanceId = handlers.runningListeners[0]!.instanceId
-      } else if (handlers.availableApps.length > 0) {
-        targetInstanceIsLaunched = true
-        targetInstanceId = await launchAppAndWaitForInstance(
-          handlers.availableApps[0]!.appId,
-          params,
-          validatedContext,
-        )
       } else {
-        throw new NoAppsFoundError(`No handler found for intent: ${selectedIntent}`)
+        const resolvedTarget = await resolveUntargetedInstance(
+          params,
+          handlers,
+          selectedIntent,
+          validatedContext,
+          newInstance,
+        )
+        targetInstanceId = resolvedTarget.targetInstanceId
+        targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
       }
     }
 

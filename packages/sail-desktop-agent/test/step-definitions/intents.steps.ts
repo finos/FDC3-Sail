@@ -535,6 +535,52 @@ When(
   },
 )
 
+When(
+  "{string} raises an intent for {string} with contextType {string} on app {string} with newInstance {string} [fdc3.raiseIntent]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+    dest: string,
+    newInstance: string,
+  ) {
+    ensureAppInstance(this, appStr)
+    const target = handleResolve(dest, this)
+    const message = raise(
+      this,
+      intentName,
+      contextType,
+      target ? dest : null,
+      createMeta(this, appStr),
+    )
+    message.payload.newInstance = newInstance === "true"
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} raises an intent with contextType {string} on app {string} with newInstance {string} [fdc3.raiseIntentForContext]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    contextType: string,
+    dest: string,
+    newInstance: string,
+  ) {
+    ensureAppInstance(this, appStr)
+    const target = handleResolve(dest, this)
+    const message = raiseWithContext(
+      this,
+      contextType,
+      target ? dest : null,
+      createMeta(this, appStr),
+    )
+    message.payload.newInstance = newInstance === "true"
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
 When("we wait for the intent timeout", function (this: CustomWorld) {
   return new Promise<void>(resolve => {
     setTimeout(() => resolve(), 2100)

@@ -27,7 +27,7 @@ import {
   registerPendingIntentTimeout,
   releasePendingIntentTimeout,
 } from "./intent-pending-timeout-registry"
-import { shouldWaitForIntentListenerBeforeDelivery } from "./intent-helpers"
+import { findIntentHandlers, shouldWaitForIntentListenerBeforeDelivery } from "./intent-helpers"
 import { launchAppAndWaitForInstance } from "./intent-launch-helpers"
 import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import { pickAppProvidableMetadata } from "../../dacp/context-metadata"
@@ -38,6 +38,11 @@ type ResolveAppTargetInstanceOptions = {
   preferredInstanceId?: string
   runningListenerInstanceId?: string
   forceLaunch?: boolean
+  /**
+   * FDC3 3.0 `newInstance`: `true` always launches; `false` never launches and fails with
+   * `TargetInstanceUnavailable` when no instance is running. Unset keeps the default choice.
+   */
+  newInstance?: boolean
 }
 
 export function normalizeTargetApp(target: unknown): AppIdentifier | undefined {
@@ -93,7 +98,13 @@ export async function resolveAppTargetInstance(
   params: DACPHandlerParams,
   options: ResolveAppTargetInstanceOptions,
 ): Promise<{ targetInstanceId: string; targetInstanceIsLaunched: boolean }> {
-  const { appId, validatedContext, preferredInstanceId, runningListenerInstanceId } = options
+  const { appId, validatedContext, preferredInstanceId, runningListenerInstanceId, newInstance } =
+    options
+
+  if (newInstance === true) {
+    const targetInstanceId = await launchAppAndWaitForInstance(appId, params, validatedContext)
+    return { targetInstanceId, targetInstanceIsLaunched: true }
+  }
 
   if (preferredInstanceId) {
     const instance = getInstance(params.getState(), preferredInstanceId)
@@ -106,7 +117,7 @@ export async function resolveAppTargetInstance(
     return { targetInstanceId: runningListenerInstanceId, targetInstanceIsLaunched: false }
   }
 
-  if (options.forceLaunch) {
+  if (options.forceLaunch && newInstance !== false) {
     const targetInstanceId = await launchAppAndWaitForInstance(appId, params, validatedContext)
     return { targetInstanceId, targetInstanceIsLaunched: true }
   }
@@ -123,8 +134,50 @@ export async function resolveAppTargetInstance(
     return { targetInstanceId: targetInstance.instanceId, targetInstanceIsLaunched: false }
   }
 
+  if (newInstance === false) {
+    throw new TargetInstanceUnavailableError(`No running instance of ${appId} to use`)
+  }
+
   const targetInstanceId = await launchAppAndWaitForInstance(appId, params, validatedContext)
   return { targetInstanceId, targetInstanceIsLaunched: true }
+}
+
+/**
+ * Picks the handler for a raise that names no target app and needs no resolver: a running
+ * listener, else a launch of the first app that can handle it. `newInstance` overrides that
+ * default as in {@link resolveAppTargetInstance}.
+ */
+export async function resolveUntargetedInstance(
+  params: DACPHandlerParams,
+  handlers: ReturnType<typeof findIntentHandlers>,
+  intent: string,
+  validatedContext: Context,
+  newInstance: boolean | undefined,
+): Promise<{ targetInstanceId: string; targetInstanceIsLaunched: boolean }> {
+  const runningListener = handlers.runningListeners[0]
+  if (runningListener && newInstance !== true) {
+    return { targetInstanceId: runningListener.instanceId, targetInstanceIsLaunched: false }
+  }
+  if (newInstance === false) {
+    throw new TargetInstanceUnavailableError(`No running instance handles intent: ${intent}`)
+  }
+  const app = handlers.availableApps[0]
+  if (!app) {
+    throw new NoAppsFoundError(`No handler found for intent: ${intent}`)
+  }
+  const targetInstanceId = await launchAppAndWaitForInstance(app.appId, params, validatedContext)
+  return { targetInstanceId, targetInstanceIsLaunched: true }
+}
+
+/** FDC3 3.0 `newInstance` on a raise payload; ignored below 3.0 like the other 3.0 fields. */
+export function readRaiseNewInstance(
+  params: DACPHandlerParams,
+  payload: { newInstance?: boolean | null },
+): boolean | undefined {
+  if (!isFdc3VersionAtLeast(params.implementationMetadata.fdc3Version, "3.0")) {
+    return undefined
+  }
+  return typeof payload.newInstance === "boolean" ? payload.newInstance : undefined
 }
 
 /**
