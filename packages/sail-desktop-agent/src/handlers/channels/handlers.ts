@@ -463,12 +463,14 @@ export function handleClearContextRequest(
   try {
     const { channelId, contextType } = message.payload
     const state = getState()
-    if (
-      !getUserChannel(state, channelId) &&
-      !getAppChannel(state, channelId) &&
-      !getPrivateChannel(state, channelId)
-    ) {
+    const privateChannel = getPrivateChannel(state, channelId)
+    if (!getUserChannel(state, channelId) && !getAppChannel(state, channelId) && !privateChannel) {
       throw new NoChannelFoundError(`Channel ${channelId} does not exist`)
+    }
+    if (privateChannel && !privateChannel.connectedInstances.includes(instanceId)) {
+      throw new ChannelAccessDeniedError(
+        `Instance ${instanceId} is not connected to private channel ${channelId}`,
+      )
     }
 
     setState(current => clearChannelContext(current, channelId, contextType))

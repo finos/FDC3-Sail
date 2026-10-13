@@ -92,6 +92,24 @@ Feature: Clearing context on a channel (FDC3 3.0)
       | clearContextResponse | a1            | NoChannelFound    |
 
   @fdc3_3.0
+  Scenario: Clearing context on a private channel the app is not connected to fails with AccessDenied
+    Given "appId: App1, instanceId: a1" creates a private channel [fdc3.createPrivateChannel]
+    And I alias the last private channel as "pc1"
+    When "appId: App2, instanceId: a2" clears context "{null}" on "{pc1}" [Channel.clearContext]
+    Then messaging will have outgoing posts
+      | msg.matches_type     | to.instanceId | msg.payload.error |
+      | clearContextResponse | a2            | AccessDenied      |
+
+  @fdc3_3.0
+  Scenario: Clearing context on its own private channel succeeds
+    Given "appId: App1, instanceId: a1" creates a private channel [fdc3.createPrivateChannel]
+    And I alias the last private channel as "pc1"
+    When "appId: App1, instanceId: a1" clears context "{null}" on "{pc1}" [Channel.clearContext]
+    Then messaging will have outgoing posts
+      | msg.matches_type     | to.instanceId | msg.payload.error |
+      | clearContextResponse | a1            | {null}            |
+
+  @fdc3_3.0
   Scenario: A channel-scoped event listener does not receive userChannelChanged
     When "appId: App2, instanceId: a2" adds a "{null}" event listener on channel "fdc3.channel.1" [Channel.addEventListener]
     And "appId: App2, instanceId: a2" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
