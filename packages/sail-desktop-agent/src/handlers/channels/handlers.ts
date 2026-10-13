@@ -115,6 +115,9 @@ export function handleJoinUserChannelRequest(
 
     setState(state => joinUserChannel(state, instanceId, channelId))
 
+    // FDC3 3.0: the userChannelChanged event MUST be dispatched before joinUserChannel resolves.
+    notifyChannelChanged(instanceId, channelId, params, options)
+
     const response = {
       type: "joinUserChannelResponse",
       payload: {},
@@ -129,7 +132,6 @@ export function handleJoinUserChannelRequest(
     if (!wasAlreadyOnChannel) {
       deliverCurrentContextToInstanceListeners(instanceId, channelId, params)
     }
-    notifyChannelChanged(instanceId, channelId, params, options)
   } catch (error) {
     const errorType = error instanceof FDC3ChannelError ? error.errorType : ChannelError.ApiTimeout
     const errorMessage = error instanceof Error ? error.message : "Failed to join user channel"

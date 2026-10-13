@@ -189,3 +189,17 @@ Then(
     expect(payload![second]).toBeNull()
   },
 )
+
+Then(
+  "a {string} is sent to {string} before the {string}",
+  function (this: CustomWorld, firstType: string, instanceId: string, secondType: string) {
+    const types = this.mockTransport
+      .getPostedMessages()
+      .filter(record => record.to?.instanceId === instanceId)
+      .map(record => record.msg.type)
+    const first = types.indexOf(firstType)
+    const second = types.indexOf(secondType)
+    expect(first).toBeGreaterThanOrEqual(0)
+    expect(second).toBeGreaterThan(first)
+  },
+)
