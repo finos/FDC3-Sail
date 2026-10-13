@@ -24,6 +24,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@finos/fdc3-example-apps": "3.0.0-beta.1",
     "glob": "^10.3.10",
     "jsdom": "^26.1.0",
     "rimraf": "^6.0.1",
@@ -31,7 +32,6 @@
   },
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
-    "@finos/fdc3-example-apps": "^3.0.0-beta.1",
     "@finos/fdc3-schema": "^2.2.1-beta.3",
     "@finos/sail-desktop-agent": "*",
     "@finos/sail-platform": "*",
