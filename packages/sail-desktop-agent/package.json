@@ -42,8 +42,8 @@
     "tsx": "^4.21.0"
   },
   "dependencies": {
-    "@finos/fdc3": "^2.2.3",
-    "@finos/fdc3-schema": "^2.2.1-beta.3",
+    "@finos/fdc3": "3.0.0-beta.1",
+    "@finos/fdc3-schema": "3.0.0-beta.1",
     "immer": "^10.1.1"
   },
   "author": "",

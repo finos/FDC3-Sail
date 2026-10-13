@@ -2,7 +2,7 @@ import { DataTable, Given, When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world/index.ts"
 import type { DirectoryApp } from "../../src/app-directory/types"
 import { APP_FIELD, contextMap, createMeta, getAppInstanceId } from "./generic.steps"
-import { handleResolve } from "../support/testing-utils"
+import { appProvidedMetadata, handleResolve } from "../support/testing-utils"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppInstanceState } from "../../src/state/types"
 import { getInstance, getInstancesByAppId } from "../../src/state/selectors"
@@ -481,13 +481,56 @@ When(
       meta,
       payload: {
         intent: handleResolve(intentName, this),
-        context: {
-          ...contextMap[contextType],
-          metadata: { traceId: handleResolve(traceId, this) as string },
-        },
+        context: contextMap[contextType],
         app: destMeta.source,
+        metadata: { traceId: handleResolve(traceId, this) as string },
       },
     } as RaiseIntentRequest
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} raises an intent for {string} with contextType {string} and metadata traceId {string} signature {string} antiReplay claims {string} and custom key {string} on app {string} with requestUuid {string} [fdc3.raiseIntent]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    intentName: string,
+    contextType: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+    customRegion: string,
+    dest: string,
+    requestUuid: string,
+  ) {
+    ensureAppInstance(this, appStr)
+    const message = {
+      type: "raiseIntentRequest",
+      meta: { ...createMeta(this, appStr), requestUuid },
+      payload: {
+        intent: handleResolve(intentName, this),
+        context: contextMap[contextType],
+        app: createMeta(this, dest).source,
+        metadata: appProvidedMetadata(traceId, signature, antiReplayClaims, customRegion),
+      },
+    } as RaiseIntentRequest
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} raises an intent with contextType {string} and metadata traceId {string} on app {string} [fdc3.raiseIntentForContext]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    contextType: string,
+    traceId: string,
+    dest: string,
+  ) {
+    ensureAppInstance(this, appStr)
+    const message = raiseWithContext(this, contextType, dest, createMeta(this, appStr))
+    message.payload.metadata = { traceId: handleResolve(traceId, this) as string }
     await this.mockTransport.receiveMessage(message)
   },
 )
@@ -590,37 +633,32 @@ When(
 )
 
 When(
-  "{string} sends a intentResultRequest with eventUuid {string} and contextWithMetadata type {string} and raiseIntentUuid {string} [IntentResolution.getResult]",
+  "{string} sends a intentResultRequest with eventUuid {string} and contextType {string} and raiseIntentUuid {string} with metadata traceId {string} signature {string} antiReplay claims {string} and custom key {string} [IntentResolution.getResult]",
   async function (
     this: CustomWorld,
     appStr: string,
     eventUuid: string,
     contextType: string,
     raiseIntentUuid: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+    customRegion: string,
   ) {
     ensureAppInstance(this, appStr)
-    const meta = createMeta(this, appStr)
-    const resolvedEventUuid = resolveIntentEventUuid(this, eventUuid)
-
     const message: IntentResultRequest = {
       type: "intentResultRequest",
-      meta: {
-        ...meta,
-      },
+      meta: createMeta(this, appStr),
       payload: {
-        intentResult: {
-          context: contextMap[contextType],
-          metadata: {
-            signature: "conformance-signature",
-            custom: { conformanceKey: "value" },
-          },
-        } as unknown as BrowserTypes.IntentResult,
-        intentEventUuid: resolvedEventUuid,
+        intentResult: { context: contextMap[contextType] },
+        intentEventUuid: resolveIntentEventUuid(this, eventUuid),
         raiseIntentRequestUuid: raiseIntentUuid,
+        // The FDC3 3.0 client sends a handler's ContextWithMetadata as plain context plus this.
+        metadata: appProvidedMetadata(traceId, signature, antiReplayClaims, customRegion),
       },
     }
 
-    this.props.lastIntentResultRequestUuid = message.meta?.requestUuid
+    this.props.lastIntentResultRequestUuid = message.meta.requestUuid
     await this.mockTransport.receiveMessage(message)
   },
 )

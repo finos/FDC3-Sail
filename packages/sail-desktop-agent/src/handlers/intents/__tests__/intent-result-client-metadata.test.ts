@@ -13,15 +13,13 @@ import {
   withResponseDispatcher,
 } from "../../__tests__/test-params"
 import { handleIntentResultRequest } from "../intent-result-handlers"
-import type { IntentResultContextMetadata } from "../intent-result-metadata"
+import type { WireContextMetadata } from "../../../dacp/context-metadata"
 
 type RaiseIntentResultResponse = BrowserTypes.AgentResponseMessage & {
   type: "raiseIntentResultResponse"
   payload: {
-    intentResult?: BrowserTypes.IntentResult & {
-      metadata?: IntentResultContextMetadata
-    }
-    resultMetadata?: IntentResultContextMetadata
+    intentResult?: BrowserTypes.IntentResult & { metadata?: unknown }
+    resultMetadata?: WireContextMetadata
     error?: string
   }
   meta: BrowserTypes.AgentResponseMessageMeta & {
@@ -88,13 +86,13 @@ function findRaiseIntentResultResponse(
 }
 
 /**
- * FDC3 client IntentResolution.getResultMetadata() reads result metadata from the
- * intentResult object on raiseIntentResultResponse (not only the sibling payload field).
+ * The FDC3 3.0 client's IntentResolution.getResultMetadata() reads `payload.resultMetadata` of
+ * the raiseIntentResultResponse.
  */
 function readClientGetResultMetadata(
   response: RaiseIntentResultResponse,
-): IntentResultContextMetadata | undefined {
-  return response.payload.intentResult?.metadata
+): WireContextMetadata | undefined {
+  return response.payload.resultMetadata
 }
 
 describe("IntentResolution.getResultMetadata() client metadata path", () => {
@@ -112,7 +110,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
       intentResult: { channel: { id: "app-channel-1", type: "app" as const } },
     },
   ])(
-    "$toolboxScenario exposes non-empty intentResult.metadata for client getResultMetadata()",
+    "$toolboxScenario exposes non-empty resultMetadata for client getResultMetadata()",
     ({ intentResult }) => {
       const { params, transport, getState } = setupPendingIntentContext()
 
@@ -158,7 +156,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
 
   it("RaiseIntentContextWithMetadataResult returns plain context on getResult() and merged metadata on getResultMetadata()", () => {
     const contextPayload = { type: "testContextY", id: { value: "1" } }
-    const appSignature = "conformance-signature"
+    const appSignature = { protected: "header", signature: "conformance-signature" }
     const appCustom = { conformanceKey: "value" }
     const { params, transport, getState } = setupPendingIntentContext()
 
@@ -172,14 +170,12 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
         payload: {
           raiseIntentRequestUuid: BASE.requestId,
           intentEventUuid: "event-1",
-          intentResult: {
-            context: contextPayload,
-            metadata: {
-              traceId: "app-trace-should-not-win",
-              signature: appSignature,
-              custom: appCustom,
-            },
-          } as unknown as BrowserTypes.IntentResult,
+          intentResult: { context: contextPayload },
+          metadata: {
+            traceId: "app-trace-should-not-win",
+            signature: appSignature,
+            custom: appCustom,
+          },
         },
       },
       params,
@@ -191,7 +187,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
     expect(getState().intents.pending[BASE.requestId]).toBeUndefined()
 
     const clientMetadata = readClientGetResultMetadata(response!)
-    expect(clientMetadata?.signature).toBe(appSignature)
+    expect(clientMetadata?.signature).toEqual(appSignature)
     expect(clientMetadata?.custom).toEqual(appCustom)
     expect(clientMetadata?.traceId).toEqual(expect.any(String))
     expect(clientMetadata?.traceId).not.toBe("app-trace-should-not-win")
@@ -203,7 +199,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
     expect(traceId.length).toBeGreaterThan(0)
   })
 
-  it("raiseIntentResultResponse clones through InMemoryTransport without circular metadata refs", async () => {
+  it("raiseIntentResultResponse clones through InMemoryTransport", async () => {
     const { params, getState } = setupPendingIntentContext()
     const [daTransport, peerTransport] = createInMemoryTransportPair()
     const received: unknown[] = []
@@ -240,8 +236,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
     )
     expect(response).toBeDefined()
     expect(response!.payload.resultMetadata).toBeDefined()
-    expect(response!.payload.intentResult?.metadata).toBeDefined()
-    expect(response!.payload.resultMetadata).not.toBe(response!.payload.intentResult?.metadata)
+    expect(response!.payload.intentResult?.metadata).toBeUndefined()
     expect(readClientGetResultMetadata(response!)?.traceId).toEqual(expect.any(String))
     expect(getState().intents.pending[BASE.requestId]).toBeUndefined()
   })

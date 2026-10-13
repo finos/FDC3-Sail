@@ -23,6 +23,7 @@ import {
   cleanupPendingIntentRequest,
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
+  readRaiseAppMetadata,
   registerPendingIntentState,
   resolveAppTargetInstance,
   schedulePendingIntentDelivery,
@@ -201,6 +202,7 @@ export async function handleRaiseIntentRequest(
       targetInstanceId,
       targetAppId: resolvedTargetAppId,
       requestType: "raiseIntentRequest",
+      appMetadata: readRaiseAppMetadata(params, payload),
     })
 
     // Newly launched apps may not have registered listeners yet, so queue delivery until ready.

@@ -19,10 +19,6 @@ import {
 import type { DACPHandlerParams } from "../types"
 import type { IntentRequestType, PendingIntent } from "../../state/types"
 import {
-  extractAppProvidedIntentContextMetadata,
-  mergeIntentEventContextMetadata,
-} from "./intent-result-metadata"
-import {
   clearPendingIntentTimeout,
   registerPendingIntentTimeout,
   releasePendingIntentTimeout,
@@ -136,20 +132,11 @@ export function attemptIntentDelivery(
       appId: sourceInstance.appId,
       instanceId: sourceInstance.instanceId,
     },
+    pendingIntent.appMetadata,
   )
-
-  const appContextMetadata = extractAppProvidedIntentContextMetadata(pendingIntent.context)
-  const intentEventPayload = intentEvent.payload as typeof intentEvent.payload & {
-    metadata: Parameters<typeof mergeIntentEventContextMetadata>[0]
-  }
-  const payloadWithMergedMetadata = {
-    ...intentEventPayload,
-    metadata: mergeIntentEventContextMetadata(intentEventPayload.metadata, appContextMetadata),
-  }
 
   responses.sendOutbound({
     ...intentEvent,
-    payload: payloadWithMergedMetadata,
     meta: {
       ...intentEvent.meta,
       destination: { instanceId: pendingIntent.targetInstanceId },

@@ -27,6 +27,7 @@ import {
   cleanupPendingIntentRequest,
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
+  readRaiseAppMetadata,
   registerPendingIntentState,
   resolveAppTargetInstance,
   schedulePendingIntentDelivery,
@@ -92,6 +93,7 @@ function finalizeRaiseIntentForContextDelivery(
     targetInstanceId,
     targetAppId,
     requestType: "raiseIntentForContextRequest",
+    appMetadata: readRaiseAppMetadata(params, message.payload),
   })
   schedulePendingIntentDelivery(
     params,

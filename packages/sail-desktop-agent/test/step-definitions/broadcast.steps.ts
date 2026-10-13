@@ -1,7 +1,7 @@
 import { When } from "@cucumber/cucumber"
 import { CustomWorld } from "../world/index.ts"
 import { createMeta, getAppInstanceId } from "./generic.steps"
-import { handleResolve } from "../support/testing-utils"
+import { appProvidedMetadata, handleResolve } from "../support/testing-utils"
 import { contextMap } from "./generic.steps"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import { AppInstanceState } from "../../src/state/types"
@@ -154,6 +154,56 @@ When(
     } as BroadcastRequest
 
     this.props.lastInboundRequestAt = Date.now()
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} broadcasts {string} on {string} with metadata traceId {string} signature {string} antiReplay claims {string} and custom key {string} [fdc3.broadcast]",
+  async function (
+    this: CustomWorld,
+    app: string,
+    contextType: string,
+    channelId: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+    customRegion: string,
+  ) {
+    ensureAppInstance(this, app)
+    const message: BroadcastRequest = {
+      meta: createMeta(this, app),
+      payload: {
+        channelId: handleResolve(channelId, this) as string,
+        context: contextMap[contextType]!,
+        metadata: appProvidedMetadata(traceId, signature, antiReplayClaims, customRegion),
+      },
+      type: "broadcastRequest",
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} broadcasts {string} on {string} with metadata claiming source appId {string} [fdc3.broadcast]",
+  async function (
+    this: CustomWorld,
+    app: string,
+    contextType: string,
+    channelId: string,
+    spoofedAppId: string,
+  ) {
+    ensureAppInstance(this, app)
+    const message = {
+      meta: createMeta(this, app),
+      payload: {
+        channelId: handleResolve(channelId, this) as string,
+        context: contextMap[contextType],
+        // Not part of AppProvidableContextMetadata: a misbehaving app trying to pose as another.
+        metadata: { source: { appId: spoofedAppId, instanceId: "spoofed" } },
+      },
+      type: "broadcastRequest" as const,
+    } as unknown as BroadcastRequest
     await this.mockTransport.receiveMessage(message)
   },
 )

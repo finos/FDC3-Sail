@@ -98,6 +98,8 @@ export class CustomWorld extends World {
       this.enableIntentResolverCallback()
     }
 
+    const resolvedFdc3Version = fdc3Version ?? (this.props.fdc3Version as string | undefined)
+
     // Create the agent with catalog seeded via config.apps (state.appDirectory.apps)
     this.desktopAgent = new SailDesktopAgent({
       appLauncher: this.mockAppLauncher,
@@ -106,7 +108,9 @@ export class CustomWorld extends World {
       implementationMetadata: {
         provider: "cucumber-provider",
         providerVersion: "1.0.0",
-        fdc3Version: fdc3Version ?? (this.props.fdc3Version as string | undefined) ?? "2.2",
+        // Unset means SailDesktopAgent's own default, so every scenario runs against the version
+        // Sail ships unless it opts into another with "A desktop agent advertising FDC3 ...".
+        ...(resolvedFdc3Version !== undefined && { fdc3Version: resolvedFdc3Version }),
       },
       openContextListenerTimeoutMs: 2000,
       heartbeatEnabled,

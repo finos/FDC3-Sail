@@ -12,7 +12,9 @@ import {
   getPrivateChannel,
   getEventListenersForInstance,
 } from "../../state/selectors"
-import { joinUserChannel, createAppChannel } from "../../state/mutators"
+import { joinUserChannel, createAppChannel, clearChannelContext } from "../../state/mutators"
+import type { AgentState, StoredContext } from "../../state/types"
+import { buildContextMetadata, type WireContextMetadata } from "../../dacp/context-metadata"
 import type { BrowserTypes } from "@finos/fdc3"
 import { ChannelError } from "@finos/fdc3"
 import {
@@ -203,6 +205,19 @@ export function handleGetUserChannelsRequest(
   }
 }
 
+/** The metadata a stored context was broadcast with, rebuilt from its sender if it has none. */
+function storedContextMetadata(state: AgentState, stored: StoredContext): WireContextMetadata {
+  if (stored.metadata) {
+    return stored.metadata
+  }
+  const source = getInstance(state, stored.sourceInstanceId)
+  return buildContextMetadata(
+    { appId: source?.appId ?? "unknown", instanceId: stored.sourceInstanceId },
+    undefined,
+    new Date(stored.timestampMs).toISOString(),
+  )
+}
+
 /**
  * Handles get current context requests
  */
@@ -232,8 +247,15 @@ export function handleGetCurrentContextRequest(
       hasContext: !!storedContext,
     })
 
+    // FDC3 3.0 getCurrentContextWithMetadata: the metadata stored with that context. The 3.0
+    // client rejects a reply as MalformedContext unless `metadata` accompanies a context and is
+    // `null` (not absent) without one.
+    const stored = storedContext
+      ? getStoredContext(getState(), channelId, storedContext.type)
+      : null
     const response = createDACPSuccessResponse(message, "getCurrentContextResponse", {
       context: storedContext,
+      metadata: stored ? storedContextMetadata(getState(), stored) : null,
     })
     sendDACPResponse({ response, instanceId, responses })
   } catch (error) {
@@ -382,9 +404,12 @@ function notifyChannelChanged(
   // so it must only reach listeners registered by the instance whose channel changed — other
   // instances would otherwise read someone else's channel as their own.
   const state = getState()
+  // Channel-scoped listeners (FDC3 3.0 `Channel.addEventListener`) only receive that channel's
+  // events, never `userChannelChanged`.
   const instanceHasChannelChangedListener = getEventListenersForInstance(state, instanceId).some(
     listener =>
-      listener.eventType === "channelChanged" || listener.eventType === ALL_DA_EVENT_TYPES,
+      listener.channelId === null &&
+      (listener.eventType === "channelChanged" || listener.eventType === ALL_DA_EVENT_TYPES),
   )
 
   // `ChannelChangedEventPayload` is an `anyOf` of two mutually exclusive branches — `{newChannelId}`
@@ -417,4 +442,75 @@ function notifyChannelChanged(
     notified: notifyInstance,
     hasListener: instanceHasChannelChangedListener,
   })
+}
+
+/**
+ * Handles clearContextRequest (FDC3 3.0 `Channel.clearContext`).
+ *
+ * Drops the stored context of one type, or of every type when `contextType` is `null`, so later
+ * `getCurrentContext` calls and new joiners get nothing until the next broadcast. Then sends
+ * `contextClearedEvent` to every app listening for it on this channel: channel-scoped listeners on
+ * this channel, and Desktop Agent listeners whose app is joined to it.
+ */
+export function handleClearContextRequest(
+  message: BrowserTypes.ClearContextRequest,
+  params: DACPHandlerParams,
+): void {
+  const { responses, instanceId, getState, setState, logger } = params
+
+  try {
+    const { channelId, contextType } = message.payload
+    const state = getState()
+    if (
+      !getUserChannel(state, channelId) &&
+      !getAppChannel(state, channelId) &&
+      !getPrivateChannel(state, channelId)
+    ) {
+      throw new NoChannelFoundError(`Channel ${channelId} does not exist`)
+    }
+
+    setState(current => clearChannelContext(current, channelId, contextType))
+    sendDACPResponse({
+      response: createDACPSuccessResponse(message, "clearContextResponse"),
+      instanceId,
+      responses,
+    })
+
+    const afterClear = getState()
+    const listeningInstanceIds = new Set(
+      Object.values(afterClear.events.listeners)
+        .filter(
+          listener =>
+            (listener.eventType === "contextCleared" ||
+              listener.eventType === ALL_DA_EVENT_TYPES) &&
+            (listener.channelId === null
+              ? getInstance(afterClear, listener.instanceId)?.currentUserChannel === channelId
+              : listener.channelId === channelId),
+        )
+        .map(listener => listener.instanceId),
+    )
+
+    for (const listeningInstanceId of listeningInstanceIds) {
+      const event = createDACPEvent("contextClearedEvent", { channelId, contextType })
+      responses.sendOutbound({
+        ...event,
+        meta: { ...event.meta, destination: { instanceId: listeningInstanceId } },
+      })
+    }
+
+    logger.info("DACP: Context cleared", {
+      channelId,
+      contextType,
+      notified: listeningInstanceIds.size,
+    })
+  } catch (error) {
+    logger.error("DACP: clearContext failed", error)
+    sendDACPErrorResponse({
+      message,
+      errorType: error instanceof FDC3ChannelError ? error.errorType : ChannelError.ApiTimeout,
+      errorMessage: error instanceof Error ? error.message : "Failed to clear context",
+      instanceId,
+      responses,
+    })
+  }
 }

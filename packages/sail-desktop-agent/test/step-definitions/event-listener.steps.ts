@@ -51,6 +51,7 @@ When(
       meta,
       payload: {
         type: eventType as AddEventListenerRequest["payload"]["type"],
+        channelId: null,
       },
       type: "addEventListenerRequest",
     }
@@ -79,6 +80,7 @@ When(
       meta,
       payload: {
         type: null,
+        channelId: null,
       },
       type: "addEventListenerRequest",
     }

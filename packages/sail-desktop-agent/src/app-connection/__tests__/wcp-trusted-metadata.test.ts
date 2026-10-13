@@ -165,9 +165,9 @@ describe("enrichMessageWithSource trusted metadata", () => {
 
     // Goes through bridgeAppPort -> validation -> enrich -> resolveDacpHandlerInstanceId.
     // Fails if the field is re-added anywhere in that chain, not just at the strip.
-    const originatingApp = delivered.payload.originatingApp
-    expect(originatingApp?.instanceId).toBe(attacker.validatedInstanceId)
-    expect(originatingApp?.instanceId).not.toBe(victim.validatedInstanceId)
+    const source = delivered.payload.metadata.source
+    expect(source.instanceId).toBe(attacker.validatedInstanceId)
+    expect(source.instanceId).not.toBe(victim.validatedInstanceId)
   })
 
   it("drops app-supplied messageOrigin when the connection has no stored origin", async () => {

@@ -31,7 +31,13 @@ export {
 } from "./intent"
 
 // Channel mutators
-export { createAppChannel, removeAppChannel, storeContext, clearChannelContexts } from "./channel"
+export {
+  createAppChannel,
+  removeAppChannel,
+  storeContext,
+  clearChannelContext,
+  clearChannelContexts,
+} from "./channel"
 
 // App directory mutators
 export {

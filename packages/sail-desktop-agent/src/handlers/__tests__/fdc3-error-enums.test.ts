@@ -236,7 +236,7 @@ describe("DACP handler error responses use @finos/fdc3 enum values", () => {
           {
             type: "addEventListenerRequest",
             meta: createDacpRequestMeta("add-event-listener-camel-alias"),
-            payload: { type: asEventListenerType("userChannelChanged") },
+            payload: { type: asEventListenerType("userChannelChanged"), channelId: null },
           },
           params,
         )
@@ -253,7 +253,7 @@ describe("DACP handler error responses use @finos/fdc3 enum values", () => {
           {
             type: "addEventListenerRequest",
             meta: createDacpRequestMeta("add-event-listener-internal-key-alias"),
-            payload: { type: asEventListenerType("channelChanged") },
+            payload: { type: asEventListenerType("channelChanged"), channelId: null },
           },
           params,
         )

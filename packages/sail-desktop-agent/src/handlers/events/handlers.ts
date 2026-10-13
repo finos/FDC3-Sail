@@ -35,17 +35,19 @@ export function handleAddEventListenerRequest(
     }
 
     const { type: eventType } = message.payload
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- `channelId` is required by the 3.0 schema but absent from 2.2 clients' requests.
+    const channelId = message.payload.channelId ?? null
 
-    // FDC3 2.2: null/undefined type means subscribe to all DA-level events
-    // Only the schema's closed union is accepted: "USER_CHANNEL_CHANGED" | null
-    const validEventTypes = ["USER_CHANNEL_CHANGED"]
+    // null/undefined type means subscribe to all events (FDC3 2.2). Otherwise only the schema's
+    // closed union is accepted, mapped to the internal listener-map key (not a wire value).
     let normalizedEventType: string
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- `eventType` is parsed from an inbound DACP addEventListenerRequest message; the schema type is an assumption about a well-behaved peer, not a guarantee.
     if (eventType === null || eventType === undefined) {
       normalizedEventType = ALL_DA_EVENT_TYPES
-    } else if (validEventTypes.includes(eventType)) {
-      // Internal listener-map key (not a wire value)
+    } else if (eventType === "USER_CHANNEL_CHANGED" && channelId === null) {
       normalizedEventType = "channelChanged"
+    } else if (eventType === "CONTEXT_CLEARED") {
+      normalizedEventType = "contextCleared"
     } else {
       throw new FDC3ChannelError(
         ChannelError.InvalidArguments,
@@ -60,6 +62,7 @@ export function handleAddEventListenerRequest(
         listenerId,
         instanceId,
         eventType: normalizedEventType,
+        channelId,
       }),
     )
 

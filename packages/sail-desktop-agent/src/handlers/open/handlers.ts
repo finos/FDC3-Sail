@@ -352,13 +352,6 @@ export function handleGetAppMetadataRequest(
   }
 }
 
-/** FDC3 v3.0 closeRequest — not yet in @finos/fdc3 2.2 BrowserTypes. */
-export type CloseRequestMessage = {
-  type: "closeRequest"
-  meta: BrowserTypes.AppRequestMessageMeta
-  payload: Record<string, never>
-}
-
 /**
  * Handles closeRequest when an app calls fdc3.close() on itself.
  *
@@ -371,7 +364,7 @@ export type CloseRequestMessage = {
  * expected successful outcome.
  */
 export async function handleCloseRequest(
-  message: CloseRequestMessage,
+  message: BrowserTypes.CloseRequest,
   params: DACPHandlerParams,
 ): Promise<void> {
   const {

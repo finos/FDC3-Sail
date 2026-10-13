@@ -162,11 +162,13 @@ describe("channelChanged notify targeting (#383)", () => {
       listenerId: "own-listener",
       instanceId: INSTANCE_ID,
       eventType: "channelChanged",
+      channelId: null,
     })
     state = addEventListener(state, {
       listenerId: "other-listener",
       instanceId: OTHER_INSTANCE_ID,
       eventType: "channelChanged",
+      channelId: null,
     })
 
     const { params } = createDACPTestParams({ instanceId: INSTANCE_ID, initialState: state })
@@ -186,6 +188,7 @@ describe("channelChanged notify targeting (#383)", () => {
       listenerId: "other-listener",
       instanceId: OTHER_INSTANCE_ID,
       eventType: ALL_DA_EVENT_TYPES,
+      channelId: null,
     })
 
     const { params } = createDACPTestParams({ instanceId: INSTANCE_ID, initialState: state })
@@ -209,6 +212,7 @@ describe("channelChanged notify targeting (#383)", () => {
       listenerId: "own-all-listener",
       instanceId: INSTANCE_ID,
       eventType: ALL_DA_EVENT_TYPES,
+      channelId: null,
     })
 
     const { params } = createDACPTestParams({ instanceId: INSTANCE_ID, initialState: state })
@@ -227,6 +231,7 @@ describe("channelChanged notify targeting (#383)", () => {
       listenerId: "other-listener",
       instanceId: OTHER_INSTANCE_ID,
       eventType: "channelChanged",
+      channelId: null,
     })
 
     const { params } = createDACPTestParams({ instanceId: INSTANCE_ID, initialState: state })

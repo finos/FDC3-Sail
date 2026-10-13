@@ -5,6 +5,7 @@
  */
 
 import type { AppIdentifier, BrowserTypes } from "@finos/fdc3"
+import { buildContextMetadata, type WireContextMetadata } from "./context-metadata"
 
 type DACPResponseType = BrowserTypes.ResponseMessageType
 
@@ -13,57 +14,6 @@ export interface DACPRequestRef {
   type: string
   meta: {
     requestUuid: string
-  }
-}
-
-/** FDC3 ContextMetadata plus the ISO `meta.timestamp` DACP events carry. */
-type TimestampedContextMetadata = { source: AppIdentifier; timestamp: string }
-
-/**
- * FDC3 ContextMetadata shape for DACP event payloads (source + ISO timestamp).
- * Mirrors `originatingApp` and event `meta.timestamp` for listener-side metadata.
- */
-function buildContextMetadataFromOriginatingApp(
-  originatingApp: AppIdentifier,
-  timestamp: string,
-): TimestampedContextMetadata {
-  return {
-    source: {
-      appId: originatingApp.appId,
-      ...(originatingApp.instanceId && { instanceId: originatingApp.instanceId }),
-    },
-    timestamp,
-  }
-}
-
-function attachContextMetadataWhenPresent(
-  payload: Record<string, unknown>,
-  timestamp: string,
-  appMetadata?: Record<string, unknown>,
-): void {
-  const originatingApp = payload.originatingApp as AppIdentifier | undefined
-  if (!originatingApp?.appId) {
-    return
-  }
-  const baseMetadata = buildContextMetadataFromOriginatingApp(originatingApp, timestamp)
-  payload.metadata = appMetadata ? { ...baseMetadata, ...appMetadata } : baseMetadata
-}
-
-/**
- * FDC3 3.0 behavior: merge app-provided broadcast metadata (traceId, signature, custom)
- * onto DA-generated ContextMetadata on broadcast events.
- */
-export function mergeBroadcastAppMetadata(
-  baseMetadata: TimestampedContextMetadata,
-  appMetadata?: Record<string, unknown>,
-): TimestampedContextMetadata & Record<string, unknown> {
-  if (!appMetadata) {
-    return baseMetadata
-  }
-
-  return {
-    ...baseMetadata,
-    ...appMetadata,
   }
 }
 
@@ -123,16 +73,23 @@ export function createDACPSuccessResponse(
 
 /**
  * Creates a DACP event message.
+ *
+ * A payload that names an `originatingApp` also gets FDC3 3.0 `metadata`: `options.metadata` when
+ * the caller built it (so every recipient sees the same `traceId`), otherwise a fresh one.
  */
 export function createDACPEvent(
   eventType: BrowserTypes.EventMessageType,
   payload: Record<string, unknown> = {},
-  options?: { appMetadata?: Record<string, unknown> },
+  options?: { metadata?: WireContextMetadata },
 ): BrowserTypes.AgentEventMessage {
   const timestamp = new Date().toISOString()
   const eventPayload = { ...payload }
-  const appMetadata = options?.appMetadata
-  attachContextMetadataWhenPresent(eventPayload, timestamp, appMetadata)
+  const originatingApp = payload.originatingApp as AppIdentifier | undefined
+  if (options?.metadata) {
+    eventPayload.metadata = options.metadata
+  } else if (originatingApp?.appId) {
+    eventPayload.metadata = buildContextMetadata(originatingApp, undefined, timestamp)
+  }
 
   const response = {
     type: eventType,
@@ -156,6 +113,7 @@ export function createIntentEvent(
   context: unknown,
   requestUuid: string,
   originatingApp: AppIdentifier,
+  appMetadata?: BrowserTypes.AppProvidableContextMetadata,
 ): BrowserTypes.IntentEvent {
   const timestamp = new Date().toISOString()
   const normalizedOriginatingApp = {
@@ -169,7 +127,7 @@ export function createIntentEvent(
       intent,
       context,
       originatingApp: normalizedOriginatingApp,
-      metadata: buildContextMetadataFromOriginatingApp(normalizedOriginatingApp, timestamp),
+      metadata: buildContextMetadata(normalizedOriginatingApp, appMetadata, timestamp),
       raiseIntentRequestUuid: requestUuid,
     },
     meta: {

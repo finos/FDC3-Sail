@@ -154,3 +154,38 @@ Then(
     }
   },
 )
+
+function postsOfTypeTo(world: CustomWorld, messageType: string, instanceId: string) {
+  return world.mockTransport
+    .getPostedMessages()
+    .filter(record => record.msg.type === messageType && record.to?.instanceId === instanceId)
+}
+
+Then(
+  "no {string} is sent to {string}",
+  function (this: CustomWorld, messageType: string, instanceId: string) {
+    expect(postsOfTypeTo(this, messageType, instanceId)).toHaveLength(0)
+  },
+)
+
+Then(
+  "exactly {int} {string} is sent to {string}",
+  function (this: CustomWorld, count: number, messageType: string, instanceId: string) {
+    expect(postsOfTypeTo(this, messageType, instanceId)).toHaveLength(count)
+  },
+)
+
+/**
+ * Strict `null`, not just absent: the FDC3 3.0 client rejects a getCurrentContextResponse whose
+ * `metadata` is missing rather than `null` with `ChannelError.MalformedContext`.
+ */
+Then(
+  "the last {string} has {string} and {string} set to null",
+  function (this: CustomWorld, messageType: string, first: string, second: string) {
+    const last = this.mockTransport.getMessagesByType(messageType).at(-1)
+    const payload = last?.msg.payload
+    expect(payload).toBeDefined()
+    expect(payload![first]).toBeNull()
+    expect(payload![second]).toBeNull()
+  },
+)

@@ -21,12 +21,11 @@ export type SailDesktopAgentMetadata = Pick<
   Pick<Required<BrowserTypes.ImplementationMetadata>, "optionalFeatures">
 
 export const DEFAULT_SAIL_DESKTOP_AGENT_METADATA: SailDesktopAgentMetadata = {
-  fdc3Version: "2.2",
+  fdc3Version: "3.0",
   provider: "FDC3-Sail",
   providerVersion: pkg.version,
   optionalFeatures: {
     DesktopAgentBridging: false,
-    OriginatingAppMetadata: true,
     UserChannelMembershipAPIs: true,
   },
 }

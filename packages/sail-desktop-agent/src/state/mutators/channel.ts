@@ -7,6 +7,7 @@
 import { produce } from "immer"
 import type { Context } from "@finos/fdc3"
 import type { AgentState } from "../types"
+import type { WireContextMetadata } from "../../dacp/context-metadata"
 
 let contextSequence = 0
 
@@ -41,6 +42,7 @@ export const storeContext = (
   channelId: string,
   context: Context,
   sourceInstanceId: string,
+  metadata?: WireContextMetadata,
 ): AgentState => {
   const timestampMs = Date.now()
   // Preserve ordering for rapid broadcasts in the same millisecond without
@@ -56,7 +58,22 @@ export const storeContext = (
       timestampMs,
       sequence,
       sourceInstanceId,
+      ...(metadata && { metadata }),
     }
+  })
+}
+
+/** FDC3 3.0 `Channel.clearContext`: drops one stored context type, or every type when `null`. */
+export const clearChannelContext = (
+  state: AgentState,
+  channelId: string,
+  contextType: string | null,
+): AgentState => {
+  if (contextType === null) return clearChannelContexts(state, channelId)
+  if (!state.channels.contexts[channelId]?.[contextType]) return state
+
+  return produce(state, draft => {
+    delete draft.channels.contexts[channelId]![contextType]
   })
 }
 

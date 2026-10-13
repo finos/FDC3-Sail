@@ -120,7 +120,7 @@ describe("fdc3Version source of truth", () => {
 
     const { wcp3, wcp5 } = await handshakeVersions()
 
-    expect(wcp3).toBe("2.2")
-    expect(wcp5).toBe("2.2")
+    expect(wcp3).toBe("3.0")
+    expect(wcp5).toBe("3.0")
   })
 })

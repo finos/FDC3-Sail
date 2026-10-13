@@ -436,7 +436,7 @@ export function createAddEventListenerMessage(
       timestamp: new Date(),
       source: { appId, instanceId },
     },
-    payload: { type: eventType },
+    payload: { type: eventType, channelId: null },
   }
 }
 

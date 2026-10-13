@@ -6,6 +6,7 @@
  * arrays instead of Sets).
  */
 
+import type { WireContextMetadata } from "../dacp/context-metadata"
 import type { AppIdentifier, AppMetadata, Context } from "@finos/fdc3"
 import type { BrowserTypes } from "@finos/fdc3"
 import type { DirectoryApp } from "../app-directory/types"
@@ -175,6 +176,9 @@ export interface PendingIntent {
   /** Which request raised it, so the response type matches */
   requestType?: IntentRequestType
 
+  /** FDC3 3.0 metadata the raising app supplied, forwarded on the intentEvent */
+  appMetadata?: BrowserTypes.AppProvidableContextMetadata
+
   /** Set once the intentEvent reached the target; sole double-delivery guard */
   delivered?: boolean
 }
@@ -193,6 +197,8 @@ export interface StoredContext {
   /** Sequence to preserve order within the same millisecond. */
   sequence: number
   sourceInstanceId: string
+  /** FDC3 3.0 ContextMetadata sent with this context, replayed with it on later reads. */
+  metadata?: WireContextMetadata
 }
 
 /**
@@ -275,6 +281,12 @@ export interface AgentEventListener {
   listenerId: string
   instanceId: string
   eventType: string
+  /**
+   * FDC3 3.0: the channel a `Channel.addEventListener` listener is scoped to. `null` for a
+   * `DesktopAgent.addEventListener` listener, whose channel events follow the app's current user
+   * channel.
+   */
+  channelId: string | null
 }
 
 // ============================================================================

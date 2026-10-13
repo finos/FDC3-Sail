@@ -16,11 +16,8 @@ import type { BrowserTypes } from "@finos/fdc3"
 import { ResultError, ResolveError } from "@finos/fdc3"
 import { getInstance, getPendingIntent, getPrivateChannel } from "../../state/selectors"
 import { connectInstanceToPrivateChannel, resolvePendingIntent } from "../../state/mutators"
-import {
-  buildIntentResultWirePayload,
-  attachIntentResultClientMetadata,
-  cloneIntentResultContextMetadata,
-} from "./intent-result-metadata"
+import { buildIntentResultWirePayload } from "./intent-result-metadata"
+import { pickAppProvidableMetadata } from "../../dacp/context-metadata"
 import { clearPendingIntentTimeouts } from "./intent-pending-timeout-registry"
 
 function isHandlerRejection(intentResult: unknown): boolean {
@@ -140,29 +137,17 @@ export function handleIntentResultRequest(
         responses,
       })
     } else {
-      const { wireIntentResult, resultMetadata, isContextWithMetadata } =
-        buildIntentResultWirePayload(
-          intentResult,
-          pendingIntent.targetAppId,
-          pendingIntent.targetInstanceId,
-          resultTimestamp,
-        )
-      const payloadMetadata = resultMetadata
-      const clientMetadata = cloneIntentResultContextMetadata(payloadMetadata)
-
-      const intentResultForClient = attachIntentResultClientMetadata(
-        wireIntentResult,
-        clientMetadata,
-        isContextWithMetadata,
+      const { wireIntentResult, resultMetadata } = buildIntentResultWirePayload(
+        intentResult,
+        pickAppProvidableMetadata(payload.metadata),
+        { appId: pendingIntent.targetAppId, instanceId: pendingIntent.targetInstanceId },
+        resultTimestamp,
       )
 
       const resultResponse = createDACPSuccessResponse(
         raiseIntentRequestLike,
         "raiseIntentResultResponse",
-        {
-          intentResult: intentResultForClient,
-          resultMetadata: payloadMetadata,
-        },
+        { intentResult: wireIntentResult, resultMetadata },
       )
       sendDACPResponse({
         response: resultResponse,
