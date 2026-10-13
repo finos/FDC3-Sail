@@ -11,7 +11,7 @@ FDC3 Sail's v3 runtime is the browser host: `sail-finance` runs a browser-reside
 Package ownership, the two supported entry points, and the layer diagram live on the
 [Architecture Overview](./overview#two-entry-points).
 
-The `sail-desktop-agent` package keeps FDC3 state and handlers headless, but the browser-ready path intentionally owns a `BrowserAppConnection`. Use `SailDesktopAgent` for shipping browser hosts; manual `DesktopAgent` composition is for package internals and focused tests.
+The `sail-browser-agent` package keeps FDC3 state and handlers headless, but the browser-ready path intentionally owns a `BrowserAppConnection`. Use `SailDesktopAgent` for shipping browser hosts; manual `DesktopAgent` composition is for package internals and focused tests.
 
 ## Browser / PWA (`sail-finance`)
 
@@ -57,5 +57,5 @@ Remote Desktop Agent, cross-device sync, and native app connection adapters are 
 ## Related Documentation
 
 - [Architecture Overview](./overview) - Package ownership, entry points, and the layer diagram
-- [@finos/sail-desktop-agent](../packages/desktop-agent/overview) - Core FDC3 engine
+- [@finos/sail-browser-agent](../packages/browser-agent/overview) - Core FDC3 engine
 - [@finos/sail-platform](../packages/platform/overview) - Platform services

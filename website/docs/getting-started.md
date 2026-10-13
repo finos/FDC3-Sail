@@ -14,7 +14,7 @@ If you are an **application developer** trying to make an existing web app run i
 
 ## Choose your integration path
 
-This guide uses **`@finos/sail-desktop-agent`**'s `SailDesktopAgent` — the supported entry point for embedding a browser-ready Desktop Agent in your own host.
+This guide uses **`@finos/sail-browser-agent`**'s `SailDesktopAgent` — the supported entry point for embedding a browser-ready Desktop Agent in your own host.
 
 ```mermaid
 flowchart TD
@@ -22,7 +22,7 @@ flowchart TD
 
   Start --> BrowserReady["Browser-ready — SailDesktopAgent"]
 
-  BrowserReady --> Package["@finos/sail-desktop-agent"]
+  BrowserReady --> Package["@finos/sail-browser-agent"]
 
   BrowserReady --> HostUI[AppLauncher + intentResolver, channels, apps]
 
@@ -31,9 +31,9 @@ flowchart TD
 
 | Path | When to use | npm entry |
 |------|-------------|-----------|
-| **Browser-ready** | Most custom hosts — browser edge and Desktop Agent wired for you | `SailDesktopAgent` from `@finos/sail-desktop-agent` |
+| **Browser-ready** | Most custom hosts — browser edge and Desktop Agent wired for you | `SailDesktopAgent` from `@finos/sail-browser-agent` |
 
-For composition diagrams, WCP handshake detail, and sequence flows, see the [integrator guide](./packages/desktop-agent/integrator-guide) and [composition reference](./packages/desktop-agent/composition).
+For composition diagrams, WCP handshake detail, and sequence flows, see the [integrator guide](./packages/browser-agent/integrator-guide) and [composition reference](./packages/browser-agent/composition).
 
 ## How `getAgent()` reaches Sail
 
@@ -62,13 +62,13 @@ Same-page framework components are different. A host page can technically expose
 
 ## Install
 
-`@finos/sail-desktop-agent` is not yet published to npm — see the root [README status](https://github.com/finos/FDC3-Sail#status). Once published:
+`@finos/sail-browser-agent` is not yet published to npm — see the root [README status](https://github.com/finos/FDC3-Sail#status). Once published:
 
 ```bash
-npm install @finos/sail-desktop-agent @finos/fdc3
+npm install @finos/sail-browser-agent @finos/fdc3
 ```
 
-Everything public comes from one entry point — `@finos/sail-desktop-agent` — covering
+Everything public comes from one entry point — `@finos/sail-browser-agent` — covering
 `SailDesktopAgent`, the host contracts, and the app directory types.
 
 ## Browser-ready (`SailDesktopAgent`)
@@ -76,8 +76,8 @@ Everything public comes from one entry point — `@finos/sail-desktop-agent` —
 `SailDesktopAgent` couples the **browser app connection** (WCP, MessagePort per app) and **Desktop Agent** (FDC3 logic) in one process. You implement **`AppLauncher`** (iframe/window creation) and wire host shell UI through the grouped controllers on the agent handle.
 
 ```typescript
-import { SailDesktopAgent } from "@finos/sail-desktop-agent"
-import type { AppLauncher } from "@finos/sail-desktop-agent"
+import { SailDesktopAgent } from "@finos/sail-browser-agent"
+import type { AppLauncher } from "@finos/sail-browser-agent"
 
 const appShell = document.getElementById("app-shell")!
 
@@ -120,9 +120,9 @@ apps.onDisconnect(instanceId => {
 
 **FDC3 boundary:** apps use `@finos/fdc3` `getAgent()` inside iframes; host shell code uses Sail controllers (`intentResolver`, `channels`, `apps`).
 
-Copy-paste examples, unsubscribe patterns, and lifecycle teardown are in the [integrator guide](./packages/desktop-agent/integrator-guide).
+Copy-paste examples, unsubscribe patterns, and lifecycle teardown are in the [integrator guide](./packages/browser-agent/integrator-guide).
 
-See [composition & internals](./packages/desktop-agent/composition) for the layered model.
+See [composition & internals](./packages/browser-agent/composition) for the layered model.
 
 ## Host contracts — what you must provide
 
@@ -136,7 +136,7 @@ When you embed a Desktop Agent, **your web application** owns the shell UI. Sail
 | **Channel UI** | Recommended | `channels.getUserChannels`, `channels.changeAppChannel`, `channels.onAppChannelChange` |
 | **Instance lifecycle** | Recommended | `apps.onConnect` / `onDisconnect` / `onHandshakeFailure`; host tab close via `apps.disconnect` |
 
-FDC3 also allows **WCP3 iframe injection** for intent resolver and channel selector pages inside the app window (`appConnectionOptions.intentResolverUrl` / `channelSelectorUrl`). Sail defaults to host-owned UI instead. See [integrator guide — wiring intent and channel UI](./packages/desktop-agent/integrator-guide#wiring-intent-resolver-and-channel-selector-ui).
+FDC3 also allows **WCP3 iframe injection** for intent resolver and channel selector pages inside the app window (`appConnectionOptions.intentResolverUrl` / `channelSelectorUrl`). Sail defaults to host-owned UI instead. See [integrator guide — wiring intent and channel UI](./packages/browser-agent/integrator-guide#wiring-intent-resolver-and-channel-selector-ui).
 
 ### Composition at a glance
 
@@ -154,7 +154,7 @@ flowchart TB
     AP["apps"]
   end
 
-  subgraph sail ["@finos/sail-desktop-agent"]
+  subgraph sail ["@finos/sail-browser-agent"]
     edge["Browser edge — WCP"]
     da["Desktop Agent — FDC3 engine"]
     edge <--> da
@@ -192,21 +192,21 @@ await agent.broadcast({
 })
 ```
 
-The host's Desktop Agent completes the WCP handshake with the app; `@finos/fdc3` handles connection details. Apps do not import `@finos/sail-desktop-agent` unless they are also acting as a host.
+The host's Desktop Agent completes the WCP handshake with the app; `@finos/fdc3` handles connection details. Apps do not import `@finos/sail-browser-agent` unless they are also acting as a host.
 
 For app developers, the important rule is simple: write against `@finos/fdc3`, list the app URL in the host app directory, and let the Sail host load the app. Do not reach into the parent frame or import Sail internals from app code.
 
 ## Advanced — workspaces and layouts without sail-finance
 
-Most embedders use **`@finos/sail-desktop-agent` only**. If you also want to describe and persist
+Most embedders use **`@finos/sail-browser-agent` only**. If you also want to describe and persist
 **workspaces and layouts** — what is loaded, and how it looks — add [@finos/sail-platform](./packages/platform/overview). It has no dependencies and no FDC3 in it, so you can adopt it on its own terms, or skip it entirely and keep your existing state layer.
 
 ## Next steps
 
-- [Integrator guide](./packages/desktop-agent/integrator-guide) — primary reference for browser hosts
+- [Integrator guide](./packages/browser-agent/integrator-guide) — primary reference for browser hosts
 - [Add your app to Sail](./add-your-app) — app developer onboarding
-- [Composition & internals](./packages/desktop-agent/composition) — diagrams and module interaction
-- [@finos/sail-desktop-agent overview](./packages/desktop-agent/overview)
+- [Composition & internals](./packages/browser-agent/composition) — diagrams and module interaction
+- [@finos/sail-browser-agent overview](./packages/browser-agent/overview)
 - [Architecture overview](./architecture/overview)
 - [Run Sail](./run-sail) — full platform instead of custom embed
 - [Development Guide](./development) — contribute to Sail source

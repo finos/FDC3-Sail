@@ -1,29 +1,64 @@
-import { defineConfig, devices } from "@playwright/test"
+import { defineConfig, devices, type PlaywrightTestConfig } from "@playwright/test"
+
+import {
+  buildHostCommand,
+  CONFORMANCE_HOSTS,
+  hostProcessEnv,
+  LOCAL_CONFORMANCE_DIRECTORY_URL,
+  resolveConformanceFdc3Version,
+  resolveConformanceHostId,
+  startHostCommand,
+  startLocalToolboxCommand,
+} from "./e2e/hosts"
 
 /**
- * Drives the FDC3 2.2 conformance suite headlessly against the harness.
+ * Drives the FDC3 conformance suite against a product Desktop Agent:
+ * open Conformance1 via `?appId=`, click Run, scrape `#mocha`.
  *
- * The harness serves the vendored toolbox build (see vite.config.ts `publicDir`),
- * so the conformance app, the 16 mock apps and the app directory all live on
- * http://localhost:3001 — same-origin with the harness, which WCP host-instance
- * adoption requires. See HEADLESS.md for the signalling contract.
+ * Env:
+ * - `CONFORMANCE_HOST` = sail-one | sail-finance | sail-v2-web
+ * - `CONFORMANCE_FDC3_VERSION` = 2.2 | 3.0
+ *
+ * Toolbox: both versions start `@robmoffat/fdc3-conformance` locally on :3001.
  */
-/**
- * Escape hatch for images that already ship a Chromium whose build number does not
- * match this Playwright release (CI containers, sandboxes). Unset locally, where
- * Playwright's own download is used.
- */
+
 const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+const fdc3Version = resolveConformanceFdc3Version()
+const hostId = resolveConformanceHostId()
+const host = CONFORMANCE_HOSTS[hostId]
+
+const buildCmd = buildHostCommand(host)
+const hostCmd = `${buildCmd} && ${startHostCommand(host, fdc3Version)}`
+
+const webServers: NonNullable<PlaywrightTestConfig["webServer"]> = [
+  {
+    command: startLocalToolboxCommand(fdc3Version),
+    url: LOCAL_CONFORMANCE_DIRECTORY_URL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    stdout: "pipe",
+    stderr: "pipe",
+  },
+  {
+    command: hostCmd,
+    url: host.url,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    stdout: "pipe",
+    stderr: "pipe",
+    // Ensure VITE_* reach the host process (not only via shell prefixes).
+    env: {
+      ...process.env,
+      ...hostProcessEnv(host, fdc3Version),
+    },
+  },
+]
 
 export default defineConfig({
   testDir: "./e2e",
-  // Pin to the headless suite so a leftover Playwright scaffold spec cannot fail the run.
   testMatch: "conformance.spec.ts",
-  // A full run is minutes, not seconds: TestTimeout is 20s per conformance test and
-  // NoListenerTimeout is 120s. The committed baseline run takes ~6 minutes.
   timeout: 15 * 60_000,
   expect: { timeout: 30_000 },
-  // The suite opens real popup windows for the mock apps; parallelism breaks it.
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -34,7 +69,7 @@ export default defineConfig({
     ["html", { outputFolder: "artifacts/playwright-report", open: "never" }],
   ],
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: host.url,
     trace: "retain-on-failure",
     video: "retain-on-failure",
     viewport: { width: 1400, height: 1000 },
@@ -44,19 +79,11 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // `channel` and `executablePath` are mutually exclusive.
         ...(chromiumExecutable
           ? { channel: undefined, launchOptions: { executablePath: chromiumExecutable } }
           : {}),
       },
     },
   ],
-  webServer: {
-    command: "npm run dev:e2e",
-    url: "http://localhost:3001/directories/local-conformance.json",
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  webServer: webServers,
 })

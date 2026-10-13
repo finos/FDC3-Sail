@@ -1,4 +1,5 @@
-import type { AppMetadata, Context, IntentMetadata } from "@finos/fdc3"
+import type { Context } from "@finos/fdc3-context-v3"
+import type { AppMetadata, IntentMetadata } from "@finos/fdc3-standard-v3"
 import type { TabDetail } from "../state/client-state"
 
 export type AugmentedAppMetadata = AppMetadata & {

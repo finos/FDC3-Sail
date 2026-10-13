@@ -6,7 +6,7 @@ sidebar_position: 1
 
 `sail-one` is one of Sail's two **example UIs** — the **domain-neutral** one, for more general use. It
 is a tab-and-grid canvas shell, ported from `packages/sail-web` on FINOS `wip/v2.2` and rewired onto
-the current `@finos/sail-desktop-agent` and `@finos/sail-platform`.
+the current `@finos/sail-browser-agent` and `@finos/sail-platform`.
 
 **Location:** `packages/sail-one/`
 
@@ -120,6 +120,6 @@ those URLs a host policy rather than a constant.
 ## Related
 
 - [@finos/sail-platform](../platform/overview) — workspaces, layouts, and the storage this shell uses.
-- [@finos/sail-desktop-agent](../desktop-agent/overview) — the FDC3 engine this shell constructs.
+- [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine this shell constructs.
 - [@finos/sail-finance](../sail-finance/overview) — the finance-specific sibling shell.
 - [Architecture Overview](../../architecture/overview) — package ownership and how the two compose.

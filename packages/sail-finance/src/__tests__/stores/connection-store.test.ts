@@ -1,6 +1,6 @@
 import { enableMapSet } from "immer"
 import { describe, it, expect, vi } from "vite-plus/test"
-import type { AppConnectionMetadata, SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { AppConnectionMetadata, SailDesktopAgent } from "@finos/sail-browser-agent"
 import channelSelectorSource from "../../components/ChannelSelector.tsx?raw"
 import connectionStoreSource from "../../stores/connection-store.ts?raw"
 import { createConnectionStore } from "../../stores/connection-store"

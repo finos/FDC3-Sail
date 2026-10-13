@@ -16,15 +16,20 @@ website/.docusaurus
 .cache-loader
 FDC3-Sail.pem
 *.tsbuildinfo
-packages/sail-desktop-agent/cucumber-report.html
-packages/sail-desktop-agent/html/
+packages/sail-browser-agent/cucumber-report.html
+packages/sail-browser-agent/html/
 # NOTE: do not use a bare `html/` here. Git matches it at every depth, which
 # silently made `packages/sail-one/html/` (its MPA entry points) uncommittable.
-packages/sail-desktop-agent/test-results.xml
-packages/sail-desktop-agent/reports/**/*
+packages/sail-browser-agent/test-results.xml
+packages/sail-browser-agent/reports/**/*
+
+packages/sail-headless-agent/cucumber-report.html
+packages/sail-headless-agent/test-results.xml
+packages/sail-headless-agent/coverage/
+packages/sail-headless-agent/.nyc_output/
 
 packages/sail-finance/playwright-report/index.html
 
-# Conformance harness Playwright output (e2e/conformance-baseline-2.2.json is committed)
+# Conformance harness Playwright output
 packages/sail-conformance-harness/artifacts/
 packages/sail-conformance-harness/test-results/

@@ -11,5 +11,3 @@ pnpm-lock.yaml
 *.tsbuildinfo
 **/cucumber-report.html
 **/test-results.xml
-# Vendored FDC3 2.2 conformance toolbox build (generated upstream; see HEADLESS.md)
-packages/sail-conformance-harness/2.2-conformance-tests/**/*

@@ -165,4 +165,4 @@ The development platform currently uses the `packages/sail-conformance-harness/c
 
 - [Run Sail](./run-sail) for running the full platform.
 - [Getting Started](./getting-started) for building a custom Sail host.
-- [Desktop Agent integrator guide](./packages/desktop-agent/integrator-guide) for host builders.
+- [Desktop Agent integrator guide](./packages/browser-agent/integrator-guide) for host builders.

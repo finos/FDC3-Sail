@@ -1,14 +1,19 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { SailDesktopAgent, type AppLauncher } from "@finos/sail-desktop-agent"
+import {
+  createPopupCloseWatcher,
+  createProgrammaticIntentResolver,
+  SailDesktopAgent,
+  type AppLauncher,
+} from "@finos/sail-browser-agent"
+import {
+  isAutoResolve,
+  resolveDeepLinkAppId,
+  resolveSoleFdc3Directory,
+  SAIL_MAX_FDC3_VERSION,
+} from "@finos/sail-env"
 import type { AppMetadata } from "@finos/fdc3"
 
-import { loadConformanceApplications } from "../../sail-conformance-harness/src/conformance-app-directory"
-import { createHarnessIntentResolver } from "../../sail-conformance-harness/src/intent-resolver-wiring"
-import {
-  installHarnessInboundAppMessageObserver,
-  parseMockAppControlTeardownBroadcast,
-} from "../../sail-conformance-harness/src/harness-finos-teardown"
 import { bootstrapDockviewPopoutShell, isDockviewPopoutShell } from "./utils/dockview-popout"
 
 import "./index.css"
@@ -18,8 +23,31 @@ import { ChannelSelectorTestPage } from "./tests/ChannelSelectorTestPage"
 
 const FINOS_APP_DIRECTORY_URL = "https://directory.fdc3.finos.org/v2/apps"
 
+/** Local `@finos/fdc3-example-apps` App Directory (`npm run apps`). */
+const EXAMPLE_APPS_DIRECTORY_URL = "http://localhost:4005/static/generated/fdc3-example-apps.json"
+
 const isChannelSelectorE2e =
   new URLSearchParams(window.location.search).get("e2e") === "channel-selector"
+
+type AppMetadataWithManifest = AppMetadata & {
+  details?: { url?: string }
+  hostManifests?: { sail?: unknown }
+}
+
+/** 2.2 conformance mocks set `hostManifests.sail.forceNewWindow` for tab/popup launches. */
+function shouldForceNewWindow(appMetadata: AppMetadataWithManifest): boolean {
+  const sailManifest = appMetadata.hostManifests?.sail
+  return (
+    typeof sailManifest === "object" &&
+    sailManifest !== null &&
+    (sailManifest as { forceNewWindow?: boolean }).forceNewWindow === true
+  )
+}
+
+function extractAppUrl(appMetadata: AppMetadataWithManifest): string | undefined {
+  const details = appMetadata.details
+  return details && typeof details.url === "string" ? details.url : undefined
+}
 
 if (isDockviewPopoutShell()) {
   bootstrapDockviewPopoutShell()
@@ -34,10 +62,70 @@ if (isDockviewPopoutShell()) {
   // This ensures the agent is listening for WCP1Hello messages when getAgent() is called
   console.log("[Sail] Initializing FDC3 Desktop Agent")
 
+  const soleDirectoryUrl = resolveSoleFdc3Directory({
+    search: window.location.search,
+    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
+  })
+  const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
+  const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
+
+  /** Assigned after construction so the popup watcher can disconnect instances. */
+  let agent: SailDesktopAgent | null = null
+  /** Deep-link / Playwright Conformance1 must stay an iframe on the host page. */
+  let forceFrameForNextLaunch = false
+
+  const popupWatcher = createPopupCloseWatcher({
+    onPopupClosed: instanceId => {
+      console.log(`[Sail] Popup closed for ${instanceId} — disconnecting agent instance`)
+      void agent?.disconnectInstance(instanceId).catch((e: unknown) => {
+        console.warn(`[Sail] disconnect after popup close failed for ${instanceId}`, e)
+      })
+    },
+  })
+
+  const removePanelIfPresent = (instanceId: string): boolean => {
+    const workspaceStore = useWorkspaceStore.getState()
+    for (const workspace of workspaceStore.workspaces.values()) {
+      for (const [tabId, tab] of workspace.layout.tabs) {
+        if (tab.panels.has(instanceId)) {
+          workspaceStore.removePanel(workspace.uuid, tabId, instanceId)
+          console.log(`[Sail] Closed app panel ${instanceId}`, {
+            workspaceId: workspace.uuid,
+            tabId,
+          })
+          return true
+        }
+      }
+    }
+    return false
+  }
+
   const appLauncher: AppLauncher = {
     // eslint-disable-next-line @typescript-eslint/require-await -- async so a throw rejects the returned promise
     launch: async (request, appMetadata: AppMetadata) => {
       const instanceId = request.app.instanceId || crypto.randomUUID()
+      const metadata = appMetadata as AppMetadataWithManifest
+      const url = extractAppUrl(metadata)
+      if (!url) {
+        throw new Error(`App ${appMetadata.appId} has no URL in metadata`)
+      }
+
+      const preferFrame = forceFrameForNextLaunch
+      forceFrameForNextLaunch = false
+      const openAsTab = !preferFrame && shouldForceNewWindow(metadata)
+
+      if (openAsTab) {
+        // Top-level browsing context so 2.2 mocks can `window.close()` and tear down.
+        const win = window.open(url, instanceId)
+        if (!win) {
+          throw new Error(`Failed to open window for ${appMetadata.appId}`)
+        }
+        agent?.registerHostWindow(win, instanceId)
+        popupWatcher.registerPopup(instanceId, win)
+        console.log(`[Sail] Launched app ${appMetadata.appId} as tab ${instanceId}`, { url })
+        return { appId: request.app.appId, instanceId }
+      }
+
       const workspaceStore = useWorkspaceStore.getState()
       const { activeWorkspaceId } = workspaceStore
 
@@ -55,17 +143,7 @@ if (isDockviewPopoutShell()) {
         throw new Error(`No active tab in workspace ${activeWorkspaceId}`)
       }
 
-      const details =
-        "details" in appMetadata ? (appMetadata as { details?: unknown }).details : undefined
-      const detailsUrl =
-        details && typeof details === "object" && "url" in details
-          ? (details as { url?: unknown }).url
-          : undefined
-      const url = typeof detailsUrl === "string" ? detailsUrl : undefined
-      if (!url) {
-        throw new Error(`App ${appMetadata.appId} has no URL in metadata`)
-      }
-
+      // Agent registers Pending before launch; shell only mounts the panel/iframe.
       const panel = {
         panelId: instanceId,
         appId: appMetadata.appId,
@@ -85,89 +163,63 @@ if (isDockviewPopoutShell()) {
     },
 
     close: (instanceId: string) => {
-      const workspaceStore = useWorkspaceStore.getState()
-      for (const workspace of workspaceStore.workspaces.values()) {
-        for (const [tabId, tab] of workspace.layout.tabs) {
-          if (tab.panels.has(instanceId)) {
-            workspaceStore.removePanel(workspace.uuid, tabId, instanceId)
-            console.log(`[Sail] Closed app panel ${instanceId}`, {
-              workspaceId: workspace.uuid,
-              tabId,
-            })
-            return Promise.resolve()
-          }
-        }
+      if (popupWatcher.hasPopup(instanceId)) {
+        popupWatcher.closePopupForInstance(instanceId)
+        agent?.forgetHostWindow(instanceId)
+        console.log(`[Sail] Closed app tab ${instanceId}`)
+        return Promise.resolve()
       }
-      console.warn(`[Sail] close: no panel found for instance ${instanceId}`)
+
+      if (!removePanelIfPresent(instanceId)) {
+        console.warn(`[Sail] close: no panel/tab found for instance ${instanceId}`)
+      }
       return Promise.resolve()
     },
   }
 
-  const conformance = loadConformanceApplications({
-    // Same-origin with sail-finance so WCP host-instance adoption works via the /apps proxy.
-    localOrigin: window.location.origin,
-  })
-
-  // `dev:local` (VITE_CONFORMANCE_TOOLBOX=local) is a FINOS toolbox measurement run, not the
-  // product shell: conformance apps only (the public directory inflates findIntent counts), no
-  // heartbeat to kill a ~9-minute suite, and no modal resolver waiting on a human.
-  const isToolboxRun = conformance.profile === "local"
-
-  const toolboxOverrides = isToolboxRun
-    ? {
-        heartbeatEnabled: false,
-        implementationMetadata: { fdc3Version: conformance.fdc3Version },
-        intentResolver: createHarnessIntentResolver(),
-        // Teardown rides inside `broadcastRequest` on the `app-control` channel; metadata-only
-        // logs hide it. Matches the harness debug profile.
-        logPayloadDetail: "full" as const,
-      }
-    : { appDirectories: [FINOS_APP_DIRECTORY_URL] }
-
-  console.info(
-    `[Sail] Conformance toolbox: ${conformance.profile} — FDC3 target ${conformance.fdc3Version} — origin ${conformance.origin}${isToolboxRun ? " — toolbox profile ON (heartbeat off, auto intent resolve, conformance apps only)" : ""}`,
-  )
-
-  const agent = new SailDesktopAgent({
+  agent = new SailDesktopAgent({
     appLauncher,
-    apps: [...conformance.applications],
-    ...toolboxOverrides,
+    appDirectories: soleDirectoryUrl
+      ? [soleDirectoryUrl]
+      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL],
+    implementationMetadata: {
+      fdc3Version: SAIL_MAX_FDC3_VERSION,
+    },
+    ...(autoResolve
+      ? {
+          intentResolver: createProgrammaticIntentResolver({
+            log: (message, detail) => {
+              console.log(message.replace("[ProgrammaticIntentResolver]", "[Sail]"), detail ?? "")
+            },
+          }),
+        }
+      : {}),
   })
-
-  if (isToolboxRun) {
-    // FINOS mocks answer Conformance1's `closeWindow` with `windowClosed` on `app-control`, then
-    // behave as if gone. No DACP message asks the host to destroy the container, so without this
-    // the scenario passes while the iframe panel leaks. Must be installed before `start()`.
-    installHarnessInboundAppMessageObserver(agent.appConnection, message => {
-      // Diagnostic at warn level on purpose: vite forwards warn/error to the dev-server
-      // terminal and drops log/info, so this is the only teardown trace visible outside DevTools.
-      const record = message as {
-        type?: string
-        meta?: { source?: { appId?: string; instanceId?: string } }
-        payload?: { channelId?: string; context?: { type?: string } }
-      }
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- unvalidated DACP wire cast
-      if (record?.type === "broadcastRequest" && record.payload?.channelId === "app-control") {
-        console.warn(
-          `[SailProbe] app-control context=${record.payload.context?.type} from=${record.meta?.source?.appId}/${record.meta?.source?.instanceId}`,
-        )
-      }
-
-      const teardown = parseMockAppControlTeardownBroadcast(message)
-      if (!teardown) {
-        return
-      }
-      // Defer so Conformance1 receives `windowClosed` before the MessagePort is torn down.
-      setTimeout(() => {
-        console.warn(`[Sail] FINOS teardown: closing ${teardown.appId} (${teardown.instanceId})`)
-        void appLauncher.close?.(teardown.instanceId)
-      }, 0)
-    })
-  }
 
   agent.start()
 
-  console.log("[Sail] FDC3 Browser Desktop Agent started and listening for connections")
+  console.log("[Sail] FDC3 Browser Desktop Agent started and listening for connections", {
+    maxFdc3Version: SAIL_MAX_FDC3_VERSION,
+    soleDirectoryUrl,
+    autoResolve,
+  })
+
+  if (deepLinkAppId) {
+    // Conformance1 declares forceNewWindow; Playwright scrapes the host-page iframe.
+    forceFrameForNextLaunch = true
+    void agent.directoriesLoaded
+      .then(() => agent.apps.open(deepLinkAppId))
+      .then(id => {
+        console.log(`[Sail] Deep-linked open ${deepLinkAppId}`, id)
+        ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady =
+          deepLinkAppId
+      })
+      .catch((err: unknown) => {
+        console.error(`[Sail] Deep-link open failed for ${deepLinkAppId}`, err)
+        ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
+          err instanceof Error ? err.message : String(err)
+      })
+  }
 
   if (import.meta.env.DEV) {
     // Smoke / local debugging only — call `await __sailAppLauncher.close(instanceId)`.

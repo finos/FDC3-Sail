@@ -1,55 +1,19 @@
-import type { IntentResolver } from "@finos/sail-desktop-agent"
-import { selectIntentHandler } from "./intent-resolution"
-import type { IntentResolutionRequest as HarnessIntentResolutionRequest } from "./types"
+import { createProgrammaticIntentResolver, type IntentResolver } from "@finos/sail-browser-agent"
 
 /**
- * Build a host {@link IntentResolver} that picks handlers programmatically via
- * {@link selectIntentHandler} (no modal UI).
+ * Build a host {@link IntentResolver} that picks handlers programmatically
+ * (no modal UI) — used by the minimal harness host and by product shells under
+ * `VITE_AUTO_RESOLVE=1`.
  */
 export function createHarnessIntentResolver(debug = false): IntentResolver {
-  return {
-    resolve(request) {
-      const harnessRequest: HarnessIntentResolutionRequest = {
-        requestId: request.requestId,
-        intent: request.intent,
-        context: request.context,
-        handlers: request.handlers.map(handler => ({
-          ...handler.app,
-          instanceId: handler.instanceId,
-          isRunning: handler.isRunning,
-        })),
-      }
-
-      const target = selectIntentHandler(harnessRequest)
-
-      if (debug) {
-        console.log("[ConformanceHarness] Intent resolution", {
-          intent: request.intent,
-          handlerCount: request.handlers.length,
-          selectedHandler: target,
-        })
+  return createProgrammaticIntentResolver({
+    debug,
+    log: (message, detail) => {
+      if (detail !== undefined && detail !== "") {
+        console.log(message.replace("[ProgrammaticIntentResolver]", "[ConformanceHarness]"), detail)
       } else {
-        console.log("[ConformanceHarness] Intent resolution selected:", target)
+        console.log(message.replace("[ProgrammaticIntentResolver]", "[ConformanceHarness]"))
       }
-
-      if (!target) {
-        return Promise.resolve(null)
-      }
-
-      const selectedHandler = request.handlers.find(
-        handler =>
-          handler.app.appId === target.appId &&
-          (target.instanceId === undefined || handler.instanceId === target.instanceId),
-      )
-
-      if (!selectedHandler) {
-        return Promise.resolve(null)
-      }
-
-      return Promise.resolve({
-        selectedHandler,
-        target,
-      })
     },
-  }
+  })
 }

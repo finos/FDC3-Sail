@@ -3,7 +3,7 @@ import type { TabDetail } from "../state"
 import {
   isFdc3UserInterfaceChannels,
   isFdc3UserInterfaceHandshake,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { connectUserInterfacePort, postIframeRestyle } from "./iframe-port"
 import styles from "./styles.module.css"
 

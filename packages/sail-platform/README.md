@@ -11,7 +11,7 @@ It is UI-agnostic and FDC3-agnostic, with **no dependencies**. A host that rende
 with every app inside it, and a host that renders tabbed frames driven by a layout library,
 describe themselves with the same types.
 
-FDC3 itself lives in [`@finos/sail-desktop-agent`](../sail-desktop-agent/README.md). Import that
+FDC3 itself lives in [`@finos/sail-browser-agent`](../sail-browser-agent/README.md). Import that
 package directly — nothing is re-exported from it here.
 
 ## Install
@@ -107,7 +107,7 @@ createWorkspaceStore({ storage: remote })
 | Topic | Link |
 |-------|------|
 | Package overview | [finos.github.io/FDC3-Sail/docs/packages/platform/overview](https://finos.github.io/FDC3-Sail/docs/packages/platform/overview) |
-| Desktop Agent integrator guide | [finos.github.io/FDC3-Sail/docs/packages/desktop-agent/integrator-guide](https://finos.github.io/FDC3-Sail/docs/packages/desktop-agent/integrator-guide) |
+| Desktop Agent integrator guide | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide) |
 
 ## License
 

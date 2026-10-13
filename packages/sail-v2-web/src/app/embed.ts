@@ -1,0 +1,137 @@
+import { io, Socket } from "socket.io-client"
+import { getAppId, getInstanceId, getUserSessionId, link } from "./util"
+import { AppHosting, APP_HELLO, AppHelloArgs } from "@finos/fdc3-sail-common"
+import { BrowserTypes } from "@finos/fdc3-schema-v3"
+import { isWebConnectionProtocol1Hello } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
+
+const appWindow = window.parent
+let parentOrigin: string | null = null
+
+/** Negotiate DA wire version from the client's WCP1Hello; null if unsupported. */
+function negotiateFdc3Version(
+  clientVersion: string | undefined,
+): "2.2" | "3.0" | null {
+  if (!clientVersion) {
+    return null
+  }
+  if (clientVersion.startsWith("3")) {
+    return "3.0"
+  }
+  if (clientVersion.startsWith("2")) {
+    return "2.2"
+  }
+  return null
+}
+
+function doSocketConnection(
+  socket: Socket,
+  channel: MessageChannel,
+  instanceId: string,
+  appId: string,
+  messageData: BrowserTypes.WebConnectionProtocol1Hello,
+  targetOrigin: string | null,
+) {
+  socket.on("connect", async () => {
+    try {
+      link(socket, channel, instanceId)
+      const sessionId = getUserSessionId()
+      const fdc3Version = negotiateFdc3Version(
+        messageData.payload?.fdc3Version,
+      )
+      if (!fdc3Version) {
+        console.error(
+          "[Sail v2 embed] Unsupported or missing fdc3Version",
+          messageData.payload?.fdc3Version,
+        )
+        socket.close()
+        channel.port1.close()
+        channel.port2.close()
+        return
+      }
+
+      const response = await socket.emitWithAck(APP_HELLO, {
+        userSessionId: sessionId,
+        instanceId,
+        appId,
+        fdc3Version,
+      } as AppHelloArgs)
+
+      console.log("SAIL Received: " + JSON.stringify(response))
+
+      const suffix = `?desktopAgentId=${sessionId}&instanceId=${instanceId}`
+      const intentResolverUrl =
+        response == AppHosting.Tab
+          ? window.location.origin + `/html/ui/intent-resolver.html${suffix}`
+          : undefined
+      const channelSelectorUrl =
+        response == AppHosting.Tab
+          ? window.location.origin + `/html/ui/channel-selector.html${suffix}`
+          : undefined
+
+      // send the other end of the channel to the app
+      // nosemgrep
+      appWindow.postMessage(
+        {
+          type: "WCP3Handshake",
+          meta: {
+            connectionAttemptUuid: messageData.meta.connectionAttemptUuid,
+            timestamp: new Date(),
+          },
+          payload: {
+            fdc3Version,
+            intentResolverUrl,
+            channelSelectorUrl,
+          },
+        } as BrowserTypes.WebConnectionProtocol3Handshake,
+        targetOrigin || "*",
+        [channel.port1],
+      )
+    } catch (e) {
+      console.error("Error in handshake", e)
+    }
+  })
+}
+
+const helloListener = (e: MessageEvent) => {
+  const messageData = e.data
+  const eventSource = e.source
+
+  let eventSourceName
+  try {
+    eventSourceName = (eventSource as Window)?.name
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e: unknown) {
+    eventSourceName = `{a cross-origin window} `
+  }
+  if (!eventSourceName) {
+    eventSourceName = "{no window name set} "
+  }
+
+  if (isWebConnectionProtocol1Hello(messageData)) {
+    console.debug(
+      "Communication iframe adaptor received hello message from: ",
+      eventSourceName,
+      eventSource == appWindow ? "(parent window): " : "(NOT parent win): ",
+      messageData,
+    )
+
+    parentOrigin = e.origin
+    window.removeEventListener("message", helloListener)
+
+    const socket = io()
+    const channel = new MessageChannel()
+    const instanceId = getInstanceId()
+    const appId = getAppId()
+
+    doSocketConnection(
+      socket,
+      channel,
+      instanceId,
+      appId,
+      messageData,
+      parentOrigin,
+    )
+  }
+}
+
+window.addEventListener("message", helloListener)

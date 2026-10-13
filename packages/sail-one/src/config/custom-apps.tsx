@@ -1,110 +1,18 @@
-import { getClientState, getServerState } from "../state"
+import { getClientState } from "../state"
 import styles from "./styles.module.css"
-import type { DirectoryApp, WebAppDetails } from "@finos/sail-desktop-agent"
+import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
 import { DeleteButton } from "./delete-button"
 import { AddButton } from "./add-button"
 import Combobox from "react-widgets/Combobox"
 import Multiselect from "react-widgets/Multiselect"
 import "react-widgets/styles.css"
 import { useState } from "react"
-
-const CONTEXT_TYPES = [
-  "fdc3.chart",
-  "fdc3.chat.initSettings",
-  "fdc3.chat.message",
-  "fdc3.chat.room",
-  "fdc3.chat.searchCriteria",
-  "fdc3.contact",
-  "fdc3.contactList",
-  "fdc3.country",
-  "fdc3.currency",
-  "fdc3.email",
-  "fdc3.fileAttachment",
-  "fdc3.instrument",
-  "fdc3.instrumentList",
-  "fdc3.interaction",
-  "fdc3.message",
-  "fdc3.nothing",
-  "fdc3.order",
-  "fdc3.organization",
-  "fdc3.portfolio",
-  "fdc3.position",
-  "fdc3.product",
-  "fdc3.timeRange",
-  "fdc3.trade",
-  "fdc3.transactionResult",
-  "fdc3.valuation",
-]
-
-const intentTypes: Array<{ title: string; value: string }> = [
-  { title: "CreateInteraction", value: "CreateInteraction" },
-  { title: "SendChatMessage", value: "SendChatMessage" },
-  { title: "StartCall", value: "StartCall" },
-  { title: "StartChat", value: "StartChat" },
-  { title: "StartEmail", value: "StartEmail" },
-  { title: "ViewAnalysis", value: "ViewAnalysis" },
-  { title: "ViewChart", value: "ViewChart" },
-  { title: "ViewChat", value: "ViewChat" },
-  { title: "ViewContact", value: "ViewContact" },
-  { title: "ViewHoldings", value: "ViewHoldings" },
-  { title: "ViewInstrument", value: "ViewInstrument" },
-  { title: "ViewInteractions", value: "ViewInteractions" },
-  { title: "ViewMessages", value: "ViewMessages" },
-  { title: "ViewNews", value: "ViewNews" },
-  { title: "ViewOrders", value: "ViewOrders" },
-  { title: "ViewProfile", value: "ViewProfile" },
-  { title: "ViewQuote", value: "ViewQuote" },
-  { title: "ViewResearch", value: "ViewResearch" },
-]
-
-export function getAllContextTypes(): string[] {
-  const allContexts = [...CONTEXT_TYPES]
-  getServerState()
-    .getKnownApps()
-    .forEach(a => {
-      if (a.interop?.userChannels) {
-        allContexts.push(...(a.interop.userChannels.listensFor ?? []))
-        allContexts.push(...(a.interop.userChannels.broadcasts ?? []))
-      }
-      if (a.interop?.appChannels) {
-        a.interop.appChannels.forEach(ac => {
-          allContexts.push(...(ac.broadcasts ?? []))
-          allContexts.push(...(ac.listensFor ?? []))
-        })
-      }
-      if (a.interop?.intents?.listensFor) {
-        Object.values(a.interop.intents.listensFor).forEach(v => {
-          allContexts.push(...v.contexts)
-        })
-      }
-      if (a.interop?.intents?.raises) {
-        Object.values(a.interop.intents.raises).forEach(v => {
-          allContexts.push(...v)
-        })
-      }
-    })
-
-  const unique = [...new Set(allContexts)]
-  return unique.sort()
-}
-
-export function getAllIntentNames(): string[] {
-  const allIntents = intentTypes.map(i => i.title)
-
-  getServerState()
-    .getKnownApps()
-    .forEach(a => {
-      if (a.interop?.intents?.listensFor) {
-        allIntents.push(...Object.keys(a.interop.intents.listensFor))
-      }
-      if (a.interop?.intents?.raises) {
-        allIntents.push(...Object.keys(a.interop.intents.raises))
-      }
-    })
-
-  const unique = [...new Set(allIntents)]
-  return unique.sort()
-}
+import {
+  CONTEXT_TYPES,
+  getAllContextTypes,
+  getAllIntentNames,
+  intentTypes,
+} from "./custom-apps-helpers"
 
 type EditableIntent = {
   name: string

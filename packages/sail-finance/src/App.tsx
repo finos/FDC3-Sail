@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@/components/ui"
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import { AppSidebar } from "./components/sidebar/AppSidebar"
 import { ThemeProvider } from "./components/theme/theme-provider"

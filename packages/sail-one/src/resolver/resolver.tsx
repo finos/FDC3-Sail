@@ -1,6 +1,7 @@
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import type { AppIdentifier, Context, Intent } from "@finos/fdc3"
+import type { Context } from "@finos/fdc3-context-v3"
+import type { AppIdentifier, Intent } from "@finos/fdc3-standard-v3"
 import { useState } from "react"
 import type { AugmentedAppIntent, AugmentedAppMetadata } from "./types"
 import type { TabDetail } from "../state"

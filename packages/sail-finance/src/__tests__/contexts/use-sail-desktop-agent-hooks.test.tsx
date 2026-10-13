@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, afterEach } from "vite-plus/test"
 import { renderHook } from "@testing-library/react"
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import { SailDesktopAgentProvider } from "../../contexts/SailDesktopAgentContext"
 import {

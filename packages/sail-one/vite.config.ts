@@ -12,8 +12,18 @@ const mainHtmlPath = "/html/index.html"
 /** Vite only auto-serves index.html from the project root; our MPA entry lives under html/. */
 function sailOneRootEntry(): Plugin {
   const rewriteRoot = (url: string | undefined) => {
-    if (url === "/" || url === "/index.html") {
-      return mainHtmlPath
+    if (!url) {
+      return url
+    }
+    // Preserve query/hash so deep-links like `/?appId=Conformance1` still hit the SPA entry.
+    const q = url.indexOf("?")
+    const h = url.indexOf("#")
+    let end = url.length
+    if (q >= 0) end = Math.min(end, q)
+    if (h >= 0) end = Math.min(end, h)
+    const pathname = url.slice(0, end)
+    if (pathname === "/" || pathname === "/index.html") {
+      return `${mainHtmlPath}${url.slice(end)}`
     }
     return url
   }
@@ -45,7 +55,7 @@ export default defineConfig({
   optimizeDeps: {
     // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent /
     // sail-platform trigger a reload.
-    exclude: ["@finos/sail-desktop-agent", "@finos/sail-platform"],
+    exclude: ["@finos/sail-browser-agent", "@finos/sail-platform"],
   },
   server: {
     port: 8090,
@@ -53,7 +63,7 @@ export default defineConfig({
       ignored: [
         "**/node_modules/**",
         "**/.git/**",
-        "!**/node_modules/@finos/sail-desktop-agent/**",
+        "!**/node_modules/@finos/sail-browser-agent/**",
         "!**/node_modules/@finos/sail-platform/**",
       ],
     },

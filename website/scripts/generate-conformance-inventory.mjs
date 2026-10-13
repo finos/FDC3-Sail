@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Generates the FDC3 tag inventory section of
- * `website/docs/packages/desktop-agent/conformance.md` from the actual Cucumber
- * feature files under `packages/sail-desktop-agent/test/features/`.
+ * `website/docs/packages/browser-agent/conformance.md` from the actual Cucumber
+ * feature files under `packages/sail-browser-agent/test/features/`.
  *
  * Why this exists: the conformance page used to be hand-maintained and drifted
  * badly (wrong file names, wrong scenario counts, whole `@fdc3_3.0` files never
@@ -29,9 +29,9 @@ import { fileURLToPath } from "node:url"
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(SCRIPT_DIR, "..", "..")
-const FEATURES_DIR = join(REPO_ROOT, "packages/sail-desktop-agent/test/features")
-const CUCUMBER_YML = join(REPO_ROOT, "packages/sail-desktop-agent/cucumber.yml")
-const CONFORMANCE_DOC = join(REPO_ROOT, "website/docs/packages/desktop-agent/conformance.md")
+const FEATURES_DIR = join(REPO_ROOT, "packages/sail-browser-agent/test/features")
+const CUCUMBER_YML = join(REPO_ROOT, "packages/sail-browser-agent/cucumber.yml")
+const CONFORMANCE_DOC = join(REPO_ROOT, "website/docs/packages/browser-agent/conformance.md")
 
 const START_MARKER = "{/* GENERATED:CONFORMANCE-INVENTORY:START */}"
 const END_MARKER = "{/* GENERATED:CONFORMANCE-INVENTORY:END */}"
@@ -55,7 +55,7 @@ function findFeatureFiles(dir) {
 
 /** Parse one .feature file into { relPath, featureTags, scenarios: [{name, tags}] }. */
 function parseFeatureFile(absPath) {
-  const relPath = relative(join(REPO_ROOT, "packages/sail-desktop-agent"), absPath).replace(
+  const relPath = relative(join(REPO_ROOT, "packages/sail-browser-agent"), absPath).replace(
     /\\/g,
     "/",
   )
@@ -167,7 +167,7 @@ function renderSection(inv) {
 
   const lines = []
   lines.push(
-    "_This section is generated from `packages/sail-desktop-agent/test/features/` — do not " +
+    "_This section is generated from `packages/sail-browser-agent/test/features/` — do not " +
       "hand-edit between the markers. Regenerate with " +
       "`npm run conformance:inventory --workspace=@finos/sail-docs` (see " +
       "`website/scripts/generate-conformance-inventory.mjs`)._",
@@ -200,10 +200,10 @@ function renderSection(inv) {
       `${inv.filesOnly30.length} files.**`,
   )
   lines.push("")
-  lines.push("#### Run by profile (`packages/sail-desktop-agent/cucumber.yml`)")
+  lines.push("#### Run by profile (`packages/sail-browser-agent/cucumber.yml`)")
   lines.push("")
   lines.push("```bash")
-  lines.push("cd packages/sail-desktop-agent")
+  lines.push("cd packages/sail-browser-agent")
   lines.push(`npx cucumber-js --profile fdc3-2.2   # ${inv.totals["@fdc3_2.2"]} scenarios`)
   lines.push(`npx cucumber-js --profile fdc3-3.0   # ${inv.totals["@fdc3_3.0"]} scenarios`)
   lines.push(`npx cucumber-js --profile fdc3-2.0   # ${inv.totals["@fdc3_2.0"]} scenarios`)

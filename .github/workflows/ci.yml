@@ -33,7 +33,7 @@ jobs:
       - name: Prettier
         run: npm run format
 
-      # Must run before lint and typecheck. `@finos/sail-desktop-agent` and
+      # Must run before lint and typecheck. `@finos/sail-browser-agent` and
       # `@finos/sail-platform` publish their types from `dist` (`"types": "./dist/index.d.mts"`),
       # and `dist` is gitignored — so on a clean runner every consumer package fails with
       # TS2307 until these are built. Measured: without `dist`, `npm run lint` reports 140
@@ -60,4 +60,4 @@ jobs:
         run: npm test -- --run
 
       - name: Test (Cucumber)
-        run: npm run test:cucumber -w @finos/sail-desktop-agent
+        run: npm run test -w @finos/sail-headless-agent

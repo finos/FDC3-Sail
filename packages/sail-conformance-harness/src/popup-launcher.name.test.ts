@@ -4,7 +4,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 
-import { HARNESS_POPUP_FEATURES, openHarnessPopup } from "./popup-launcher"
+import { openHarnessPopup } from "./popup-launcher"
 import type { HarnessPanel } from "./types"
 
 describe("openHarnessPopup", () => {
@@ -12,7 +12,7 @@ describe("openHarnessPopup", () => {
     vi.restoreAllMocks()
   })
 
-  it("reasserts window.name after navigation so WCP can adopt the launcher instance id", () => {
+  it("reasserts window.name after open so WCP can adopt the launcher instance id", () => {
     const panel: HarnessPanel = {
       instanceId: "launcher-instance-id",
       appId: "MockAppId",
@@ -21,7 +21,7 @@ describe("openHarnessPopup", () => {
       launchMode: "popup",
     }
 
-    let popupName = "launcher-instance-id"
+    let popupName = ""
     const popup = {
       get name() {
         return popupName
@@ -32,11 +32,6 @@ describe("openHarnessPopup", () => {
       get closed() {
         return false
       },
-      location: {
-        set href(_url: string) {
-          popupName = ""
-        },
-      },
       close: vi.fn(),
     } as unknown as Window
 
@@ -45,11 +40,7 @@ describe("openHarnessPopup", () => {
     const opened = openHarnessPopup(panel)
 
     expect(opened).toBe(popup)
-    expect(window.open).toHaveBeenCalledWith(
-      "about:blank",
-      panel.instanceId,
-      HARNESS_POPUP_FEATURES,
-    )
+    expect(window.open).toHaveBeenCalledWith(panel.url, panel.instanceId)
     expect(popup.name).toBe("launcher-instance-id")
   })
 })

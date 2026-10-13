@@ -1,7 +1,7 @@
 # @finos/sail-one
 
 The tab-and-grid Sail shell, ported from `packages/sail-web` on FINOS `wip/v2.2` and
-rewired onto the current `@finos/sail-desktop-agent` and `@finos/sail-platform`.
+rewired onto the current `@finos/sail-browser-agent` and `@finos/sail-platform`.
 
 `sail-one` and `sail-finance` are sibling shells. Neither imports the other — the
 boundary is enforced by `no-restricted-imports` in `.oxlintrc.json`. Anything shared

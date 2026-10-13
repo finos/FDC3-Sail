@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-desktop-agent"
+import type { DirectoryApp } from "@finos/sail-browser-agent"
 
 import { createHarnessAppLauncher, resolveHarnessLaunchMode } from "./app-launcher"
-import { HARNESS_POPUP_FEATURES, openHarnessPopup } from "./popup-launcher"
+import { openHarnessPopup } from "./popup-launcher"
 import type { HarnessPanel } from "./types"
 
 describe("resolveHarnessLaunchMode", () => {
@@ -90,11 +90,8 @@ describe("createHarnessAppLauncher", () => {
 })
 
 describe("openHarnessPopup", () => {
-  it("opens about:blank with popup features then navigates to the mock app URL", () => {
-    const popup = {
-      closed: false,
-      location: { href: "about:blank" },
-    } as Window
+  it("opens a named browser tab at the mock app URL", () => {
+    const popup = { closed: false, name: "" } as Window
     const open = vi.fn(() => popup)
     vi.stubGlobal("window", { open })
 
@@ -109,8 +106,8 @@ describe("openHarnessPopup", () => {
     const result = openHarnessPopup(panel)
 
     expect(result).toBe(popup)
-    expect(open).toHaveBeenCalledWith("about:blank", panel.instanceId, HARNESS_POPUP_FEATURES)
-    expect(popup.location.href).toBe(panel.url)
+    expect(open).toHaveBeenCalledWith(panel.url, panel.instanceId)
+    expect(popup.name).toBe(panel.instanceId)
 
     vi.unstubAllGlobals()
   })

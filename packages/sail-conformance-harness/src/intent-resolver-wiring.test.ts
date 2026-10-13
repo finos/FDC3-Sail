@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import type { Context } from "@finos/fdc3"
-import type { IntentResolutionRequest } from "@finos/sail-desktop-agent"
+import type { IntentResolutionRequest } from "@finos/sail-browser-agent"
 import { createHarnessIntentResolver } from "./intent-resolver-wiring"
 
 const sampleContext: Context = { type: "fdc3.instrument", id: { ticker: "AAPL" } }

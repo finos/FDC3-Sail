@@ -1,4 +1,5 @@
-import type { DirectoryApp, WebAppDetails } from "@finos/sail-desktop-agent"
+import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
+import { resolveSailForceNewWindow } from "./force-new-window"
 import { getClientState, getServerState } from "./index"
 
 export enum AppHosting {
@@ -15,6 +16,8 @@ export interface AppOpenDetails {
 export interface AppState {
   registerAppWindow(window: Window, instanceId: string): void
   getInstanceIdForWindow(window: Window): string | undefined
+  findWindow(instanceId: string): Window | undefined
+  forgetWindow(instanceId: string): void
   createTitle(detail: DirectoryApp): string
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
 }
@@ -24,8 +27,6 @@ export function normalizeIdentityUrl(identityUrl: string): string {
 }
 
 export class DefaultAppState implements AppState {
-  windowInformation = new Map<Window, string>()
-
   getDirectoryAppForUrl(identityUrl: string): DirectoryApp | undefined {
     const strippedIdentityUrl = normalizeIdentityUrl(identityUrl)
     const applications: DirectoryApp[] = getServerState().getKnownApps()
@@ -39,12 +40,21 @@ export class DefaultAppState implements AppState {
     })
   }
 
+  /** Delegates to the Desktop Agent host-window registry. */
   registerAppWindow(window: Window, instanceId: string): void {
-    this.windowInformation.set(window, instanceId)
+    getServerState().registerHostWindow(window, instanceId)
   }
 
   getInstanceIdForWindow(window: Window): string | undefined {
-    return this.windowInformation.get(window)
+    return getServerState().getInstanceIdForHostWindow(window)
+  }
+
+  findWindow(instanceId: string): Window | undefined {
+    return getServerState().findHostWindow(instanceId)
+  }
+
+  forgetWindow(instanceId: string): void {
+    getServerState().forgetHostWindow(instanceId)
   }
 
   createTitle(detail: DirectoryApp): string {
@@ -79,10 +89,11 @@ export class DefaultAppState implements AppState {
     }
 
     const sailManifest = detail.hostManifests?.sail ?? {}
-    const forceNewWindow =
+    const manifestForceNewWindow =
       (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ?? false
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: hostManifests.sail is Record<string, unknown>
+    const forceNewWindow = resolveSailForceNewWindow(manifestForceNewWindow === true)
     const hosting: AppHosting =
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: hostManifests.sail is Record<string, unknown>, the `as`-free `?? false` erases the type's optionality but the source JSON can still omit forceNewWindow
       (forceNewWindow ? AppHosting.Tab : undefined) ?? destination ?? AppHosting.Frame
     const instanceTitle = this.createTitle(detail)
     const channel = hosting === AppHosting.Tab ? null : getClientState().getActiveTab().id

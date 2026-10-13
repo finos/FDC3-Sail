@@ -27,7 +27,7 @@ cd FDC3-Sail
 npm install
 ```
 
-Always install from the **repository root**. Shared dev tooling (TypeScript, Vite, Vitest, ESLint, Prettier, and React type packages) lives in the root `package.json` and is hoisted for all workspaces. Workspace packages only declare package-specific dev dependencies (for example Cucumber in `@finos/sail-desktop-agent` or Playwright in `@finos/sail-finance`). Run workspace scripts with `npm run <script> -w <workspace>` from the root — do not `cd` into a package and run `npm install` there.
+Always install from the **repository root**. Shared dev tooling (TypeScript, Vite, Vitest, ESLint, Prettier, and React type packages) lives in the root `package.json` and is hoisted for all workspaces. Workspace packages only declare package-specific dev dependencies (for example Cucumber in `@finos/sail-browser-agent` or Playwright in `@finos/sail-finance`). Run workspace scripts with `npm run <script> -w <workspace>` from the root — do not `cd` into a package and run `npm install` there.
 
 ### Run the full stack locally
 
@@ -38,7 +38,7 @@ npm run dev
 Starts Desktop Agent (watch), platform API (watch), and Sail web UI on **http://localhost:3000**.
 
 ```bash
-npm run dev:conformance   # FDC3 toolbox clean room on :3001
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness   # FDC3 toolbox clean room on :3001
 npm run docs:dev          # Documentation site (use --port 3002 if web app is running)
 ```
 
@@ -49,7 +49,7 @@ FDC3 Sail is an npm workspace monorepo:
 ```
 FDC3-Sail/
 ├── packages/          
-│   ├── sail-desktop-agent/  # Pure FDC3 2.2 Desktop Agent (@finos/sail-desktop-agent)
+│   ├── sail-browser-agent/  # Pure FDC3 2.2 Desktop Agent (@finos/sail-browser-agent)
 │   ├── sail-platform/  # Platform composition layer & transports (@finos/sail-platform)
 │   ├── sail-theme/     # Brand tokens + assets, framework-agnostic (@finos/sail-theme)
 │   ├── sail-finance/   # Browser-based finance-specific shell (@finos/sail-finance)
@@ -75,8 +75,8 @@ npm run dev
 # Same, but with the sail-one shell instead of sail-finance
 npm run dev:one
 
-# FDC3 conformance toolbox host
-npm run dev:conformance
+# FDC3 conformance toolbox host (local 2.2; use :3.0 for 3.0)
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness
 
 # Start documentation site
 npm run docs:dev
@@ -110,10 +110,10 @@ npm run test
 npm test -- --run
 
 # Desktop Agent tests (Vitest + Cucumber)
-npm test -w @finos/sail-desktop-agent
+npm test -w @finos/sail-browser-agent
 
 # FDC3 Desktop Agent BDD (Cucumber)
-npm run test:cucumber -w @finos/sail-desktop-agent
+npm run test:cucumber -w @finos/sail-browser-agent
 ```
 
 ### Building
@@ -154,7 +154,7 @@ git checkout -b fix/your-bug-fix
 
 **Code Quality Requirements:**
 
-Run `npm run validate` before commits. It runs the same gate as CI: format, build, lint (including package-boundary import rules), typecheck, docs conformance inventory, docs build, Vitest (`npm test -- --run`), and Cucumber (`npm run test:cucumber -w @finos/sail-desktop-agent`).
+Run `npm run validate` before commits. It runs the same gate as CI: format, build, lint (including package-boundary import rules), typecheck, docs conformance inventory, docs build, Vitest (`npm test -- --run`), and Cucumber (`npm run test:cucumber -w @finos/sail-browser-agent`).
 
 Individual steps when iterating:
 
@@ -208,7 +208,7 @@ type: brief description
 
 ## Publishing packages (maintainers)
 
-Publishable npm packages (not yet published — see the root [README status](https://github.com/finos/FDC3-Sail#status)): `@finos/sail-desktop-agent` and `@finos/sail-platform`. Other workspaces are private and are not versioned or published.
+Publishable npm packages (not yet published — see the root [README status](https://github.com/finos/FDC3-Sail#status)): `@finos/sail-browser-agent` and `@finos/sail-platform`. Other workspaces are private and are not versioned or published.
 
 Releases use [Changesets](https://github.com/changesets/changesets). Contributors do not need to add changesets; maintainers batch weekly (or per merge) on `main`.
 
@@ -225,7 +225,7 @@ Releases use [Changesets](https://github.com/changesets/changesets). Contributor
 
    ```md
    ---
-   "@finos/sail-desktop-agent": patch
+   "@finos/sail-browser-agent": patch
    ---
 
    Fix heartbeat cleanup for canonical WCP5 instance ids (#123, #124).

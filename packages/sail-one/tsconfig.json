@@ -13,6 +13,6 @@
     "noEmit": true,
     "rootDirs": ["src"]
   },
-  "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
+  "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/vite-env.d.ts", "src/**/*.css"],
   "exclude": ["dist/**"]
 }

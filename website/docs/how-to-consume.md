@@ -15,7 +15,7 @@ something you can use today.
 Construct a Desktop Agent directly inside your own web application — your state management, your
 persistence, your UI — and let Sail supply the FDC3 engine and browser connection layer underneath it.
 
-Construct the FDC3 engine with `new SailDesktopAgent({...})` from `@finos/sail-desktop-agent`. If you
+Construct the FDC3 engine with `new SailDesktopAgent({...})` from `@finos/sail-browser-agent`. If you
 also want workspaces, layouts, and pluggable persistence for your host's own state, add
 `@finos/sail-platform` — the two are peers you compose, not layers. See the
 [Architecture Overview — How the packages compose](./architecture/overview#how-the-packages-compose)

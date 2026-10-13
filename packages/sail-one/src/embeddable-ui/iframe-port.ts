@@ -1,4 +1,4 @@
-import type { BrowserTypes } from "@finos/fdc3"
+import type { BrowserTypes } from "@finos/fdc3-schema-v3"
 
 type IframeHello = BrowserTypes.Fdc3UserInterfaceHello
 

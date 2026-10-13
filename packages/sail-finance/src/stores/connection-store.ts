@@ -6,7 +6,7 @@ import type {
   AppConnectionMetadata,
   HandshakeFailureEvent,
   SailDesktopAgent,
-} from "@finos/sail-desktop-agent"
+} from "@finos/sail-browser-agent"
 
 // Immer draft support for Map/Set in connection state
 enableMapSet()

@@ -1,4 +1,4 @@
-import type { SailDesktopAgent } from "@finos/sail-desktop-agent"
+import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import { closeHarnessBrowsingContext } from "./harness-browsing-context-close"
 import type { PopupCloseWatcher } from "./popup-launcher"
@@ -48,7 +48,7 @@ export function createHarnessInstanceCleanup(options: {
 
     removePanel(instanceId)
     if (desktopAgent.apps.getInstance(instanceId)) {
-      desktopAgent.disconnectInstance(instanceId)
+      void desktopAgent.disconnectInstance(instanceId)
     }
   }
 
