@@ -127,7 +127,7 @@ export async function handleRaiseIntentForContextRequest(
     }
     const validatedContext = payload.context
 
-    const targetApp = normalizeTargetApp(payload.app)
+    const targetApp = normalizeTargetApp(params, payload.app)
 
     const newInstance = readRaiseNewInstance(params, payload)
     validateRequestedTargetAvailability(params, targetApp)

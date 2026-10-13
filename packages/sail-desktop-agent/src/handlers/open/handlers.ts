@@ -12,7 +12,7 @@ import {
   FDC3OpenError,
 } from "../../errors/fdc3-errors"
 import type { DirectoryApp } from "../../app-directory/types"
-import { retrieveAppsById } from "../../app-directory/app-directory-queries"
+import { resolveKnownAppId, retrieveAppsById } from "../../app-directory/app-directory-queries"
 import { getInstance, getInstancesByAppId } from "../../state/selectors"
 import { launchWithPendingInstance } from "../utils/launch-with-pending-instance"
 import { registerOpenWithContext } from "../utils/open-with-context"
@@ -100,7 +100,7 @@ export async function handleOpenRequest(
       throw new ErrorOnLaunchError("App launching not available - no AppLauncher configured")
     }
 
-    const appId = payload.app.appId
+    const appId = resolveKnownAppId(getState().appDirectory, payload.app.appId)
     const targetInstanceId = payload.app.instanceId
     const launchContext = payload.context
 
@@ -131,7 +131,7 @@ export async function handleOpenRequest(
     // Pending before launch, so an app that connects mid-launch adopts the id we answer with.
     const appIdentifier = await launchWithPendingInstance({
       appLauncher,
-      request: { app: payload.app, context: launchContext },
+      request: { app: { ...payload.app, appId }, context: launchContext },
       app: appMetadata,
       getState,
       setState: params.setState,
@@ -172,7 +172,10 @@ export function handleFindInstancesRequest(
   const { responses, instanceId, getState, logger } = params
 
   try {
-    const { app: appIdentifier } = message.payload
+    const appIdentifier = {
+      ...message.payload.app,
+      appId: resolveKnownAppId(getState().appDirectory, message.payload.app.appId),
+    }
 
     logger.info("DACP: Finding instances for app", { appId: appIdentifier.appId })
 
@@ -268,7 +271,7 @@ export function handleGetAppMetadataRequest(
   try {
     // Parse request payload
     const payload = message.payload
-    const appId = payload.app.appId
+    const appId = resolveKnownAppId(getState().appDirectory, payload.app.appId)
     const specificInstanceId = payload.app.instanceId
 
     // Step 1: Try to get metadata from a running instance

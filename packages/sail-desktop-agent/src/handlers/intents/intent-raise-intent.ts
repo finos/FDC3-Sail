@@ -71,7 +71,7 @@ export async function handleRaiseIntentRequest(
       })
     }
 
-    const targetApp: AppIdentifier | undefined = normalizeTargetApp(payload.app)
+    const targetApp: AppIdentifier | undefined = normalizeTargetApp(params, payload.app)
     const newInstance = readRaiseNewInstance(params, payload)
     validateRequestedTargetAvailability(params, targetApp)
 

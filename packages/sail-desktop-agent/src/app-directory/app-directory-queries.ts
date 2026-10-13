@@ -54,14 +54,43 @@ export function retrieveAllApps(catalog: AppDirectoryState): DirectoryApp[] {
   return [...catalog.apps]
 }
 
+/** The part of an appId before "@": `myApp@appd.example.com` -> `myApp`. */
+function unqualifiedAppId(appId: string): string {
+  const at = appId.indexOf("@")
+  return at === -1 ? appId : appId.slice(0, at)
+}
+
+/**
+ * Directory apps matching `appId`, per FDC3 3.0 "Fully-Qualified AppIds" (API spec): an exact
+ * match first; then a fully-qualified id's unqualified part against known unqualified ids, or an
+ * unqualified id against the unqualified part of known fully-qualified ids. A case-insensitive
+ * exact match is Sail's last resort.
+ */
 export function retrieveAppsById(catalog: AppDirectoryState, appId: string): DirectoryApp[] {
   const exactMatches = catalog.apps.filter(app => app.appId === appId)
   if (exactMatches.length > 0) {
     return exactMatches
   }
 
+  const unqualified = unqualifiedAppId(appId)
+  const partialMatches =
+    unqualified === appId
+      ? catalog.apps.filter(app => unqualifiedAppId(app.appId) === appId)
+      : catalog.apps.filter(app => app.appId === unqualified)
+  if (partialMatches.length > 0) {
+    return partialMatches
+  }
+
   const normalizedAppId = appId.toLowerCase()
   return catalog.apps.filter(app => app.appId.toLowerCase() === normalizedAppId)
+}
+
+/**
+ * The directory's own appId for `appId` (the first match from {@link retrieveAppsById}), so results
+ * report the appId that was matched. Unknown ids come back unchanged.
+ */
+export function resolveKnownAppId(catalog: AppDirectoryState, appId: string): string {
+  return retrieveAppsById(catalog, appId)[0]?.appId ?? appId
 }
 
 export function retrieveAllIntents(catalog: AppDirectoryState): DirectoryIntent[] {

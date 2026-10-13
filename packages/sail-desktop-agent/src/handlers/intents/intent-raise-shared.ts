@@ -20,7 +20,7 @@ import {
   queueIntentDelivery,
   sendTerminalPendingIntentResponse,
 } from "./intent-delivery-helpers"
-import { retrieveAppsById } from "../../app-directory/app-directory-queries"
+import { resolveKnownAppId, retrieveAppsById } from "../../app-directory/app-directory-queries"
 import type { DACPHandlerParams } from "../types"
 import {
   clearPendingIntentTimeouts,
@@ -45,13 +45,21 @@ type ResolveAppTargetInstanceOptions = {
   newInstance?: boolean
 }
 
-export function normalizeTargetApp(target: unknown): AppIdentifier | undefined {
+/**
+ * The raise payload's `app` as an AppIdentifier, with its appId mapped to the directory's own
+ * (fully-qualified or not) so the resolution reports the appId that was matched.
+ */
+export function normalizeTargetApp(
+  params: DACPHandlerParams,
+  target: unknown,
+): AppIdentifier | undefined {
   if (!target) {
     return undefined
   }
 
+  const catalog = params.getState().appDirectory
   if (typeof target === "string") {
-    return { appId: target }
+    return { appId: resolveKnownAppId(catalog, target) }
   }
 
   if (typeof target !== "object") {
@@ -64,7 +72,7 @@ export function normalizeTargetApp(target: unknown): AppIdentifier | undefined {
   }
 
   return {
-    appId: record.appId,
+    appId: resolveKnownAppId(catalog, record.appId),
     instanceId: typeof record.instanceId === "string" ? record.instanceId : undefined,
   }
 }
