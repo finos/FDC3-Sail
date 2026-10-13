@@ -172,7 +172,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
           intentEventUuid: "event-1",
           intentResult: { context: contextPayload },
           metadata: {
-            traceId: "app-trace-should-not-win",
+            traceId: "handler-trace",
             signature: appSignature,
             custom: appCustom,
           },
@@ -190,7 +190,7 @@ describe("IntentResolution.getResultMetadata() client metadata path", () => {
     expect(clientMetadata?.signature).toEqual(appSignature)
     expect(clientMetadata?.custom).toEqual(appCustom)
     expect(clientMetadata?.traceId).toEqual(expect.any(String))
-    expect(clientMetadata?.traceId).not.toBe("app-trace-should-not-win")
+    expect(clientMetadata?.traceId).toBe("handler-trace")
     const traceId = clientMetadata?.traceId
     expect(typeof traceId).toBe("string")
     if (typeof traceId !== "string") {

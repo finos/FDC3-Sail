@@ -4,11 +4,13 @@ import { buildContextMetadata, type WireContextMetadata } from "../../dacp/conte
 /**
  * Builds the `intentResult` and `resultMetadata` of a `raiseIntentResultResponse`.
  *
- * `resultMetadata` is what `IntentResolution.getResultMetadata()` returns. Per the FDC3 3.0
- * `IntentResolution` reference it is always Desktop Agent generated (`source` is the handling
- * app, plus `timestamp` and `traceId`). For a context result, the handler's app-provided
- * `signature`, `antiReplay` and `custom` are merged in, with the agent's `traceId` taking
- * precedence. Channel and void results carry only the agent's fields.
+ * `resultMetadata` is what `IntentResolution.getResultMetadata()` returns: `source` is the
+ * handling app, plus `timestamp` and `traceId`. For a context result the handler's app-provided
+ * `traceId`, `signature`, `antiReplay` and `custom` are forwarded; the agent generates a `traceId`
+ * only when the handler sent none. This follows api/spec.md ("If the originating app provides a
+ * traceId, the Desktop Agent MUST forward it"), which wins over the `IntentResolution` reference
+ * text saying the agent's `traceId` takes precedence. Channel and void results carry only the
+ * agent's fields.
  */
 export function buildIntentResultWirePayload(
   intentResult: BrowserTypes.IntentResult | null,
@@ -23,10 +25,9 @@ export function buildIntentResultWirePayload(
   }
 
   if (intentResult?.context !== undefined) {
-    const { traceId: _appTraceId, ...forwarded } = appMetadata ?? {}
     return {
       wireIntentResult: { context: intentResult.context },
-      resultMetadata: { ...forwarded, ...daMetadata },
+      resultMetadata: buildContextMetadata(target, appMetadata, timestamp),
     }
   }
 

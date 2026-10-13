@@ -27,12 +27,13 @@ Feature: Intent result metadata (FDC3 3.0)
       | msg.matches_type          | to.instanceId | msg.payload.intentResult.context.type | msg.payload.resultMetadata.source.appId | msg.payload.resultMetadata.traceId |
       | raiseIntentResultResponse | a1            | fdc3.portfolio                        | PortfolioApp                            | MUST-BE-NON-EMPTY                  |
 
-  # Types.md IntentResolution.getResultMetadata(): app fields are merged "with the Desktop Agent's
-  # traceId taking precedence".
+  # api/spec.md: "If the originating app provides a traceId, the Desktop Agent MUST forward it."
+  # (Types.md IntentResolution.getResultMetadata() says the agent's traceId wins; the main spec
+  # takes precedence.)
   @fdc3_3.0
   Scenario: Handler-provided result metadata is merged into resultMetadata
     When "appId: App1, instanceId: a1" raises an intent for "ViewPortfolio" with contextType "fdc3.portfolio" on app "appId: PortfolioApp, instanceId: l1" with requestUuid "META-CWM" [fdc3.raiseIntent]
     And "appId: PortfolioApp, instanceId: l1" sends a intentResultRequest with eventUuid "{lastIntentEventUuid}" and contextType "fdc3.portfolio" and raiseIntentUuid "META-CWM" with metadata traceId "handler-trace" signature "result-sig" antiReplay claims "1234/2345/jti-4" and custom key "APAC" [IntentResolution.getResult]
     Then messaging will have outgoing posts
-      | msg.matches_type          | to.instanceId | msg.payload.intentResult.context.type | msg.payload.intentResult.metadata | msg.payload.resultMetadata.source.instanceId | msg.payload.resultMetadata.signature.signature | msg.payload.resultMetadata.signature.protected | msg.payload.resultMetadata.antiReplay.jti | msg.payload.resultMetadata.custom.region |
-      | raiseIntentResultResponse | a1            | fdc3.portfolio                        | {null}                            | l1                                           | result-sig (signature part)                    | result-sig (protected part)                    | jti-4                                     | APAC                                     |
+      | msg.matches_type          | to.instanceId | msg.payload.intentResult.context.type | msg.payload.intentResult.metadata | msg.payload.resultMetadata.traceId | msg.payload.resultMetadata.source.instanceId | msg.payload.resultMetadata.signature.signature | msg.payload.resultMetadata.signature.protected | msg.payload.resultMetadata.antiReplay.jti | msg.payload.resultMetadata.custom.region |
+      | raiseIntentResultResponse | a1            | fdc3.portfolio                        | {null}                            | handler-trace                      | l1                                           | result-sig (signature part)                    | result-sig (protected part)                    | jti-4                                     | APAC                                     |

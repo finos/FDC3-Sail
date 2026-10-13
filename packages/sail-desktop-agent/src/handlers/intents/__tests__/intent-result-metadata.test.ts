@@ -50,8 +50,8 @@ describe("buildIntentResultWirePayload", () => {
     expect(resultMetadata.signature).toEqual(signature)
     expect(resultMetadata.antiReplay).toEqual(antiReplay)
     expect(resultMetadata.custom).toEqual({ key: "value" })
-    // The agent's traceId takes precedence (FDC3 3.0 IntentResolution.getResultMetadata).
-    expect(resultMetadata.traceId).not.toBe("app-trace-id")
+    // api/spec.md: the agent MUST forward an app-provided traceId.
+    expect(resultMetadata.traceId).toBe("app-trace-id")
     expect(resultMetadata.source).toEqual(TARGET)
   })
 
