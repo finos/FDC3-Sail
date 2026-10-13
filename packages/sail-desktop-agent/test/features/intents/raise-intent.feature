@@ -45,6 +45,13 @@ Feature: Raising Intents
       | raiseIntentResponse | NoAppsFound       | a1            |
     And no "intentEvent" is sent to "b1"
 
+  # A listener that names the context type widens the directory's context list for that app.
+  @fdc3_3.0
+  Scenario: Targeting an app whose running listener names the context type delivers the intent
+    Given "appId: listenerApp, instanceId: b1" registers an intent listener for "ViewChart" with contextType "fdc3.instrument" [fdc3.addIntentListenerWithContext]
+    When "appId: App1, instanceId: a1" raises an intent for "ViewChart" with contextType "fdc3.instrument" on app "listenerApp" [fdc3.raiseIntent]
+    Then exactly 1 "intentEvent" is sent to "b1"
+
   @fdc3_2.0
   Scenario: Raising an intent that should auto-resolve (only one option)
     And "appId: App1, instanceId: a1" raises an intent for "uniqueIntent" with contextType "fdc3.instrument" [fdc3.raiseIntent]

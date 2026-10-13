@@ -95,7 +95,8 @@ export async function handleRaiseIntentRequest(
 
     // The directory's context list for a declared intent is authoritative: a running instance's
     // unfiltered listener does not widen it (conformance RaiseIntentFailTargetedAppResolve1).
-    // Running listeners only count for intents the directory does not declare.
+    // A listener that names the context type (addIntentListenerWithContext) does widen it.
+    // Running listeners otherwise only count for intents the directory does not declare.
     const directoryCompatible =
       !!targetAppId &&
       isDirectoryIntentCompatible(
@@ -104,9 +105,13 @@ export async function handleRaiseIntentRequest(
         payload.intent,
         validatedContext.type,
       )
+    const hasContextTypedListener = handlers.runningListeners.some(
+      listener => listener.contextTypes.length > 0,
+    )
     if (
       targetAppId &&
       !directoryCompatible &&
+      !hasContextTypedListener &&
       (directoryDeclaresIntent(state.appDirectory, targetAppId, payload.intent) ||
         (isTargetRunning && handlers.runningListeners.length === 0))
     ) {
