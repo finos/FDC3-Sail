@@ -169,6 +169,17 @@ Then(
 )
 
 Then(
+  "no {string} sent to {string} has a {string} field",
+  function (this: CustomWorld, messageType: string, instanceId: string, field: string) {
+    const posts = postsOfTypeTo(this, messageType, instanceId)
+    expect(posts.length).toBeGreaterThan(0)
+    for (const post of posts) {
+      expect(post.msg.payload).not.toHaveProperty(field)
+    }
+  },
+)
+
+Then(
   "exactly {int} {string} is sent to {string}",
   function (this: CustomWorld, count: number, messageType: string, instanceId: string) {
     expect(postsOfTypeTo(this, messageType, instanceId)).toHaveLength(count)

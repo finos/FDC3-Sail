@@ -17,6 +17,7 @@ import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identit
 import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
 import type { DACPHandlerParams } from "../handlers/types"
 import { applyInboundValidationPolicy, type ValidationMode } from "../dacp/validate-dacp-message"
+import { shapeForDestination } from "../dacp/shape-for-recipient"
 import type { IntentResolutionCallback } from "../handlers/intent-resolution-callback"
 import type { DirectoryApp } from "../app-directory/types"
 import {
@@ -411,9 +412,12 @@ export class SailDesktopAgent<
 
   private createHandlerParams(instanceId: string): DACPHandlerParams {
     const conn = this.appConnection
-    const responses = createDacpResponseDispatcherFromDelivery(conn, message =>
-      conn.connectionRegistry.sendToAppInstance(message),
-    )
+    // Every outbound message: handlers build 3.0 messages; 2.x recipients get them in 2.x shape.
+    const { fdc3Version } = this.implementationMetadata
+    const responses = createDacpResponseDispatcherFromDelivery(conn, message => {
+      const shaped = shapeForDestination(message, this.getState(), fdc3Version)
+      if (shaped !== undefined) conn.connectionRegistry.sendToAppInstance(shaped)
+    })
 
     return {
       responses,
