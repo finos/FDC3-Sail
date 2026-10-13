@@ -217,7 +217,7 @@ async function registerIntentListenerWithContextTypes(
     meta,
     payload: {
       intent: handleResolve(intent, world) as string,
-      contextType: contextTypes.length === 1 ? contextTypes[0] : contextTypes,
+      contextTypes,
     },
   } as AddIntentListenerRequest
 

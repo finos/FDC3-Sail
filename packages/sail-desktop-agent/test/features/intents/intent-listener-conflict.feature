@@ -43,7 +43,10 @@ Feature: Intent listener conflict (FDC3 3.0)
   Scenario: Adding non-overlapping filtered listeners is allowed
     Given "appId: App1, instanceId: a1" registers an intent listener for "aTestingIntent1" with contextType "fdc3.instrument" [fdc3.addIntentListenerWithContext]
     And "appId: App1, instanceId: a1" registers an intent listener for "aTestingIntent1" with contextType "fdc3.order" [fdc3.addIntentListenerWithContext]
-    Then messaging will have 2 posts matching type "addIntentListenerResponse"
+    Then messaging will have outgoing posts
+      | msg.matches_type          | msg.payload.error | to.instanceId |
+      | addIntentListenerResponse | {null}            | a1            |
+      | addIntentListenerResponse | {null}            | a1            |
 
   @fdc3_3.0
   Scenario: Adding listeners for different intents is allowed
