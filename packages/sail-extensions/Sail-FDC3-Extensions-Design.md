@@ -10,11 +10,7 @@ All `sail.*` names and fields below are proposed Sail conventions, not existing 
 
 ## Architecture
 
-An extension is an FDC3 app. On startup it registers its intent handlers and broadcasts extension declarations on the `sail.chrome` app channel. Each declaration contains an AppD record. Sail maintains a contribution store; React renders that store into toolbar, panel-frame, settings and channel-header slots.
-
-Sail renders small controls itself. Rich pages run as hosted FDC3 apps in iframes. HTMX may be used within those pages; Sail does not insert app-supplied HTML into its own DOM.
-
-AppD supplies app identity, name, icons, launch URL and interoperability declarations. Extension placement belongs in the broadcast context, not in AppD custom configuration.
+An extension is an FDC3 app. On startup it registers its intent handlers, context handlers and then broadcasts extension declarations on the `sail.chrome` app channel. Sail maintains a contribution store; React renders that store into toolbar, panel-frame, settings and channel-header slots.
 
 ## 1. App lifecycle configuration
 
@@ -22,11 +18,12 @@ Proposed Sail-specific AppD configuration:
 
 ```json
 {
-  "customConfig": {
+  "hostManifests": {
     "sail": {
       "invisible": true,
       "singleton": true,
-      "autostart": true
+      "autostart": true,
+      "searchable": false
     }
   }
 }
@@ -37,26 +34,15 @@ Proposed Sail-specific AppD configuration:
 | `invisible` | `false` | Start without a visible panel, using a hidden hosted page connected to FDC3. |
 | `singleton` | `false` | Maintain at most one instance per app ID within one Sail session. |
 | `autostart` | `false` | Launch the configured app during Sail startup. |
+| `searchable` | `true` | Means the app is available to choose in the directory picker (already implemented and used for conformance) |
 
 These settings are independent. Invisible apps can subsequently become visible. Singleton is an instance policy, not a presentation policy. Autostart is deployment-controlled; an arbitrary announcement cannot cause future automatic launches.
 
 Opening or raising an intent to a singleton reuses its instance. If it is starting, concurrent launches share the same pending launch. Intent delivery waits until the handler is ready. Closing its dialog hides the hosted page rather than terminating it. React must preserve the iframe and its browsing context; moving or recreating an iframe can reload it, so the layout implementation must verify instance continuity.
 
-For singleton dialogs, the proposed first-version policy is to queue interactive requests. Cancellation, dismissal and timeout resolve the active request before the next is presented.
-
-The object above is a Sail-specific encoding proposal. AppD `customConfig` is deprecated in the published standard documentation; verify compatibility with Sail's target AppD schema before adopting it. These three fields could instead live in deployment configuration without changing the runtime protocol.
+Lifecycle fields live in AppD `hostManifests.sail`, the same host-specific slot Sail already uses for settings such as `forceNewWindow` and `searchable`. They could also live in deployment configuration without changing the runtime protocol.
 
 ## 2. The `sail.chrome` app channel
-
-| Property | Proposed behaviour |
-| --- | --- |
-| ID | `sail.chrome` |
-| Kind | FDC3 app channel, separate from user channels |
-| Acquisition | `fdc3.getOrCreateChannel("sail.chrome")` |
-| Transport | Explicit `channel.broadcast(context)` and `channel.addContextListener(...)` |
-| Participants | Sail chrome service and authorised extension apps |
-| Lifetime | Current Sail session |
-| Persistence | Channel traffic is not the contribution registry or a replay log |
 
 Apps use the channel object directly; they do not change the user's selected channel to register an extension. Sail subscribes before autostarting contributors, then sends a discovery message. Contributors listen for discovery and reannounce after reconnecting.
 
@@ -64,11 +50,28 @@ App channels do not automatically replay existing context when a listener is add
 
 Sail obtains the source app instance from agent-supplied metadata and lifecycle information. An app ID inside a payload is not proof of the sender's identity. Launching a supplied AppD record remains subject to Sail's normal directory/origin policy.
 
+### Existing Sail DA↔server messages to reuse
+
+The extension protocol is FDC3-facing (`sail.chrome` contexts and intents). The chrome contribution store and React slots should hang off Sail's existing desktop-agent client↔server messages in `sail-v2-common` rather than inventing a parallel host bus:
+
+| Message | Role for extensions |
+| --- | --- |
+| `app-hello` | App instance connects; source identity for later contributions becomes available. |
+| `sail-app-state` | Authoritative connection/lifecycle of instances; drop contributions when an owner disconnects or terminates. |
+| `da-launch` / `sail-app-open` | Launch or reopen a target for `display` actions, autostart, and singleton reuse (hosting + channel). |
+| `sail-app-close` / `da-app-window-closed` | Close or observe external close of a panel/tab; singleton dialogs hide rather than terminate. |
+| `sail-channel-setup` / `sail-channel-change` | Panel user-channel assignment used when framing `sail.window` / `sail.panelState`. |
+| `sail-broadcast-context` | Observed user-channel broadcasts; feed bounded session history for channel-context providers. |
+| `sail-client-state` (`contextHistory`) | Persisted/synced per-channel context history already carried in DA hello/client state. |
+| `sail-intent-resolve` | Existing user-facing resolver; contribution and Sail service intents must target known endpoints and must not open this unexpectedly. |
+
+`da-hello` / `sail-client-state` also carry directories, panels and custom apps used at session restore. Channel-selector UI messages (`channel-receiver-hello` / `channel-receiver-update`) remain internal to Sail chrome widgets unless an extension is explicitly hosting that UI.
+
 ## 3. Context catalogue
 
 | Context type | Purpose | Route |
 | --- | --- | --- |
-| `sail.extension` | Declare or replace one extension contribution containing an AppD record. | `sail.chrome` |
+| `sail.extension.register` | Declare or replace one extension contribution containing an AppD record. | `sail.chrome` |
 | `sail.extension.update` | Update a contribution's dynamic label/icon for a target. | `sail.chrome` |
 | `sail.extension.unregister` | Remove a contribution explicitly. | `sail.chrome` |
 | `sail.chrome.discover` | Ask connected apps to reannounce contributions. | `sail.chrome` |
@@ -88,7 +91,7 @@ The channel state/history contexts and supporting intents below are proposed add
 
 ```json
 {
-  "type": "sail.extension",
+  "type": "sail.extension.register",
   "id": { "contributionId": "save-workspace" },
   "extensionPoint": "toolbar",
   "action": "intent",
@@ -112,7 +115,7 @@ The channel state/history contexts and supporting intents below are proposed add
 
 The registry key is the authenticated contributor instance plus contribution ID. Reannouncing the same key replaces the declaration. The AppD name and icons provide its initial label and image. Multiple contributions are separate announcements. A declaration is not automatically a globally published app-directory entry.
 
-`action` is `intent` or `display`. An intent action names the intent explicitly, avoiding ambiguity when the AppD record advertises several. A display action uses AppD launch details and optional presentation settings. It may also name an intent to deliver after the page connects. These fields stay in the context envelope, not `customConfig`.
+`action` is `intent` or `display`. An intent action names the intent explicitly, avoiding ambiguity when the AppD record advertises several. A display action uses AppD launch details and optional presentation settings. It may also name an intent to deliver after the page connects. These fields stay in the context envelope, not `hostManifests`.
 
 The contributor and displayed app may differ: a background app can announce a separate dialog app. Sail records both ownership and target identity, and validates whether the contributor may register that target.
 
@@ -236,7 +239,7 @@ First implementation: lifecycle configuration; `sail.chrome` discovery and decla
 
 Before implementation, settle:
 
-- Target AppD version and exact lifecycle configuration encoding, given `customConfig` deprecation.
+- Exact lifecycle field names and defaults under `hostManifests.sail`.
 - Sail service endpoint app IDs and reliable source identity metadata.
 - Whether announcements may introduce launchable records or must reference approved directory entries.
 - Target filters, ordering and competing provider selection.
