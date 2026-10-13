@@ -45,5 +45,5 @@ export function directoryDeclaresIntent(
   intentName: string,
 ): boolean {
   const listensFor = retrieveAppsById(catalog, appId)[0]?.interop?.intents?.listensFor
-  return !!listensFor && typeof listensFor === "object" && intentName in listensFor
+  return !!listensFor && typeof listensFor === "object" && Object.hasOwn(listensFor, intentName)
 }
