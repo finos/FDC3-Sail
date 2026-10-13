@@ -276,8 +276,9 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
               id={"iframe_" + panel.panelId}
               name={panel.panelId}
               className={styles.iframe}
-              onLoad={event => {
-                const win = event.currentTarget.contentWindow
+              // On mount, not onLoad: the app's scripts send WCP1 before `load` fires.
+              ref={iframe => {
+                const win = iframe?.contentWindow
                 if (win) {
                   getAppState().registerAppWindow(win, panel.panelId)
                 }

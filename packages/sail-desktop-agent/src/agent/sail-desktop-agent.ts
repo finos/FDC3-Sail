@@ -529,6 +529,7 @@ export class SailDesktopAgent<
   disconnectInstance(instanceId: string): void {
     cleanupInstanceDacpState(this.createHandlerParams(instanceId))
     this.appConnection.pruneAppConnection(instanceId)
+    this.hostWindows.forget(instanceId)
   }
 
   exportState(): string {
