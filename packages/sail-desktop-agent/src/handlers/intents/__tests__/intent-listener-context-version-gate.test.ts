@@ -41,18 +41,18 @@ function contextForVersion(fdc3Version: string) {
 /**
  * Regression coverage for the FDC3 3.0 addIntentListenerWithContext version gate.
  *
- * `payload.contextType` is a 3.0-only field. The 2.2 JSON Schema sets
+ * `payload.contextTypes` is a 3.0-only field. The 2.2 JSON Schema sets
  * `additionalProperties: false`, so it must not be READ at 2.2 at all -- not just left
  * unenforced downstream. See src/handlers/intents/intent-listener-handlers.ts.
  */
-describe("handleAddIntentListener payload.contextType version gate", () => {
-  it("ignores payload.contextType at FDC3 2.2 -- listener is recorded unfiltered", () => {
+describe("handleAddIntentListener payload.contextTypes version gate", () => {
+  it("ignores payload.contextTypes at FDC3 2.2 -- listener is recorded unfiltered", () => {
     const { params, getState, instanceId } = contextForVersion("2.2")
 
     const message = {
       type: "addIntentListenerRequest",
       meta: createDacpRequestMeta("ctx-gate-2.2", { appId: "App1", instanceId }),
-      payload: { intent: "aTestingIntent1", contextType: "fdc3.instrument" },
+      payload: { intent: "aTestingIntent1", contextTypes: ["fdc3.instrument"] },
     } as AddIntentListenerRequest
 
     handleAddIntentListener(message, params)
@@ -62,13 +62,13 @@ describe("handleAddIntentListener payload.contextType version gate", () => {
     expect(listeners[0]?.contextTypes).toEqual([])
   })
 
-  it("honors payload.contextType at FDC3 3.0", () => {
+  it("honors payload.contextTypes at FDC3 3.0", () => {
     const { params, getState, instanceId } = contextForVersion("3.0")
 
     const message = {
       type: "addIntentListenerRequest",
       meta: createDacpRequestMeta("ctx-gate-3.0", { appId: "App1", instanceId }),
-      payload: { intent: "aTestingIntent1", contextType: "fdc3.instrument" },
+      payload: { intent: "aTestingIntent1", contextTypes: ["fdc3.instrument"] },
     } as AddIntentListenerRequest
 
     handleAddIntentListener(message, params)

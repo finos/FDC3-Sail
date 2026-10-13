@@ -22,6 +22,7 @@ export type WcpConnectedApp = {
 export function createWCP1Hello(
   connectionAttemptUuid: string,
   identityUrl: string,
+  fdc3Version = "3.0",
 ): BrowserTypes.WebConnectionProtocol1Hello {
   return {
     type: "WCP1Hello",
@@ -32,7 +33,7 @@ export function createWCP1Hello(
     payload: {
       identityUrl,
       actualUrl: identityUrl,
-      fdc3Version: "2.2",
+      fdc3Version,
     },
   } as unknown as BrowserTypes.WebConnectionProtocol1Hello
 }
@@ -436,7 +437,7 @@ export function createAddEventListenerMessage(
       timestamp: new Date(),
       source: { appId, instanceId },
     },
-    payload: { type: eventType },
+    payload: { type: eventType, channelId: null },
   }
 }
 

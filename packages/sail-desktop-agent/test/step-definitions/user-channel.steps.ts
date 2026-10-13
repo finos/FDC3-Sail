@@ -125,3 +125,34 @@ When(
     await this.mockTransport.receiveMessage(message)
   },
 )
+
+When(
+  "{string} clears context {string} on {string} [Channel.clearContext]",
+  async function (this: CustomWorld, app: string, contextType: string, channelId: string) {
+    const message: BrowserTypes.ClearContextRequest = {
+      meta: createMeta(this, app),
+      payload: {
+        channelId: handleResolve(channelId, this) as string,
+        contextType: handleResolve(contextType, this) ?? null,
+      },
+      type: "clearContextRequest",
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
+  "{string} adds a {string} event listener on channel {string} [Channel.addEventListener]",
+  async function (this: CustomWorld, app: string, eventType: string, channelId: string) {
+    const message: BrowserTypes.AddEventListenerRequest = {
+      meta: createMeta(this, app),
+      payload: {
+        type: (handleResolve(eventType, this) ??
+          null) as BrowserTypes.AddEventListenerRequest["payload"]["type"],
+        channelId: handleResolve(channelId, this) as string,
+      },
+      type: "addEventListenerRequest",
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)

@@ -73,6 +73,38 @@ Feature: Opening and Requesting App Details
       | openResponse                    | chartApp                        | uuid-0                               | {empty}           | {empty}                | a1            |
 
   @fdc3_2.0
+  Scenario: Opening an app that connects before launch returns resolves to that instance
+    Given the app launcher reuses the requested instance id and the app connects during launch
+    When "appId: portfolioApp, instanceId: a1" opens app "chartApp" [fdc3.open]
+    Then the openResponse names the instance that passed identity validation
+
+  @fdc3_2.0
+  Scenario: Opening an app from the host resolves to the instance that connects during launch
+    Given the app launcher reuses the requested instance id and the app connects during launch
+    When the host opens app "chartApp"
+    Then the host open resolves to the instance that passed identity validation
+
+  @fdc3_2.0
+  Scenario: Opening an app ignores an instance id the caller names
+    Given the app launcher reuses the requested instance id and the app connects during launch
+    When "appId: portfolioApp, instanceId: a1" opens app "chartApp" naming instance "_self" [fdc3.open]
+    Then the openResponse names the instance that passed identity validation
+    And no instance is named "_self"
+
+  @fdc3_2.0
+  Scenario: A launcher that returns its own id after the app connected resolves to the connected instance
+    Given the app launcher returns its own instance id after the app connects during launch
+    When "appId: portfolioApp, instanceId: a1" opens app "chartApp" [fdc3.open]
+    Then the openResponse names the instance that passed identity validation
+    And there are no pending instances of "chartApp"
+
+  @fdc3_2.0
+  Scenario: A failed launch leaves no pending instance behind
+    Given the app launcher will fail on launch for "chartApp"
+    When "appId: portfolioApp, instanceId: a1" opens app "chartApp" [fdc3.open]
+    Then there are no pending instances of "chartApp"
+
+  @fdc3_2.0
   Scenario: Opening An App With Context
     When "appId: portfolioApp, instanceId: a1" opens app "chartApp" with context data "fdc3.instrument" [fdc3.open]
     And "uuid-0" sends validate

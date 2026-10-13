@@ -53,6 +53,18 @@ export const updateInstanceState = (
   })
 }
 
+export const setInstanceFdc3Version = (
+  state: AgentState,
+  instanceId: string,
+  fdc3Version: string,
+): AgentState => {
+  if (!state.instances[instanceId]) return state
+
+  return produce(state, draft => {
+    draft.instances[instanceId]!.fdc3Version = fdc3Version
+  })
+}
+
 export const updateInstanceActivity = (state: AgentState, instanceId: string): AgentState => {
   if (!state.instances[instanceId]) return state
 

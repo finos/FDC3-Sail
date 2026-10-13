@@ -18,12 +18,14 @@ import { sendDACPResponse } from "../../handlers/utils/dacp-response-utils"
 import { startHeartbeat } from "../../handlers/heartbeat/handlers"
 import { linkHandshakeRoutingId } from "../../state/mutators/wcp-handshake-routing"
 import { getInstance } from "../../state/selectors"
-import { connectInstance, updateInstanceState } from "../../state/mutators"
+import { connectInstance, setInstanceFdc3Version, updateInstanceState } from "../../state/mutators"
 import { AppInstanceState } from "../../state/types"
 import type { DirectoryApp } from "../../app-directory/types"
 import { getInstanceIdentityMap, type InstanceIdentityRecord } from "./instance-identity-registry"
 import { takePendingWcpSourceWindow } from "./pending-source-window"
 import { takePendingWcpMessageOrigin } from "./pending-wcp4-message-origin"
+import { takePendingWcpHelloFdc3Version } from "./pending-wcp-hello-version"
+import { implementationMetadataForApp, negotiateFdc3Version } from "../../agent/fdc3-version"
 import { findBestAppMatchByIdentityUrl } from "../../handlers/utils/wcp-identity-url-matching"
 import {
   reconcileOrphanPendingHostInstances,
@@ -77,6 +79,10 @@ export function handleWcp4ValidateAppIdentity(message: unknown, params: DACPHand
       messageMeta?.messageOrigin ??
       takePendingWcpMessageOrigin(responses.connectionOwner, params.instanceId)
     const sourceWindow = takePendingWcpSourceWindow(responses.connectionOwner, params.instanceId)
+    const fdc3Version = negotiateFdc3Version(
+      takePendingWcpHelloFdc3Version(responses.connectionOwner, params.instanceId),
+      params.implementationMetadata.fdc3Version,
+    )
     const hostIdentifier = resolveWcpHandshakeHostIdentifier(
       responses.connectionOwner,
       params.instanceId,
@@ -233,7 +239,10 @@ export function handleWcp4ValidateAppIdentity(message: unknown, params: DACPHand
       screenshots: appMetadata.screenshots,
     }
 
-    const baseImplementationMetadata = params.implementationMetadata
+    const baseImplementationMetadata = implementationMetadataForApp(
+      params.implementationMetadata,
+      fdc3Version,
+    )
     const implementationMetadata: ImplementationMetadata = {
       appMetadata: appMetadataForImplementation,
       fdc3Version: baseImplementationMetadata.fdc3Version,
@@ -262,7 +271,13 @@ export function handleWcp4ValidateAppIdentity(message: unknown, params: DACPHand
     logger.info("[WCP4] Validation successful, sending WCP5 response", response.payload)
 
     // Option A lifecycle: host open pre-register stays PENDING until WCP5 succeeds.
-    params.setState(state => updateInstanceState(state, instanceId, AppInstanceState.CONNECTED))
+    params.setState(state =>
+      updateInstanceState(
+        setInstanceFdc3Version(state, instanceId, fdc3Version),
+        instanceId,
+        AppInstanceState.CONNECTED,
+      ),
+    )
 
     // Use the source instanceId (temporary) as destination so WCP connector can migrate it
     // The WCP connector will intercept this response and migrate from temp to actual instanceId

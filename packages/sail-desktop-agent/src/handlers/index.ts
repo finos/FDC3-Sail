@@ -147,19 +147,8 @@ function canSendErrorResponse(message: unknown): message is DACPRequestRef {
   return typeof req.type === "string" && typeof req.meta?.requestUuid === "string"
 }
 
-/**
- * Message types this router accepts beyond the FDC3 2.2 `AppRequestMessage` schema union.
- *
- * `closeRequest` is an FDC3 3.0 forward-port (see `open/handlers.ts`'s `CloseRequestMessage` and
- * `handleCloseRequest`, which gates it behind `fdc3Version >= "3.0"`). It has no generated 2.2
- * schema validator, so it is also absent from `INBOUND_VALIDATORS` in
- * `dacp/validate-dacp-message.ts` and goes unvalidated even in `strict` mode. Listed here by name
- * so that gap is a documented, visible decision rather than a silent fall-through.
- */
-type ExtensionRequestMessage = appHandlers.CloseRequestMessage
-
-/** Every message type this router can dispatch: the 2.2 union plus the extensions above. */
-type RoutableRequestMessage = BrowserTypes.AppRequestMessage | ExtensionRequestMessage
+/** Every message type this router can dispatch. */
+type RoutableRequestMessage = BrowserTypes.AppRequestMessage
 type RoutableMessageType = RoutableRequestMessage["type"]
 
 /** Handler for one specific message type, narrowed to that type's own request shape. */
@@ -201,6 +190,7 @@ const HANDLER_MAP: { [MessageType in RoutableMessageType]: HandlerFor<MessageTyp
   // Channel handlers
   getCurrentChannelRequest: channelHandlers.handleGetCurrentChannelRequest,
   getCurrentContextRequest: channelHandlers.handleGetCurrentContextRequest,
+  clearContextRequest: channelHandlers.handleClearContextRequest,
   joinUserChannelRequest: channelHandlers.handleJoinUserChannelRequest,
   leaveCurrentChannelRequest: channelHandlers.handleLeaveCurrentChannelRequest,
   getUserChannelsRequest: channelHandlers.handleGetUserChannelsRequest,

@@ -19,11 +19,12 @@ export function parseDirectoryData(data: DirectoryApp[] | DirectoryData): Direct
 }
 
 export function validateApplication(app: DirectoryApp, source?: string): void {
+  // AppD 2.0 requires `name`, not `title`; older directories only carry `title`. Take either.
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- app is unvalidated JSON from a remote app-directory URL; the DirectoryApp type is an assumption about what should arrive, not a fact about what does.
-  if (!app.appId || !app.title || !app.type || !app.details) {
+  if (!app.appId || !(app.name || app.title) || !app.type || !app.details) {
     const sourceInfo = source ? ` in ${source}` : ""
     throw new Error(
-      `Invalid application${sourceInfo}: missing required fields (appId, title, type, or details)`,
+      `Invalid application${sourceInfo}: missing required fields (appId, name or title, type, or details)`,
     )
   }
 }
@@ -37,7 +38,8 @@ export function validateApplications(applications: DirectoryApp[], source?: stri
 function normalizeDirectoryUrl(url: string): string {
   try {
     const urlObj = new URL(url)
-    if (urlObj.pathname.endsWith("/v2/apps")) {
+    // A REST endpoint already, or a static directory file (e.g. the conformance toolbox's).
+    if (urlObj.pathname.endsWith("/v2/apps") || urlObj.pathname.endsWith(".json")) {
       return url
     }
     const basePath = urlObj.pathname.replace(/\/$/, "")

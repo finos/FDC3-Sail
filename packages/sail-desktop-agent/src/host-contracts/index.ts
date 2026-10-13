@@ -23,5 +23,9 @@ export type {
   IntentHandler,
 } from "./intent-resolver"
 export { createHostIntentResolver } from "./intent-resolver"
+export {
+  createProgrammaticIntentResolver,
+  type ProgrammaticIntentResolverOptions,
+} from "./programmatic-intent-resolver"
 
 export type { ChannelControl, ChannelSelectionRequest } from "./channel-control"

@@ -10,10 +10,14 @@
 import type { AppLauncher } from "../host-contracts/app-launcher"
 import { routeDACPMessage } from "../handlers"
 import { cleanupInstanceDacpState } from "../handlers/instance-teardown"
+import { HostWindowRegistry } from "./host-window-registry"
+import { findClosedWindowInstanceIds } from "../app-connection/wcp/closed-windows"
+import { launchWithPendingInstance } from "../handlers/utils/launch-with-pending-instance"
 import { handleWcp4ValidateAppIdentity } from "../app-connection/wcp/wcp-identity-validation"
 import { createDacpResponseDispatcherFromDelivery } from "../handlers/utils/dacp-response-utils"
 import type { DACPHandlerParams } from "../handlers/types"
 import { applyInboundValidationPolicy, type ValidationMode } from "../dacp/validate-dacp-message"
+import { shapeForDestination } from "../dacp/shape-for-recipient"
 import type { IntentResolutionCallback } from "../handlers/intent-resolution-callback"
 import type { DirectoryApp } from "../app-directory/types"
 import {
@@ -95,6 +99,11 @@ export class SailDesktopAgent<
    */
   readonly appConnection: TEdge
   private readonly channelChangeTimeoutMs: number
+  /**
+   * Which `Window` (iframe `contentWindow` or tab) each launched app lives in. Hosts register it;
+   * WCP falls back to it when `window.name` is unreadable (cross-origin) or cleared by the app.
+   */
+  readonly hostWindows = new HostWindowRegistry()
 
   readonly intentResolver: IntentResolverUIMethods
   readonly channels: SailDesktopAgentChannels
@@ -149,14 +158,16 @@ export class SailDesktopAgent<
 
     // Injected test edge, or a fresh BrowserAppConnection (inert until start). Cast is only
     // for the default branch where `TEdge` is `BrowserAppConnection`.
+    const hostResolve = localOptions.appConnectionOptions?.resolveHostIdentifier
     this.appConnection = (config.appConnection ??
       new BrowserAppConnection({
         ...localOptions.appConnectionOptions,
+        resolveHostIdentifier: source =>
+          hostResolve?.(source) ?? this.hostWindows.instanceIdFor(source),
         logger: this.logger,
         validation: this.validation,
         logPayloadDetail: this.logPayloadDetail,
-        // Single source of truth: WCP3 advertises the same version WCP5, getInfo and
-        // closeRequest gating read.
+        // The most WCP3 offers; each app gets min(its WCP1Hello version, this), as WCP5 does.
         fdc3Version: this.implementationMetadata.fdc3Version,
       })) as TEdge
 
@@ -324,6 +335,10 @@ export class SailDesktopAgent<
       return
     }
 
+    // Spec "Disconnects": never answer for, or route to, an app whose window has closed.
+    for (const closedId of findClosedWindowInstanceIds(this.appConnection.getConnections())) {
+      this.disconnectInstance(closedId)
+    }
     await routeDACPMessage(message, this.createHandlerParams(instanceId))
   }
 
@@ -397,9 +412,12 @@ export class SailDesktopAgent<
 
   private createHandlerParams(instanceId: string): DACPHandlerParams {
     const conn = this.appConnection
-    const responses = createDacpResponseDispatcherFromDelivery(conn, message =>
-      conn.connectionRegistry.sendToAppInstance(message),
-    )
+    // Every outbound message: handlers build 3.0 messages; 2.x recipients get them in 2.x shape.
+    const { fdc3Version } = this.implementationMetadata
+    const responses = createDacpResponseDispatcherFromDelivery(conn, message => {
+      const shaped = shapeForDestination(message, this.getState(), fdc3Version)
+      if (shaped !== undefined) conn.connectionRegistry.sendToAppInstance(shaped)
+    })
 
     return {
       responses,
@@ -473,15 +491,13 @@ export class SailDesktopAgent<
       ...(options?.context !== undefined ? { context: options.context } : {}),
     }
 
-    const launched = await this.appLauncher.launch(payload, catalogApps[0]!)
-    if (launched.instanceId) {
-      this.registerPendingHostInstance({
-        appId: launched.appId,
-        instanceId: launched.instanceId,
-      })
-    }
-
-    return launched
+    return launchWithPendingInstance({
+      appLauncher: this.appLauncher,
+      request: payload,
+      app: catalogApps[0]!,
+      getState: () => this.getState(),
+      setState: callback => this.setState(callback),
+    })
   }
 
   private getAppInstances(): DesktopAgentAppInstance[] {
@@ -516,6 +532,7 @@ export class SailDesktopAgent<
   disconnectInstance(instanceId: string): void {
     cleanupInstanceDacpState(this.createHandlerParams(instanceId))
     this.appConnection.pruneAppConnection(instanceId)
+    this.hostWindows.forget(instanceId)
   }
 
   exportState(): string {

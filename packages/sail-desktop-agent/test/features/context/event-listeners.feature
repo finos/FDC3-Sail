@@ -26,6 +26,14 @@ Feature: Desktop Agent Event Listeners
       | channelChangedEvent      | a1            | fdc3.channel.1           |
       | joinUserChannelResponse  | a1            | {null}                   |
 
+  # FDC3 3.0 DesktopAgent.joinUserChannel: the event "MUST be dispatched before the returned
+  # promise resolves".
+  @fdc3_3.0
+  Scenario: The channelChanged event arrives before the joinUserChannel response
+    When "appId: App1, instanceId: a1" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]
+    And "appId: App1, instanceId: a1" joins user channel "fdc3.channel.1" [fdc3.joinUserChannel]
+    Then a "channelChangedEvent" is sent to "a1" before the "joinUserChannelResponse"
+
   @fdc3_2.2
   Scenario: Receiving channelChanged event when leaving a channel
     When "appId: App1, instanceId: a1" adds an event listener for "USER_CHANNEL_CHANGED" [fdc3.addEventListener]

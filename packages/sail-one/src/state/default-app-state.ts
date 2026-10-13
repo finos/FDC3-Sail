@@ -41,6 +41,8 @@ export class DefaultAppState implements AppState {
 
   registerAppWindow(window: Window, instanceId: string): void {
     this.windowInformation.set(window, instanceId)
+    // The app may be cross-origin, so WCP can't read the frame's `name`; the agent needs this.
+    getServerState().registerHostWindow(window, instanceId)
   }
 
   getInstanceIdForWindow(window: Window): string | undefined {

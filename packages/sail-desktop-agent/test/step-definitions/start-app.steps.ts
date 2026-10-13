@@ -1,11 +1,12 @@
-import { DataTable, Then, When } from "@cucumber/cucumber"
+import { DataTable, Given, Then, When } from "@cucumber/cucumber"
+import expect from "expect"
 import { CustomWorld } from "../world/index.ts"
 import { contextMap, createMeta, getAppInstanceId } from "./generic.steps"
-import { matchDataSubset } from "../support/testing-utils"
+import { appProvidedMetadata, matchDataSubset } from "../support/testing-utils"
 import { BrowserTypes } from "@finos/fdc3-schema"
 import type { GetInfoRequest } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { AppInstanceState } from "../../src/state/types"
-import { getInstance, getInstancesByState } from "../../src/state/selectors"
+import { getInstance, getInstancesByAppId, getInstancesByState } from "../../src/state/selectors"
 import { connectInstance, removeInstance, updateInstanceState } from "../../src/state/mutators"
 import { retrieveAppsById } from "../../src/app-directory/app-directory-queries"
 
@@ -29,7 +30,7 @@ function stripWcpProtocolMessagesFromLog(world: CustomWorld): void {
 async function sendWcp4ValidateForInstance(
   world: CustomWorld,
   uuid: string,
-  options?: { retainWcp5InLog?: boolean },
+  options?: { retainWcp5InLog?: boolean; fdc3Version?: string },
 ): Promise<void> {
   const instance = getInstance(world.getState(), uuid)
   if (!instance) {
@@ -67,6 +68,7 @@ async function sendWcp4ValidateForInstance(
   await world.mockTransport.receiveMessage(message, {
     sourceWindow: { hostPanel: uuid },
     messageOrigin: new URL(appUrl).origin,
+    fdc3Version: options?.fdc3Version,
   })
 
   const validatedId = world.mockTransport.lastWcp5ValidatedInstanceId
@@ -90,6 +92,7 @@ async function connectTestAppInstance(
   world: CustomWorld,
   appId: string,
   instanceId: string,
+  fdc3Version?: string,
 ): Promise<void> {
   const state = world.getState()
   const existing = getInstance(state, instanceId)
@@ -108,8 +111,12 @@ async function connectTestAppInstance(
   const inDirectory = retrieveAppsById(world.getState().appDirectory, appId).length > 0
   if (inDirectory) {
     // Background "is opened" runs WCP4 for CONNECTED state; keep WCP5 out of DACP message assertions.
-    await sendWcp4ValidateForInstance(world, instanceId, { retainWcp5InLog: false })
+    await sendWcp4ValidateForInstance(world, instanceId, { retainWcp5InLog: false, fdc3Version })
     return
+  }
+  if (fdc3Version !== undefined) {
+    // The version is negotiated at WCP4, which only runs for directory apps.
+    throw new Error(`${appId} must be in the app directory to connect at FDC3 ${fdc3Version}`)
   }
 
   world.updateState(currentState =>
@@ -159,6 +166,16 @@ When(
       this.createUUID()
     }
     await connectTestAppInstance(this, appId, uuid)
+  },
+)
+
+When(
+  "{string} is opened with connection id {string} at FDC3 {string}",
+  async function (this: CustomWorld, app: string, uuid: string, fdc3Version: string) {
+    this.props.instances = this.props.instances || {}
+    this.props.instances[app] = uuid
+    this.createUUID()
+    await connectTestAppInstance(this, resolveAppIdFromAppStr(app), uuid, fdc3Version)
   },
 )
 
@@ -301,6 +318,32 @@ When(
 )
 
 When(
+  "{string} opens app {string} with context data {string} and metadata traceId {string} signature {string} antiReplay claims {string} and custom key {string} [fdc3.open]",
+  async function (
+    this: CustomWorld,
+    appStr: string,
+    open: string,
+    context: string,
+    traceId: string,
+    signature: string,
+    antiReplayClaims: string,
+    customRegion: string,
+  ) {
+    await ensureAppInstanceForTesting(this, appStr)
+    const message: OpenRequest = {
+      type: "openRequest",
+      meta: createMeta(this, appStr),
+      payload: {
+        app: { appId: open },
+        context: contextMap[context],
+        metadata: appProvidedMetadata(traceId, signature, antiReplayClaims, customRegion),
+      },
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+When(
   "{string} requests metadata for {string} [fdc3.getAppMetadata]",
   async function (this: CustomWorld, appStr: string, open: string) {
     await ensureAppInstanceForTesting(this, appStr)
@@ -359,3 +402,92 @@ When(
     await this.mockTransport.receiveMessage(message)
   },
 )
+
+Given(
+  "the app launcher reuses the requested instance id and the app connects during launch",
+  function (this: CustomWorld) {
+    this.mockAppLauncher.reuseRequestedInstanceId = true
+    // The browsing context races the launcher: WCP4 arrives before launch() resolves.
+    this.mockAppLauncher.onAppLaunched = async instanceId => {
+      await sendWcp4ValidateForInstance(this, instanceId, { retainWcp5InLog: true })
+    }
+  },
+)
+
+Given(
+  "the app launcher returns its own instance id after the app connects during launch",
+  function (this: CustomWorld) {
+    // A third-party launcher: it ignores the requested id and registers nothing in agent state,
+    // while the browsing context connects as the id the agent registered PENDING.
+    this.mockAppLauncher.onInstanceCreated = undefined
+    this.mockAppLauncher.onAppLaunched = async () => {
+      const requested = this.mockAppLauncher.getLaunchHistory().at(-1)?.request.app.instanceId
+      await sendWcp4ValidateForInstance(this, requested!, { retainWcp5InLog: true })
+    }
+  },
+)
+
+When(
+  "{string} opens app {string} naming instance {string} [fdc3.open]",
+  async function (this: CustomWorld, appStr: string, open: string, instanceId: string) {
+    await ensureAppInstanceForTesting(this, appStr)
+    const message: OpenRequest = {
+      type: "openRequest",
+      meta: createMeta(this, appStr),
+      payload: { app: { appId: open, instanceId, desktopAgent: "n/a" } },
+    }
+    await this.mockTransport.receiveMessage(message)
+  },
+)
+
+Then("no instance is named {string}", function (this: CustomWorld, instanceId: string) {
+  expect(getInstance(this.getState(), instanceId)).toBeUndefined()
+})
+
+When("the host opens app {string}", async function (this: CustomWorld, appId: string) {
+  try {
+    this.props.hostOpenResult = await this.desktopAgent.apps.open(appId)
+  } catch (error) {
+    this.props.hostOpenResult = error
+  }
+})
+
+function validatedInstanceId(world: CustomWorld): string | undefined {
+  const wcp5 = world.mockTransport
+    .getPostedMessages()
+    .find(record => record.msg.type === "WCP5ValidateAppIdentityResponse")
+  return (wcp5?.msg.payload as { instanceId?: string } | undefined)?.instanceId
+}
+
+Then(
+  "the openResponse names the instance that passed identity validation",
+  function (this: CustomWorld) {
+    const openResponse = this.mockTransport
+      .getPostedMessages()
+      .find(record => record.msg.type === "openResponse")
+    const payload = openResponse?.msg.payload as
+      | { appIdentifier?: { instanceId?: string }; error?: string }
+      | undefined
+    expect(payload?.error).toBeUndefined()
+    expect(validatedInstanceId(this)).toBeDefined()
+    expect(payload?.appIdentifier?.instanceId).toBe(validatedInstanceId(this))
+  },
+)
+
+Then(
+  "the host open resolves to the instance that passed identity validation",
+  function (this: CustomWorld) {
+    expect(this.props.hostOpenResult).not.toBeInstanceOf(Error)
+    expect(validatedInstanceId(this)).toBeDefined()
+    expect((this.props.hostOpenResult as { instanceId?: string }).instanceId).toBe(
+      validatedInstanceId(this),
+    )
+  },
+)
+
+Then("there are no pending instances of {string}", function (this: CustomWorld, appId: string) {
+  const pending = getInstancesByAppId(this.getState(), appId).filter(
+    instance => instance.state === AppInstanceState.PENDING,
+  )
+  expect(pending).toEqual([])
+})

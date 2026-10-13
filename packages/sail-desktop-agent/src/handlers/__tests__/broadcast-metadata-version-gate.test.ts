@@ -90,7 +90,7 @@ describe("handleBroadcastRequest payload.metadata version gate", () => {
 
     const metadata = broadcastEventMetadata(transport)
     expect(metadata).toBeDefined()
-    expect(metadata?.traceId).toBeUndefined()
+    expect(metadata?.traceId).not.toBe("trace-2.2")
     expect(metadata?.source).toBeDefined()
   })
 

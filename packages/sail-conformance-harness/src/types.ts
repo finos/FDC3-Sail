@@ -1,18 +1,3 @@
-import type { AppMetadata, Context } from "@finos/fdc3"
-
-/** Handler option for programmatic intent resolution (matches desktop-agent shape). */
-export type IntentHandlerOption = AppMetadata & {
-  isRunning: boolean
-}
-
-/** Request payload for programmatic intent resolution. */
-export type IntentResolutionRequest = {
-  requestId: string
-  intent: string
-  context: Context
-  handlers: IntentHandlerOption[]
-}
-
 /** How the harness mounts a launched conformance app. */
 export type HarnessLaunchMode = "iframe" | "popup"
 

@@ -154,3 +154,63 @@ Then(
     }
   },
 )
+
+function postsOfTypeTo(world: CustomWorld, messageType: string, instanceId: string) {
+  return world.mockTransport
+    .getPostedMessages()
+    .filter(record => record.msg.type === messageType && record.to?.instanceId === instanceId)
+}
+
+Then(
+  "no {string} is sent to {string}",
+  function (this: CustomWorld, messageType: string, instanceId: string) {
+    expect(postsOfTypeTo(this, messageType, instanceId)).toHaveLength(0)
+  },
+)
+
+Then(
+  "no {string} sent to {string} has a {string} field",
+  function (this: CustomWorld, messageType: string, instanceId: string, field: string) {
+    const posts = postsOfTypeTo(this, messageType, instanceId)
+    expect(posts.length).toBeGreaterThan(0)
+    for (const post of posts) {
+      expect(post.msg.payload).not.toHaveProperty(field)
+    }
+  },
+)
+
+Then(
+  "exactly {int} {string} is sent to {string}",
+  function (this: CustomWorld, count: number, messageType: string, instanceId: string) {
+    expect(postsOfTypeTo(this, messageType, instanceId)).toHaveLength(count)
+  },
+)
+
+/**
+ * Strict `null`, not just absent: the FDC3 3.0 client rejects a getCurrentContextResponse whose
+ * `metadata` is missing rather than `null` with `ChannelError.MalformedContext`.
+ */
+Then(
+  "the last {string} has {string} and {string} set to null",
+  function (this: CustomWorld, messageType: string, first: string, second: string) {
+    const last = this.mockTransport.getMessagesByType(messageType).at(-1)
+    const payload = last?.msg.payload
+    expect(payload).toBeDefined()
+    expect(payload![first]).toBeNull()
+    expect(payload![second]).toBeNull()
+  },
+)
+
+Then(
+  "a {string} is sent to {string} before the {string}",
+  function (this: CustomWorld, firstType: string, instanceId: string, secondType: string) {
+    const types = this.mockTransport
+      .getPostedMessages()
+      .filter(record => record.to?.instanceId === instanceId)
+      .map(record => record.msg.type)
+    const first = types.indexOf(firstType)
+    const second = types.indexOf(secondType)
+    expect(first).toBeGreaterThanOrEqual(0)
+    expect(second).toBeGreaterThan(first)
+  },
+)

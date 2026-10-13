@@ -14,6 +14,7 @@
 
 // The Desktop Agent
 export { SailDesktopAgent } from "./agent/sail-desktop-agent"
+export type { HostWindowRegistry } from "./agent/host-window-registry"
 export type {
   SailDesktopAgentOptions,
   DesktopAgentAppInstance,

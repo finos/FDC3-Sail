@@ -1,8 +1,10 @@
 import { createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
 import type { AppIdentifier, BrowserTypes, Context } from "@finos/fdc3"
 import { ResolveError } from "@finos/fdc3"
+import { readAppProvidableMetadata } from "../../dacp/context-metadata"
 import {
   NoAppsFoundError,
   IntentDeliveryFailedError,
@@ -10,19 +12,20 @@ import {
 } from "../../errors/fdc3-errors"
 import { getInstance, getInstancesByAppId } from "../../state/selectors"
 import { findIntentHandlers, appIntentForWireResponse } from "./intent-helpers"
-import { launchAppAndWaitForInstance } from "./intent-launch-helpers"
 import {
   appsToIntentHandlerOptions,
   createResolverAppIntent,
   findMatchingIntentResolutionChoice,
 } from "./intent-resolver-helpers"
-import { isDirectoryIntentCompatible } from "./intent-directory-helpers"
+import { directoryDeclaresIntent, isDirectoryIntentCompatible } from "./intent-directory-helpers"
 import { isValidContext } from "../utils/context-validation"
 import {
   attachPendingIntentTimeout,
   cleanupPendingIntentRequest,
   mapIntentRaiseErrorToResolveError,
   normalizeTargetApp,
+  readRaiseNewInstance,
+  resolveUntargetedInstance,
   registerPendingIntentState,
   resolveAppTargetInstance,
   schedulePendingIntentDelivery,
@@ -69,7 +72,8 @@ export async function handleRaiseIntentRequest(
       })
     }
 
-    const targetApp: AppIdentifier | undefined = normalizeTargetApp(payload.app)
+    const targetApp: AppIdentifier | undefined = normalizeTargetApp(params, payload.app)
+    const newInstance = readRaiseNewInstance(params, payload)
     validateRequestedTargetAvailability(params, targetApp)
 
     const source = getInstance(getState(), instanceId)
@@ -90,16 +94,27 @@ export async function handleRaiseIntentRequest(
     const isTargetRunning =
       !!targetApp?.instanceId || (targetAppId ? runningInstances.length > 0 : false)
 
-    if (
-      targetAppId &&
-      isTargetRunning &&
-      !isDirectoryIntentCompatible(
+    // The directory's context list for a declared intent is authoritative: a running instance's
+    // unfiltered listener does not widen it (conformance RaiseIntentFailTargetedAppResolve1).
+    // A listener that names the context type (addIntentListenerWithContext) does widen it.
+    // Running listeners otherwise only count for intents the directory does not declare.
+    const directoryCompatible =
+      !!targetAppId &&
+      isDirectoryIntentCompatible(
         state.appDirectory,
         targetAppId,
         payload.intent,
         validatedContext.type,
-      ) &&
-      handlers.runningListeners.length === 0
+      )
+    const hasContextTypedListener = handlers.runningListeners.some(
+      listener => listener.contextTypes.length > 0,
+    )
+    if (
+      targetAppId &&
+      !directoryCompatible &&
+      !hasContextTypedListener &&
+      (directoryDeclaresIntent(state.appDirectory, targetAppId, payload.intent) ||
+        (isTargetRunning && handlers.runningListeners.length === 0))
     ) {
       throw new NoAppsFoundError(`No apps found to handle intent: ${payload.intent}`)
     }
@@ -123,6 +138,7 @@ export async function handleRaiseIntentRequest(
         appId: targetAppId,
         validatedContext,
         runningListenerInstanceId: runningListener?.instanceId,
+        newInstance,
       })
       targetInstanceId = resolvedTarget.targetInstanceId
       targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
@@ -164,6 +180,7 @@ export async function handleRaiseIntentRequest(
           validatedContext,
           preferredInstanceId: selectedTarget.instanceId,
           forceLaunch: !selectedTarget.instanceId,
+          newInstance,
         })
         targetInstanceId = resolvedTarget.targetInstanceId
         targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
@@ -174,17 +191,16 @@ export async function handleRaiseIntentRequest(
         sendDACPResponse({ response, instanceId, responses })
         return
       }
-    } else if (handlers.runningListeners.length > 0) {
-      targetInstanceId = handlers.runningListeners[0]!.instanceId
-    } else if (handlers.availableApps.length > 0) {
-      targetInstanceIsLaunched = true
-      targetInstanceId = await launchAppAndWaitForInstance(
-        handlers.availableApps[0]!.appId,
-        params,
-        validatedContext,
-      )
     } else {
-      throw new NoAppsFoundError(`No handler found for intent: ${payload.intent}`)
+      const resolvedTarget = await resolveUntargetedInstance(
+        params,
+        handlers,
+        payload.intent,
+        validatedContext,
+        newInstance,
+      )
+      targetInstanceId = resolvedTarget.targetInstanceId
+      targetInstanceIsLaunched = resolvedTarget.targetInstanceIsLaunched
     }
 
     const requestId = message.meta.requestUuid
@@ -201,6 +217,7 @@ export async function handleRaiseIntentRequest(
       targetInstanceId,
       targetAppId: resolvedTargetAppId,
       requestType: "raiseIntentRequest",
+      appMetadata: readAppProvidableMetadata(callerFdc3Version(params), payload.metadata),
     })
 
     // Newly launched apps may not have registered listeners yet, so queue delivery until ready.

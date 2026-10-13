@@ -12,13 +12,13 @@ import {
   withResponseDispatcher,
 } from "../../__tests__/test-params"
 import { handleIntentResultRequest } from "../intent-result-handlers"
-import type { IntentResultContextMetadata } from "../intent-result-metadata"
+import type { WireContextMetadata } from "../../../dacp/context-metadata"
 
 type RaiseIntentResultResponse = BrowserTypes.AgentResponseMessage & {
   type: "raiseIntentResultResponse"
   payload: {
     intentResult?: BrowserTypes.IntentResult
-    resultMetadata?: IntentResultContextMetadata
+    resultMetadata?: WireContextMetadata
     error?: string
   }
   meta: BrowserTypes.AgentResponseMessageMeta & {

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import type { IDockviewPanelProps } from "dockview"
 
 import { useSailDesktopAgent, useConnectionStore } from "../../../contexts"
@@ -62,8 +62,23 @@ export const FDC3Panel = ({ api, panel }: FDC3PanelProps) => {
     api.setTitle(panel.title)
   }, [panel.title, api])
 
+  // The app may be cross-origin, so WCP can't read the iframe's `name`; tell the agent which
+  // window is this panel's.
+  const registerIframeWindow = useCallback(
+    (iframe: HTMLIFrameElement | null) => {
+      const win = iframe?.contentWindow
+      if (!win) {
+        return
+      }
+      agent.hostWindows.register(win, panel.panelId)
+      return () => agent.hostWindows.forget(panel.panelId)
+    },
+    [agent, panel.panelId],
+  )
+
   return (
     <iframe
+      ref={registerIframeWindow}
       src={panel.url}
       name={panel.panelId}
       onLoad={() => console.log(`[FDC3Panel] ${panel.panelId} - Iframe loaded successfully`)}

@@ -34,6 +34,7 @@ import {
 } from "./wcp/wcp-connection-management"
 import { AppConnectionEventEmitter } from "./wcp/app-connection-event-emitter"
 import { clearPendingWcpSourceWindow, setPendingWcpSourceWindow } from "./wcp/pending-source-window"
+import { setPendingWcpHelloFdc3Version } from "./wcp/pending-wcp-hello-version"
 import { resolveInstanceId } from "../state/selectors/wcp-handshake-routing"
 import type { AgentState, StateSetter } from "../state/types"
 import type { HostIntentResolverPayload, HostIntentResolverResponse } from "../host-contracts"
@@ -58,10 +59,9 @@ type BrowserAppConnectionOptions = AppConnectionOptions & {
   /** How much DACP/WCP payload to include in MessagePortTransport debug logs. */
   logPayloadDetail?: LogPayloadDetail
   /**
-   * FDC3 version to advertise in WCP3Handshake. Threaded from the agent's
-   * `implementationMetadata.fdc3Version` so WCP3, WCP5, `getInfo` and `closeRequest` gating
-   * all read one setting. Not part of {@link AppConnectionOptions} — hosts set the version on
-   * `implementationMetadata`, not here.
+   * The agent's `implementationMetadata.fdc3Version`: the highest version WCP3Handshake offers.
+   * Each app is offered the lower of this and its `WCP1Hello.fdc3Version`. Not part of
+   * {@link AppConnectionOptions} — hosts set the version on `implementationMetadata`, not here.
    */
   fdc3Version: string
 }
@@ -72,7 +72,7 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
   private options: Required<AppConnectionOptions>
   private validation: ValidationMode
   private logPayloadDetail: LogPayloadDetail
-  /** Agent-threaded `implementationMetadata.fdc3Version`, advertised in WCP3Handshake. */
+  /** Agent-threaded `implementationMetadata.fdc3Version`, the most WCP3Handshake offers. */
   private fdc3Version: string
   private isStarted = false
   private appMessageHandler?: AppMessageHandler
@@ -237,6 +237,9 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
 
     if (isIdentityValidation && storedSourceWindow) {
       setPendingWcpSourceWindow(this, instanceId, storedSourceWindow)
+    }
+    if (isIdentityValidation && storedConnection?.fdc3Version) {
+      setPendingWcpHelloFdc3Version(this, instanceId, storedConnection.fdc3Version)
     }
 
     return {

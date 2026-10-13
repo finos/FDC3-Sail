@@ -7,8 +7,7 @@ import { installHarnessConsoleCapture } from "./harness-console-capture"
 
 installHarnessConsoleCapture()
 
-// `?appId=Conformance1Headless` starts an unattended run; anything else in the
-// conformance directory mounts as usual. See HEADLESS.md.
+// `?appId=` mounts any app in the conformance directory; Conformance1 by default.
 const appId = new URLSearchParams(window.location.search).get("appId") ?? undefined
 
 const bootstrap = createHarnessBootstrap({ appId })

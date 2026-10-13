@@ -1,8 +1,11 @@
 /**
  * FDC3 version comparison for Desktop Agent runtime support contracts.
  *
- * `implementationMetadata.fdc3Version` is the source of truth for advertised support.
+ * `implementationMetadata.fdc3Version` is the highest version the agent supports. Each app is
+ * served at the version negotiated from its `WCP1Hello` (`AppInstance.fdc3Version`).
  */
+
+import type { SailDesktopAgentMetadata } from "./default-config"
 
 type ParsedFdc3Version = {
   major: number
@@ -36,4 +39,33 @@ export function isFdc3VersionAtLeast(version: string, target: string): boolean {
   }
 
   return current.minor >= required.minor
+}
+
+/**
+ * The FDC3 version an app is served at: the lower of the version it asked for in `WCP1Hello`
+ * and the agent's own. A hello with no usable version gets the agent's version — the only one
+ * the agent is sure to speak, and what every app was served before versions were per app.
+ */
+export function negotiateFdc3Version(appVersion: string | undefined, agentVersion: string): string {
+  if (!appVersion || !parseFdc3Version(appVersion)) {
+    return agentVersion
+  }
+  return isFdc3VersionAtLeast(appVersion, agentVersion) ? agentVersion : appVersion
+}
+
+/**
+ * The agent's implementation metadata as an app served at `fdc3Version` sees it (WCP5, `getInfo`).
+ * FDC3 2.x requires `optionalFeatures.OriginatingAppMetadata`; 3.0 dropped the flag and its schema
+ * forbids unknown features, so only 2.x apps get it. It is `true`: 2.x events always carry
+ * `originatingApp`.
+ */
+export function implementationMetadataForApp(
+  agentMetadata: SailDesktopAgentMetadata,
+  fdc3Version: string,
+): SailDesktopAgentMetadata {
+  if (isFdc3VersionAtLeast(fdc3Version, "3.0")) {
+    return { ...agentMetadata, fdc3Version }
+  }
+  const optionalFeatures = { ...agentMetadata.optionalFeatures, OriginatingAppMetadata: true }
+  return { ...agentMetadata, fdc3Version, optionalFeatures }
 }

@@ -70,7 +70,7 @@ describe("multi-pending hostIdentifier adoption", () => {
     return {
       launch(request) {
         const launcherIds = [STALE_PENDING_ID, NEW_PENDING_ID]
-        const instanceId = request.app.instanceId ?? launcherIds[launchCount++]
+        const instanceId = launcherIds[launchCount++]
         return Promise.resolve({ appId: request.app.appId, instanceId })
       },
     }

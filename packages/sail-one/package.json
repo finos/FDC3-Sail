@@ -8,6 +8,8 @@
     "build": "vp build",
     "predev": "npm run build -w @finos/sail-desktop-agent -w @finos/sail-platform",
     "dev": "vp dev",
+    "apps": "fdc3-example-apps",
+    "dev:apps": "concurrently -k -n sail,apps \"npm run dev\" \"npm run apps\"",
     "preview": "vp preview",
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
@@ -22,6 +24,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@finos/fdc3-example-apps": "3.0.0-beta.1",
     "glob": "^10.3.10",
     "jsdom": "^26.1.0",
     "rimraf": "^6.0.1",

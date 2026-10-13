@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect, beforeEach } from "vite-plus/test"
-import { retrieveAllApps, retrieveAppsById, retrieveIntents } from "../app-directory-queries"
+import {
+  resolveKnownAppId,
+  retrieveAllApps,
+  retrieveAppsById,
+  retrieveIntents,
+} from "../app-directory-queries"
 import type { AppDirectoryState } from "../../state/types"
 import { mockApp1, mockApp2, mockApp3 } from "./app-directory-test-fixtures"
 
@@ -54,6 +59,39 @@ describe("app-directory-queries", () => {
 
     it("returns empty array for non-existent appId", () => {
       expect(retrieveAppsById(catalog, "non-existent")).toHaveLength(0)
+    })
+
+    describe("fully-qualified appIds (FDC3 3.0)", () => {
+      const qualified = { ...mockApp1, appId: "chart@appd.example.com" }
+      const otherQualified = { ...mockApp2, appId: "chart@other.example.com" }
+      const unqualified = { ...mockApp2, appId: "news" }
+
+      it("prefers an exact match over a match on the unqualified part", () => {
+        const exactUnqualified = { ...mockApp3, appId: "chart" }
+        const apps = retrieveAppsById(catalogWith(qualified, exactUnqualified), "chart")
+        expect(apps.map(app => app.appId)).toEqual(["chart"])
+      })
+
+      it("matches an unqualified appId against every fully-qualified app with that name", () => {
+        const apps = retrieveAppsById(catalogWith(qualified, otherQualified, unqualified), "chart")
+        expect(apps.map(app => app.appId)).toEqual([
+          "chart@appd.example.com",
+          "chart@other.example.com",
+        ])
+      })
+
+      it("matches a fully-qualified appId's unqualified part against unqualified apps only", () => {
+        const catalogue = catalogWith(otherQualified, unqualified)
+        expect(retrieveAppsById(catalogue, "news@appd.example.com")).toEqual([unqualified])
+        expect(retrieveAppsById(catalogue, "chart@appd.example.com")).toEqual([])
+      })
+
+      it("resolveKnownAppId returns the matched directory appId, or the input when unknown", () => {
+        const catalogue = catalogWith(qualified, unqualified)
+        expect(resolveKnownAppId(catalogue, "chart")).toBe("chart@appd.example.com")
+        expect(resolveKnownAppId(catalogue, "news@appd.example.com")).toBe("news")
+        expect(resolveKnownAppId(catalogue, "missing")).toBe("missing")
+      })
     })
   })
 

@@ -1,126 +1,140 @@
-import { expect, test, type Page } from "@playwright/test"
-import { mkdirSync, writeFileSync } from "node:fs"
+import { expect, test, type ConsoleMessage, type Page } from "@playwright/test"
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import {
-  compareToBaseline,
-  formatRegressionReport,
-  loadBaseline,
-  summariseResult,
-  type ConformanceResult,
-} from "./conformance-baseline"
-
-/** Prefix of the single-line console message carrying the final result. */
-const RESULT_SENTINEL = "FDC3_CONFORMANCE_RESULT"
-/** Prefix of the per-test console progress messages. */
-const STATUS_SENTINEL = "FDC3_CONFORMANCE_STATUS"
+import { checkRun, loadExpectedTests, summariseResult } from "./conformance-result"
+import { resolveConformanceHostId } from "./hosts"
+import { awaitMochaResult, installMochaEndHook } from "./mocha-scrape"
+import { resolveConformanceFdc3Version, TOOLBOX_DIRECTORY_URL } from "./toolbox"
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..")
 const ARTIFACTS = join(PACKAGE_ROOT, "artifacts")
+const fdc3Version = resolveConformanceFdc3Version()
+const hostId = resolveConformanceHostId()
+const cell = `${hostId}-${fdc3Version}`
 
-/**
- * Resolves with the conformance result as soon as any page in the context prints
- * the sentinel.
- *
- * The conformance app runs in an iframe on the harness page, so `page.on('console')`
- * covers it — but the mock apps are launched as popups (`forceNewWindow`), which are
- * separate pages, hence the `context.on('page')` subscription too.
- */
-function awaitResult(page: Page): Promise<ConformanceResult> {
-  return new Promise(resolve => {
-    let lastProgress = ""
+/** The toolbox always serves the conformance app under `/apps/app/index.html`. */
+const CONFORMANCE_IFRAME = 'iframe[src*="/apps/app/index.html"]'
 
-    const onConsole = (msg: { text(): string }) => {
-      const text = msg.text()
-      if (text.startsWith(RESULT_SENTINEL)) {
-        resolve(JSON.parse(text.slice(RESULT_SENTINEL.length + 1)) as ConformanceResult)
-        return
-      }
-      if (text.startsWith(STATUS_SENTINEL)) {
-        const { completed, total } = JSON.parse(text.slice(STATUS_SENTINEL.length + 1)) as {
-          completed: number
-          total: number
-        }
-        const progress = `${completed}/${total}`
-        // One line per change, not per event — this ends up in CI logs.
-        if (progress !== lastProgress) {
-          lastProgress = progress
-          console.log(`  conformance ${progress}`)
-        }
-      }
-    }
-
-    page.on("console", onConsole)
-    page.context().on("page", opened => opened.on("console", onConsole))
-  })
+/** Set by the hosts' `?appId=` deep link once the open settles. */
+type HostWindowFlags = {
+  __sailConformanceOpenError?: string
+  __sailConformanceReady?: string
 }
 
-test("FDC3 2.2 conformance suite runs headlessly", async ({ page }) => {
+async function dumpHostDiagnostics(page: Page, consoleLines: string[]): Promise<string> {
+  const flags = await page
+    .evaluate(() => window as unknown as HostWindowFlags)
+    .then(w => ({ ready: w.__sailConformanceReady, openError: w.__sailConformanceOpenError }))
+    .catch(() => ({ ready: undefined, openError: undefined }))
+  const iframeSrcs = await page
+    .locator("iframe")
+    .evaluateAll(els => els.map(el => (el as HTMLIFrameElement).src || "(no src)"))
+    .catch(() => [] as string[])
+
+  return [
+    `cell=${cell}`,
+    `ready=${flags.ready ?? "(unset)"}`,
+    `openError=${flags.openError ?? "(none)"}`,
+    `iframeSrcs=${JSON.stringify(iframeSrcs)}`,
+    `consoleTail:\n${consoleLines.slice(-40).join("\n")}`,
+  ].join("\n")
+}
+
+const consoleLines: string[] = []
+
+test.afterEach(() => {
+  // The host page's whole console, for diagnosing a failed cell.
+  writeFileSync(join(ARTIFACTS, `console-${cell}.log`), `${consoleLines.join("\n")}\n`)
+})
+
+test(`FDC3 ${fdc3Version} conformance on ${hostId}`, async ({ page }) => {
   mkdirSync(ARTIFACTS, { recursive: true })
 
-  // Subscribe before navigating so no sentinel is missed.
-  const resultPromise = awaitResult(page)
+  page.on("console", (msg: ConsoleMessage) => {
+    consoleLines.push(`[${msg.type()}] ${msg.text()}`)
+  })
 
-  await page.goto("/?appId=Conformance1Headless")
+  // The directory also rides in the query, so a host that misses the Vite env still loads only it.
+  const deepLink = new URLSearchParams({
+    appId: "Conformance1",
+    fdc3Directory: TOOLBOX_DIRECTORY_URL,
+  })
+  await page.goto(`/?${deepLink.toString()}`)
 
-  const outcome = await resultPromise.catch(async (error: unknown) => {
-    await page.screenshot({ path: join(ARTIFACTS, "conformance-timeout.png"), fullPage: true })
+  const openError = await page
+    .waitForFunction(
+      () => {
+        const w = window as unknown as HostWindowFlags
+        return w.__sailConformanceOpenError ?? (w.__sailConformanceReady ? "" : undefined)
+      },
+      undefined,
+      { timeout: 90_000 },
+    )
+    .then(handle => handle.jsonValue())
+    .catch(() => "")
+  if (openError) {
+    await page.screenshot({ path: join(ARTIFACTS, `open-error-${cell}.png`), fullPage: true })
+    throw new Error(`Host deep-link open failed: ${openError}`)
+  }
+
+  const iframe = page.locator(CONFORMANCE_IFRAME)
+  try {
+    await iframe.waitFor({ state: "attached", timeout: 120_000 })
+  } catch (error: unknown) {
+    await page.screenshot({ path: join(ARTIFACTS, `iframe-timeout-${cell}.png`), fullPage: true })
+    const diagnostics = await dumpHostDiagnostics(page, consoleLines)
+    writeFileSync(join(ARTIFACTS, `iframe-timeout-${cell}.txt`), `${diagnostics}\n`)
+    throw new Error(
+      `Timed out waiting for the Conformance1 iframe.\n${diagnostics}\nOriginal: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    )
+  }
+
+  const frame = page.frameLocator(CONFORMANCE_IFRAME)
+  await frame.locator("#testSuite option").first().waitFor({ state: "attached", timeout: 120_000 })
+  await frame.locator("#testSuite").selectOption({ label: "All" })
+
+  const mochaFrame = page.frames().find(f => f.url().includes("/apps/app/index.html"))
+  if (!mochaFrame) {
+    throw new Error("Conformance iframe not found before Run")
+  }
+  expect(await installMochaEndHook(mochaFrame), "mocha.run end hook installed").toBe(true)
+
+  await frame.locator("#runButton").click()
+
+  const outcome = await awaitMochaResult(page).catch(async (error: unknown) => {
+    await page.screenshot({ path: join(ARTIFACTS, `timeout-${cell}.png`), fullPage: true })
     throw error
   })
 
-  writeFileSync(join(ARTIFACTS, "conformance.json"), `${JSON.stringify(outcome, null, 2)}\n`)
+  writeFileSync(
+    join(ARTIFACTS, `conformance-${cell}.json`),
+    `${JSON.stringify({ host: hostId, fdc3Version, ...outcome }, null, 2)}\n`,
+  )
 
-  // #mocha is a long scrolling list inside a fixed-height iframe. Screenshotting the element
-  // alone yields an image the full height of the list but with only the slice that fits the
-  // iframe's viewport actually painted — the rest comes out blank. Grow the iframe to its
-  // content height first so every row renders. Same-origin, because the toolbox is served from
-  // the harness origin (see `publicDir` in vite.config.ts).
+  // #mocha is a long list inside a fixed-height iframe; grow the iframe so every row paints.
   await page
-    .evaluate(() => {
-      const iframe = document.querySelector<HTMLIFrameElement>(
-        'iframe[src*="/apps/app/index.html"]',
-      )
-      const height = iframe?.contentDocument?.documentElement.scrollHeight
-      if (iframe && height) {
-        iframe.style.height = `${height}px`
+    .evaluate(selector => {
+      const el = document.querySelector<HTMLIFrameElement>(selector)
+      const height = el?.contentDocument?.documentElement.scrollHeight
+      if (el && height) {
+        el.style.height = `${height}px`
       }
-      return height ?? 0
-    })
-    .catch(() => 0)
-
-  const frame = page.frameLocator('iframe[src*="/apps/app/index.html"]')
+    }, CONFORMANCE_IFRAME)
+    .catch(() => undefined)
   await frame
     .locator("#mocha")
-    .screenshot({ path: join(ARTIFACTS, "conformance.png") })
-    .catch(() => {
-      // Best-effort: an `error` result means the list never rendered.
-    })
+    .screenshot({ path: join(ARTIFACTS, `conformance-${cell}.png`) })
+    .catch(() => undefined)
 
-  expect(outcome.status, outcome.error ?? "run did not complete").toBe("complete")
-
-  console.log(summariseResult(outcome))
-
-  const baseline = loadBaseline()
-  if (!baseline) {
-    console.log(
-      "No committed baseline found — writing artifacts/conformance.json only. " +
-        "Copy it to e2e/conformance-baseline-2.2.json to start gating on regressions.",
-    )
-    return
+  const summary = `${hostId} FDC3 ${fdc3Version}: ${summariseResult(outcome)}`
+  console.log(summary)
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `**${summary}**\n`)
   }
 
-  // Gate on regressions against the committed baseline rather than on zero failures:
-  // the suite has known failures, so an absolute gate would be red from day one.
-  const diff = compareToBaseline(outcome, baseline)
-  writeFileSync(join(ARTIFACTS, "conformance-diff.json"), `${JSON.stringify(diff, null, 2)}\n`)
-
-  if (diff.fixed.length > 0) {
-    console.log(
-      `${diff.fixed.length} test(s) now passing that the baseline expects to fail:\n  ${diff.fixed.join("\n  ")}\n` +
-        "Refresh e2e/conformance-baseline-2.2.json to lock the improvement in.",
-    )
-  }
-
-  expect(formatRegressionReport(diff)).toBe("")
+  expect(checkRun(outcome, loadExpectedTests(fdc3Version)).join("\n")).toBe("")
 })

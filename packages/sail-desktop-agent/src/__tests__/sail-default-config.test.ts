@@ -70,7 +70,7 @@ describe("resolveDesktopAgentConfig", () => {
 
     expect(config.desktopAgentMetadata.provider).toBe("cucumber-provider")
     expect(config.desktopAgentMetadata.providerVersion).toBe("1.0.0")
-    expect(config.desktopAgentMetadata.fdc3Version).toBe("2.2")
+    expect(config.desktopAgentMetadata.fdc3Version).toBe("3.0")
     expect(config.desktopAgentMetadata.optionalFeatures).toEqual(
       DEFAULT_SAIL_DESKTOP_AGENT_METADATA.optionalFeatures,
     )

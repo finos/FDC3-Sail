@@ -13,6 +13,7 @@
     "dev": "concurrently -n agent,api,web \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-finance\"",
     "dev:one": "concurrently -n agent,api,one \"npm run dev -w @finos/sail-desktop-agent\" \"npm run dev -w @finos/sail-platform\" \"npm run dev -w @finos/sail-one\"",
     "dev:conformance": "npm run dev -w @finos/sail-conformance-harness",
+    "dev:apps": "fdc3-example-apps",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
     "lint": "vp lint . && oxlint -c .oxlintrc.json packages",
@@ -53,6 +54,7 @@
   ],
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
+    "@finos/fdc3-example-apps": "3.0.0-beta.1",
     "@types/node": "^25.9.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.x",

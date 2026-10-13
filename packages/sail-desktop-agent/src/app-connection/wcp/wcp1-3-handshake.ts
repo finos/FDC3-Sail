@@ -9,15 +9,15 @@ import type {
 } from "./wcp-types"
 import { resolveHostIdentifierFromSource } from "./wcp-host-identifier"
 import type { LogPayloadDetail } from "../../logging/logger"
+import { negotiateFdc3Version } from "../../agent/fdc3-version"
 
 export interface WCPHandshakeContext extends WCPRoutingContext {
   options: Required<AppConnectionOptions>
   /** Host-configured payload detail for MessagePortTransport logs. */
   logPayloadDetail: LogPayloadDetail
   /**
-   * FDC3 version advertised in WCP3Handshake. Threaded from the agent's
-   * `implementationMetadata.fdc3Version` — the single source of truth, shared with WCP5,
-   * `getInfo` and `closeRequest` gating.
+   * The agent's `implementationMetadata.fdc3Version`: the highest version WCP3Handshake may offer.
+   * Each app is offered `negotiateFdc3Version(WCP1Hello.fdc3Version, fdc3Version)`.
    */
   fdc3Version: string
 }
@@ -70,6 +70,10 @@ export function handleWCP1Hello(
   const sourceWindow = event.source as Window
   const hostIdentifier = resolveHostIdentifierFromSource(sourceWindow, context.options)
 
+  // WCP5 and every later message must use this same version; WCP4 negotiates it again from the
+  // value stored here, which gives the same answer.
+  const fdc3Version = negotiateFdc3Version(message.payload.fdc3Version, context.fdc3Version)
+
   // Store connection metadata
   const metadata: AppConnectionMetadata = {
     instanceId,
@@ -80,6 +84,7 @@ export function handleWCP1Hello(
     port: channel.port2,
     connectedAt: new Date(),
     hostIdentifier,
+    fdc3Version,
   }
   context.connectionRegistry.connections.set(instanceId, metadata)
   context.connectionRegistry.messagePortTransports.set(instanceId, appTransport)
@@ -93,7 +98,7 @@ export function handleWCP1Hello(
       timestamp: new Date().toISOString(),
     },
     payload: {
-      fdc3Version: context.fdc3Version,
+      fdc3Version,
       intentResolverUrl: context.options.getIntentResolverUrl(instanceId) ?? false,
       channelSelectorUrl: context.options.getChannelSelectorUrl(instanceId) ?? false,
     },

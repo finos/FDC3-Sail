@@ -27,7 +27,7 @@ For how `@finos/sail-desktop-agent` fits into the rest of the stack, see the
 
 _This section is generated from `packages/sail-desktop-agent/test/features/` — do not hand-edit between the markers. Regenerate with `npm run conformance:inventory --workspace=@finos/sail-docs` (see `website/scripts/generate-conformance-inventory.mjs`)._
 
-**17 feature files** under `test/features/` today: **2** carry `@fdc3_2.2` (the 2.2 pack, 12 scenarios), and **8** more are `@fdc3_3.0`-only (11 scenarios) — the 3.0 profile runs both, **23** scenarios total. `@fdc3_2.0` is a scenario-level tag inside the 2.2 files marking scenarios also valid under FDC3 2.0 (**119** scenarios across **10** files).
+**17 feature files** under `test/features/` today: **2** carry `@fdc3_2.2` (the 2.2 pack, 12 scenarios), and **8** more are `@fdc3_3.0`-only (11 scenarios) — the 3.0 profile runs both, **23** scenarios total. `@fdc3_2.0` is a scenario-level tag inside the 2.2 files marking scenarios also valid under FDC3 2.0 (**124** scenarios across **10** files).
 
 #### `@fdc3_2.2` feature files
 
@@ -59,7 +59,7 @@ _This section is generated from `packages/sail-desktop-agent/test/features/` —
 cd packages/sail-desktop-agent
 npx cucumber-js --profile fdc3-2.2   # 12 scenarios
 npx cucumber-js --profile fdc3-3.0   # 23 scenarios
-npx cucumber-js --profile fdc3-2.0   # 119 scenarios
+npx cucumber-js --profile fdc3-2.0   # 124 scenarios
 ```
 
 {/* GENERATED:CONFORMANCE-INVENTORY:END */}
@@ -114,71 +114,45 @@ all; **n/a** means outside the FDC3 conformance pack's public-API surface.
 | WCP browser app connection | — | missing | Cucumber uses `MockTransport`; there is no `@fdc3_2.2`/`@fdc3_3.0` scenario that exercises the real WCP/`postMessage` path. This is exactly the gap the toolbox (browser-based) covers instead |
 | Heartbeat / liveness | — | n/a | Sail transport hygiene (WCP6), not part of the FDC3 conformance pack's public API surface. No dedicated feature file exists today |
 
-## Toolbox local dev (`toolbox-local` / `VITE_CONFORMANCE_TOOLBOX`) **`[implemented]`**
+## FINOS toolbox runs **`[implemented]`**
 
-Running the FINOS toolbox against a **local** copy (instead of the hosted
-`https://fdc3.finos.org/toolbox/fdc3-conformance`) is a supported dev mode, controlled by the
-`VITE_CONFORMANCE_TOOLBOX` Vite env var:
+The FINOS conformance suite comes from npm: two aliases of `@robmoffat/fdc3-conformance` in
+`@finos/sail-conformance-harness`, one per FDC3 version. Update them by bumping the version.
 
-| Profile | Env | Toolbox origin | FDC3 target |
-|---|---|---|---|
-| Hosted (default) | — | `https://fdc3.finos.org/toolbox/fdc3-conformance` | 3.0 |
-| Local FINOS dev | `VITE_CONFORMANCE_TOOLBOX=local` | `http://localhost:3001` | 2.2 |
+Playwright runs one **matrix cell** at a time: a product host running `SailDesktopAgent`, against
+one suite.
 
-Two workspaces read this variable, each via its own `.env.toolbox-local` and a `dev:local` npm
-script that passes Vite's `--mode toolbox-local`:
-
-- **`@finos/sail-conformance-harness`** — `npm run dev:local -w @finos/sail-conformance-harness`
-  runs the harness itself against the local toolbox on port 3001. See
-  [@finos/sail-conformance-harness](../conformance-harness/overview).
-- **`@finos/sail-finance`** — `npm run dev:local -w @finos/sail-finance` passes the same
-  `--mode toolbox-local` through to that package's Vite dev server (`predev` builds the agent
-  and platform first).
-
-`sail-finance` always loads the same conformance app-directory fixture and merges it into its own
-app directory alongside the public FINOS app directory (`https://directory.fdc3.finos.org/v2/apps`)
-— that merge is unconditional, in every dev mode. What `VITE_CONFORMANCE_TOOLBOX=local` changes is
-only the **origin** those conformance apps resolve to: hosted FINOS URLs by default, rewritten to
-`sail-finance`'s own origin (so they load same-origin, which `window.name` / WCP4 host-instance
-adoption requires) when the local profile is active. The harness does the same origin rewrite
-against its own origin instead. Vite proxies `/apps`, `/lib`, and a couple of static assets to the
-hosted FINOS toolbox so the rewritten URLs still resolve when running locally.
-
-## Conformance baseline status
-
-**83 of 83 passing, against an empty baseline.**
-
-`@finos/sail-conformance-harness` runs the FINOS toolbox in a real browser under Playwright:
+| Env var | Values | Default |
+|---|---|---|
+| `CONFORMANCE_HOST` | `sail-one`, `sail-finance` | `sail-finance` |
+| `CONFORMANCE_FDC3_VERSION` | `2.2`, `3.0` | `2.2` |
+| `CONFORMANCE_TOOLBOX` | `published`, or the path to a built local FDC3 `toolbox/fdc3-conformance` checkout | `published` |
 
 ```bash
-npm run test:conformance -w @finos/sail-conformance-harness
+npm run test:browser:sail-finance:2.2 -w @finos/sail-conformance-harness
+npm run test:browser:sail-one:2.2 -w @finos/sail-conformance-harness
 ```
 
-A run takes roughly five minutes and covers 21 suites. Results are compared against
-`e2e/conformance-baseline-2.2.json`, which lists tests that are *allowed* to fail. **That list
-is currently empty**, so every one of the 83 tests must pass or the run fails. There is no tolerated
-failure to hide a regression behind.
+The toolbox serves on `:3001`. The host starts with `VITE_FDC3_DIRECTORY_URL` (the toolbox's
+directory only, so other apps don't inflate `findIntent` counts) and `VITE_AUTO_RESOLVE=1`
+(intents resolve with no UI). Playwright opens `/?appId=Conformance1`, clicks Run and scrapes
+`#mocha`.
 
-The three titles that used to sit in that baseline were not toolbox flakiness — they were two real
-defects in Sail: concurrent same-appId launches losing an instance registration, and a plain
-`fdc3.open()` resolving before the launched app had connected. Both are fixed, which is why the list
-is empty. Adding an entry back suppresses a real regression; fix the defect instead.
+A run fails on any failing test, and also when it loads fewer tests than
+`e2e/expected-tests-<version>.json` lists or drops one of them. So a suite that silently loads
+5 tests instead of 83 can't pass.
 
-### Nightly CI
+### CI
 
-`.github/workflows/conformance.yml` runs the suite nightly at **03:00 UTC**, and on demand via
-**`workflow_dispatch`** from the Actions tab. It gates on regressions against the baseline and
-uploads its artifacts either way.
-
-:::note
-GitHub only fires scheduled workflows from a repository's **default branch**. On any other branch
-the nightly run does not start until the branch merges — use `workflow_dispatch` in the meantime.
-:::
+`.github/workflows/conformance.yml` runs on every pull request, nightly at **03:00 UTC**, and on
+demand via **`workflow_dispatch`**. Matrix: host `[sail-one, sail-finance]` × FDC3 version
+`["2.2", "3.0"]`. Each cell prints its pass, fail and total counts to
+the job summary and uploads its artifacts either way.
 
 ## Related
 
-- [@finos/sail-conformance-harness](../conformance-harness/overview) — the browser host the
-  live FINOS toolbox runs against.
+- [@finos/sail-conformance-harness](../conformance-harness/overview) — runs the FINOS toolbox
+  against the product hosts.
 - [Composition & internals](./composition) — module ownership inside
   `@finos/sail-desktop-agent`.
 - [Integrator guide](./integrator-guide) — the host-contract surface these scenarios exercise.

@@ -37,3 +37,13 @@ export function isDirectoryIntentCompatible(
 ): boolean {
   return getDirectoryIntentsForContext(catalog, appId, contextType).includes(intentName)
 }
+
+/** Whether the app's directory entry lists `intentName` at all, for any context. */
+export function directoryDeclaresIntent(
+  catalog: AppDirectoryState,
+  appId: string,
+  intentName: string,
+): boolean {
+  const listensFor = retrieveAppsById(catalog, appId)[0]?.interop?.intents?.listensFor
+  return !!listensFor && typeof listensFor === "object" && Object.hasOwn(listensFor, intentName)
+}

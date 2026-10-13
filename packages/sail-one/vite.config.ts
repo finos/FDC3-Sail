@@ -11,9 +11,11 @@ const mainHtmlPath = "/html/index.html"
 
 /** Vite only auto-serves index.html from the project root; our MPA entry lives under html/. */
 function sailOneRootEntry(): Plugin {
+  // Keep the query, so deep links like `/?appId=Conformance1` still reach the app.
   const rewriteRoot = (url: string | undefined) => {
-    if (url === "/" || url === "/index.html") {
-      return mainHtmlPath
+    const [, pathname, rest] = /^([^?#]*)(.*)$/.exec(url ?? "")!
+    if (pathname === "/" || pathname === "/index.html") {
+      return `${mainHtmlPath}${rest}`
     }
     return url
   }

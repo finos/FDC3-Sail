@@ -1,9 +1,11 @@
+import { buildContextMetadata, readAppProvidableMetadata } from "../../dacp/context-metadata"
 import type { BrowserTypes, Context } from "@finos/fdc3"
 import { OpenError } from "@finos/fdc3"
 import { createDACPEvent, createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { sendDACPResponse, sendDACPErrorResponse } from "./dacp-response-utils"
 import type { DACPHandlerParams } from "../types"
 import { getInstance, isInstanceConnected } from "../../state/selectors"
+import { callerFdc3Version } from "./caller-fdc3-version"
 import type { AgentState, PendingOpenWithContext } from "../../state/types"
 import {
   addPendingOpenWithContext,
@@ -268,14 +270,19 @@ function deliverOpenWithContext(
   // nothing to broadcast and only needs the openResponse.
   if (launchContext) {
     const callerInstance = getInstance(params.getState(), sourceInstanceId)
-    const broadcastEvent = createDACPEvent("broadcastEvent", {
-      channelId: null,
-      context: launchContext,
-      originatingApp: {
-        appId: callerInstance?.appId ?? "unknown",
-        instanceId: sourceInstanceId,
-      },
-    })
+    const originatingApp = {
+      appId: callerInstance?.appId ?? "unknown",
+      instanceId: sourceInstanceId,
+    }
+    const appMetadata = readAppProvidableMetadata(
+      callerFdc3Version(params),
+      message.payload.metadata,
+    )
+    const broadcastEvent = createDACPEvent(
+      "broadcastEvent",
+      { channelId: null, context: launchContext, originatingApp },
+      { metadata: buildContextMetadata(originatingApp, appMetadata) },
+    )
 
     const broadcastEventWithRouting = {
       ...broadcastEvent,

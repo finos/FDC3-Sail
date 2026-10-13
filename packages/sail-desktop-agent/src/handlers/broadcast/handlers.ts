@@ -33,27 +33,26 @@ import {
 } from "../private-channels/handlers"
 import { notifyContextListenerAdded } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
-import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
+import {
+  buildContextMetadata,
+  readAppProvidableMetadata,
+  type WireContextMetadata,
+} from "../../dacp/context-metadata"
 
 /** Handles DACP broadcastRequest (validation runs at the router). */
 export function handleBroadcastRequest(
   message: BrowserTypes.BroadcastRequest,
   params: DACPHandlerParams,
 ): void {
-  const { responses, instanceId, getState, setState, logger, implementationMetadata } = params
+  const { responses, instanceId, getState, setState, logger } = params
 
   try {
     const { channelId, context } = message.payload
-    const broadcastPayload = message.payload as BrowserTypes.BroadcastRequest["payload"] & {
-      /** FDC3 3.0: optional app-provided ContextMetadata fields on broadcast. */
-      metadata?: Record<string, unknown>
-    }
-    // Must not be read at all at 2.2 — the 2.2 JSON Schema has `additionalProperties: false`,
-    // so a 3.0 field on the wire would otherwise be silently honoured even though the message
-    // fails schema validation.
-    const broadcastAppMetadata = isFdc3VersionAtLeast(implementationMetadata.fdc3Version, "3.0")
-      ? broadcastPayload.metadata
-      : undefined
+    const broadcastAppMetadata = readAppProvidableMetadata(
+      callerFdc3Version(params),
+      message.payload.metadata,
+    )
 
     if (!isValidContext(context)) {
       sendDACPErrorResponse({
@@ -99,9 +98,15 @@ export function handleBroadcastRequest(
       requestUuid: message.meta.requestUuid,
     })
 
+    // Built once so every listener, and every later read of the stored context, sees one traceId.
+    const metadata = buildContextMetadata(
+      { appId: instance.appId, instanceId },
+      broadcastAppMetadata,
+    )
+
     // Store context using state transform (skip for private channels)
     if (!privateChannel) {
-      setState(state => storeContext(state, channelId, context, instanceId))
+      setState(state => storeContext(state, channelId, context, instanceId, metadata))
     }
 
     if (privateChannel) {
@@ -112,9 +117,9 @@ export function handleBroadcastRequest(
       }
 
       setState(state => setPrivateChannelLastContext(state, channelId, context.type, context))
-      notifyPrivateChannelContextListeners(channelId, context, params, broadcastAppMetadata)
+      notifyPrivateChannelContextListeners(channelId, context, params, metadata)
     } else {
-      notifyContextListeners(channelId, context, params, broadcastAppMetadata)
+      notifyContextListeners(channelId, context, params, metadata)
     }
 
     const response = createDACPSuccessResponse(message, "broadcastResponse")
@@ -349,7 +354,7 @@ function notifyContextListeners(
   channelId: string,
   context: Context,
   params: DACPHandlerParams,
-  appMetadata?: Record<string, unknown>,
+  metadata: WireContextMetadata,
 ): void {
   const { getState, logger, logPayloadDetail } = params
   const state = getState()
@@ -394,27 +399,27 @@ function notifyContextListeners(
   let successful = 0
   let failed = 0
 
+  const senderInstance = getInstance(state, params.instanceId)
+  const broadcastEvent = createDACPEvent(
+    "broadcastEvent",
+    {
+      channelId,
+      context,
+      originatingApp: {
+        appId: senderInstance?.appId || "unknown",
+        instanceId: params.instanceId,
+      },
+    },
+    { metadata },
+  )
+
   targets.forEach(instance => {
     try {
-      const senderInstance = getInstance(getState(), params.instanceId)
-
-      const broadcastEvent = createDACPEvent(
-        "broadcastEvent",
-        {
-          channelId,
-          context,
-          originatingApp: {
-            appId: senderInstance?.appId || "unknown",
-            instanceId: params.instanceId,
-          },
-        },
-        { appMetadata },
-      )
-
       const broadcastEventWithRouting = {
         ...broadcastEvent,
         meta: {
           ...broadcastEvent.meta,
+          eventUuid: crypto.randomUUID(),
           destination: { instanceId: instance.instanceId },
         },
       }
@@ -423,7 +428,7 @@ function notifyContextListeners(
         targetInstanceId: instance.instanceId,
         channelId,
         contextType: context.type,
-        eventUuid: broadcastEvent.meta.eventUuid,
+        eventUuid: broadcastEventWithRouting.meta.eventUuid,
       })
 
       if (logPayloadDetail === "full") {
@@ -487,14 +492,18 @@ function deliverCurrentContextToListener(
   const sourceInstanceId = storedContext?.sourceInstanceId
   const sourceInstance = sourceInstanceId ? getInstance(state, sourceInstanceId) : undefined
 
-  const broadcastEvent = createDACPEvent("broadcastEvent", {
-    channelId,
-    context: contextToDeliver,
-    originatingApp: {
-      appId: sourceInstance?.appId ?? "unknown",
-      instanceId: sourceInstanceId ?? "unknown",
+  const broadcastEvent = createDACPEvent(
+    "broadcastEvent",
+    {
+      channelId,
+      context: contextToDeliver,
+      originatingApp: {
+        appId: sourceInstance?.appId ?? "unknown",
+        instanceId: sourceInstanceId ?? "unknown",
+      },
     },
-  })
+    { metadata: storedContext?.metadata },
+  )
 
   const broadcastEventWithRouting = {
     ...broadcastEvent,
@@ -511,7 +520,7 @@ function notifyPrivateChannelContextListeners(
   channelId: string,
   context: Context,
   params: DACPHandlerParams,
-  appMetadata?: Record<string, unknown>,
+  metadata: WireContextMetadata,
 ): void {
   const { getState, logger } = params
   const privateChannel = getPrivateChannel(getState(), channelId)
@@ -542,7 +551,7 @@ function notifyPrivateChannelContextListeners(
             instanceId: params.instanceId,
           },
         },
-        { appMetadata },
+        { metadata },
       )
 
       const broadcastEventWithRouting = {

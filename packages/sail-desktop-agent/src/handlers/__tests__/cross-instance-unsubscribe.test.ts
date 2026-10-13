@@ -81,7 +81,7 @@ function setupEventListenerScenario() {
     {
       type: "addEventListenerRequest",
       meta: createDacpRequestMeta("add-event-owner", { appId: OWNER_APP_ID, instanceId: OWNER_ID }),
-      payload: { type: "USER_CHANNEL_CHANGED" },
+      payload: { type: "USER_CHANNEL_CHANGED", channelId: null },
     },
     ownerContext,
   )

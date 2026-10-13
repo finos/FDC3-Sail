@@ -3,6 +3,7 @@
  *
  * Replacement for @finos/testing package functions used in step definitions.
  */
+import type { BrowserTypes } from "@finos/fdc3-schema"
 
 import { DataTable } from "@cucumber/cucumber"
 import { CustomWorld } from "../world/index.ts"
@@ -366,4 +367,26 @@ export function matchDataSubset(world: CustomWorld, actual: unknown[], dataTable
 
     remaining.splice(matchIndex, 1)
   })
+}
+
+/**
+ * App-provided FDC3 3.0 metadata, in the shape the FDC3 reference scenarios use: the signature's
+ * two parts are derived from one label, and the anti-replay claims are written `iat/exp/jti`.
+ */
+export function appProvidedMetadata(
+  traceId: string,
+  signature: string,
+  antiReplayClaims: string,
+  customRegion: string,
+): BrowserTypes.AppProvidableContextMetadata {
+  const [iat, exp, jti] = antiReplayClaims.split("/")
+  return {
+    traceId,
+    signature: {
+      signature: `${signature} (signature part)`,
+      protected: `${signature} (protected part)`,
+    },
+    antiReplay: { iat: Number(iat), exp: Number(exp), jti: jti! },
+    custom: { region: customRegion },
+  }
 }

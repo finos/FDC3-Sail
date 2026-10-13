@@ -16,37 +16,27 @@ import {
 } from "../../errors/fdc3-errors"
 import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import { getInstance, getListenersForInstance } from "../../state/selectors"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
 import { registerIntentListener, unregisterIntentListener } from "../../state/mutators"
 import { deliverPendingIntentsForListener } from "./intent-delivery-helpers"
 import { findConflictingIntentListener } from "./intent-listener-conflict"
 
-type AddIntentListenerPayload = BrowserTypes.AddIntentListenerRequest["payload"] & {
-  /** FDC3 3.0 addIntentListenerWithContext — optional until @finos/fdc3 BrowserTypes include it. */
-  contextType?: string | string[] | null
-}
-
-function normalizeIntentListenerContextTypes(
-  contextType: AddIntentListenerPayload["contextType"],
-): string[] {
-  if (contextType == null) {
+/** `addIntentListenerWithContext` context types; empty means the listener takes every type. */
+function normalizeIntentListenerContextTypes(contextTypes: unknown): string[] {
+  if (!Array.isArray(contextTypes)) {
     return []
   }
-
-  if (Array.isArray(contextType)) {
-    return contextType.filter((type): type is string => typeof type === "string" && type.length > 0)
-  }
-
-  return contextType.length > 0 ? [contextType] : []
+  return contextTypes.filter((type): type is string => typeof type === "string" && type.length > 0)
 }
 
 export function handleAddIntentListener(
   message: BrowserTypes.AddIntentListenerRequest,
   params: DACPHandlerParams,
 ): void {
-  const { responses, instanceId, getState, setState, logger, implementationMetadata } = params
+  const { responses, instanceId, getState, setState, logger } = params
 
   try {
-    const payload = message.payload as AddIntentListenerPayload
+    const payload = message.payload
     const instance = getInstance(getState(), instanceId)
 
     if (!instance) {
@@ -55,15 +45,12 @@ export function handleAddIntentListener(
       )
     }
 
-    // FDC3 3.0 addIntentListenerWithContext: `payload.contextType` must not be read at all at
+    // FDC3 3.0 addIntentListenerWithContext: `payload.contextTypes` must not be read at all at
     // 2.2 — the 2.2 JSON Schema has `additionalProperties: false`, so a 3.0 field on the wire
     // would otherwise be silently honoured even though the message fails schema validation.
-    const supportsIntentListenerContext = isFdc3VersionAtLeast(
-      implementationMetadata.fdc3Version,
-      "3.0",
-    )
+    const supportsIntentListenerContext = isFdc3VersionAtLeast(callerFdc3Version(params), "3.0")
     const contextTypes = supportsIntentListenerContext
-      ? normalizeIntentListenerContextTypes(payload.contextType)
+      ? normalizeIntentListenerContextTypes(payload.contextTypes)
       : []
 
     if (supportsIntentListenerContext) {

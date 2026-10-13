@@ -1,5 +1,5 @@
 import type { SailDesktopAgentMetadata } from "../../agent/default-config"
-import { isFdc3VersionAtLeast } from "../../agent/fdc3-version"
+import { implementationMetadataForApp, isFdc3VersionAtLeast } from "../../agent/fdc3-version"
 import { createDACPSuccessResponse } from "../../dacp/dacp-message-creators"
 import { type DACPHandlerParams } from "../types"
 import { sendDACPResponse, sendDACPErrorResponse } from "../utils/dacp-response-utils"
@@ -12,9 +12,10 @@ import {
   FDC3OpenError,
 } from "../../errors/fdc3-errors"
 import type { DirectoryApp } from "../../app-directory/types"
-import { retrieveAppsById } from "../../app-directory/app-directory-queries"
+import { resolveKnownAppId, retrieveAppsById } from "../../app-directory/app-directory-queries"
 import { getInstance, getInstancesByAppId } from "../../state/selectors"
-import { connectInstance } from "../../state/mutators"
+import { callerFdc3Version } from "../utils/caller-fdc3-version"
+import { launchWithPendingInstance } from "../utils/launch-with-pending-instance"
 import { registerOpenWithContext } from "../utils/open-with-context"
 import { isValidContext } from "../utils/context-validation"
 import { teardownInstance } from "../instance-teardown"
@@ -53,13 +54,17 @@ export function handleGetInfoRequest(
       }
     }
 
+    const callerMetadata = implementationMetadataForApp(
+      implementationMetadata,
+      callerFdc3Version(params),
+    )
     const resolvedImplementationMetadata: SailDesktopAgentMetadata & {
       appMetadata?: BrowserTypes.AppMetadata
     } = {
-      fdc3Version: implementationMetadata.fdc3Version,
-      provider: implementationMetadata.provider,
-      providerVersion: implementationMetadata.providerVersion,
-      optionalFeatures: implementationMetadata.optionalFeatures,
+      fdc3Version: callerMetadata.fdc3Version,
+      provider: callerMetadata.provider,
+      providerVersion: callerMetadata.providerVersion,
+      optionalFeatures: callerMetadata.optionalFeatures,
     }
 
     if (appMetadata) {
@@ -100,7 +105,7 @@ export async function handleOpenRequest(
       throw new ErrorOnLaunchError("App launching not available - no AppLauncher configured")
     }
 
-    const appId = payload.app.appId
+    const appId = resolveKnownAppId(getState().appDirectory, payload.app.appId)
     const targetInstanceId = payload.app.instanceId
     const launchContext = payload.context
 
@@ -128,42 +133,19 @@ export async function handleOpenRequest(
       hasContext: !!launchContext,
     })
 
-    // Launch the app via injected launcher
-    const appIdentifier = await appLauncher.launch(
-      {
-        app: payload.app,
-        context: launchContext,
-      },
-      appMetadata,
-    )
+    // Pending before launch, so an app that connects mid-launch adopts the id we answer with.
+    const appIdentifier = await launchWithPendingInstance({
+      appLauncher,
+      request: { app: { ...payload.app, appId }, context: launchContext },
+      app: appMetadata,
+      getState,
+      setState: params.setState,
+    })
 
     logger.info("DACP: App launched successfully", {
       appId: appIdentifier.appId,
       instanceId: appIdentifier.instanceId,
     })
-
-    const launchedInstanceId = appIdentifier.instanceId
-    if (!launchedInstanceId) {
-      throw new ErrorOnLaunchError("App launcher did not return an instanceId")
-    }
-
-    // Pre-register host-assigned instanceId so findInstances and open-with-context
-    // can route to the launcher id before WCP4 validation completes.
-    if (!getInstance(params.getState(), launchedInstanceId)) {
-      params.setState(state =>
-        connectInstance(state, {
-          instanceId: launchedInstanceId,
-          appId: appMetadata.appId,
-          metadata: {
-            name: appMetadata.name,
-            title: appMetadata.title,
-            description: appMetadata.description,
-            icons: appMetadata.icons,
-            screenshots: appMetadata.screenshots,
-          },
-        }),
-      )
-    }
 
     // A plain open must wait for the launched app too: callers treat the resolved promise as
     // "the app is there now" and talk to it on the next line. Same pending registry as
@@ -195,7 +177,10 @@ export function handleFindInstancesRequest(
   const { responses, instanceId, getState, logger } = params
 
   try {
-    const { app: appIdentifier } = message.payload
+    const appIdentifier = {
+      ...message.payload.app,
+      appId: resolveKnownAppId(getState().appDirectory, message.payload.app.appId),
+    }
 
     logger.info("DACP: Finding instances for app", { appId: appIdentifier.appId })
 
@@ -291,7 +276,7 @@ export function handleGetAppMetadataRequest(
   try {
     // Parse request payload
     const payload = message.payload
-    const appId = payload.app.appId
+    const appId = resolveKnownAppId(getState().appDirectory, payload.app.appId)
     const specificInstanceId = payload.app.instanceId
 
     // Step 1: Try to get metadata from a running instance
@@ -375,13 +360,6 @@ export function handleGetAppMetadataRequest(
   }
 }
 
-/** FDC3 v3.0 closeRequest — not yet in @finos/fdc3 2.2 BrowserTypes. */
-export type CloseRequestMessage = {
-  type: "closeRequest"
-  meta: BrowserTypes.AppRequestMessageMeta
-  payload: Record<string, never>
-}
-
 /**
  * Handles closeRequest when an app calls fdc3.close() on itself.
  *
@@ -394,20 +372,13 @@ export type CloseRequestMessage = {
  * expected successful outcome.
  */
 export async function handleCloseRequest(
-  message: CloseRequestMessage,
+  message: BrowserTypes.CloseRequest,
   params: DACPHandlerParams,
 ): Promise<void> {
-  const {
-    responses,
-    appLauncher,
-    logger,
-    getState,
-    implementationMetadata,
-    instanceId: targetInstanceId,
-  } = params
+  const { responses, appLauncher, logger, getState, instanceId: targetInstanceId } = params
 
-  // FDC3 3.0 behavior: closeRequest is only supported when the agent advertises 3.0.
-  if (!isFdc3VersionAtLeast(implementationMetadata.fdc3Version, "3.0")) {
+  // FDC3 3.0 behavior: closeRequest is only supported for apps served at 3.0.
+  if (!isFdc3VersionAtLeast(callerFdc3Version(params), "3.0")) {
     sendDACPErrorResponse({
       message,
       errorType: CloseError.ErrorOnClose as BrowserTypes.ResponsePayloadError,

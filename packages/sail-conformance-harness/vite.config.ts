@@ -1,21 +1,31 @@
+import { join } from "node:path"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import react from "@vitejs/plugin-react"
+import { resolveConformanceFdc3Version, resolveToolboxRoot, TOOLBOX_PORT } from "./e2e/toolbox"
+
+// The chosen toolbox site (CONFORMANCE_FDC3_VERSION, CONFORMANCE_TOOLBOX — see e2e/toolbox.ts),
+// served at the harness origin so `/apps/...`, `/lib/...` and `/directories/...` match the
+// localhost:3001 URLs baked into its App Directory. Same-origin also lets WCP read the app
+// frames' `window.name` for host-instance adoption.
+const fdc3Version = resolveConformanceFdc3Version()
+const toolboxSite = join(resolveToolboxRoot(fdc3Version), "dist")
 
 export default defineConfig({
   plugins: lazyPlugins(() => [react()]),
+  define: {
+    "import.meta.env.VITE_CONFORMANCE_FDC3_VERSION": JSON.stringify(fdc3Version),
+  },
+  resolve: {
+    alias: { "@conformance-toolbox": toolboxSite },
+  },
   optimizeDeps: {
     exclude: ["@finos/sail-desktop-agent"],
   },
-  // Vendored FDC3 2.2 toolbox build, served at the harness origin so `/apps/...`,
-  // `/lib/...` and `/directories/...` match the URLs baked into
-  // 2.2-conformance-tests/directories/local-conformance.json.
-  //
-  // This build (unlike the hosted FINOS toolbox) carries the headless patch that
-  // makes `?suite=` run unattended — see HEADLESS.md. Serving it here also puts the
-  // toolbox same-origin with the harness, which WCP host-instance adoption needs.
-  publicDir: "2.2-conformance-tests",
+  publicDir: toolboxSite,
   server: {
-    port: 3001,
+    port: TOOLBOX_PORT,
+    // Fail instead of drifting to 3002+: the App Directory URLs assume 3001.
+    strictPort: true,
     // Headless/CI runs have no browser to open.
     open: !process.env.CI && !process.env.HARNESS_NO_OPEN,
     // Reload when @finos/sail-desktop-agent dist changes (package resolves to dist/, not src/)
