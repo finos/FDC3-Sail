@@ -72,7 +72,7 @@ async function bootstrap(): Promise<void> {
     try {
       await openDeepLinkApp(deepLinkAppId)
     } catch (e: unknown) {
-      console.error(`[Sail] Deep-link open failed for ${deepLinkAppId}`, e)
+      console.error("[Sail] Deep-link open failed for %s", deepLinkAppId, e)
       ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
         e instanceof Error ? e.message : String(e)
     }
