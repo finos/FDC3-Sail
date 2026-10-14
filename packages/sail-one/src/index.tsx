@@ -49,7 +49,7 @@ async function openDeepLinkApp(appId: string): Promise<void> {
     getClientState().getActiveTab().id,
     appId,
   )
-  console.log(`[Sail] Deep-linked open ${appId}`, { instanceId })
+  console.log("[Sail] Deep-linked open %s", appId, { instanceId })
   ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady = appId
 }
 
