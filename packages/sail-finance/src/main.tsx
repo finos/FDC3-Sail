@@ -210,7 +210,7 @@ if (isDockviewPopoutShell()) {
     void agent.directoriesLoaded
       .then(() => agent.apps.open(deepLinkAppId))
       .then(id => {
-        console.log(`[Sail] Deep-linked open ${deepLinkAppId}`, id)
+        console.log("[Sail] Deep-linked open %s", deepLinkAppId, id)
         ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady =
           deepLinkAppId
       })
