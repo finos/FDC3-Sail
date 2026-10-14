@@ -164,6 +164,7 @@ export class BrowserAppConnection extends AppConnectionEventEmitter {
     this.isStarted = false
   }
 
+  // lgtm [js/missing-origin-check] WCP1Hello is open by design; WCP4 validates identity and origin.
   private handleWindowMessage(event: MessageEvent): void {
     if (!isWebConnectionProtocol1Hello(event.data)) {
       return
