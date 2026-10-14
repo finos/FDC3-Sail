@@ -215,7 +215,7 @@ if (isDockviewPopoutShell()) {
           deepLinkAppId
       })
       .catch((err: unknown) => {
-        console.error(`[Sail] Deep-link open failed for ${deepLinkAppId}`, err)
+        console.error("[Sail] Deep-link open failed for %s", deepLinkAppId, err)
         ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
           err instanceof Error ? err.message : String(err)
       })
