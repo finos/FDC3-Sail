@@ -61,7 +61,7 @@ async function openDeepLinkApp(appId: string): Promise<void> {
   const detail = await waitForDirectoryApp(appId)
   // Explicit Frame destination must win over Conformance1 forceNewWindow for Playwright.
   const opened = await getAppState().open(detail, AppHosting.Frame)
-  console.log(`[Sail v2] Deep-linked open ${appId}`, opened)
+  console.log("[Sail v2] Deep-linked open %s", appId, opened)
   ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady = appId
 }
 
@@ -80,7 +80,7 @@ async function bootstrap(): Promise<void> {
     try {
       await openDeepLinkApp(deepLinkAppId)
     } catch (e: unknown) {
-      console.error(`[Sail v2] Deep-link open failed for ${deepLinkAppId}`, e)
+      console.error("[Sail v2] Deep-link open failed for %s", deepLinkAppId, e)
       ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
         e instanceof Error ? e.message : String(e)
     }
