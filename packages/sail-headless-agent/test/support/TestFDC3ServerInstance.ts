@@ -1,19 +1,11 @@
-import {
-  InstanceID,
-  State,
-  AppRegistration,
-  Fdc3ApiVersion,
-} from "../../src/AppRegistration"
+import { InstanceID, State, AppRegistration, Fdc3ApiVersion } from "../../src/AppRegistration"
 import { AbstractFDC3ServerInstance } from "../../src/AbstractFDC3ServerInstance"
 import { Directory } from "../../src/directory/DirectoryInterface"
 import { CustomWorld } from "../world"
 import { Context } from "@finos/fdc3-context-v2"
 import { OpenError, AppIdentifier, AppIntent } from "@finos/fdc3-standard-v2"
 import { MessageHandler } from "../../src/handlers/MessageHandler"
-import {
-  ChannelState,
-  HandlersByVersion,
-} from "../../src/FDC3ServerInstance"
+import { ChannelState, HandlersByVersion } from "../../src/FDC3ServerInstance"
 import { BroadcastHandler as BroadcastHandlerV2 } from "../../src/handlers/v2/BroadcastHandler"
 import { IntentHandler as IntentHandlerV2 } from "../../src/handlers/v2/IntentHandler"
 import { OpenHandler as OpenHandlerV2 } from "../../src/handlers/v2/OpenHandler"
@@ -50,10 +42,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   ) {
     super(handlersByVersion, channels)
     this.cw = cw
-    this.handlers = [
-      ...handlersByVersion["2.2"],
-      ...handlersByVersion["3.0"],
-    ]
+    this.handlers = [...handlersByVersion["2.2"], ...handlersByVersion["3.0"]]
   }
 
   getDirectory(): Directory {
@@ -70,14 +59,14 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   getInstanceDetails(uuid: string) {
-    return this.instances.find((ca) => ca.instanceId === uuid)
+    return this.instances.find(ca => ca.instanceId === uuid)
   }
 
   setInstanceDetails(uuid: InstanceID, appId: ConnectionDetails) {
     if (uuid != appId.instanceId) {
       throw new Error("UUID mismatch")
     }
-    this.instances = this.instances.filter((ca) => ca.instanceId !== uuid)
+    this.instances = this.instances.filter(ca => ca.instanceId !== uuid)
     this.instances.push({
       ...appId,
       fdc3Version: appId.fdc3Version ?? this.defaultFdc3Version,
@@ -105,7 +94,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async setAppState(app: InstanceID, newState: State): Promise<void> {
-    const found = this.instances.find((a) => a.instanceId == app)
+    const found = this.instances.find(a => a.instanceId == app)
     if (found) {
       const currentState = found.state
       if (currentState !== State.Terminated && newState === State.Terminated) {
@@ -116,11 +105,11 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async getConnectedApps(): Promise<AppRegistration[]> {
-    return (await this.getAllApps()).filter((a) => a.state == State.Connected)
+    return (await this.getAllApps()).filter(a => a.state == State.Connected)
   }
 
   async getAllApps(): Promise<AppRegistration[]> {
-    return this.instances.map((x) => {
+    return this.instances.map(x => {
       return {
         appId: x.appId,
         instanceId: x.instanceId,
@@ -131,9 +120,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async isAppConnected(app: InstanceID): Promise<boolean> {
-    const found = this.instances.find(
-      (a) => a.instanceId == app && a.state == State.Connected,
-    )
+    const found = this.instances.find(a => a.instanceId == app && a.state == State.Connected)
     return found != null
   }
 
@@ -193,7 +180,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   async shutdown(): Promise<void> {
     super.shutdown()
     // Deduplicate shared handlers (e.g. shared heartbeat)
-    ;[...new Set(this.handlers)].forEach((handler) => handler.shutdown())
+    ;[...new Set(this.handlers)].forEach(handler => handler.shutdown())
   }
 }
 

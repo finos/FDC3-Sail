@@ -26,7 +26,7 @@ export async function handleClientState(
     session.setWscpPairings(props.wscpPairings ?? [])
 
     // tell each app to check for a channel change
-    props.panels.forEach((panel) => {
+    props.panels.forEach(panel => {
       // make sure apps channels match to the client
       const state = session.getInstanceDetails(panel.panelId)
       if (state) {
@@ -41,7 +41,7 @@ export async function handleClientState(
 
     // ok now make sure that apps in tabs have the up-to-date set of channels
     const connectedApps = await session.getConnectedApps()
-    connectedApps.forEach((app) => {
+    connectedApps.forEach(app => {
       const state = session.getInstanceDetails(app.instanceId)
 
       if (state) {
@@ -49,9 +49,7 @@ export async function handleClientState(
         const ur: ChannelReceiverUpdate = {
           tabs: props.channels,
         }
-        state.channelConnections.forEach((conn) =>
-          conn.emit(CHANNEL_RECEIVER_UPDATE, ur),
-        )
+        state.channelConnections.forEach(conn => conn.emit(CHANNEL_RECEIVER_UPDATE, ur))
       }
     })
 

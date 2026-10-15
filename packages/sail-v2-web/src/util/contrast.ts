@@ -1,11 +1,8 @@
 import Color from "color"
 
-export function selectHighestContrast(
-  bgColorCSS: string,
-  ...candidates: string[]
-) {
+export function selectHighestContrast(bgColorCSS: string, ...candidates: string[]) {
   const bgColor = Color(bgColorCSS)
-  const contrasts: number[] = candidates.map((candidate) => {
+  const contrasts: number[] = candidates.map(candidate => {
     return bgColor.contrast(Color(candidate))
   })
   let bestCandidate = candidates[0],

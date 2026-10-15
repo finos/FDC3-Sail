@@ -32,7 +32,7 @@ function createHandlerLog(name: string): LogFunction {
 }
 
 export function mapChannels(channels: TabDetail[]): ChannelState[] {
-  const out = channels.map((c) => {
+  const out = channels.map(c => {
     return {
       id: c.id,
       type: ChannelType.user,
@@ -89,12 +89,7 @@ export class SailFDC3ServerFactory {
   ): Promise<SailFDC3ServerInstance> {
     const channels = mapChannels(args.channels)
     const d = new SailDirectory(getFdc3WebSocketUrl())
-    const out = new SailFDC3ServerInstance(
-      d,
-      connection,
-      this.handlersByVersion,
-      channels,
-    )
+    const out = new SailFDC3ServerInstance(d, connection, this.handlersByVersion, channels)
     await out.reloadAppDirectories(args.directories, args.customApps)
     out.setWscpPairings(args.wscpPairings ?? [])
     this.sessions.set(args.userSessionId, out)
@@ -114,16 +109,13 @@ export class SailFDC3ServerFactory {
   }
 
   async shutdownInstances(): Promise<void> {
-    this.sessions.keys().forEach((i) => this.shutdownInstance(i))
+    this.sessions.keys().forEach(i => this.shutdownInstance(i))
   }
 
   async shutdownHandlers(): Promise<void> {
-    const all = [
-      ...this.handlersByVersion["2.2"],
-      ...this.handlersByVersion["3.0"],
-    ]
+    const all = [...this.handlersByVersion["2.2"], ...this.handlersByVersion["3.0"]]
     // Deduplicate shared handlers (e.g. shared heartbeat)
-    ;[...new Set(all)].forEach((handler) => handler.shutdown())
+    ;[...new Set(all)].forEach(handler => handler.shutdown())
   }
 
   async shutdownEverything(): Promise<void> {
@@ -138,9 +130,7 @@ export class SailFDC3ServerFactory {
   /**
    * Locate a session that has minted the given WSCP sharedSecret.
    */
-  findSessionBySharedSecret(
-    sharedSecret: string,
-  ):
+  findSessionBySharedSecret(sharedSecret: string):
     | {
         userSessionId: string
         session: SailFDC3ServerInstance

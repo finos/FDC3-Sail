@@ -6,8 +6,7 @@ import { handleResolve } from "@finos/cucumber-testing-steps"
 import { BrowserTypes } from "@finos/fdc3-schema-v2"
 
 type AddEventListenerRequest = BrowserTypes.AddEventListenerRequest
-type EventListenerUnsubscribeRequest =
-  BrowserTypes.EventListenerUnsubscribeRequest
+type EventListenerUnsubscribeRequest = BrowserTypes.EventListenerUnsubscribeRequest
 
 /** ClearContextRequest is FDC3 3.0; typed loosely until schema deps update. */
 type ClearContextRequest = {
@@ -59,12 +58,7 @@ When(
 
 When(
   "{string} clears context {string} on {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    contextType: string,
-    channelId: string,
-  ) {
+  function (this: CustomWorld, app: string, contextType: string, channelId: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
 

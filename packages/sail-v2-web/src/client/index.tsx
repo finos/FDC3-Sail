@@ -2,11 +2,7 @@ import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
 import { AppHosting, getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
-import {
-  resolveDeepLinkAppId,
-  resolveNoSplash,
-  resolveSoleFdc3Directory,
-} from "@finos/sail-env"
+import { resolveDeepLinkAppId, resolveNoSplash, resolveSoleFdc3Directory } from "@finos/sail-env"
 
 const container = document.getElementById("app")
 const root = createRoot(container!)
@@ -37,10 +33,7 @@ function sleep(ms: number): Promise<void> {
   })
 }
 
-async function waitForDirectoryApp(
-  appId: string,
-  timeoutMs = 60_000,
-): Promise<DirectoryApp> {
+async function waitForDirectoryApp(appId: string, timeoutMs = 60_000): Promise<DirectoryApp> {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try {

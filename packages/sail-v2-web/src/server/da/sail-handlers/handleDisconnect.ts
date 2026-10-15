@@ -14,10 +14,7 @@ export async function handleDisconnect(
 ): Promise<void> {
   if (ctx.fdc3ServerInstance) {
     if (ctx.connectionType == ConnectionType.APP) {
-      await ctx.fdc3ServerInstance.setAppState(
-        ctx.appInstanceId!,
-        State.Terminated,
-      )
+      await ctx.fdc3ServerInstance.setAppState(ctx.appInstanceId!, State.Terminated)
       const remaining = await ctx.fdc3ServerInstance.getConnectedApps()
       log.debug({ remainingApps: remaining.length }, "App disconnected")
     } else if (ctx.connectionType == ConnectionType.CHANNEL) {
@@ -37,10 +34,7 @@ export async function handleDisconnect(
     } else {
       ctx.fdc3ServerInstance.shutdown()
       factory.shutdownInstance(ctx.userSessionId!)
-      log.info(
-        { userSessionId: ctx.userSessionId },
-        "Desktop Agent disconnected",
-      )
+      log.info({ userSessionId: ctx.userSessionId }, "Desktop Agent disconnected")
     }
   } else {
     log.warn("Disconnect event with no server instance")

@@ -74,16 +74,13 @@ export class ServerStateImpl implements ServerState {
     }
 
     const userSessionId = this.cs!.getUserSessionID()
-    const instanceId: string = await this.socket.emitWithAck(
-      DA_REGISTER_APP_LAUNCH,
-      {
-        userSessionId,
-        appId,
-        hosting,
-        channel,
-        instanceTitle,
-      } as DesktopAgentRegisterAppLaunchArgs,
-    )
+    const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, {
+      userSessionId,
+      appId,
+      hosting,
+      channel,
+      instanceTitle,
+    } as DesktopAgentRegisterAppLaunchArgs)
     return instanceId
   }
 
@@ -142,20 +139,14 @@ export class ServerStateImpl implements ServerState {
 
     this.socket.on(
       SAIL_APP_OPEN,
-      async (
-        data: SailAppOpenArgs,
-        callback: (response: SailAppOpenResponse) => void,
-      ) => {
+      async (data: SailAppOpenArgs, callback: (response: SailAppOpenResponse) => void) => {
         // Honor server `approach` (forceNewWindow → Tab). Never infer Frame
         // solely from channel — that left 2.2 mocks in iframes that cannot
         // window.close(), so findIntent kept Connected zombies.
         if (data.channel) {
           await this.cs?.setActiveTabId(data.channel)
         }
-        const openDetails = await this.as!.open(
-          data.appDRecord,
-          data.approach,
-        )
+        const openDetails = await this.as!.open(data.appDRecord, data.approach)
         callback(openDetails)
       },
     )
@@ -164,21 +155,18 @@ export class ServerStateImpl implements ServerState {
       this.as!.setAppState(data)
     })
 
-    this.socket.on(
-      SAIL_APP_CLOSE,
-      async (data: SailAppCloseArgs, callback: () => void) => {
-        try {
-          await this.as!.closeApp(data.instanceId, data.hosting)
-        } catch (e) {
-          console.error("Error closing app container", e)
-        } finally {
-          callback()
-        }
-      },
-    )
+    this.socket.on(SAIL_APP_CLOSE, async (data: SailAppCloseArgs, callback: () => void) => {
+      try {
+        await this.as!.closeApp(data.instanceId, data.hosting)
+      } catch (e) {
+        console.error("Error closing app container", e)
+      } finally {
+        callback()
+      }
+    })
 
     this.socket.on(SAIL_CHANNEL_SETUP, async (instanceId: string) => {
-      const panel = this.cs!.getPanels().find((p) => p.panelId === instanceId)
+      const panel = this.cs!.getPanels().find(p => p.panelId === instanceId)
       if (panel) {
         await this.setUserChannel(instanceId, panel.tabId)
       }
@@ -187,9 +175,8 @@ export class ServerStateImpl implements ServerState {
     this.socket.on(SAIL_INTENT_RESOLVE, (data: SailIntentResolveArgs, callback) => {
       // CI / Playwright: skip host ResolverPanel modal.
       // Vite injects import.meta.env in the browser bundle (typed loosely for tsc).
-      const autoResolveRaw = (
-        import.meta as { env?: { VITE_AUTO_RESOLVE?: string } }
-      ).env?.VITE_AUTO_RESOLVE
+      const autoResolveRaw = (import.meta as { env?: { VITE_AUTO_RESOLVE?: string } }).env
+        ?.VITE_AUTO_RESOLVE
       if (isAutoResolve(autoResolveRaw)) {
         const firstIntent = data.appIntents?.[0]
         const firstApp = firstIntent?.apps?.[0]
@@ -228,15 +215,11 @@ export class ServerStateImpl implements ServerState {
     })
 
     this.socket.on(SAIL_WSCP_PAIRING_UPDATE, (data: SailWscpPairingUpdateArgs) => {
-      this.cs!
-        .updateWscpPairingInstanceId(
-          data.appId,
-          data.sharedSecret,
-          data.instanceId,
-        )
-        .catch((e) => {
+      this.cs!.updateWscpPairingInstanceId(data.appId, data.sharedSecret, data.instanceId).catch(
+        e => {
           console.error("Error updating WSCP pairing instanceId", e)
-        })
+        },
+      )
     })
   }
 

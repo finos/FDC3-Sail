@@ -21,7 +21,7 @@ export function getIcon(a: DirectoryApp | undefined) {
 }
 
 function loadRemotely(u: string): Promise<any> {
-  return fetch(u).then((response) => response.json())
+  return fetch(u).then(response => response.json())
 }
 
 async function loadFile(u: string): Promise<any> {
@@ -71,10 +71,7 @@ export class SailDirectory extends BasicDirectory {
     const urlsJson = JSON.stringify(urls)
     const customAppsJson = JSON.stringify(customApps)
 
-    if (
-      this.currentUrlsJson == urlsJson &&
-      this.currentCustomAppsJson == customAppsJson
-    ) {
+    if (this.currentUrlsJson == urlsJson && this.currentCustomAppsJson == customAppsJson) {
       return
     }
 
@@ -84,22 +81,22 @@ export class SailDirectory extends BasicDirectory {
 
     for (const u of urls) {
       const apps = await this.loadFromUrl(u)
-      apps.forEach((a) => {
-        if (!newApps.find((a2) => a2.appId == a.appId)) {
+      apps.forEach(a => {
+        if (!newApps.find(a2 => a2.appId == a.appId)) {
           newApps.push(a)
         }
       })
     }
 
     const customAppsCopy: DirectoryApp[] = JSON.parse(customAppsJson)
-    customAppsCopy.forEach((a) => {
-      if (!newApps.find((a2) => a2.appId == a.appId)) {
+    customAppsCopy.forEach(a => {
+      if (!newApps.find(a2 => a2.appId == a.appId)) {
         newApps.push(a)
       }
     })
 
     // Stamp stable WSCP URL for native apps (identity is via sharedSecret, not path)
-    newApps.forEach((app) => {
+    newApps.forEach(app => {
       if (app.type === "native") {
         ;(app.details as any)[FDC3_WEBSOCKET_PROPERTY] = this.webSocketUrl
       }
@@ -124,8 +121,6 @@ export class SailDirectory extends BasicDirectory {
   }
 
   retrieveAppsByUrl(url: string): DirectoryApp[] {
-    return this.retrieveAllApps().filter(
-      (a) => a.type == "web" && (a.details as any).url == url,
-    )
+    return this.retrieveAllApps().filter(a => a.type == "web" && (a.details as any).url == url)
   }
 }

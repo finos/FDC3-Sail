@@ -4,11 +4,7 @@ import styles from "./styles.module.css"
 export const Bin = () => {
   return (
     <div className={styles.control} id="trash">
-      <img
-        src="/icons/control/bin.svg"
-        title="Remove App"
-        className={styles.controlImage}
-      />
+      <img src="/icons/control/bin.svg" title="Remove App" className={styles.controlImage} />
     </div>
   )
 }

@@ -33,7 +33,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
         area={
           <div className={styles.configContent}>
             <div className={styles.configChoiceLeft}>
-              {CONFIG_ITEMS.map((a) => (
+              {CONFIG_ITEMS.map(a => (
                 <div
                   key={a}
                   className={`${styles.configItem} ${a == this.state.item ? styles.selected : ""}`}

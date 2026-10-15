@@ -15,10 +15,7 @@ export function isFullAppIdentifier(
   identifier: AppIdentifier | FullAppIdentifier,
 ): identifier is FullAppIdentifier {
   const typedIdentifier = identifier as FullAppIdentifier
-  return (
-    typedIdentifier.instanceId !== undefined &&
-    typedIdentifier.appId !== undefined
-  )
+  return typedIdentifier.instanceId !== undefined && typedIdentifier.appId !== undefined
 }
 
 export function successResponse(

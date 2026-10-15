@@ -46,25 +46,13 @@ export class OpenHandler implements MessageHandler {
 
   shutdown(): void {}
 
-  async accept(
-    msg: ReceivableMessage,
-    sc: FDC3ServerInstance,
-    uuid: InstanceID,
-  ): Promise<void> {
+  async accept(msg: ReceivableMessage, sc: FDC3ServerInstance, uuid: InstanceID): Promise<void> {
     if (isWebConnectionProtocol4ValidateAppIdentity(msg)) {
-      return this.handleValidate(
-        msg as WebConnectionProtocol4ValidateAppIdentity,
-        sc,
-        uuid,
-      )
+      return this.handleValidate(msg as WebConnectionProtocol4ValidateAppIdentity, sc, uuid)
     } else if (isAddContextListenerRequest(msg)) {
       //handle context listener adds for pending applications (i.e. opened but awaiting context listener addition to deliver context)
       //  additional handling is performed in BroadcastHandler
-      return this.handleAddContextListener(
-        msg as AddContextListenerRequest,
-        sc,
-        uuid,
-      )
+      return this.handleAddContextListener(msg as AddContextListenerRequest, sc, uuid)
     } else {
       const from = sc.getInstanceDetails(uuid)
       if (from) {
@@ -108,14 +96,8 @@ export class OpenHandler implements MessageHandler {
     const pendingOpen = sc.getPendingApp(from) as PendingApp | undefined
     if (pendingOpen) {
       const contextType = arg0.payload.contextType
-      if (
-        pendingOpen.context &&
-        pendingOpen.state == AppState.DeliveringContext
-      ) {
-        if (
-          contextType == pendingOpen.context.type ||
-          contextType == undefined
-        ) {
+      if (pendingOpen.context && pendingOpen.state == AppState.DeliveringContext) {
+        if (contextType == pendingOpen.context.type || contextType == undefined) {
           // ok, we can deliver to this listener
           const message: BroadcastEvent = {
             meta: {
@@ -173,13 +155,7 @@ export class OpenHandler implements MessageHandler {
         "getAppMetadataResponse",
       )
     } else {
-      errorResponse(
-        sc,
-        arg0,
-        from,
-        ResolveError.TargetAppUnavailable,
-        "getAppMetadataResponse",
-      )
+      errorResponse(sc, arg0, from, ResolveError.TargetAppUnavailable, "getAppMetadataResponse")
     }
   }
 
@@ -191,8 +167,8 @@ export class OpenHandler implements MessageHandler {
     const appId = arg0.payload.app.appId
     const openApps = await sc.getConnectedApps()
     const matching = openApps
-      .filter((a) => a.appId == appId)
-      .map((a) => {
+      .filter(a => a.appId == appId)
+      .map(a => {
         return {
           appId: a.appId,
           instanceId: a.instanceId,
@@ -209,20 +185,13 @@ export class OpenHandler implements MessageHandler {
     )
   }
 
-  async open(
-    arg0: OpenRequest,
-    sc: FDC3ServerInstance,
-    from: FullAppIdentifier,
-  ): Promise<void> {
+  async open(arg0: OpenRequest, sc: FDC3ServerInstance, from: FullAppIdentifier): Promise<void> {
     const toOpen = arg0.payload.app
     const context = arg0.payload.context
 
     try {
       const uuid = await sc.open(toOpen.appId)
-      sc.setPendingApp(
-        uuid,
-        new PendingApp(sc, arg0, context, from, this.timeoutMs),
-      )
+      sc.setPendingApp(uuid, new PendingApp(sc, arg0, context, from, this.timeoutMs))
     } catch (e) {
       errorResponse(sc, arg0, from, (e as Error).message ?? e, "openResponse")
     }
@@ -233,13 +202,10 @@ export class OpenHandler implements MessageHandler {
     sc: FDC3ServerInstance,
     from: FullAppIdentifier,
   ): Promise<void> {
-    const implMetadata: ImplementationMetadata = this.getImplementationMetadata(
-      sc,
-      {
-        appId: from.appId,
-        instanceId: from.instanceId,
-      },
-    )
+    const implMetadata: ImplementationMetadata = this.getImplementationMetadata(sc, {
+      appId: from.appId,
+      instanceId: from.instanceId,
+    })
     successResponse(
       sc,
       arg0,
@@ -251,10 +217,7 @@ export class OpenHandler implements MessageHandler {
     )
   }
 
-  getImplementationMetadata(
-    sc: FDC3ServerInstance,
-    appIdentity: AppIdentifier,
-  ) {
+  getImplementationMetadata(sc: FDC3ServerInstance, appIdentity: AppIdentifier) {
     const appMetadata = this.filterPublicDetails(
       sc.getDirectory().retrieveAppsById(appIdentity.appId)[0],
       appIdentity,
@@ -297,8 +260,10 @@ export class OpenHandler implements MessageHandler {
     }
 
     const returnSuccess = (appId: string, instanceId: string) => {
-      const implMetadata: ImplementationMetadata =
-        this.getImplementationMetadata(sc, { appId, instanceId })
+      const implMetadata: ImplementationMetadata = this.getImplementationMetadata(sc, {
+        appId,
+        instanceId,
+      })
       const msg: WebConnectionProtocol5ValidateAppIdentitySuccessResponse = {
         meta: responseMeta,
         type: "WCP5ValidateAppIdentityResponse",

@@ -7,8 +7,7 @@ import { contextMap } from "./generic.steps"
 import { BrowserTypes } from "@finos/fdc3-schema-v2"
 
 type AddContextListenerRequest = BrowserTypes.AddContextListenerRequest
-type ContextListenerUnsubscribeRequest =
-  BrowserTypes.ContextListenerUnsubscribeRequest
+type ContextListenerUnsubscribeRequest = BrowserTypes.ContextListenerUnsubscribeRequest
 type BroadcastRequest = BrowserTypes.BroadcastRequest
 type GetCurrentContextRequest = BrowserTypes.GetCurrentContextRequest
 
@@ -37,12 +36,7 @@ function parseAntiReplayClaims(claims: string): {
 
 When(
   "{string} adds a context listener on {string} with type {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    channelId: string,
-    contextType: string,
-  ) {
+  function (this: CustomWorld, app: string, channelId: string, contextType: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = {
@@ -78,15 +72,10 @@ When(
 
 When(
   "{string} adds a context listener on {string} with types {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    channelId: string,
-    contextTypes: string,
-  ) {
+  function (this: CustomWorld, app: string, channelId: string, contextTypes: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
-    const types = contextTypes.split(",").map((t) => t.trim())
+    const types = contextTypes.split(",").map(t => t.trim())
     const message = {
       meta,
       payload: {
@@ -102,12 +91,7 @@ When(
 
 When(
   "{string} asks for the latest context on {string} with type {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    channelId: string,
-    contextType: string,
-  ) {
+  function (this: CustomWorld, app: string, channelId: string, contextType: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = {
@@ -143,12 +127,7 @@ When(
 
 When(
   "{string} broadcasts {string} on {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    contextType: string,
-    channelId: string,
-  ) {
+  function (this: CustomWorld, app: string, contextType: string, channelId: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
 
@@ -204,12 +183,7 @@ When(
 
 When(
   "{string} broadcasts {string} on {string} without metadata",
-  function (
-    this: CustomWorld,
-    app: string,
-    contextType: string,
-    channelId: string,
-  ) {
+  function (this: CustomWorld, app: string, contextType: string, channelId: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
 

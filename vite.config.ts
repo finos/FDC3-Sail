@@ -5,7 +5,8 @@ export default defineConfig({
   staged: {
     // Restored main-branch packages keep PascalCase filenames; exclude them from
     // the v3 kebab-case / oxlint gate (same as .oxlintrc.json ignorePatterns).
-    "packages/!(sail-headless-agent|sail-v2-common|sail-v2-web)*/src/**/*.{ts,tsx}": "vp check --fix",
+    "packages/!(sail-headless-agent|sail-v2-common|sail-v2-web)*/src/**/*.{ts,tsx}":
+      "vp check --fix",
     "website/**/*.{ts,tsx}": "vp check --fix",
   },
   lint: {

@@ -1,9 +1,6 @@
 import { Directory, DirectoryApp, DirectoryIntent } from "./DirectoryInterface"
 
-export function genericResultTypeSame(
-  real: string | undefined,
-  required: string | undefined,
-) {
+export function genericResultTypeSame(real: string | undefined, required: string | undefined) {
   if (required == undefined) {
     return true
   } else if (real == required) {
@@ -54,9 +51,7 @@ export class BasicDirectory implements Directory {
   }
 
   retrieveAllIntents(): DirectoryIntent[] {
-    const allIntents = this.retrieveAllApps().flatMap((a) =>
-      this.retrieveIntentsForApp(a),
-    )
+    const allIntents = this.retrieveAllApps().flatMap(a => this.retrieveIntentsForApp(a))
 
     return allIntents
   }
@@ -66,7 +61,7 @@ export class BasicDirectory implements Directory {
     intentName: string | undefined,
     resultType: string | undefined,
   ): DirectoryIntent[] {
-    const matchingIntents = this.retrieveAllIntents().filter((i) =>
+    const matchingIntents = this.retrieveAllIntents().filter(i =>
       this.intentMatches(i, contextType, intentName, resultType),
     )
     return matchingIntents
@@ -78,8 +73,8 @@ export class BasicDirectory implements Directory {
     resultType?: string | undefined,
   ): DirectoryApp[] {
     const result = this.retrieveAllApps().filter(
-      (a) =>
-        this.retrieveIntentsForApp(a).filter((i) =>
+      a =>
+        this.retrieveIntentsForApp(a).filter(i =>
           this.intentMatches(i, contextType, intentName, resultType),
         ).length > 0,
     )
@@ -88,7 +83,7 @@ export class BasicDirectory implements Directory {
   }
 
   retrieveAppsById(appId: string): DirectoryApp[] {
-    return this.retrieveAllApps().filter((a) => a.appId == appId)
+    return this.retrieveAllApps().filter(a => a.appId == appId)
   }
 
   retrieveAllApps(): DirectoryApp[] {

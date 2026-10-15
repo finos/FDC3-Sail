@@ -112,38 +112,23 @@ export function createMeta(cw: CustomWorld, appStr: string) {
 Before(function (this: CustomWorld, { gherkinDocument }) {
   const uri = gherkinDocument.uri ?? ""
   this.sc.defaultFdc3Version =
-    uri.includes("/features/v3/") || uri.includes("features/v3/")
-      ? "3.0"
-      : "2.2"
+    uri.includes("/features/v3/") || uri.includes("features/v3/") ? "3.0" : "2.2"
 })
 
 Given("A newly instantiated FDC3 Server", function (this: CustomWorld) {
   const apps = this.props[APP_FIELD] ?? []
   const defaultVersion = this.sc.defaultFdc3Version
-  this.sc = createTestFDC3ServerInstance(
-    this,
-    defaultChannels(),
-    new BasicDirectory(apps),
-    false,
-  )
+  this.sc = createTestFDC3ServerInstance(this, defaultChannels(), new BasicDirectory(apps), false)
   this.sc.defaultFdc3Version = defaultVersion
 })
 
-Given(
-  "A newly instantiated FDC3 Server with heartbeat checking",
-  function (this: CustomWorld) {
-    const apps = this.props[APP_FIELD] ?? []
-    const defaultVersion = this.sc.defaultFdc3Version
+Given("A newly instantiated FDC3 Server with heartbeat checking", function (this: CustomWorld) {
+  const apps = this.props[APP_FIELD] ?? []
+  const defaultVersion = this.sc.defaultFdc3Version
 
-    this.sc = createTestFDC3ServerInstance(
-      this,
-      defaultChannels(),
-      new BasicDirectory(apps),
-      true,
-    )
-    this.sc.defaultFdc3Version = defaultVersion
-  },
-)
+  this.sc = createTestFDC3ServerInstance(this, defaultChannels(), new BasicDirectory(apps), true)
+  this.sc.defaultFdc3Version = defaultVersion
+})
 
 When("I shutdown the server", function (this: CustomWorld) {
   this.sc.shutdown()

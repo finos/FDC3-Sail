@@ -16,11 +16,7 @@ export function normalizeUrlPathname(pathname: string): string {
 /**
  * True when two absolute or site-relative URLs refer to the same app document.
  */
-export function urlsReferToSameApp(
-  a: string,
-  b: string,
-  baseOrigin = "http://localhost",
-): boolean {
+export function urlsReferToSameApp(a: string, b: string, baseOrigin = "http://localhost"): boolean {
   const na = normalizeIdentityUrl(a)
   const nb = normalizeIdentityUrl(b)
   if (na === nb || a === b) {

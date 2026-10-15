@@ -79,10 +79,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   abstract getDirectory(): Directory
 
   // Heartbeat activity handling
-  async heartbeatActivity(
-    instanceId: InstanceID,
-    event: HeartbeatActivityEvent,
-  ): Promise<void> {
+  async heartbeatActivity(instanceId: InstanceID, event: HeartbeatActivityEvent): Promise<void> {
     switch (event) {
       case HeartbeatActivityEvent.ConnectedResponding:
         await this.setAppState(instanceId, State.Connected)
@@ -109,17 +106,13 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     if (channelId == null) {
       return null
     }
-    return this.channelStates.find((c) => c.id == channelId) ?? null
+    return this.channelStates.find(c => c.id == channelId) ?? null
   }
 
-  updateChannelContext(
-    channelId: string,
-    context: Context,
-    metadata: StoredContextMetadata,
-  ): void {
+  updateChannelContext(channelId: string, context: Context, metadata: StoredContextMetadata): void {
     const cs = this.getChannelById(channelId)
     if (cs) {
-      cs.context = cs.context.filter((c) => c.context.type != context.type)
+      cs.context = cs.context.filter(c => c.context.type != context.type)
       const stored: StoredContext = { context, metadata }
       cs.context.unshift(stored)
     }
@@ -128,9 +121,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   clearChannelContext(channelId: string, contextType: string | null): void {
     const cs = this.getChannelById(channelId)
     if (cs) {
-      cs.context = contextType
-        ? cs.context.filter((c) => c.context.type !== contextType)
-        : []
+      cs.context = contextType ? cs.context.filter(c => c.context.type !== contextType) : []
     }
   }
 
@@ -139,24 +130,18 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     return this.currentChannels[instanceId] ?? null
   }
 
-  setCurrentChannel(
-    instanceId: InstanceID,
-    channel: ChannelState | null,
-  ): void {
+  setCurrentChannel(instanceId: InstanceID, channel: ChannelState | null): void {
     if (channel === null) {
       delete this.currentChannels[instanceId]
     } else {
       this.currentChannels[instanceId] = channel
     }
-    const event = new ChannelChangedServerInstanceEvent(
-      instanceId,
-      channel?.id ?? null,
-    )
+    const event = new ChannelChangedServerInstanceEvent(instanceId, channel?.id ?? null)
     this.notifyEventHandlers(event)
   }
 
   notifyEventHandlers(event: FDC3ServerInstanceEvent): void {
-    this.allHandlers().forEach((handler) => handler.handleEvent(event, this))
+    this.allHandlers().forEach(handler => handler.handleEvent(event, this))
   }
 
   // Context listener management methods
@@ -170,7 +155,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
 
   removeContextListener(listenerUuid: string, instanceId: InstanceID) {
     const i = this.contextListeners.findIndex(
-      (r) => r.listenerUuid == listenerUuid && r.instanceId == instanceId,
+      r => r.listenerUuid == listenerUuid && r.instanceId == instanceId,
     )
     if (i > -1) {
       this.contextListeners.splice(i, 1)
@@ -178,11 +163,9 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   removeContextListenersByInstance(instanceId: InstanceID) {
-    const removed = this.contextListeners.filter(
-      (r) => r.instanceId == instanceId,
-    )
+    const removed = this.contextListeners.filter(r => r.instanceId == instanceId)
     this.contextListeners = this.contextListeners.filter(
-      (listener) => listener.instanceId !== instanceId,
+      listener => listener.instanceId !== instanceId,
     )
     return removed
   }
@@ -197,9 +180,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   removePrivateChannelEventListener(listenerUuid: string): boolean {
-    const i = this.privateChannelEventListeners.findIndex(
-      (r) => r.listenerUuid == listenerUuid,
-    )
+    const i = this.privateChannelEventListeners.findIndex(r => r.listenerUuid == listenerUuid)
     if (i > -1) {
       this.privateChannelEventListeners.splice(i, 1)
       return true
@@ -211,12 +192,11 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     instanceId: InstanceID,
   ): PrivateChannelEventListener[] {
     const removed = this.privateChannelEventListeners.filter(
-      (listener) => listener.instanceId == instanceId,
+      listener => listener.instanceId == instanceId,
     )
-    this.privateChannelEventListeners =
-      this.privateChannelEventListeners.filter(
-        (listener) => listener.instanceId !== instanceId,
-      )
+    this.privateChannelEventListeners = this.privateChannelEventListeners.filter(
+      listener => listener.instanceId !== instanceId,
+    )
     return removed
   }
 
@@ -229,9 +209,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   removeDesktopAgentEventListener(listenerUuid: string): boolean {
-    const i = this.desktopAgentEventListeners.findIndex(
-      (r) => r.listenerUuid == listenerUuid,
-    )
+    const i = this.desktopAgentEventListeners.findIndex(r => r.listenerUuid == listenerUuid)
     if (i > -1) {
       this.desktopAgentEventListeners.splice(i, 1)
       return true
@@ -239,14 +217,12 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     return false
   }
 
-  removeDesktopAgentEventListenersByInstance(
-    instanceId: InstanceID,
-  ): DesktopAgentEventListener[] {
+  removeDesktopAgentEventListenersByInstance(instanceId: InstanceID): DesktopAgentEventListener[] {
     const removed = this.desktopAgentEventListeners.filter(
-      (listener) => listener.instanceId == instanceId,
+      listener => listener.instanceId == instanceId,
     )
     this.desktopAgentEventListeners = this.desktopAgentEventListeners.filter(
-      (listener) => listener.instanceId !== instanceId,
+      listener => listener.instanceId !== instanceId,
     )
     return removed
   }
@@ -261,9 +237,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   removeIntentListener(listenerUUID: string): boolean {
-    const i = this.intentListeners.findIndex(
-      (r) => r.listenerUUID == listenerUUID,
-    )
+    const i = this.intentListeners.findIndex(r => r.listenerUUID == listenerUUID)
     if (i > -1) {
       this.intentListeners.splice(i, 1)
       return true
@@ -271,14 +245,10 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     return false
   }
 
-  removeIntentListenersByInstance(
-    instanceId: InstanceID,
-  ): IntentListenerRegistration[] {
-    const removed = this.intentListeners.filter(
-      (r) => r.instanceId == instanceId,
-    )
+  removeIntentListenersByInstance(instanceId: InstanceID): IntentListenerRegistration[] {
+    const removed = this.intentListeners.filter(r => r.instanceId == instanceId)
     this.intentListeners = this.intentListeners.filter(
-      (listener) => listener.instanceId !== instanceId,
+      listener => listener.instanceId !== instanceId,
     )
     return removed
   }
@@ -288,10 +258,7 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
     return this.pendingResolutions.get(requestUuid)
   }
 
-  addPendingResolution(
-    requestUuid: string,
-    appIdentifier: AppIdentifier,
-  ): void {
+  addPendingResolution(requestUuid: string, appIdentifier: AppIdentifier): void {
     this.pendingResolutions.set(requestUuid, appIdentifier)
   }
 
@@ -323,35 +290,26 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   async receive(message: ReceivableMessage, from: InstanceID): Promise<void> {
     const details = this.getInstanceDetails(from)
     const handlers = this.handlersFor(details?.fdc3Version)
-    await Promise.all(
-      handlers.map((handler) => handler.accept(message, this, from)),
-    )
+    await Promise.all(handlers.map(handler => handler.accept(message, this, from)))
   }
 
   async cleanupApp(instanceId: InstanceID): Promise<void> {
     // Get context listeners for this instance before removing them
-    const contextListenersToRemove = this.contextListeners.filter(
-      (l) => l.instanceId === instanceId,
-    )
+    const contextListenersToRemove = this.contextListeners.filter(l => l.instanceId === instanceId)
 
     // Find private channels that need disconnect events
     const privateChannelsToDisconnect = new Set<string>()
     contextListenersToRemove
-      .filter(
-        (u) => this.getChannelById(u.channelId)?.type === ChannelType.private,
-      )
-      .forEach((u) => {
+      .filter(u => this.getChannelById(u.channelId)?.type === ChannelType.private)
+      .forEach(u => {
         if (u.channelId) {
           privateChannelsToDisconnect.add(u.channelId)
         }
       })
 
     // Fire disconnect events for private channels
-    privateChannelsToDisconnect.forEach((channelId) => {
-      const disconnectEvent = new PrivateChannelDisconnectServerInstanceEvent(
-        instanceId,
-        channelId,
-      )
+    privateChannelsToDisconnect.forEach(channelId => {
+      const disconnectEvent = new PrivateChannelDisconnectServerInstanceEvent(instanceId, channelId)
       this.notifyEventHandlers(disconnectEvent)
     })
 

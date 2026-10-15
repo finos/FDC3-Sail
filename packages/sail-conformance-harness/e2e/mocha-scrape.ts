@@ -209,8 +209,7 @@ export async function awaitMochaResult(
 
   while (Date.now() - started < timeoutMs) {
     // Re-resolve in case navigation replaced the frame.
-    const current =
-      page.frames().find(f => f.url().includes("/apps/app/index.html")) ?? frame
+    const current = page.frames().find(f => f.url().includes("/apps/app/index.html")) ?? frame
     const snap = await scrapeMocha(current)
     if (snap) {
       const completed = snap.passes + snap.failures + snap.pending

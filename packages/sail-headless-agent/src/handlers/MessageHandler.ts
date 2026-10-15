@@ -14,11 +14,7 @@ export interface MessageHandler {
    * is called by BasicFDC3Server on every message received and should only
    * process those it supports.
    */
-  accept(
-    msg: ReceivableMessage,
-    sc: FDC3ServerInstance,
-    from: InstanceID,
-  ): Promise<void>
+  accept(msg: ReceivableMessage, sc: FDC3ServerInstance, from: InstanceID): Promise<void>
 
   handleEvent(e: FDC3ServerInstanceEvent, sc: FDC3ServerInstance): Promise<void>
 

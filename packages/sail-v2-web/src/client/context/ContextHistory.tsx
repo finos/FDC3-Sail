@@ -24,20 +24,14 @@ export const ContextHistoryItem = ({
   onClick: () => void
 }) => {
   return (
-    <div
-      className={`${styles.contextItem} ${selected ? styles.selected : ""}`}
-      onClick={onClick}
-    >
+    <div className={`${styles.contextItem} ${selected ? styles.selected : ""}`} onClick={onClick}>
       <div className={styles.contextType}>{context.type}</div>
       <div className={styles.contextData}>{context.name ?? "No Name"}</div>
     </div>
   )
 }
 
-export class ContextHistoryPanel extends Component<
-  ContextHistoryPanelProps,
-  AppPanelState
-> {
+export class ContextHistoryPanel extends Component<ContextHistoryPanelProps, AppPanelState> {
   constructor(props: ContextHistoryPanelProps) {
     super(props)
     this.state = {

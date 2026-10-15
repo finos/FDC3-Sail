@@ -13,10 +13,7 @@ const app = express()
 app.use(express.json())
 
 const httpServer = ViteExpress.listen(app, 8090, () => {
-  log.info(
-    { mode: process.env.NODE_ENV, url: getSailUrl() },
-    "SAIL Server started",
-  )
+  log.info({ mode: process.env.NODE_ENV, url: getSailUrl() }, "SAIL Server started")
 })
 
 const factory = new SailFDC3ServerFactory(true)

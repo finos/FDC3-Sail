@@ -52,9 +52,7 @@ export type WscpGoodbye = {
   }
 }
 
-export function isWscpApplicationConnect(
-  value: unknown,
-): value is WscpApplicationConnect {
+export function isWscpApplicationConnect(value: unknown): value is WscpApplicationConnect {
   return (
     value != null &&
     typeof value === "object" &&

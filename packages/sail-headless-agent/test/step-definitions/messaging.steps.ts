@@ -20,12 +20,7 @@ const MATCHES_TYPE_SUFFIX = "matches_type"
  */
 const matchesTypeMatcher: RowFieldMatcher = {
   matchesField: (field: string) => field.endsWith(MATCHES_TYPE_SUFFIX),
-  matchField(
-    _world: PropsWorldLike,
-    field: string,
-    schemaId: string,
-    rowData: unknown,
-  ) {
+  matchField(_world: PropsWorldLike, field: string, schemaId: string, rowData: unknown) {
     const path = pathForFieldSuffix(field, MATCHES_TYPE_SUFFIX)
     if (path === null) {
       return false
@@ -53,25 +48,19 @@ Given("schemas loaded", function (this: CustomWorld) {
   // matches_type is handled by the lightweight matcher above.
 })
 
-Then(
-  "messaging will have outgoing posts",
-  function (this: CustomWorld, dt: DataTable) {
-    // just take the last few posts and match those
-    const matching = dt.rows().length
-    let toUse = this.sc?.postedMessages
-    if (toUse.length > matching) {
-      toUse = toUse.slice(toUse.length - matching, toUse.length)
-    }
-    matchData(this, toUse, dt)
-  },
-)
+Then("messaging will have outgoing posts", function (this: CustomWorld, dt: DataTable) {
+  // just take the last few posts and match those
+  const matching = dt.rows().length
+  let toUse = this.sc?.postedMessages
+  if (toUse.length > matching) {
+    toUse = toUse.slice(toUse.length - matching, toUse.length)
+  }
+  matchData(this, toUse, dt)
+})
 
-Then(
-  "messaging will have {int} posts",
-  function (this: CustomWorld, count: number) {
-    expect(this.sc.postedMessages.length).toEqual(count)
-  },
-)
+Then("messaging will have {int} posts", function (this: CustomWorld, count: number) {
+  expect(this.sc.postedMessages.length).toEqual(count)
+})
 
 setupGenericSteps({
   Given,

@@ -39,10 +39,7 @@ export function handleChannelUpdates(renderChannels: () => void) {
   })
 }
 
-export async function setAppChannel(
-  appId: string,
-  channel: string,
-): Promise<void> {
+export async function setAppChannel(appId: string, channel: string): Promise<void> {
   const msg: SailIntentResolveOpenChannelArgs = {
     appId,
     channel,
@@ -53,11 +50,7 @@ export async function setAppChannel(
 }
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-export function link(
-  socket: Socket,
-  channel: MessageChannel,
-  source: InstanceID,
-) {
+export function link(socket: Socket, channel: MessageChannel, source: InstanceID) {
   socket.on(FDC3_DA_EVENT, (data: any) => {
     // console.log(`DA Sent ${JSON.stringify(data)} from socket`)
     channel.port2.postMessage(data)

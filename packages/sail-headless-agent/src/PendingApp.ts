@@ -72,10 +72,7 @@ export class PendingApp {
   }
 
   private onError() {
-    const error =
-      this.state == AppState.Opening
-        ? OpenError.ApiTimeout
-        : OpenError.AppTimeout
+    const error = this.state == AppState.Opening ? OpenError.ApiTimeout : OpenError.AppTimeout
     this.state = AppState.Done
     this.sc.post(
       {

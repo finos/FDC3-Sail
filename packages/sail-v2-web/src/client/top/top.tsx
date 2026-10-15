@@ -18,11 +18,7 @@ export const Logo = ({ onClick }: { onClick?: () => void }) => {
 export const Settings = ({ onClick }: { onClick: () => void }) => {
   return (
     <div className={styles.settings}>
-      <img
-        src="/icons/control/dots.svg"
-        className={styles.settingsControl}
-        onClick={onClick}
-      />
+      <img src="/icons/control/dots.svg" className={styles.settingsControl} onClick={onClick} />
     </div>
   )
 }
@@ -38,9 +34,7 @@ export const ContextHistory = ({
     <div className={styles.contextHistoryClosed} onClick={onClick}>
       <div className={styles.contextHistoryItem}>
         <div className={styles.contextType}>{contextHistory[0].type}</div>
-        <div className={styles.contextData}>
-          {contextHistory[0].name ?? "No Name"}
-        </div>
+        <div className={styles.contextData}>{contextHistory[0].name ?? "No Name"}</div>
       </div>
     </div>
   )

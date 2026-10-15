@@ -1,13 +1,8 @@
 import { LogFunction, MessageHandler } from "../MessageHandler"
 import { InstanceID, State, ReceivableMessage } from "../../AppRegistration"
-import {
-  HeartbeatEvent,
-} from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
+import { HeartbeatEvent } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
 import { FullAppIdentifier } from "./support"
-import {
-  FDC3ServerInstance,
-  HeartbeatActivityEvent,
-} from "../../FDC3ServerInstance"
+import { FDC3ServerInstance, HeartbeatActivityEvent } from "../../FDC3ServerInstance"
 import { FDC3ServerInstanceEvent } from "../../FDC3ServerInstanceEvents"
 
 type HeartbeatDetails = {
@@ -50,14 +45,11 @@ export class HeartbeatHandler implements MessageHandler {
   ) {
     this.log = log ?? (() => {})
     this.timerFunction = setInterval(() => {
-      this.fdc3Instances.forEach(async (sc) => {
+      this.fdc3Instances.forEach(async sc => {
         const apps = await sc.getAllApps()
         apps
-          .filter(
-            (app) =>
-              app.state == State.Connected || app.state == State.NotResponding,
-          )
-          .forEach((app) => {
+          .filter(app => app.state == State.Connected || app.state == State.NotResponding)
+          .forEach(app => {
             const now = new Date().getTime()
             this.sendHeartbeat(sc, app)
 
@@ -68,14 +60,8 @@ export class HeartbeatHandler implements MessageHandler {
             if (lastHeartbeat != undefined) {
               const timeSinceLastHeartbeat = now - lastHeartbeat
 
-              if (
-                timeSinceLastHeartbeat < disconnectedAfter &&
-                currentState != State.Connected
-              ) {
-                sc.heartbeatActivity(
-                  app.instanceId,
-                  HeartbeatActivityEvent.ConnectedResponding,
-                )
+              if (timeSinceLastHeartbeat < disconnectedAfter && currentState != State.Connected) {
+                sc.heartbeatActivity(app.instanceId, HeartbeatActivityEvent.ConnectedResponding)
               } else if (
                 timeSinceLastHeartbeat > disconnectedAfter &&
                 currentState == State.Connected
@@ -101,10 +87,7 @@ export class HeartbeatHandler implements MessageHandler {
             } else {
               // start the clock
               this.lastHeartbeats.set(app.instanceId, now)
-              sc.heartbeatActivity(
-                app.instanceId,
-                HeartbeatActivityEvent.ConnectedResponding,
-              )
+              sc.heartbeatActivity(app.instanceId, HeartbeatActivityEvent.ConnectedResponding)
             }
           })
       })
@@ -114,29 +97,25 @@ export class HeartbeatHandler implements MessageHandler {
   heartbeatTimes(): HeartbeatDetails[] {
     const now = new Date().getTime()
     return Array.from(this.lastHeartbeats)
-      .map((e) => {
+      .map(e => {
         return {
           instanceId: e[0],
           time: now - e[1],
           state: convertToText(
             this.fdc3Instances
-              .map((sc) => sc.getInstanceDetails(e[0]))
+              .map(sc => sc.getInstanceDetails(e[0]))
               .reduce((a, b) => a || b, undefined)?.state,
           ),
         } as HeartbeatDetails
       })
-      .filter((e) => e.state != "Terminated")
+      .filter(e => e.state != "Terminated")
   }
 
   shutdown(): void {
     clearInterval(this.timerFunction)
   }
 
-  async accept(
-    msg: ReceivableMessage,
-    sc: FDC3ServerInstance,
-    from: InstanceID,
-  ): Promise<void> {
+  async accept(msg: ReceivableMessage, sc: FDC3ServerInstance, from: InstanceID): Promise<void> {
     if (!this.fdc3Instances.includes(sc)) {
       this.fdc3Instances.push(sc)
     }
@@ -156,10 +135,7 @@ export class HeartbeatHandler implements MessageHandler {
     }
   }
 
-  async sendHeartbeat(
-    sc: FDC3ServerInstance,
-    app: FullAppIdentifier,
-  ): Promise<void> {
+  async sendHeartbeat(sc: FDC3ServerInstance, app: FullAppIdentifier): Promise<void> {
     const event: HeartbeatEvent = {
       type: "heartbeatEvent",
       meta: {
@@ -171,10 +147,7 @@ export class HeartbeatHandler implements MessageHandler {
     sc.post(event, app.instanceId)
   }
 
-  async handleEvent(
-    e: FDC3ServerInstanceEvent,
-    i: FDC3ServerInstance,
-  ): Promise<void> {
+  async handleEvent(e: FDC3ServerInstanceEvent, i: FDC3ServerInstance): Promise<void> {
     if (e.type === "shutdown") {
       if (this.fdc3Instances.includes(i)) {
         this.fdc3Instances.splice(this.fdc3Instances.indexOf(i), 1)

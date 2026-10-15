@@ -91,7 +91,7 @@ window.addEventListener("load", () => {
     )
   }
 
-  myPort.addEventListener("message", (e) => {
+  myPort.addEventListener("message", e => {
     console.log(e.data.type)
     if (isFdc3UserInterfaceHandshake(e.data)) {
       // ok, port is ready, send the iframe position details
@@ -101,12 +101,10 @@ window.addEventListener("load", () => {
       } as IframeRestyle)
     } else if (isFdc3UserInterfaceChannels(e.data)) {
       const details = e.data
-      console.log(
-        JSON.stringify("SAIL CHANNEL DETAILS: " + JSON.stringify(details)),
-      )
+      console.log(JSON.stringify("SAIL CHANNEL DETAILS: " + JSON.stringify(details)))
 
       if (channels.length == 0) {
-        const tabDetails = details.payload.userChannels.map((c) => {
+        const tabDetails = details.payload.userChannels.map(c => {
           const out: TabDetail = {
             background: c.displayMetadata?.color ?? "white",
             icon: c.displayMetadata?.glyph ?? "/icons/logo/logo.svg",

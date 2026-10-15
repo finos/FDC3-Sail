@@ -3,15 +3,7 @@ import { ClientState } from "@finos/fdc3-sail-common"
 import { TabDetail } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
 
-const Tab = ({
-  td,
-  active,
-  onClick,
-}: {
-  td: TabDetail
-  active: boolean
-  onClick: () => void
-}) => {
+const Tab = ({ td, active, onClick }: { td: TabDetail; active: boolean; onClick: () => void }) => {
   return (
     <div
       id={td.id}
@@ -30,7 +22,7 @@ const Tab = ({
 export const Tabs = ({ cs }: { cs: ClientState }) => {
   return (
     <div className={styles.tabs}>
-      {cs.getTabs().map((t) => (
+      {cs.getTabs().map(t => (
         <Tab
           key={t.id}
           td={t}

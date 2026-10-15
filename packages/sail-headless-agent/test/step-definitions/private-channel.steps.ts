@@ -5,27 +5,22 @@ import { BrowserTypes } from "@finos/fdc3-schema-v2"
 import { handleResolve } from "@finos/cucumber-testing-steps"
 
 type CreatePrivateChannelRequest = BrowserTypes.CreatePrivateChannelRequest
-type PrivateChannelAddEventListenerRequest =
-  BrowserTypes.PrivateChannelAddEventListenerRequest
+type PrivateChannelAddEventListenerRequest = BrowserTypes.PrivateChannelAddEventListenerRequest
 type PrivateChannelUnsubscribeEventListenerRequest =
   BrowserTypes.PrivateChannelUnsubscribeEventListenerRequest
-type PrivateChannelDisconnectRequest =
-  BrowserTypes.PrivateChannelDisconnectRequest
+type PrivateChannelDisconnectRequest = BrowserTypes.PrivateChannelDisconnectRequest
 
-When(
-  "{string} creates a private channel",
-  function (this: CustomWorld, app: string) {
-    const meta = createMeta(this, app)
-    const uuid = this.sc.getInstanceUUID(meta.source)!
-    const message = {
-      meta,
-      payload: {},
-      type: "createPrivateChannelRequest",
-    } as CreatePrivateChannelRequest
+When("{string} creates a private channel", function (this: CustomWorld, app: string) {
+  const meta = createMeta(this, app)
+  const uuid = this.sc.getInstanceUUID(meta.source)!
+  const message = {
+    meta,
+    payload: {},
+    type: "createPrivateChannelRequest",
+  } as CreatePrivateChannelRequest
 
-    this.sc.receive(message, uuid)
-  },
-)
+  this.sc.receive(message, uuid)
+})
 
 When(
   "{string} removes event listener {string}",
@@ -46,12 +41,7 @@ When(
 
 When(
   "{string} adds an {string} event listener on {string}",
-  function (
-    this: CustomWorld,
-    app: string,
-    listenerType: string,
-    channelId: string,
-  ) {
+  function (this: CustomWorld, app: string, listenerType: string, channelId: string) {
     const meta = createMeta(this, app)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = {

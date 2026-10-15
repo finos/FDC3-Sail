@@ -12,10 +12,7 @@ import { createConnectionContext, handleAllMessageTypes } from "./sail-handlers"
  * Native app WebSocket connections are handled separately by RemoteSocketService
  * on /fdc3/ws (WSCP Flow 1).
  */
-export function initSailSocketIOService(
-  httpServer: any,
-  factory: SailFDC3ServerFactory,
-): Server {
+export function initSailSocketIOService(httpServer: any, factory: SailFDC3ServerFactory): Server {
   const io = new Server(httpServer)
 
   io.on("connection", (socket: Socket) => {

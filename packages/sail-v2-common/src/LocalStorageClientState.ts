@@ -72,7 +72,7 @@ export class LocalStorageClientState extends AbstractClientState {
       wscpPairings: this.wscpPairings,
     })
     localStorage.setItem(STORAGE_KEY, data)
-    this.callbacks.forEach((cb) => cb())
+    this.callbacks.forEach(cb => cb())
     await this.ss!.sendClientState(this.createArgs())
   }
 }

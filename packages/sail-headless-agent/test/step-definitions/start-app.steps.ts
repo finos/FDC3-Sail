@@ -76,37 +76,31 @@ When("{string} revalidates", function (this: CustomWorld, uuid: string) {
   this.sc.receive(message, uuid)
 })
 
-Then(
-  "running apps will be",
-  async function (this: CustomWorld, dataTable: DataTable) {
-    const apps = await this.sc.getConnectedApps()
-    matchData(this, apps, dataTable)
-  },
-)
+Then("running apps will be", async function (this: CustomWorld, dataTable: DataTable) {
+  const apps = await this.sc.getConnectedApps()
+  matchData(this, apps, dataTable)
+})
 
 Then("no apps are connected", async function (this: CustomWorld) {
   const apps = await this.sc.getConnectedApps()
   expect(apps.length).toEqual(0)
 })
 
-When(
-  "{string} opens app {string}",
-  function (this: CustomWorld, appStr: string, open: string) {
-    const from = createMeta(this, appStr)
-    const uuid = this.sc.getInstanceUUID(from.source)!
-    const message: OpenRequest = {
-      type: "openRequest",
-      meta: from,
-      payload: {
-        app: {
-          appId: open,
-          desktopAgent: "n/a",
-        },
+When("{string} opens app {string}", function (this: CustomWorld, appStr: string, open: string) {
+  const from = createMeta(this, appStr)
+  const uuid = this.sc.getInstanceUUID(from.source)!
+  const message: OpenRequest = {
+    type: "openRequest",
+    meta: from,
+    payload: {
+      app: {
+        appId: open,
+        desktopAgent: "n/a",
       },
-    }
-    this.sc.receive(message, uuid)
-  },
-)
+    },
+  }
+  this.sc.receive(message, uuid)
+})
 
 When(
   "{string} opens app {string} with context data {string}",
@@ -147,19 +141,16 @@ When(
   },
 )
 
-When(
-  "{string} requests info on the DesktopAgent",
-  function (this: CustomWorld, appStr: string) {
-    const from = createMeta(this, appStr)
-    const uuid = this.sc.getInstanceUUID(from.source)!
-    const message: GetInfoRequest = {
-      type: "getInfoRequest",
-      meta: from,
-      payload: {},
-    }
-    this.sc.receive(message, uuid)
-  },
-)
+When("{string} requests info on the DesktopAgent", function (this: CustomWorld, appStr: string) {
+  const from = createMeta(this, appStr)
+  const uuid = this.sc.getInstanceUUID(from.source)!
+  const message: GetInfoRequest = {
+    type: "getInfoRequest",
+    meta: from,
+    payload: {},
+  }
+  this.sc.receive(message, uuid)
+})
 
 When("{string} requests close", function (this: CustomWorld, appStr: string) {
   const from = createMeta(this, appStr)
@@ -172,22 +163,19 @@ When("{string} requests close", function (this: CustomWorld, appStr: string) {
   this.sc.receive(message, uuid)
 })
 
-When(
-  "{string} requests close before connected",
-  function (this: CustomWorld, appStr: string) {
-    const from = createMeta(this, appStr)
-    const details = this.sc.getInstanceDetails(from.source.instanceId!)
-    if (details) {
-      details.state = State.Pending
-    }
-    const message: CloseRequest = {
-      type: "closeRequest",
-      meta: from,
-      payload: {},
-    }
-    this.sc.receive(message, from.source.instanceId!)
-  },
-)
+When("{string} requests close before connected", function (this: CustomWorld, appStr: string) {
+  const from = createMeta(this, appStr)
+  const details = this.sc.getInstanceDetails(from.source.instanceId!)
+  if (details) {
+    details.state = State.Pending
+  }
+  const message: CloseRequest = {
+    type: "closeRequest",
+    meta: from,
+    payload: {},
+  }
+  this.sc.receive(message, from.source.instanceId!)
+})
 
 When(
   "{string} findsInstances of {string}",
@@ -208,7 +196,7 @@ When(
 )
 
 When("we wait for the listener timeout", function (this: CustomWorld) {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(resolve => {
     setTimeout(() => resolve(), 3100)
   })
 })

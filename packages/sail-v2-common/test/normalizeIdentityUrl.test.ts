@@ -9,7 +9,7 @@ import {
 describe("normalizeIdentityUrl", () => {
   it("is idempotent", () => {
     fc.assert(
-      fc.property(fc.string(), (s) => {
+      fc.property(fc.string(), s => {
         const once = normalizeIdentityUrl(s)
         expect(normalizeIdentityUrl(once)).toBe(once)
       }),
@@ -18,7 +18,7 @@ describe("normalizeIdentityUrl", () => {
 
   it("never ends with a slash when non-empty", () => {
     fc.assert(
-      fc.property(fc.string(), (s) => {
+      fc.property(fc.string(), s => {
         const n = normalizeIdentityUrl(s)
         if (n.length > 0) {
           expect(n.endsWith("/")).toBe(false)

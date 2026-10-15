@@ -39,7 +39,10 @@ async function dumpHostDiagnostics(page: Page, consoleLines: string[]): Promise<
   const ready = await page
     .evaluate(() => (window as unknown as HostWindowFlags).__sailConformanceReady)
     .catch(() => undefined)
-  const iframeCount = await page.locator("iframe").count().catch(() => -1)
+  const iframeCount = await page
+    .locator("iframe")
+    .count()
+    .catch(() => -1)
   const iframeSrcs = await page
     .locator("iframe")
     .evaluateAll(els => els.map(el => (el as HTMLIFrameElement).src || "(no src)"))

@@ -22,16 +22,16 @@ export class DefaultAppState implements AppState {
   ss: ServerState | null = null
 
   getAppState(instanceId: string): State | undefined {
-    return this.states.find((x) => x.instanceId == instanceId)?.state
+    return this.states.find(x => x.instanceId == instanceId)?.state
   }
 
   getFdc3Version(instanceId: string): Fdc3ApiVersion | undefined {
-    return this.states.find((x) => x.instanceId == instanceId)?.fdc3Version
+    return this.states.find(x => x.instanceId == instanceId)?.fdc3Version
   }
 
   setAppState(state: SailAppStateArgs): void {
     this.states = state
-    this.callbacks.forEach((x) => {
+    this.callbacks.forEach(x => {
       x()
     })
   }
@@ -64,7 +64,7 @@ export class DefaultAppState implements AppState {
     }
 
     const applications: DirectoryApp[] = this.cs?.getKnownApps() ?? []
-    const firstMatchingApp = applications.find((x) => {
+    const firstMatchingApp = applications.find(x => {
       const d = x.details as WebAppDetails
       if (!d?.url) {
         return false
@@ -77,9 +77,7 @@ export class DefaultAppState implements AppState {
       }
       // Path-only match when AppD host differs from identity host (CDN vs Vite).
       try {
-        const dirPath = normalizeUrlPathname(
-          new URL(d.url, window.location.origin).pathname,
-        )
+        const dirPath = normalizeUrlPathname(new URL(d.url, window.location.origin).pathname)
         return dirPath.length > 1 && dirPath === identityPathname
       } catch {
         return false
@@ -90,14 +88,14 @@ export class DefaultAppState implements AppState {
     }
 
     // Fallback: panel already registered for this identity URL (deep-link Frame).
-    const panel = (this.cs?.getPanels() ?? []).find((p) => {
+    const panel = (this.cs?.getPanels() ?? []).find(p => {
       if (!p.url) {
         return false
       }
       return urlsReferToSameApp(p.url, identityUrl, window.location.origin)
     })
     if (panel) {
-      return applications.find((a) => a.appId === panel.appId)
+      return applications.find(a => a.appId === panel.appId)
     }
     return undefined
   }
@@ -111,7 +109,7 @@ export class DefaultAppState implements AppState {
     source: Window,
     identityUrl: string,
   ): Promise<string | undefined> {
-    return this.getInstanceIdForWindow(source).then((fromMap) => {
+    return this.getInstanceIdForWindow(source).then(fromMap => {
       if (fromMap) {
         return fromMap
       }
@@ -129,9 +127,7 @@ export class DefaultAppState implements AppState {
 
       const panels = this.cs?.getPanels() ?? []
       const byUrl = panels.find(
-        (p) =>
-          p.url &&
-          urlsReferToSameApp(p.url, identityUrl, window.location.origin),
+        p => p.url && urlsReferToSameApp(p.url, identityUrl, window.location.origin),
       )
       if (byUrl) {
         this.registerAppWindow(source, byUrl.panelId)
@@ -166,21 +162,18 @@ export class DefaultAppState implements AppState {
           const identityUrl = data.payload.identityUrl
           let appD = this.getDirectoryAppForUrl(identityUrl)
           this.resolveInstanceIdForHello(source, identityUrl)
-            .then((instanceId) => {
+            .then(instanceId => {
               // Last-resort: resolve appId from the panel registered for this instance.
               if (!appD && instanceId) {
-                const panel = this.cs?.getPanels().find((p) => p.panelId === instanceId)
+                const panel = this.cs?.getPanels().find(p => p.panelId === instanceId)
                 if (panel) {
-                  appD = (this.cs?.getKnownApps() ?? []).find(
-                    (a) => a.appId === panel.appId,
-                  )
+                  appD = (this.cs?.getKnownApps() ?? []).find(a => a.appId === panel.appId)
                 }
               }
               const appId =
                 appD?.appId ??
                 (instanceId
-                  ? this.cs?.getPanels().find((p) => p.panelId === instanceId)
-                      ?.appId
+                  ? this.cs?.getPanels().find(p => p.panelId === instanceId)?.appId
                   : undefined)
               if (appId && instanceId) {
                 source.postMessage(
@@ -231,10 +224,7 @@ export class DefaultAppState implements AppState {
           void this.getServerState()
             .reportAppWindowClosed(instanceId)
             .catch((e: unknown) => {
-              console.warn(
-                `[Sail v2] reportAppWindowClosed failed for ${instanceId}`,
-                e,
-              )
+              console.warn(`[Sail v2] reportAppWindowClosed failed for ${instanceId}`, e)
             })
         }
       }
@@ -295,7 +285,7 @@ export class DefaultAppState implements AppState {
    * Since sometimes it takes the app windows a little while to load, here
    */
   async getInstanceIdForWindow(window: Window): Promise<string | undefined> {
-    return new Promise<string | undefined>((resolve) => {
+    return new Promise<string | undefined>(resolve => {
       const endTime = new Date().getTime() + 10000
 
       const retry = () => {
@@ -326,8 +316,8 @@ export class DefaultAppState implements AppState {
     // Get all numbers currently in use for this app title
     const usedNumbers = new Set(
       existingPanels
-        .filter((p) => p.title.startsWith(detail.title))
-        .map((p) => {
+        .filter(p => p.title.startsWith(detail.title))
+        .map(p => {
           const match = /\d+$/.exec(p.title)
           return match ? parseInt(match[0]) : 0
         }),
@@ -346,15 +336,11 @@ export class DefaultAppState implements AppState {
    * Opens either a new panel or a browser tab for the application to go in,
    * returns the instance id for the new thing.
    */
-  open(
-    detail: DirectoryApp,
-    destination?: AppHosting,
-  ): Promise<AppOpenDetails> {
-    return new Promise((resolve) => {
+  open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails> {
+    return new Promise(resolve => {
       const sailManifest = detail.hostManifests?.sail ?? {}
       const forceNewWindow =
-        (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ??
-        false
+        (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ?? false
       // Explicit destination (e.g. deep-link Frame for Playwright) wins over manifest.
       const hosting: AppHosting =
         destination ?? (forceNewWindow ? AppHosting.Tab : AppHosting.Frame)
@@ -362,12 +348,9 @@ export class DefaultAppState implements AppState {
       if (hosting == AppHosting.Tab) {
         this.getServerState()
           .registerAppLaunch(detail.appId, hosting, null, instanceTitle)
-          .then((instanceId) => {
+          .then(instanceId => {
             // Use instanceId as window.name so closePopupForInstance / mocks can match.
-            const w = window.open(
-              (detail.details as WebAppDetails).url,
-              instanceId,
-            )
+            const w = window.open((detail.details as WebAppDetails).url, instanceId)
             if (w) {
               this.registerAppWindow(w, instanceId)
               this.registerPopup(instanceId, w)
@@ -383,7 +366,7 @@ export class DefaultAppState implements AppState {
         const channel = this.getClientState().getActiveTab().id
         this.getServerState()
           .registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
-          .then((instanceId) => {
+          .then(instanceId => {
             this.getClientState().newPanel(detail, instanceId, instanceTitle)
             resolve({ instanceId, channel, instanceTitle })
           })

@@ -10,50 +10,41 @@ type JoinUserChannelRequest = BrowserTypes.JoinUserChannelRequest
 type LeaveCurrentChannelRequest = BrowserTypes.LeaveCurrentChannelRequest
 type GetCurrentContextRequest = BrowserTypes.GetCurrentContextRequest
 
-When(
-  "{string} gets the list of user channels",
-  function (this: CustomWorld, app: string) {
-    const meta = createMeta(this, app)
-    const uuid = this.sc.getInstanceUUID(meta.source)!
-    const message = {
-      meta,
-      payload: {},
-      type: "getUserChannelsRequest",
-    } as GetUserChannelsRequest
+When("{string} gets the list of user channels", function (this: CustomWorld, app: string) {
+  const meta = createMeta(this, app)
+  const uuid = this.sc.getInstanceUUID(meta.source)!
+  const message = {
+    meta,
+    payload: {},
+    type: "getUserChannelsRequest",
+  } as GetUserChannelsRequest
 
-    this.sc.receive(message, uuid)
-  },
-)
+  this.sc.receive(message, uuid)
+})
 
-When(
-  "{string} gets the current user channel",
-  function (this: CustomWorld, app: string) {
-    const meta = createMeta(this, app)
-    const uuid = this.sc.getInstanceUUID(meta.source)!
-    const message = {
-      meta,
-      payload: {},
-      type: "getCurrentChannelRequest",
-    } as GetCurrentChannelRequest
+When("{string} gets the current user channel", function (this: CustomWorld, app: string) {
+  const meta = createMeta(this, app)
+  const uuid = this.sc.getInstanceUUID(meta.source)!
+  const message = {
+    meta,
+    payload: {},
+    type: "getCurrentChannelRequest",
+  } as GetCurrentChannelRequest
 
-    this.sc.receive(message, uuid)
-  },
-)
+  this.sc.receive(message, uuid)
+})
 
-When(
-  "{string} leaves the current user channel",
-  function (this: CustomWorld, app: string) {
-    const meta = createMeta(this, app)
-    const uuid = this.sc.getInstanceUUID(meta.source)!
-    const message = {
-      meta,
-      payload: {},
-      type: "leaveCurrentChannelRequest",
-    } as LeaveCurrentChannelRequest
+When("{string} leaves the current user channel", function (this: CustomWorld, app: string) {
+  const meta = createMeta(this, app)
+  const uuid = this.sc.getInstanceUUID(meta.source)!
+  const message = {
+    meta,
+    payload: {},
+    type: "leaveCurrentChannelRequest",
+  } as LeaveCurrentChannelRequest
 
-    this.sc.receive(message, uuid)
-  },
-)
+  this.sc.receive(message, uuid)
+})
 
 When(
   "{string} joins user channel {string}",

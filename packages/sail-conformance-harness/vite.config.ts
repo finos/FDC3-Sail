@@ -15,9 +15,7 @@ export function resolveConformanceFdc3Version(raw?: string): "2.2" | "3.0" {
   return raw === "3.0" ? "3.0" : "2.2"
 }
 
-export function resolveConformanceToolbox(
-  raw?: string,
-): "hosted" | "local" {
+export function resolveConformanceToolbox(raw?: string): "hosted" | "local" {
   return raw === "local" ? "local" : "hosted"
 }
 
@@ -34,7 +32,10 @@ export default defineConfig(({ mode }) => {
   )
   const conformancePackage =
     fdc3Version === "3.0" ? "@robmoffat/fdc3-conformance-3.0" : "@robmoffat/fdc3-conformance-2.2"
-  const conformanceDist = join(dirname(require.resolve(`${conformancePackage}/package.json`)), "dist")
+  const conformanceDist = join(
+    dirname(require.resolve(`${conformancePackage}/package.json`)),
+    "dist",
+  )
 
   return {
     plugins: lazyPlugins(() => [react()]),

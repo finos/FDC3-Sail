@@ -46,12 +46,12 @@ function ConnectionInstructions({
     setBusy(true)
     getClientState()
       .mintWscpPairing(appId)
-      .then((p) => {
+      .then(p => {
         if (!cancelled) {
           setPairing(p)
         }
       })
-      .catch((e) => {
+      .catch(e => {
         console.error("Failed to mint WSCP pairing", e)
       })
       .finally(() => {
@@ -81,8 +81,8 @@ function ConnectionInstructions({
   return (
     <div className={styles.connectionSection}>
       <p className={styles.connectionIntro}>
-        This native app connects via the FDC3 WebSocket Connection Protocol
-        (WSCP). Copy the WebSocket URL and pairing secret into your application.
+        This native app connects via the FDC3 WebSocket Connection Protocol (WSCP). Copy the
+        WebSocket URL and pairing secret into your application.
       </p>
 
       <div className={styles.platformTabs}>
@@ -116,9 +116,8 @@ function ConnectionInstructions({
         {platform === "java" && (
           <div className={styles.platformInstructions}>
             <p>
-              Set <code>FDC3_WEBSOCKET_URL</code> and{" "}
-              <code>FDC3_CONNECTION_SECRET</code>, or pass both to{" "}
-              <code>GetAgentParams</code>:
+              Set <code>FDC3_WEBSOCKET_URL</code> and <code>FDC3_CONNECTION_SECRET</code>, or pass
+              both to <code>GetAgentParams</code>:
             </p>
           </div>
         )}
@@ -126,8 +125,8 @@ function ConnectionInstructions({
         {platform === "csharp" && (
           <div className={styles.platformInstructions}>
             <p className={styles.placeholder}>
-              C# FDC3 support coming soon. Use the WebSocket URL and shared
-              secret below with WSCP Flow 1.
+              C# FDC3 support coming soon. Use the WebSocket URL and shared secret below with WSCP
+              Flow 1.
             </p>
           </div>
         )}
@@ -135,8 +134,8 @@ function ConnectionInstructions({
         {platform === "go" && (
           <div className={styles.platformInstructions}>
             <p className={styles.placeholder}>
-              Go FDC3 support coming soon. Use the WebSocket URL and shared
-              secret below with WSCP Flow 1.
+              Go FDC3 support coming soon. Use the WebSocket URL and shared secret below with WSCP
+              Flow 1.
             </p>
           </div>
         )}
@@ -144,9 +143,8 @@ function ConnectionInstructions({
         {platform === "websocket" && (
           <div className={styles.platformInstructions}>
             <p>
-              Open a WebSocket to the URL below, then send{" "}
-              <code>WSCPApplicationConnect</code> with the shared secret. Sail
-              replies with <code>WSCPDesktopAgentConnect</code> (or{" "}
+              Open a WebSocket to the URL below, then send <code>WSCPApplicationConnect</code> with
+              the shared secret. Sail replies with <code>WSCPDesktopAgentConnect</code> (or{" "}
               <code>WSCPConnectFailed</code>). DACP follows on the same socket.
             </p>
           </div>
@@ -207,7 +205,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
       chosen: null,
       apps: getClientState()
         .getKnownApps()
-        .filter((d) => onlyRelevantApps(d)),
+        .filter(d => onlyRelevantApps(d)),
       activeTab: "info",
     }
   }
@@ -236,7 +234,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
         area={
           <div className={styles.appDContent}>
             <div className={styles.appDApps}>
-              {this.state.apps.map((a) => (
+              {this.state.apps.map(a => (
                 <div
                   key={a.appId}
                   className={`${styles.appDApp} ${a == app ? styles.selected : ""}`}
@@ -283,9 +281,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                         {app.type === "native" && (
                           <ConnectionInstructions
                             appId={app.appId!}
-                            connectionUrl={
-                              (app.details as any)?.[FDC3_WEBSOCKET_PROPERTY]
-                            }
+                            connectionUrl={(app.details as any)?.[FDC3_WEBSOCKET_PROPERTY]}
                           />
                         )}
                       </div>
@@ -297,9 +293,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
                             <img key={s.src} src={s.src} title={s.label} />
                           ))
                         ) : (
-                          <p className={styles.noScreenshots}>
-                            No screenshots available
-                          </p>
+                          <p className={styles.noScreenshots}>No screenshots available</p>
                         )}
                       </div>
                     )}
@@ -318,9 +312,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
           <PopupButton
             key="open-frame"
             text="Open Here"
-            disabled={
-              this.state.chosen == null || this.state.chosen.type !== "web"
-            }
+            disabled={this.state.chosen == null || this.state.chosen.type !== "web"}
             onClick={async () => {
               if (this.state.chosen) {
                 getAppState().open(this.state.chosen, AppHosting.Frame)
@@ -331,9 +323,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
           <PopupButton
             key="open-tab"
             text="Open In Tab"
-            disabled={
-              this.state.chosen == null || this.state.chosen.type !== "web"
-            }
+            disabled={this.state.chosen == null || this.state.chosen.type !== "web"}
             onClick={async () => {
               if (this.state.chosen) {
                 getAppState().open(this.state.chosen, AppHosting.Tab)

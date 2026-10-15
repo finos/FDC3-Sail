@@ -8,8 +8,7 @@ import { BrowserTypes } from "@finos/fdc3-schema-v2"
 type FindIntentRequest = BrowserTypes.FindIntentRequest
 type FindIntentsByContextRequest = BrowserTypes.FindIntentsByContextRequest
 type AddIntentListenerRequest = BrowserTypes.AddIntentListenerRequest
-type IntentListenerUnsubscribeRequest =
-  BrowserTypes.IntentListenerUnsubscribeRequest
+type IntentListenerUnsubscribeRequest = BrowserTypes.IntentListenerUnsubscribeRequest
 type RaiseIntentRequest = BrowserTypes.RaiseIntentRequest
 type RaiseIntentForContextRequest = BrowserTypes.RaiseIntentForContextRequest
 type IntentResultRequest = BrowserTypes.IntentResultRequest
@@ -31,13 +30,10 @@ function decamelize(str: string, separator: string) {
     .toLowerCase()
 }
 
-function convertDataTableToListensFor(
-  cw: CustomWorld,
-  dt: DataTable,
-): ListensFor {
+function convertDataTableToListensFor(cw: CustomWorld, dt: DataTable): ListensFor {
   const hashes = dt.hashes()
   const out: ListensFor = {}
-  hashes.forEach((h) => {
+  hashes.forEach(h => {
     out[h["Intent Name"]] = {
       displayName: decamelize(h["Intent Name"], " "),
       contexts: [handleResolve(h["Context Type"], cw)],
@@ -133,12 +129,7 @@ Given(
 
 Given(
   "{string} registers an intent listener for {string} with contextType {string}",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    intent: string,
-    contextType: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, intent: string, contextType: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = {
@@ -169,10 +160,7 @@ Given(
       meta,
       payload: {
         intent: handleResolve(intent, this),
-        contextTypes: [
-          handleResolve(contextType1, this),
-          handleResolve(contextType2, this),
-        ],
+        contextTypes: [handleResolve(contextType1, this), handleResolve(contextType2, this)],
       },
     } as AddIntentListenerRequest
     await this.sc.receive(message, uuid)
@@ -288,12 +276,7 @@ When(
 
 When(
   "{string} raises an intent with contextType {string} on app {string}",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    contextType: string,
-    dest: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, contextType: string, dest: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raiseWithContext(this, contextType, dest, meta)
@@ -303,12 +286,7 @@ When(
 
 When(
   "{string} raises an intent for {string} with contextType {string}",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    intentName: string,
-    contextType: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, intentName: string, contextType: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raise(this, intentName, contextType, null, meta)
@@ -366,12 +344,7 @@ When(
 
 When(
   "{string} raises an intent for {string} with contextType {string} forcing a new instance",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    intentName: string,
-    contextType: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, intentName: string, contextType: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raise(this, intentName, contextType, null, meta, true)
@@ -381,12 +354,7 @@ When(
 
 When(
   "{string} raises an intent for {string} with contextType {string} requiring an existing instance",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    intentName: string,
-    contextType: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, intentName: string, contextType: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raise(this, intentName, contextType, null, meta, false)
@@ -408,9 +376,11 @@ When(
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raise(this, intentName, contextType, null, meta)
-    ;(message.payload as RaiseIntentRequest["payload"] & {
-      metadata?: object
-    }).metadata = {
+    ;(
+      message.payload as RaiseIntentRequest["payload"] & {
+        metadata?: object
+      }
+    ).metadata = {
       traceId: handleResolve(traceId, this),
       signature: {
         signature: handleResolve(signature, this) + " (signature part)",
@@ -424,12 +394,7 @@ When(
 
 When(
   "{string} raises an intent for {string} with contextType {string} on an invalid app instance",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    intentName: string,
-    contextType: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, intentName: string, contextType: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raiseWithInvalidTarget(this, intentName, contextType, meta)
@@ -468,7 +433,7 @@ When(
 )
 
 When("we wait for the intent timeout", function (this: CustomWorld) {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(resolve => {
     setTimeout(() => resolve(), 2100)
   })
 })
@@ -549,12 +514,7 @@ When(
 
 When(
   "{string} sends a intentResultRequest with eventUuid {string} and void contents and raiseIntentUuid {string}",
-  async function (
-    this: CustomWorld,
-    appStr: string,
-    eventUuid: string,
-    raiseIntentUuid: string,
-  ) {
+  async function (this: CustomWorld, appStr: string, eventUuid: string, raiseIntentUuid: string) {
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message: IntentResultRequest = {

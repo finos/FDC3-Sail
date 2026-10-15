@@ -1,7 +1,4 @@
-import {
-  ChannelReceiverUpdate,
-  ChannelReceiverHelloRequest,
-} from "@finos/fdc3-sail-common"
+import { ChannelReceiverUpdate, ChannelReceiverHelloRequest } from "@finos/fdc3-sail-common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { Connection } from "../connection/Connection"
 import { ConnectionContext, ConnectionType } from "./types"
@@ -21,9 +18,7 @@ export function handleChannelReceiverHello(
   ctx.connectionType = ConnectionType.CHANNEL
 
   ctx.fdc3ServerInstance = factory.getSession(ctx.userSessionId)
-  const appInstance = ctx.fdc3ServerInstance?.getInstanceDetails(
-    props.instanceId,
-  )
+  const appInstance = ctx.fdc3ServerInstance?.getInstanceDetails(props.instanceId)
   if (appInstance) {
     appInstance.channelConnections.push(connection)
     callback({

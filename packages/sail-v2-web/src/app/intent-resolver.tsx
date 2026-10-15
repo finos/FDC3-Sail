@@ -117,7 +117,7 @@ window.addEventListener("load", () => {
     }
   }
 
-  myPort.addEventListener("message", (e) => {
+  myPort.addEventListener("message", e => {
     if (isFdc3UserInterfaceHandshake(e.data)) {
       renderIntentResolver(null)
     } else if (isFdc3UserInterfaceResolve(e.data)) {

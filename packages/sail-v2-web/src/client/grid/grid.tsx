@@ -2,12 +2,7 @@ import { Component } from "react"
 import styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
-import {
-  AppState,
-  getAppState,
-  AppPanel,
-  ClientState,
-} from "@finos/fdc3-sail-common"
+import { AppState, getAppState, AppPanel, ClientState } from "@finos/fdc3-sail-common"
 import { State } from "@finos/sail-headless-agent"
 //import { AppHosting } from "@finos/fdc3-sail-common"
 
@@ -25,7 +20,7 @@ export class Grids extends Component<GridsProps> {
   render() {
     return (
       <div className={styles.grids} id={this.props.id}>
-        {this.props.cs.getPanels().map((p) => (
+        {this.props.cs.getPanels().map(p => (
           <AppFrame key={p.panelId} panel={p} />
         ))}
       </div>
@@ -48,10 +43,10 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
       name={panel.panelId}
       slot={"slot_" + panel.panelId}
       className={styles.iframe}
-      onLoad={(e) => {
+      onLoad={e => {
         registerWindow(e.currentTarget)
       }}
-      ref={(ref) => {
+      ref={ref => {
         // Register ASAP for WCP1Hello; onLoad re-registers after navigation.
         setTimeout(() => {
           registerWindow(ref)
@@ -61,13 +56,7 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
   )
 }
 
-const AppStateIcon = ({
-  instanceId,
-  as,
-}: {
-  instanceId: string
-  as: AppState
-}) => {
+const AppStateIcon = ({ instanceId, as }: { instanceId: string; as: AppState }) => {
   const D = "/icons/app-state/"
 
   function symbolForState(s: State | undefined): string[] {
@@ -79,9 +68,7 @@ const AppStateIcon = ({
           return [D + "not-responding.svg", "Not Responding"]
         case State.Connected: {
           const version = as.getFdc3Version(instanceId)
-          const label = version
-            ? `Connected to FDC3 ${version}`
-            : "Connected to FDC3"
+          const label = version ? `Connected to FDC3 ${version}` : "Connected to FDC3"
           return [D + "connected.svg", label]
         }
         case State.Pending:
@@ -94,9 +81,7 @@ const AppStateIcon = ({
 
   const state = symbolForState(as.getAppState(instanceId))
 
-  return (
-    <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
-  )
+  return <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
 }
 
 const CloseIcon = ({ action }: { action: () => void }) => {
@@ -154,9 +139,7 @@ export const Content = ({
           /> */}
         </div>
         <div className={styles.resizeBaffle} />
-        <div className={styles.contentBody}>
-          {panel.url ? <AppSlot panel={panel} /> : <div />}
-        </div>
+        <div className={styles.contentBody}>{panel.url ? <AppSlot panel={panel} /> : <div />}</div>
       </div>
     </div>
   )

@@ -1,28 +1,24 @@
-import {
-  Directory,
-  getClientState,
-  getServerState,
-} from "@finos/fdc3-sail-common"
+import { Directory, getClientState, getServerState } from "@finos/fdc3-sail-common"
 import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
 
 function updateText(url: string, text: string) {
   const directories = getClientState().getDirectories()
-  const d = directories.find((d) => d.url == url)
+  const d = directories.find(d => d.url == url)
   d!.label = text
   getClientState().setDirectories(directories)
 }
 
 function updateUrl(url: string, text: string) {
   const directories = getClientState().getDirectories()
-  const d = directories.find((d) => d.url == url)
+  const d = directories.find(d => d.url == url)
   d!.url = text
   getClientState().setDirectories(directories)
 }
 
 function toggleDirectory(d: Directory) {
   const directories = getClientState().getDirectories()
-  const i = directories.findIndex((x) => x.url == d.url)
+  const i = directories.findIndex(x => x.url == d.url)
   directories[i].active = !directories[i].active
   updateDirectories(directories)
 }
@@ -38,7 +34,7 @@ function updateDirectories(directories: Directory[]) {
 function removeDirectory(d: Directory) {
   if (confirm("Remove this directory - are you sure?") == true) {
     const directories = getClientState().getDirectories()
-    const i = directories.findIndex((x) => x.url == d.url)
+    const i = directories.findIndex(x => x.url == d.url)
     directories.splice(i, 1)
     updateDirectories(directories)
   }
@@ -60,7 +56,7 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
           className={styles.name}
           contentEditable={true}
           suppressContentEditableWarning={true}
-          onBlur={(e) => updateText(d.url, e.currentTarget.textContent!)}
+          onBlur={e => updateText(d.url, e.currentTarget.textContent!)}
         >
           {d.label}
         </div>
@@ -68,7 +64,7 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
           className={styles.url}
           contentEditable={true}
           suppressContentEditableWarning={true}
-          onBlur={(e) => updateUrl(d.url, e.currentTarget.textContent!)}
+          onBlur={e => updateUrl(d.url, e.currentTarget.textContent!)}
         >
           {d.url}
         </div>
@@ -77,11 +73,7 @@ const DirectoryItem = ({ d }: { d: Directory }) => {
       <InlineButton
         onClick={() => toggleDirectory(d)}
         text="Toggle Use Of Directory"
-        url={
-          d.active
-            ? "/icons/control/switched-on.svg"
-            : "/icons/control/switched-off.svg"
-        }
+        url={d.active ? "/icons/control/switched-on.svg" : "/icons/control/switched-off.svg"}
         className={styles.actionButton}
       />
 
@@ -100,7 +92,7 @@ export const DirectoryList = () => {
     <div className={styles.list}>
       {getClientState()
         .getDirectories()
-        .map((d) => (
+        .map(d => (
           <DirectoryItem key={d.url} d={d} />
         ))}
       <AddButton

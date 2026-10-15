@@ -9,11 +9,7 @@ const log = createLogger("FDC3AppEvent")
 /**
  * Handle FDC3_APP_EVENT message
  */
-export function handleFDC3AppEvent(
-  ctx: ConnectionContext,
-  data: any,
-  from: string,
-): void {
+export function handleFDC3AppEvent(ctx: ConnectionContext, data: any, from: string): void {
   // message from app to da
   if (!data.type.startsWith("heartbeat")) {
     log.debug({ type: data.type, from, data }, "FDC3_APP_EVENT received")

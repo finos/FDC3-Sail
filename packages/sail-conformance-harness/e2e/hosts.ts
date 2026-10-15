@@ -30,11 +30,7 @@ export const CONFORMANCE_HOSTS: Record<ConformanceHostId, ConformanceHostConfig>
     id: "sail-one",
     url: "http://localhost:8090",
     workspace: "@finos/sail-one",
-    buildWorkspaces: [
-      "@finos/sail-env",
-      "@finos/sail-headless-agent",
-      "@finos/sail-browser-agent",
-    ],
+    buildWorkspaces: ["@finos/sail-env", "@finos/sail-headless-agent", "@finos/sail-browser-agent"],
   },
   "sail-finance": {
     id: "sail-finance",
@@ -51,11 +47,7 @@ export const CONFORMANCE_HOSTS: Record<ConformanceHostId, ConformanceHostConfig>
     id: "sail-v2-web",
     url: "http://localhost:8090",
     workspace: "@finos/fdc3-sail-web",
-    buildWorkspaces: [
-      "@finos/sail-env",
-      "@finos/sail-headless-agent",
-      "@finos/fdc3-sail-common",
-    ],
+    buildWorkspaces: ["@finos/sail-env", "@finos/sail-headless-agent", "@finos/fdc3-sail-common"],
   },
 }
 
@@ -75,9 +67,7 @@ export function resolveConformanceFdc3Version(
   return raw === "2.2" ? "2.2" : "3.0"
 }
 
-export function resolveConformanceDirectoryUrl(
-  _version: ConformanceFdc3Version,
-): string {
+export function resolveConformanceDirectoryUrl(_version: ConformanceFdc3Version): string {
   return process.env.CONFORMANCE_DIRECTORY_URL ?? LOCAL_CONFORMANCE_DIRECTORY_URL
 }
 

@@ -40,28 +40,22 @@ export class RemoteSocketService {
   }
 
   private setupUpgradeHandler(): void {
-    this.httpServer.on(
-      "upgrade",
-      (request: IncomingMessage, socket: any, head: Buffer) => {
-        const pathname = (request.url || "").split("?")[0]
+    this.httpServer.on("upgrade", (request: IncomingMessage, socket: any, head: Buffer) => {
+      const pathname = (request.url || "").split("?")[0]
 
-        if (pathname === "/fdc3/ws") {
-          this.wss.handleUpgrade(request, socket, head, (ws) => {
-            this.wss.emit("connection", ws, request)
-          })
-          return
-        }
+      if (pathname === "/fdc3/ws") {
+        this.wss.handleUpgrade(request, socket, head, ws => {
+          this.wss.emit("connection", ws, request)
+        })
+        return
+      }
 
-        // Legacy path-based remote URLs are no longer accepted
-        if (pathname.startsWith("/remote/")) {
-          log.error(
-            { pathname },
-            "Remote connection rejected - use /fdc3/ws with WSCP sharedSecret",
-          )
-          socket.destroy()
-        }
-      },
-    )
+      // Legacy path-based remote URLs are no longer accepted
+      if (pathname.startsWith("/remote/")) {
+        log.error({ pathname }, "Remote connection rejected - use /fdc3/ws with WSCP sharedSecret")
+        socket.destroy()
+      }
+    })
   }
 
   private setupConnectionHandler(): void {
@@ -81,12 +75,12 @@ export class RemoteSocketService {
       })
 
       ws.on("close", () => {
-        handleRemoteAppDisconnect(ctx, connection).catch((e) => {
+        handleRemoteAppDisconnect(ctx, connection).catch(e => {
           log.error({ error: e }, "Error handling remote disconnect")
         })
       })
 
-      ws.on("error", (error) => {
+      ws.on("error", error => {
         log.error({ error }, "Remote WebSocket error")
       })
     })

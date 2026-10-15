@@ -17,11 +17,7 @@ export async function handleRemoteAppDisconnect(
   if (ctx.fdc3ServerInstance && ctx.appInstanceId) {
     const details = ctx.fdc3ServerInstance.getInstanceDetails(ctx.appInstanceId)
     // A newer WebSocket may have already superseded this one
-    if (
-      details?.connection &&
-      connection &&
-      details.connection !== connection
-    ) {
+    if (details?.connection && connection && details.connection !== connection) {
       log.debug(
         { appInstanceId: ctx.appInstanceId },
         "Ignoring disconnect for superseded WebSocket",
@@ -34,10 +30,7 @@ export async function handleRemoteAppDisconnect(
         connection: undefined,
       })
     }
-    await ctx.fdc3ServerInstance.setAppState(
-      ctx.appInstanceId,
-      State.Terminated,
-    )
+    await ctx.fdc3ServerInstance.setAppState(ctx.appInstanceId, State.Terminated)
     const remaining = await ctx.fdc3ServerInstance.getConnectedApps()
     log.debug(
       { appInstanceId: ctx.appInstanceId, remainingApps: remaining.length },

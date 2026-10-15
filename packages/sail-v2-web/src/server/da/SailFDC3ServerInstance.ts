@@ -80,23 +80,18 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   setWscpPairings(pairings: WscpPairing[]): void {
-    this.wscpPairings = pairings.map((p) => ({ ...p }))
+    this.wscpPairings = pairings.map(p => ({ ...p }))
   }
 
   getWscpPairingBySecret(sharedSecret: string): WscpPairing | undefined {
-    return this.wscpPairings.find((p) => p.sharedSecret === sharedSecret)
+    return this.wscpPairings.find(p => p.sharedSecret === sharedSecret)
   }
 
   /**
    * Persist instanceId on the session mirror and notify the browser DA so localStorage stays in sync.
    */
-  assignWscpInstanceId(
-    sharedSecret: string,
-    instanceId: string,
-  ): WscpPairing | undefined {
-    const idx = this.wscpPairings.findIndex(
-      (p) => p.sharedSecret === sharedSecret,
-    )
+  assignWscpInstanceId(sharedSecret: string, instanceId: string): WscpPairing | undefined {
+    const idx = this.wscpPairings.findIndex(p => p.sharedSecret === sharedSecret)
     if (idx === -1) {
       return undefined
     }
@@ -114,7 +109,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   post(message: object, instanceId: InstanceID): Promise<void> {
-    const instance = this.instances.find((i) => i.instanceId == instanceId)
+    const instance = this.instances.find(i => i.instanceId == instanceId)
     if (instance) {
       if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
         this.log("Posting message to app: " + JSON.stringify(message))
@@ -177,20 +172,15 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
     const url = (app[0].details as { url?: string })?.url ?? undefined
     if (url) {
-      const forceNewWindow = (
-        app[0].hostManifests as { sail?: { forceNewWindow?: boolean } }
-      )?.sail?.forceNewWindow
-      const approach =
-        forceNewWindow || channel === null ? AppHosting.Tab : AppHosting.Frame
+      const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail
+        ?.forceNewWindow
+      const approach = forceNewWindow || channel === null ? AppHosting.Tab : AppHosting.Frame
 
-      const details: SailAppOpenResponse = await this.connection.emitWithAck(
-        SAIL_APP_OPEN,
-        {
-          appDRecord: app[0],
-          approach,
-          channel,
-        } as SailAppOpenArgs,
-      )
+      const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
+        appDRecord: app[0],
+        approach,
+        channel,
+      } as SailAppOpenArgs)
 
       this.setInstanceDetails(details.instanceId, {
         appId,
@@ -218,12 +208,12 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       log.error({ uuid, instanceId: details.instanceId }, "UUID mismatch")
     }
 
-    this.instances = this.instances.filter((ca) => ca.instanceId !== uuid)
+    this.instances = this.instances.filter(ca => ca.instanceId !== uuid)
     this.instances.push(details)
   }
 
   getInstanceDetails(uuid: InstanceID): SailData | undefined {
-    return this.instances.find((ca) => ca.instanceId === uuid)
+    return this.instances.find(ca => ca.instanceId === uuid)
   }
 
   async setInitialChannel(app: AppIdentifier): Promise<void> {
@@ -231,28 +221,27 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async getConnectedApps(): Promise<AppRegistration[]> {
-    return (await this.getAllApps()).filter((ca) => ca.state == State.Connected)
+    return (await this.getAllApps()).filter(ca => ca.state == State.Connected)
   }
 
   async isAppConnected(app: InstanceID): Promise<boolean> {
     const found = (await this.getAllApps()).find(
-      (a) => a.instanceId == app && a.state == State.Connected,
+      a => a.instanceId == app && a.state == State.Connected,
     )
     return found != null
   }
 
   async setAppState(app: InstanceID, state: State): Promise<void> {
-    const found = this.instances.find((a) => a.instanceId == app)
+    const found = this.instances.find(a => a.instanceId == app)
     if (found) {
-      const needsInitialChannelSetup =
-        found.state == State.Pending && state == State.Connected
+      const needsInitialChannelSetup = found.state == State.Pending && state == State.Connected
       found.state = state
       if (needsInitialChannelSetup) {
         this.setInitialChannel(found)
       }
 
       if (state == State.Terminated) {
-        this.instances = this.instances.filter((a) => a.instanceId !== app)
+        this.instances = this.instances.filter(a => a.instanceId !== app)
         log.info({ app }, "App terminated")
       } else {
         log.debug({ app, state }, "App state updated")
@@ -263,7 +252,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   async getAllApps(): Promise<AppRegistration[]> {
-    return this.instances.map((x) => {
+    return this.instances.map(x => {
       return {
         appId: x.appId,
         instanceId: x.instanceId,
@@ -303,18 +292,16 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   augmentIntents(appIntents: AppIntent[]): AugmentedAppIntent[] {
-    return appIntents.map((a) => ({
+    return appIntents.map(a => ({
       intent: a.intent,
-      apps: a.apps.map((a) => {
+      apps: a.apps.map(a => {
         const dir = this.directory.retrieveAppsById(a.appId)
         const iconSrc = getIcon(dir[0])
         const title = dir.length > 0 ? dir[0]?.title : "Unknown App"
 
         if (a.instanceId) {
           const instance = this.getInstanceDetails(a.instanceId)
-          const channel = this.getChannelDetails().find(
-            (c) => c.id == instance?.channel,
-          )
+          const channel = this.getChannelDetails().find(c => c.id == instance?.channel)
           return {
             ...a,
             channelData: channel ? this.convertToTabDetail(channel) : null,
@@ -345,18 +332,13 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const sc = this
 
-    function runningAppsInChannel(
-      arg0: AugmentedAppIntent,
-      channel: string | null,
-    ): number {
-      return arg0.apps.filter(
-        (a) => a.instanceId && a.channelData?.id == channel,
-      ).length
+    function runningAppsInChannel(arg0: AugmentedAppIntent, channel: string | null): number {
+      return arg0.apps.filter(a => a.instanceId && a.channelData?.id == channel).length
     }
 
     function uniqueApps(arg0: AppIntent): number {
       return arg0.apps
-        .map((a) => a.appId)
+        .map(a => a.appId)
         .filter((value, index, self) => self.indexOf(value) === index).length
     }
 
@@ -386,10 +368,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       const runners = runningAppsInChannel(augmentedIntents[0], channel)
       if (runners == 0) {
         // we start a new app
-        this.appStartDestinations.set(
-          augmentedIntents[0].apps[0].appId,
-          channel,
-        )
+        this.appStartDestinations.set(augmentedIntents[0].apps[0].appId, channel)
         return augmentedIntents
       } else if (runners == 1) {
         // we raise in the existing app
@@ -397,7 +376,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       }
     }
 
-    return new Promise<AppIntent[]>((resolve) => {
+    return new Promise<AppIntent[]>(resolve => {
       log.debug({ augmentedIntents, context }, "Narrowing intents")
 
       this.connection.emitWithCallback(
@@ -428,10 +407,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     })
   }
 
-  async notifyUserChannelsChanged(
-    instanceId: string,
-    channelId: string | null,
-  ): Promise<void> {
+  async notifyUserChannelsChanged(instanceId: string, channelId: string | null): Promise<void> {
     log.debug({ instanceId, channelId }, "User channels changed")
     const instance = this.getInstanceDetails(instanceId!)
     if (instance) {
@@ -450,10 +426,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     }
   }
 
-  async reloadAppDirectories(
-    urls: string[],
-    customApps: DirectoryApp[],
-  ): Promise<void> {
+  async reloadAppDirectories(urls: string[], customApps: DirectoryApp[]): Promise<void> {
     await this.directory.refresh(urls, customApps)
   }
 
@@ -463,25 +436,28 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
   getTabs(): TabDetail[] {
     return this.getChannelDetails()
-      .filter((c) => c.type === ChannelType.user)
-      .map((c) => this.convertToTabDetail(c))
+      .filter(c => c.type === ChannelType.user)
+      .map(c => this.convertToTabDetail(c))
   }
 
   updateUserChannelData(tabs: TabDetail[], history?: ContextHistory): void {
     function relevantHistory(
       id: string,
       history?: ContextHistory,
-    ): undefined | { context: BrowserTypes.Context; metadata: { source: { appId: string; instanceId: string } } }[] {
+    ):
+      | undefined
+      | {
+          context: BrowserTypes.Context
+          metadata: { source: { appId: string; instanceId: string } }
+        }[] {
       if (history) {
         const basicHistory = history[id]
         if (!basicHistory) {
           return undefined
         }
         // just the first item of each unique type
-        const relevant = basicHistory.filter(
-          (h, i, a) => a.findIndex((h2) => h2.type == h.type) == i,
-        )
-        return relevant.map((context) => ({
+        const relevant = basicHistory.filter((h, i, a) => a.findIndex(h2 => h2.type == h.type) == i)
+        return relevant.map(context => ({
           context,
           metadata: {
             source: { appId: "sail", instanceId: "history" },
@@ -491,12 +467,12 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       return undefined
     }
 
-    const newUserChannels = mapChannels(tabs).map((c) => {
+    const newUserChannels = mapChannels(tabs).map(c => {
       return {
         ...c,
         context:
           relevantHistory(c.id, history) ??
-          this.channelState.find((cs) => cs.id == c.id)?.context ??
+          this.channelState.find(cs => cs.id == c.id)?.context ??
           [],
       }
     })
@@ -504,7 +480,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     // (and their stored context) across SAIL_CLIENT_STATE syncs — otherwise a
     // broadcast's history save wipes them and getCurrentContext returns NoChannelFound.
     const preserved = this.channelState.filter(
-      (c) => c.type === ChannelType.app || c.type === ChannelType.private,
+      c => c.type === ChannelType.app || c.type === ChannelType.private,
     )
     this.channelState.length = 0
     this.channelState.push(...newUserChannels, ...preserved)

@@ -146,10 +146,7 @@ export interface FDC3ServerInstance {
    * Handle heartbeat activity from the HeartbeatHandler.
    * The server instance can decide how to respond to different heartbeat events.
    */
-  heartbeatActivity(
-    instanceId: InstanceID,
-    event: HeartbeatActivityEvent,
-  ): Promise<void>
+  heartbeatActivity(instanceId: InstanceID, event: HeartbeatActivityEvent): Promise<void>
 
   /**
    * Returns the list of apps open and connected to FDC3 at the current time.
@@ -218,11 +215,7 @@ export interface FDC3ServerInstance {
   /**
    * Update the context for a specific channel (stores context + metadata)
    */
-  updateChannelContext(
-    channelId: string,
-    context: Context,
-    metadata: StoredContextMetadata,
-  ): void
+  updateChannelContext(channelId: string, context: Context, metadata: StoredContextMetadata): void
 
   /**
    * Clear context on a channel. If contextType is null, clear all; otherwise clear that type only.

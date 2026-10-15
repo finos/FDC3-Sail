@@ -8,9 +8,7 @@ const appWindow = window.parent
 let parentOrigin: string | null = null
 
 /** Negotiate DA wire version from the client's WCP1Hello; null if unsupported. */
-function negotiateFdc3Version(
-  clientVersion: string | undefined,
-): "2.2" | "3.0" | null {
+function negotiateFdc3Version(clientVersion: string | undefined): "2.2" | "3.0" | null {
   if (!clientVersion) {
     return null
   }
@@ -35,9 +33,7 @@ function doSocketConnection(
     try {
       link(socket, channel, instanceId)
       const sessionId = getUserSessionId()
-      const fdc3Version = negotiateFdc3Version(
-        messageData.payload?.fdc3Version,
-      )
+      const fdc3Version = negotiateFdc3Version(messageData.payload?.fdc3Version)
       if (!fdc3Version) {
         console.error(
           "[Sail v2 embed] Unsupported or missing fdc3Version",
@@ -123,14 +119,7 @@ const helloListener = (e: MessageEvent) => {
     const instanceId = getInstanceId()
     const appId = getAppId()
 
-    doSocketConnection(
-      socket,
-      channel,
-      instanceId,
-      appId,
-      messageData,
-      parentOrigin,
-    )
+    doSocketConnection(socket, channel, instanceId, appId, messageData, parentOrigin)
   }
 }
 

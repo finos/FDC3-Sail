@@ -58,10 +58,7 @@ export function handleRemoteAppMessage(
   }
 
   if (!ctx.appInstanceId || !ctx.fdc3ServerInstance) {
-    log.error(
-      { messageType },
-      "Received message before WSCP handshake completed",
-    )
+    log.error({ messageType }, "Received message before WSCP handshake completed")
     return
   }
 
@@ -100,11 +97,7 @@ function handleWscpApplicationConnect(
 
   const found = factory.findSessionBySharedSecret(sharedSecret)
   if (!found) {
-    sendConnectFailed(
-      connection,
-      connectionAttemptUuid,
-      "Invalid or unknown sharedSecret",
-    )
+    sendConnectFailed(connection, connectionAttemptUuid, "Invalid or unknown sharedSecret")
     ws.close()
     return
   }
@@ -121,10 +114,7 @@ function handleWscpApplicationConnect(
   if (instanceId) {
     const existing = session.getInstanceDetails(instanceId)
     if (existing) {
-      log.info(
-        { appId: pairing.appId, instanceId },
-        "WSCP reconnect — rebinding existing instance",
-      )
+      log.info({ appId: pairing.appId, instanceId }, "WSCP reconnect — rebinding existing instance")
       // Supersede any prior WebSocket for this instance
       existing.connection?.shutdown()
       session.setInstanceDetails(instanceId, {
@@ -133,25 +123,12 @@ function handleWscpApplicationConnect(
         state: State.Pending,
       })
     } else {
-      log.info(
-        { appId: pairing.appId },
-        "Stored instanceId not found — creating new instance",
-      )
-      instanceId = registerRemoteInstance(
-        session,
-        connection,
-        pairing.appId,
-        nativeApp?.title,
-      )
+      log.info({ appId: pairing.appId }, "Stored instanceId not found — creating new instance")
+      instanceId = registerRemoteInstance(session, connection, pairing.appId, nativeApp?.title)
       session.assignWscpInstanceId(sharedSecret, instanceId)
     }
   } else {
-    instanceId = registerRemoteInstance(
-      session,
-      connection,
-      pairing.appId,
-      nativeApp?.title,
-    )
+    instanceId = registerRemoteInstance(session, connection, pairing.appId, nativeApp?.title)
     session.assignWscpInstanceId(sharedSecret, instanceId)
   }
 
@@ -184,10 +161,7 @@ function handleWscpApplicationConnect(
 
   // Send raw WSCP JSON (WebSocketConnection ignores the event name)
   connection.emit("wscp", response)
-  log.info(
-    { appId: pairing.appId, instanceId },
-    "WSCPDesktopAgentConnect sent",
-  )
+  log.info({ appId: pairing.appId, instanceId }, "WSCPDesktopAgentConnect sent")
 }
 
 function registerRemoteInstance(

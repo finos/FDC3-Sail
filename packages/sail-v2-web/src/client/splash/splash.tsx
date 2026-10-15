@@ -21,32 +21,17 @@ export const SplashScreen = ({ closeAction }: { closeAction: () => void }) => {
             <p className={styles.splashTitle}>FDC3 Sail</p>
           </div>
           <p className={styles.splashText}>
-            FDC3 Sail is a browser-based desktop agent for launching and
-            managing FDC3 apps in tabs and panels.
+            FDC3 Sail is a browser-based desktop agent for launching and managing FDC3 apps in tabs
+            and panels.
           </p>
           <div className={styles.linksRow}>
-            <a
-              className={styles.repoLink}
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className={styles.repoLink} href={REPO_URL} target="_blank" rel="noreferrer">
               GitHub Repository
             </a>
-            <a
-              className={styles.repoLink}
-              href={GUIDE_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className={styles.repoLink} href={GUIDE_URL} target="_blank" rel="noreferrer">
               User Guide
             </a>
-            <a
-              className={styles.repoLink}
-              href={FAQ_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className={styles.repoLink} href={FAQ_URL} target="_blank" rel="noreferrer">
               FAQ
             </a>
             <a

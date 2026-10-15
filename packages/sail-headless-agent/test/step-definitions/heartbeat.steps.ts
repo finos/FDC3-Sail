@@ -25,38 +25,30 @@ Given(
   },
 )
 
-Given(
-  "{string} sends a goodbye message",
-  function (this: CustomWorld, appStr: string) {
-    const meta = createMeta(this, appStr)
-    const uuid = this.sc.getInstanceUUID(meta.source)!
+Given("{string} sends a goodbye message", function (this: CustomWorld, appStr: string) {
+  const meta = createMeta(this, appStr)
+  const uuid = this.sc.getInstanceUUID(meta.source)!
 
-    const message: WebConnectionProtocol6Goodbye = {
-      meta,
-      type: "WCP6Goodbye",
-    }
+  const message: WebConnectionProtocol6Goodbye = {
+    meta,
+    type: "WCP6Goodbye",
+  }
 
-    this.sc.receive(message, uuid)
-  },
-)
+  this.sc.receive(message, uuid)
+})
 
-Then(
-  "I test the liveness of {string}",
-  async function (this: CustomWorld, appStr: string) {
-    const out = await this.sc.isAppConnected(
-      createMeta(this, appStr).source.instanceId ?? "UNKNOWN",
-    )
-    this.props["result"] = out
-  },
-)
+Then("I test the liveness of {string}", async function (this: CustomWorld, appStr: string) {
+  const out = await this.sc.isAppConnected(createMeta(this, appStr).source.instanceId ?? "UNKNOWN")
+  this.props["result"] = out
+})
 
 Then("I get the heartbeat times", async function (this: CustomWorld) {
-  const hbh = this.sc.handlers.find((h) => h instanceof HeartbeatHandler)
+  const hbh = this.sc.handlers.find(h => h instanceof HeartbeatHandler)
   const out = (hbh as HeartbeatHandler).heartbeatTimes()
   this.props["result"] = out
 })
 
 Then("I stop the heartbeat handler", function (this: CustomWorld) {
-  const hbh = this.sc.handlers.find((h) => h instanceof HeartbeatHandler)
+  const hbh = this.sc.handlers.find(h => h instanceof HeartbeatHandler)
   ;(hbh as HeartbeatHandler).shutdown()
 })
