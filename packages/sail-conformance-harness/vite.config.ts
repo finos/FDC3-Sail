@@ -25,7 +25,10 @@ export default defineConfig(({ mode }) => {
   // rather than `??` to keep falling through blank values.
   const env = loadEnv(mode, process.cwd(), "")
   const toolbox = resolveConformanceToolbox(
-    process.env.CONFORMANCE_TOOLBOX || env.CONFORMANCE_TOOLBOX || env.VITE_CONFORMANCE_TOOLBOX || undefined,
+    process.env.CONFORMANCE_TOOLBOX ||
+      env.CONFORMANCE_TOOLBOX ||
+      env.VITE_CONFORMANCE_TOOLBOX ||
+      undefined,
   )
   const fdc3Version = resolveConformanceFdc3Version(
     process.env.CONFORMANCE_FDC3_VERSION ||
