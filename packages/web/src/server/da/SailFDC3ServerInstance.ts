@@ -150,7 +150,10 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
           hosting: details.hosting,
         } as SailAppCloseArgs)
       } catch (e) {
-        log.error({ instanceId, error: e }, "Failed to close app container in browser DA")
+        log.error(
+          { instanceId, error: e },
+          "Failed to close app container in browser DA",
+        )
         throw e
       }
 
@@ -470,7 +473,12 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     function relevantHistory(
       id: string,
       history?: ContextHistory,
-    ): undefined | { context: BrowserTypes.Context; metadata: { source: { appId: string; instanceId: string } } }[] {
+    ):
+      | undefined
+      | {
+          context: BrowserTypes.Context
+          metadata: { source: { appId: string; instanceId: string } }
+        }[] {
       if (history) {
         const basicHistory = history[id]
         if (!basicHistory) {

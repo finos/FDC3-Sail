@@ -10,10 +10,7 @@ import { CustomWorld } from "../world"
 import { Context } from "@finos/fdc3-context"
 import { OpenError, AppIdentifier, AppIntent } from "@finos/fdc3-standard"
 import { MessageHandler } from "../../src/handlers/MessageHandler"
-import {
-  ChannelState,
-  HandlersByVersion,
-} from "../../src/FDC3ServerInstance"
+import { ChannelState, HandlersByVersion } from "../../src/FDC3ServerInstance"
 import { BroadcastHandler as BroadcastHandlerV2 } from "../../src/handlers/v2/BroadcastHandler"
 import { IntentHandler as IntentHandlerV2 } from "../../src/handlers/v2/IntentHandler"
 import { OpenHandler as OpenHandlerV2 } from "../../src/handlers/v2/OpenHandler"
@@ -50,10 +47,7 @@ export class TestFDC3ServerInstance extends AbstractFDC3ServerInstance {
   ) {
     super(handlersByVersion, channels)
     this.cw = cw
-    this.handlers = [
-      ...handlersByVersion["2.2"],
-      ...handlersByVersion["3.0"],
-    ]
+    this.handlers = [...handlersByVersion["2.2"], ...handlersByVersion["3.0"]]
   }
 
   getDirectory(): Directory {

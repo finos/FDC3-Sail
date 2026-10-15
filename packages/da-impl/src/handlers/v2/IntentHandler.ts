@@ -3,7 +3,12 @@ import {
   FDC3ServerInstance,
   IntentListenerRegistration,
 } from "../../FDC3ServerInstance"
-import { AppRegistration, InstanceID, State, ReceivableMessage } from "../../AppRegistration"
+import {
+  AppRegistration,
+  InstanceID,
+  State,
+  ReceivableMessage,
+} from "../../AppRegistration"
 import { DirectoryIntent } from "../../directory/DirectoryInterface"
 import { Context } from "@finos/fdc3-context"
 import { AppIntent, ResolveError, AppIdentifier } from "@finos/fdc3-standard"

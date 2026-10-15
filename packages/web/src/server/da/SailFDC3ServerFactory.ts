@@ -60,12 +60,18 @@ export class SailFDC3ServerFactory {
     const v2: MessageHandler[] = [
       new BroadcastHandlerV2(createHandlerLog("BroadcastHandlerV2")),
       new IntentHandlerV2(intentTimeoutMs, createHandlerLog("IntentHandlerV2")),
-      new OpenHandlerV2(openHandlerTimeoutMs, createHandlerLog("OpenHandlerV2")),
+      new OpenHandlerV2(
+        openHandlerTimeoutMs,
+        createHandlerLog("OpenHandlerV2"),
+      ),
     ]
     const v3: MessageHandler[] = [
       new BroadcastHandlerV3(createHandlerLog("BroadcastHandlerV3")),
       new IntentHandlerV3(intentTimeoutMs, createHandlerLog("IntentHandlerV3")),
-      new OpenHandlerV3(openHandlerTimeoutMs, createHandlerLog("OpenHandlerV3")),
+      new OpenHandlerV3(
+        openHandlerTimeoutMs,
+        createHandlerLog("OpenHandlerV3"),
+      ),
     ]
 
     if (heartbeats) {
@@ -138,9 +144,7 @@ export class SailFDC3ServerFactory {
   /**
    * Locate a session that has minted the given WSCP sharedSecret.
    */
-  findSessionBySharedSecret(
-    sharedSecret: string,
-  ):
+  findSessionBySharedSecret(sharedSecret: string):
     | {
         userSessionId: string
         session: SailFDC3ServerInstance

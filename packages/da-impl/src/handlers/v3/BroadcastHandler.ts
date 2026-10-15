@@ -88,7 +88,10 @@ export class BroadcastHandler implements MessageHandler {
 
   shutdown(): void {}
 
-  private matchesApiVersion(sc: FDC3ServerInstance, instanceId: string): boolean {
+  private matchesApiVersion(
+    sc: FDC3ServerInstance,
+    instanceId: string,
+  ): boolean {
     const version = sc.getInstanceDetails(instanceId)?.fdc3Version ?? "2.2"
     return version === this.apiVersion
   }
@@ -148,7 +151,8 @@ export class BroadcastHandler implements MessageHandler {
       .getDesktopAgentEventListeners()
       .filter(
         (listener) =>
-          listener.eventType === null || listener.eventType === "CONTEXT_CLEARED",
+          listener.eventType === null ||
+          listener.eventType === "CONTEXT_CLEARED",
       )
       .filter((listener) => {
         if (listener.channelId !== null) {
@@ -241,7 +245,10 @@ export class BroadcastHandler implements MessageHandler {
 
         case "broadcastRequest":
           return this.handleBroadcastRequest(
-            msg as unknown as BroadcastRequest, sc, from)
+            msg as unknown as BroadcastRequest,
+            sc,
+            from,
+          )
         case "clearContextRequest":
           return this.handleClearContextRequest(
             msg as unknown as ClearContextRequest,
@@ -328,7 +335,10 @@ export class BroadcastHandler implements MessageHandler {
     sc: FDC3ServerInstance,
     from: FullAppIdentifier,
   ) {
-    const payload = arg0.payload as { type?: string | null; channelId?: string | null }
+    const payload = arg0.payload as {
+      type?: string | null
+      channelId?: string | null
+    }
     const channelId = payload.channelId ?? null
     if (channelId !== null && sc.getChannelById(channelId) === null) {
       errorResponse(
@@ -565,7 +575,8 @@ export class BroadcastHandler implements MessageHandler {
       instanceId: from.instanceId ?? "no-instance-id",
       channelId: channelId,
       listenerUuid: sc.createUUID(),
-      contextType: arg0.payload.contextTypes ?? arg0.payload.contextType ?? null,
+      contextType:
+        arg0.payload.contextTypes ?? arg0.payload.contextType ?? null,
     }
 
     sc.addContextListener(lr)
@@ -648,7 +659,11 @@ export class BroadcastHandler implements MessageHandler {
       sc.post(msg, app.instanceId)
     })
 
-    sc.updateChannelContext(arg0.payload.channelId, arg0.payload.context, metadata)
+    sc.updateChannelContext(
+      arg0.payload.channelId,
+      arg0.payload.context,
+      metadata,
+    )
     successResponse(sc, arg0, from, {}, "broadcastResponse")
   }
 

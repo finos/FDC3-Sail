@@ -29,9 +29,7 @@ function doSocketConnection(
     try {
       link(socket, channel, instanceId)
       const sessionId = getUserSessionId()
-      const fdc3Version = negotiateFdc3Version(
-        messageData.payload?.fdc3Version,
-      )
+      const fdc3Version = negotiateFdc3Version(messageData.payload?.fdc3Version)
 
       const response = await socket.emitWithAck(APP_HELLO, {
         userSessionId: sessionId,

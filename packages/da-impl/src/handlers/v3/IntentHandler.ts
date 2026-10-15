@@ -3,7 +3,12 @@ import {
   FDC3ServerInstance,
   IntentListenerRegistration,
 } from "../../FDC3ServerInstance"
-import { AppRegistration, InstanceID, State, ReceivableMessage } from "../../AppRegistration"
+import {
+  AppRegistration,
+  InstanceID,
+  State,
+  ReceivableMessage,
+} from "../../AppRegistration"
 import { DirectoryIntent } from "../../directory/DirectoryInterface"
 import { Context } from "@finos/fdc3-context-v3"
 import { AppIntent, AppIdentifier } from "@finos/fdc3-standard"
@@ -275,7 +280,9 @@ export class IntentHandler implements MessageHandler {
         source: { appId: from.appId, instanceId: from.instanceId },
         timestamp: new Date(),
         traceId: appMeta.traceId ?? sc.createUUID(),
-        ...(appMeta.signature !== undefined && { signature: appMeta.signature }),
+        ...(appMeta.signature !== undefined && {
+          signature: appMeta.signature,
+        }),
         ...(appMeta.antiReplay !== undefined && {
           antiReplay: appMeta.antiReplay,
         }),
