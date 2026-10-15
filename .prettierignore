@@ -11,3 +11,5 @@ pnpm-lock.yaml
 *.tsbuildinfo
 **/cucumber-report.html
 **/test-results.xml
+.vite
+**/generated
