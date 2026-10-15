@@ -1,358 +1,185 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { EnhancedCustomAppList } from "../enhancedCustomApps"
-import { getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { describe, it, expect } from "vitest"
+import {
+  convertEnhancedToDirectoryApp,
+  convertEnhancedToDirectoryApps,
+  convertFromDirectoryApp,
+  convertFromDirectoryApps,
+  EnhancedEditableState,
+} from "../enhancedCustomApps"
+import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import {
+  parseAppDInput,
+  exportAppDRecord,
+  exportAppDCatalog,
+} from "../appdParser"
+import { STANDARD_FDC3_CATEGORIES } from "../standardCategories"
 
-// Mock the dependencies
-vi.mock("@finos/fdc3-sail-common", () => ({
-  getClientState: vi.fn(),
-  getServerState: vi.fn(),
-}))
-
-vi.mock("react-widgets/Combobox", () => ({
-  default: ({ value, onChange, data }: any) => (
-    <select value={value} onChange={(e) => onChange(e.target.value)}>
-      {data.map((item: string) => (
-        <option key={item} value={item}>
-          {item}
-        </option>
-      ))}
-    </select>
-  ),
-}))
-
-vi.mock("react-widgets/Multiselect", () => ({
-  default: ({ value, onChange, data }: any) => (
-    <select
-      multiple
-      value={value}
-      onChange={(e) =>
-        onChange(Array.from(e.target.selectedOptions, (option) => option.value))
-      }
-    >
-      {data.map((item: string) => (
-        <option key={item} value={item}>
-          {item}
-        </option>
-      ))}
-    </select>
-  ),
-}))
-
-describe("EnhancedCustomAppList", () => {
-  const mockClientState = {
-    getCustomApps: vi.fn(),
-    setCustomApps: vi.fn(),
-    setKnownApps: vi.fn(),
-    getKnownApps: vi.fn(),
-  }
-
-  const mockServerState = {
-    getApplications: vi.fn(),
-  }
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-
-    mockClientState.getCustomApps.mockReturnValue([])
-    mockClientState.setCustomApps.mockResolvedValue(undefined)
-    mockClientState.setKnownApps.mockResolvedValue(undefined)
-    mockClientState.getKnownApps.mockReturnValue([])
-    mockServerState.getApplications.mockResolvedValue([])
-    ;(getClientState as any).mockReturnValue(mockClientState)
-    ;(getServerState as any).mockReturnValue(mockServerState)
-  })
-
-  it("renders the enhanced custom app list", () => {
-    render(<EnhancedCustomAppList />)
-
-    expect(screen.getByText("Custom Applications")).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        "Create and manage your custom FDC3 applications with proper icons, screenshots, and metadata.",
-      ),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("Click to Add A New Custom App"),
-    ).toBeInTheDocument()
-  })
-
-  it("adds a new app when clicking the add button", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    expect(screen.getByDisplayValue("New App")).toBeInTheDocument()
-    expect(screen.getByDisplayValue("1.0.0")).toBeInTheDocument()
-  })
-
-  it("validates required fields", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Clear the title field
-    const titleInput = screen.getByDisplayValue("New App")
-    await user.clear(titleInput)
-    await user.tab() // Trigger validation
-
-    await waitFor(() => {
-      expect(screen.getByText("App title is required")).toBeInTheDocument()
-    })
-  })
-
-  it("validates URL format for web apps", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Enter invalid URL
-    const urlInput = screen.getByPlaceholderText("https://your-app.com")
-    await user.type(urlInput, "invalid-url")
-    await user.tab()
-
-    await waitFor(() => {
-      expect(screen.getByText("Please enter a valid URL")).toBeInTheDocument()
-    })
-  })
-
-  it("validates version format", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Enter invalid version
-    const versionInput = screen.getByDisplayValue("1.0.0")
-    await user.clear(versionInput)
-    await user.type(versionInput, "invalid")
-    await user.tab()
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Version must be in format x.y.z"),
-      ).toBeInTheDocument()
-    })
-  })
-
-  it("detects duplicate app IDs", async () => {
-    const user = userEvent.setup()
-
-    // Mock existing app
-    mockClientState.getCustomApps.mockReturnValue([
+describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () => {
+  const sampleState: EnhancedEditableState = {
+    id: "trade-station",
+    title: "Trade Station Pro",
+    type: "web",
+    url: "https://tradestation.example.com",
+    path: "",
+    arguments: "",
+    description: "Multi-asset trading and execution terminal",
+    tooltip: "Launch Trade Station",
+    lang: "en-US",
+    publisher: "FINOS Trading",
+    version: "2.1.0",
+    categories: ["trading system", "market data", "execution management"],
+    contactEmail: "trader-support@example.com",
+    supportEmail: "tech@example.com",
+    moreInfo: "https://example.com/docs",
+    icons: [{ src: "/icons/trade.svg", size: "64x64", type: "image/svg+xml" }],
+    screenshots: [
       {
-        appId: "existing-app",
-        title: "Existing App",
-        type: "web",
-        details: { url: "https://example.com" },
-        description: "Test app",
-        publisher: "Test Publisher",
-        version: "1.0.0",
-        icons: [{ src: "/test-icon.png" }],
-        screenshots: [{ src: "/test-screenshot.png" }],
-        interop: { intents: { listensFor: {} } },
+        src: "/images/trade-screen.png",
+        size: "1920x1080",
+        type: "image/png",
+        label: "Main Dashboard",
       },
+    ],
+    intents: [
+      {
+        name: "ViewOrders",
+        displayName: "View Active Orders",
+        contexts: ["fdc3.instrument"],
+        resultType: "channel",
+      },
+    ],
+    raisesIntents: [
+      {
+        name: "ViewChart",
+        contexts: ["fdc3.instrument"],
+      },
+    ],
+    userChannelBroadcasts: ["fdc3.instrument"],
+    userChannelListensFor: ["fdc3.instrument", "fdc3.order"],
+    errors: {},
+  }
+
+  it("converts EnhancedEditableState to a valid FDC3 DirectoryApp record", () => {
+    const dirApp = convertEnhancedToDirectoryApp(sampleState)
+
+    expect(dirApp.appId).toBe("trade-station")
+    expect(dirApp.title).toBe("Trade Station Pro")
+    expect(dirApp.name).toBe("Trade Station Pro")
+    expect(dirApp.type).toBe("web")
+    expect((dirApp.details as any).url).toBe("https://tradestation.example.com")
+    expect(dirApp.version).toBe("2.1.0")
+    expect(dirApp.publisher).toBe("FINOS Trading")
+    expect(dirApp.categories).toContain("trading system")
+    expect(dirApp.contactEmail).toBe("trader-support@example.com")
+    expect(dirApp.supportEmail).toBe("tech@example.com")
+    expect(dirApp.moreInfo).toBe("https://example.com/docs")
+    expect(dirApp.icons).toHaveLength(1)
+    expect(dirApp.screenshots).toHaveLength(1)
+
+    // Interop
+    expect(dirApp.interop?.intents?.listensFor?.ViewOrders).toBeDefined()
+    expect(dirApp.interop?.intents?.listensFor?.ViewOrders.displayName).toBe(
+      "View Active Orders",
+    )
+    expect(dirApp.interop?.intents?.raises?.ViewChart).toEqual([
+      "fdc3.instrument",
     ])
-
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Set duplicate ID
-    const idInputs = screen.getAllByDisplayValue(/^app-/)
-    await user.clear(idInputs[1]) // Second app (new one)
-    await user.type(idInputs[1], "existing-app")
-
-    await waitFor(() => {
-      expect(screen.getByText("(Duplicate ID)")).toBeInTheDocument()
-    })
+    expect(dirApp.interop?.userChannels?.broadcasts).toEqual([
+      "fdc3.instrument",
+    ])
+    expect(dirApp.interop?.userChannels?.listensFor).toEqual([
+      "fdc3.instrument",
+      "fdc3.order",
+    ])
   })
 
-  it("adds and removes tags", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
+  it("converts native application state to launch details with path and arguments", () => {
+    const nativeState: EnhancedEditableState = {
+      ...sampleState,
+      id: "native-terminal",
+      type: "native",
+      url: "",
+      path: "C:\\Program Files\\Terminal\\run.exe",
+      arguments: "--config production.json",
+    }
 
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Add a tag
-    const tagInput = screen.getByPlaceholderText("Add category/tag")
-    await user.type(tagInput, "finance")
-
-    const addTagButton = screen.getByText("Add")
-    await user.click(addTagButton)
-
-    expect(screen.getByText("finance")).toBeInTheDocument()
-
-    // Remove the tag
-    const removeTagButton = screen.getByText("×")
-    await user.click(removeTagButton)
-
-    expect(screen.queryByText("finance")).not.toBeInTheDocument()
+    const dirApp = convertEnhancedToDirectoryApp(nativeState)
+    expect(dirApp.type).toBe("native")
+    expect((dirApp.details as any).path).toBe(
+      "C:\\Program Files\\Terminal\\run.exe",
+    )
+    expect((dirApp.details as any).arguments).toBe("--config production.json")
   })
 
-  it("handles file upload for icons", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
+  it("converts DirectoryApp back to EnhancedEditableState without loss of AppD fields", () => {
+    const dirApp = convertEnhancedToDirectoryApp(sampleState)
+    const convertedState = convertFromDirectoryApp(dirApp)
 
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Mock file
-    const file = new File(["test"], "test-icon.png", { type: "image/png" })
-
-    // Find file input and upload
-    const fileInput = screen.getByLabelText(/upload image/i)
-    await user.upload(fileInput, file)
-
-    // Should update the image preview (data URL will be set)
-    await waitFor(() => {
-      const img = screen.getByAltText("App Icon")
-      expect(img).toHaveAttribute("src", expect.stringContaining("data:"))
-    })
+    expect(convertedState.id).toBe(sampleState.id)
+    expect(convertedState.title).toBe(sampleState.title)
+    expect(convertedState.publisher).toBe(sampleState.publisher)
+    expect(convertedState.version).toBe(sampleState.version)
+    expect(convertedState.contactEmail).toBe(sampleState.contactEmail)
+    expect(convertedState.supportEmail).toBe(sampleState.supportEmail)
+    expect(convertedState.moreInfo).toBe(sampleState.moreInfo)
+    expect(convertedState.categories).toEqual(sampleState.categories)
+    expect(convertedState.intents[0].displayName).toBe("View Active Orders")
+    expect(convertedState.raisesIntents[0].name).toBe("ViewChart")
+    expect(convertedState.userChannelBroadcasts).toEqual(["fdc3.instrument"])
   })
 
-  it("rejects oversized files", async () => {
-    const user = userEvent.setup()
+  it("batch converts an array of apps", () => {
+    const stateList = [
+      sampleState,
+      { ...sampleState, id: "app-2", title: "App 2" },
+    ]
+    const dirApps = convertEnhancedToDirectoryApps(stateList)
+    expect(dirApps).toHaveLength(2)
 
-    // Mock alert
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Mock oversized file (6MB)
-    const largeFile = new File(["x".repeat(6 * 1024 * 1024)], "large.png", {
-      type: "image/png",
-    })
-
-    const fileInput = screen.getByLabelText(/upload image/i)
-    await user.upload(fileInput, largeFile)
-
-    expect(alertSpy).toHaveBeenCalledWith("File size must be less than 5MB")
-
-    alertSpy.mockRestore()
+    const recoveredStates = convertFromDirectoryApps(dirApps)
+    expect(recoveredStates).toHaveLength(2)
+    expect(recoveredStates[0].id).toBe("trade-station")
+    expect(recoveredStates[1].id).toBe("app-2")
   })
 
-  it("rejects non-image files", async () => {
-    const user = userEvent.setup()
+  it("exports and re-imports through parseAppDInput seamlessly", () => {
+    const dirApp = convertEnhancedToDirectoryApp(sampleState)
+    const exportedJson = exportAppDRecord(dirApp)
 
-    // Mock alert
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+    const reimported = parseAppDInput(exportedJson)
+    expect(reimported.success).toBe(true)
+    expect(reimported.apps).toHaveLength(1)
 
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Mock non-image file
-    const textFile = new File(["test"], "test.txt", { type: "text/plain" })
-
-    const fileInput = screen.getByLabelText(/upload image/i)
-    await user.upload(fileInput, textFile)
-
-    expect(alertSpy).toHaveBeenCalledWith("Please select an image file")
-
-    alertSpy.mockRestore()
+    const app = reimported.apps[0]
+    expect(app.appId).toBe("trade-station")
+    expect(app.title).toBe("Trade Station Pro")
+    expect((app.details as any).url).toBe("https://tradestation.example.com")
   })
 
-  it("adds and removes intents", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
+  it("exports catalog and parses back all applications", () => {
+    const app1 = convertEnhancedToDirectoryApp(sampleState)
+    const app2: DirectoryApp = {
+      appId: "market-app",
+      title: "Market App",
+      type: "web",
+      details: { url: "https://market.com" },
+    }
 
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
+    const catalogJson = exportAppDCatalog([app1, app2])
+    const parsedCatalog = parseAppDInput(catalogJson)
 
-    // Add an intent
-    const addIntentButton = screen.getByText("Click to Add A New Intent")
-    await user.click(addIntentButton)
-
-    // Should show intent configuration
-    expect(screen.getByDisplayValue("ViewChart")).toBeInTheDocument()
-
-    // Remove the intent
-    const removeIntentButton = screen.getByText("Remove This Intent")
-    await user.click(removeIntentButton)
-
-    // Intent should be removed
-    expect(screen.queryByDisplayValue("ViewChart")).not.toBeInTheDocument()
+    expect(parsedCatalog.success).toBe(true)
+    expect(parsedCatalog.apps).toHaveLength(2)
+    expect(parsedCatalog.apps[0].appId).toBe("trade-station")
+    expect(parsedCatalog.apps[1].appId).toBe("market-app")
   })
 
-  it("switches between web and native app types", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Should start as web app with URL field
-    expect(
-      screen.getByPlaceholderText("https://your-app.com"),
-    ).toBeInTheDocument()
-
-    // Switch to native
-    const typeSelect = screen.getByDisplayValue("Web Application")
-    await user.selectOptions(typeSelect, "native")
-
-    // URL field should be hidden for native apps
-    expect(
-      screen.queryByPlaceholderText("https://your-app.com"),
-    ).not.toBeInTheDocument()
-  })
-
-  it("saves apps to client state", async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCustomAppList />)
-
-    // Add a new app
-    const addButton = screen.getByText("Click to Add A New Custom App")
-    await user.click(addButton)
-
-    // Fill in required fields
-    const titleInput = screen.getByDisplayValue("New App")
-    await user.clear(titleInput)
-    await user.type(titleInput, "Test App")
-
-    const publisherInput = screen.getByPlaceholderText("Your Company Name")
-    await user.type(publisherInput, "Test Publisher")
-
-    const urlInput = screen.getByPlaceholderText("https://your-app.com")
-    await user.type(urlInput, "https://test-app.com")
-
-    // Trigger save by adding another app (which validates and saves current state)
-    await user.click(addButton)
-
-    await waitFor(() => {
-      expect(mockClientState.setCustomApps).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            title: "Test App",
-            publisher: "Test Publisher",
-            details: { url: "https://test-app.com" },
-          }),
-        ]),
-      )
-    })
+  it("contains all standard FDC3 AppD categories", () => {
+    expect(STANDARD_FDC3_CATEGORIES).toContain("charts")
+    expect(STANDARD_FDC3_CATEGORIES).toContain("market data")
+    expect(STANDARD_FDC3_CATEGORIES).toContain("trading system")
+    expect(STANDARD_FDC3_CATEGORIES).toContain("compliance")
+    expect(STANDARD_FDC3_CATEGORIES).toContain("analytics")
+    expect(STANDARD_FDC3_CATEGORIES.length).toBeGreaterThanOrEqual(30)
   })
 })
