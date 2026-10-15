@@ -408,9 +408,11 @@ When(
     const meta = createMeta(this, appStr)
     const uuid = this.sc.getInstanceUUID(meta.source)!
     const message = raise(this, intentName, contextType, null, meta)
-    ;(message.payload as RaiseIntentRequest["payload"] & {
-      metadata?: object
-    }).metadata = {
+    ;(
+      message.payload as RaiseIntentRequest["payload"] & {
+        metadata?: object
+      }
+    ).metadata = {
       traceId: handleResolve(traceId, this),
       signature: {
         signature: handleResolve(signature, this) + " (signature part)",

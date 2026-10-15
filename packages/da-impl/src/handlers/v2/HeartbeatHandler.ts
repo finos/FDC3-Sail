@@ -1,8 +1,6 @@
 import { LogFunction, MessageHandler } from "../MessageHandler"
 import { InstanceID, State, ReceivableMessage } from "../../AppRegistration"
-import {
-  HeartbeatEvent,
-} from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
+import { HeartbeatEvent } from "@finos/fdc3-schema/dist/generated/api/BrowserTypes"
 import { FullAppIdentifier } from "./support"
 import {
   FDC3ServerInstance,

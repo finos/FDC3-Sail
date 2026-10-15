@@ -12,6 +12,7 @@
     "rootDirs": ["src"]
   },
   "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
+  "exclude": ["src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"],
   "references": [
     {
       "path": "../common"

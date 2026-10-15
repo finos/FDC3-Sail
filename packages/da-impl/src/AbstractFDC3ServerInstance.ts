@@ -1,4 +1,9 @@
-import { State, AppRegistration, InstanceID, Fdc3ApiVersion } from "./AppRegistration"
+import {
+  State,
+  AppRegistration,
+  InstanceID,
+  Fdc3ApiVersion,
+} from "./AppRegistration"
 import {
   ChannelState,
   ChannelType,
@@ -43,7 +48,9 @@ export abstract class AbstractFDC3ServerInstance implements FDC3ServerInstance {
   }
 
   protected handlersFor(version: Fdc3ApiVersion | undefined): MessageHandler[] {
-    return this.handlersByVersion[version ?? "2.2"] ?? this.handlersByVersion["2.2"]
+    return (
+      this.handlersByVersion[version ?? "2.2"] ?? this.handlersByVersion["2.2"]
+    )
   }
 
   // State management fields

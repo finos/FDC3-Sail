@@ -95,7 +95,10 @@ export class BroadcastHandler implements MessageHandler {
 
   shutdown(): void {}
 
-  private matchesApiVersion(sc: FDC3ServerInstance, instanceId: string): boolean {
+  private matchesApiVersion(
+    sc: FDC3ServerInstance,
+    instanceId: string,
+  ): boolean {
     const version = sc.getInstanceDetails(instanceId)?.fdc3Version ?? "2.2"
     return version === this.apiVersion
   }
@@ -551,7 +554,9 @@ export class BroadcastHandler implements MessageHandler {
     const matchingListeners = sc
       .getContextListeners()
       .filter((r) => matchesExactChannel(r) || matchesUserChannel(r))
-      .filter((r) => matchesContextType(r.contextType, arg0.payload.context.type))
+      .filter((r) =>
+        matchesContextType(r.contextType, arg0.payload.context.type),
+      )
 
     const matchingApps: FullAppIdentifier[] = matchingListeners
       .map((r) => {

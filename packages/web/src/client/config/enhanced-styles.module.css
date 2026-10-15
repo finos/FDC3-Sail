@@ -1,0 +1,398 @@
+/* Enhanced styles for improved config screens */
+
+/* List and header styles */
+.listHeader {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.listHeader h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.listHeader p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Enhanced app item styles */
+.itemWithErrors {
+  border-left: 4px solid #dc3545 !important;
+  background-color: #fff5f5;
+}
+
+.appHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.appTitle {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.duplicateWarning {
+  color: #dc3545;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+/* Form layout */
+.appForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formSection {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldLabel {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Input styles */
+.input {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.inputError {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.textarea {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.select {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Validation error styles */
+.validationError {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Image upload styles */
+.imageUpload {
+  margin-bottom: 1rem;
+}
+
+.imageUploadContainer {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.imagePreview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+}
+
+.imageUploadControls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.uploadButton {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.uploadButton:hover {
+  background-color: #0056b3;
+}
+
+.uploadButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.urlInput {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.urlInput:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Tag editor styles */
+.tagEditor {
+  margin-bottom: 1rem;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-height: 2rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.tagRemove {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+.tagRemove:hover {
+  color: #ffcccc;
+}
+
+.tagInput {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.addTagButton {
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.addTagButton:hover {
+  background-color: #218838;
+}
+
+/* Intent configuration styles */
+.intentItem {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
+
+.picker {
+  flex: 1;
+  min-width: 200px;
+}
+
+.contexts {
+  flex: 2;
+  min-width: 300px;
+}
+
+.rowicon {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+  }
+
+  .imageUploadContainer {
+    flex-direction: column;
+  }
+
+  .intentItem {
+    flex-direction: column;
+  }
+
+  .tagInput {
+    flex-direction: column;
+  }
+}
+
+/* Enhanced button styles */
+.actionButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.actionButton:hover {
+  background-color: #c82333;
+}
+
+.miniButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.miniButton:hover {
+  background-color: #5a6268;
+}
+
+/* Add button enhancement */
+.add {
+  border: 2px dashed #007bff;
+  background-color: #f8f9ff;
+  color: #007bff;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  margin-top: 1rem;
+}
+
+.add:hover {
+  background-color: #e7f3ff;
+  border-color: #0056b3;
+}
+
+.add p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.addIntent {
+  border: 1px dashed #28a745;
+  background-color: #f8fff8;
+  color: #28a745;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  margin-top: 0.5rem;
+}
+
+.addIntent:hover {
+  background-color: #e8f5e8;
+  border-color: #1e7e34;
+}
+
+.addIntent p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}

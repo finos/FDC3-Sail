@@ -11,9 +11,7 @@ export interface FDC3ServerInstanceEvent {
 /**
  * Used when the FDC3ServerInstance wants to notify the handler that the private channel has been disconnected.
  */
-export class PrivateChannelDisconnectServerInstanceEvent
-  implements FDC3ServerInstanceEvent
-{
+export class PrivateChannelDisconnectServerInstanceEvent implements FDC3ServerInstanceEvent {
   public type: string
 
   constructor(
@@ -27,9 +25,7 @@ export class PrivateChannelDisconnectServerInstanceEvent
 /**
  * Used when the FDC3ServerInstance wants to notify the handler that the current channel has changed.
  */
-export class ChannelChangedServerInstanceEvent
-  implements FDC3ServerInstanceEvent
-{
+export class ChannelChangedServerInstanceEvent implements FDC3ServerInstanceEvent {
   public type: string
 
   constructor(

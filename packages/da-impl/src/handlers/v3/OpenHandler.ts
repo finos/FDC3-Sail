@@ -301,13 +301,7 @@ export class OpenHandler implements MessageHandler {
     from: FullAppIdentifier,
   ): Promise<void> {
     if (!(await sc.isAppConnected(from.instanceId))) {
-      errorResponse(
-        sc,
-        arg0,
-        from,
-        CloseError.ErrorOnClose,
-        "closeResponse",
-      )
+      errorResponse(sc, arg0, from, CloseError.ErrorOnClose, "closeResponse")
       return
     }
 
