@@ -14,6 +14,9 @@ export interface AppValidationErrors {
   publisher?: string
   version?: string
   appId?: string
+  contactEmail?: string
+  supportEmail?: string
+  moreInfo?: string
 }
 
 /**
@@ -343,6 +346,41 @@ export function validateContextType(contextType: string): ValidationResult {
 }
 
 /**
+ * Validates an optional email address
+ */
+export function validateEmail(email?: string): ValidationResult {
+  if (!email || !email.trim()) {
+    return { isValid: true }
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email.trim())) {
+    return { isValid: false, error: "Please enter a valid email address" }
+  }
+
+  return { isValid: true }
+}
+
+/**
+ * Validates an optional URL
+ */
+export function validateOptionalUrl(url?: string): ValidationResult {
+  if (!url || !url.trim()) {
+    return { isValid: true }
+  }
+
+  try {
+    const parsed = new URL(url.trim())
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return { isValid: false, error: "URL must use http:// or https://" }
+    }
+    return { isValid: true }
+  } catch {
+    return { isValid: false, error: "Please enter a valid URL" }
+  }
+}
+
+/**
  * Comprehensive validation for an entire app configuration
  */
 export function validateApp(app: {
@@ -353,6 +391,9 @@ export function validateApp(app: {
   publisher: string
   version: string
   description: string
+  contactEmail?: string
+  supportEmail?: string
+  moreInfo?: string
 }): AppValidationErrors {
   const errors: AppValidationErrors = {}
 
@@ -379,6 +420,27 @@ export function validateApp(app: {
   const appIdResult = validateAppId(app.id)
   if (!appIdResult.isValid) {
     errors.appId = appIdResult.error
+  }
+
+  if (app.contactEmail) {
+    const contactResult = validateEmail(app.contactEmail)
+    if (!contactResult.isValid) {
+      errors.contactEmail = contactResult.error
+    }
+  }
+
+  if (app.supportEmail) {
+    const supportResult = validateEmail(app.supportEmail)
+    if (!supportResult.isValid) {
+      errors.supportEmail = supportResult.error
+    }
+  }
+
+  if (app.moreInfo) {
+    const moreInfoResult = validateOptionalUrl(app.moreInfo)
+    if (!moreInfoResult.isValid) {
+      errors.moreInfo = moreInfoResult.error
+    }
   }
 
   return errors
