@@ -187,15 +187,13 @@ export class ServerStateImpl implements ServerState {
       this.socket?.on(
         SAIL_WSCP_PAIRING_UPDATE,
         (data: SailWscpPairingUpdateArgs) => {
-          this.cs!
-            .updateWscpPairingInstanceId(
-              data.appId,
-              data.sharedSecret,
-              data.instanceId,
-            )
-            .catch((e) => {
-              console.error("Error updating WSCP pairing instanceId", e)
-            })
+          this.cs!.updateWscpPairingInstanceId(
+            data.appId,
+            data.sharedSecret,
+            data.instanceId,
+          ).catch((e) => {
+            console.error("Error updating WSCP pairing instanceId", e)
+          })
         },
       )
     })

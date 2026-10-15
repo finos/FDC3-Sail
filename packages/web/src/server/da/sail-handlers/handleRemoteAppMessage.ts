@@ -184,10 +184,7 @@ function handleWscpApplicationConnect(
 
   // Send raw WSCP JSON (WebSocketConnection ignores the event name)
   connection.emit("wscp", response)
-  log.info(
-    { appId: pairing.appId, instanceId },
-    "WSCPDesktopAgentConnect sent",
-  )
+  log.info({ appId: pairing.appId, instanceId }, "WSCPDesktopAgentConnect sent")
 }
 
 function registerRemoteInstance(
