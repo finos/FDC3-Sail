@@ -3,7 +3,13 @@ import tseslint from "typescript-eslint"
 
 export default tseslint.config(
   {
-    ignores: ["**/*.js", "**/*.mjs", "**/dist/"],
+    ignores: [
+      "**/*.js",
+      "**/*.mjs",
+      "**/dist/",
+      "**/__tests__/**",
+      "**/*.test.*",
+    ],
   },
   {
     files: ["packages/*/src/**/*.{ts,tsx}"],
