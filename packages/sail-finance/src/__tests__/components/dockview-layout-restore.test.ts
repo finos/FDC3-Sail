@@ -2,12 +2,13 @@
  * End-to-end cover for #388 against a real Dockview grid: a saved layout whose branch was left
  * without children restores as a blank column, and the normalized layout fills the width.
  *
- * Runs `dockview-core` headlessly in jsdom, which needs a `ResizeObserver` — the grid only uses it
+ * Runs the Dockview grid headlessly in jsdom, which needs a `ResizeObserver` — the grid only uses it
  * to react to container resizes, and these tests size the grid explicitly through `layout()`.
  */
 
 import { describe, test, expect, beforeAll } from "vite-plus/test"
-import { DockviewComponent } from "dockview-core"
+// `dockview` re-exports dockview-core, and is the dependency this package declares.
+import { DockviewComponent } from "dockview"
 import { normalizeDockviewLayout } from "../../components/layout-grid/normalize-layout"
 
 const GRID_WIDTH = 1000
