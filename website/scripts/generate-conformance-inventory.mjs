@@ -102,9 +102,16 @@ function parseFeatureFile(absPath) {
 
     // Non-tag, non-scenario content clears pending tags that weren't attached
     // (Gherkin attaches tags to the next Feature/Scenario only).
-    if (!line.startsWith("Given") && !line.startsWith("When") && !line.startsWith("Then") &&
-        !line.startsWith("And") && !line.startsWith("But") && !line.startsWith("|") &&
-        !line.startsWith("Background:") && !line.startsWith("Rule:")) {
+    if (
+      !line.startsWith("Given") &&
+      !line.startsWith("When") &&
+      !line.startsWith("Then") &&
+      !line.startsWith("And") &&
+      !line.startsWith("But") &&
+      !line.startsWith("|") &&
+      !line.startsWith("Background:") &&
+      !line.startsWith("Rule:")
+    ) {
       // keep pendingTags — they may belong to a following Scenario
     }
   }
