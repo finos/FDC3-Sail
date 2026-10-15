@@ -230,12 +230,12 @@ Browser hosts use **`channels.changeAppChannel`** and **`channels.onAppChannelCh
 
 | Layer | Suite | Proves |
 |-------|-------|--------|
-| DACP handlers | Cucumber + MockTransport (~135 `@fdc3_2.2`) | FDC3 handler behaviour |
+| DACP handlers | Cucumber in `sail-headless-agent` (`v2/` + `v3/` features) | FDC3 2.2 and 3.0 handler behaviour |
 | Handler units | Vitest in `dacp/__tests__/` | Individual request paths |
 | Edge seam | `wcp-desktop-agent.integration.test.ts` | WCP + MessagePort + DA routing |
 | Full oracle | FINOS toolbox via conformance harness | End-to-end browser behaviour |
 
-See [conformance traceability](./conformance) for BDD vs toolbox gaps.
+See [engine BDD inventory](../headless-agent/bdd) and [conformance harness](../conformance-harness/overview) for the two separate signals.
 
 ## Related
 

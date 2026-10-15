@@ -15,7 +15,8 @@ Full documentation lives on the **FDC3 Sail docs site** (single source of truth)
 | Overview & quick start | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/overview](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/overview) |
 | **Integrator guide** (start here) | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide) |
 | Composition & diagrams | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/composition](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/composition) |
-| Conformance traceability | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/conformance](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/conformance) |
+| Engine BDD inventory | [finos.github.io/FDC3-Sail/docs/packages/headless-agent/bdd](https://finos.github.io/FDC3-Sail/docs/packages/headless-agent/bdd) |
+| Conformance harness | [finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview](https://finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview) |
 
 ## Install
 

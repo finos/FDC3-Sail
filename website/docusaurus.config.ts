@@ -4,7 +4,7 @@ import type * as Preset from "@docusaurus/preset-classic"
 
 const config: Config = {
   title: "FDC3 Sail",
-  tagline: "Open-source FDC3 2.2 Desktop Agent for the browser and desktop",
+  tagline: "Open-source FDC3 Desktop Agent for the browser — 2.2 and 3.0",
   favicon: "img/logo.svg",
 
   future: {

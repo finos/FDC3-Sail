@@ -5,8 +5,8 @@ sidebar_position: 1
 # @finos/sail-finance
 
 `sail-finance` is one of Sail's two **example UIs** — the **finance-specific** one. It is a React
-application that hosts an FDC3 Desktop Agent in a browser tab, presents apps as panels in a
-workspace-and-tab canvas (dockview), and manages its own workspace/layout state.
+application that hosts an FDC3 Desktop Agent (**2.2 and 3.0**) in a browser tab, presents apps as
+panels in a workspace-and-tab canvas (dockview), and manages its own workspace/layout state.
 
 **Location:** `packages/sail-finance/`
 
@@ -75,6 +75,7 @@ Uses the public FINOS app directory. For FDC3 conformance toolbox runs, use
 
 ## Related
 
+- [Panel model and popout relay](./panel-architecture) — Dockview workspace / tab / panel wiring
 - [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine this shell constructs.
 - [@finos/sail-platform](../platform/overview) — workspaces, layouts, and storage.
 - [@finos/sail-one](../sail-one/overview) — the domain-neutral sibling shell.

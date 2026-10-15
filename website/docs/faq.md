@@ -8,9 +8,13 @@ sidebar_position: 5
 
 FDC3 is an open standard for interoperability between financial desktop applications. It lets apps share structured context, such as an instrument, and request actions from other apps using intents.
 
-Sail is a browser-based FDC3 Desktop Agent and example platform. It routes those messages between apps and provides a workspace for launching and managing them.
+Sail is a browser-based FDC3 Desktop Agent and example platform. It routes those messages between apps and provides a workspace for launching and managing them. Sail supports **FDC3 2.2 and 3.0** wire protocols on the same host: each app negotiates its version during the WCP handshake.
 
 For more background, see the [FDC3 website](https://fdc3.finos.org/), [Run Sail](./run-sail), and [Add your app to Sail](./add-your-app).
+
+## Does Sail support FDC3 3.0?
+
+Yes. The Desktop Agent advertises a maximum wire version of `3.0` by default and keeps a full **2.2** handler set alongside **3.0**. Apps that connect with `@finos/fdc3` continue to use `getAgent()`; Sail picks the matching DACP handlers from the version in `WCP1Hello`. See the [Desktop Agent overview](./packages/browser-agent/overview), [engine BDD inventory](./packages/headless-agent/bdd), and [conformance harness](./packages/conformance-harness/overview).
 
 ## What does a Desktop Agent do?
 

@@ -30,6 +30,9 @@ function HomepageHeader() {
           <Link className="button button--secondary button--lg" to="/docs/">
             Get Started
           </Link>
+          <Link className="button button--outline button--lg" to="/docs/packages/overview">
+            Packages
+          </Link>
         </div>
       </div>
     </header>
@@ -53,16 +56,16 @@ function HomepageFeatures(): ReactNode {
       <div className="container">
         <div className="row">
           <Feature
-            title="FDC3 2.2 Compliant"
-            description="Full implementation of the FDC3 2.2 interoperability standard, including the new For-The-Web APIs."
+            title="FDC3 2.2 and 3.0"
+            description="Browser-resident Desktop Agent with WCP and DACP. Each app negotiates its wire version; Sail serves matching handlers for 2.2 and 3.0."
           />
           <Feature
             title="Browser-native"
-            description="Run FDC3 applications in your browser — installable as a PWA, no native install required."
+            description="Host FDC3 apps in the browser — compose the agent into your shell, or run Sail's example workspaces. Installable as a PWA."
           />
           <Feature
             title="Open Source"
-            description="Fully open-source under the Apache 2.0 license. Contribute and help shape the future of financial desktop interoperability."
+            description="Apache 2.0 under FINOS. Engine, browser host, example shells, and conformance harness — contribute and shape desktop interoperability."
           />
         </div>
       </div>
@@ -74,7 +77,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="Home"
-      description="Open-source FDC3 2.2 Desktop Agent for the browser and desktop"
+      description="Open-source FDC3 Desktop Agent for the browser — FDC3 2.2 and 3.0 (WCP + DACP)"
     >
       <HomepageHeader />
       <main>

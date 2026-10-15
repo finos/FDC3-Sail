@@ -14,7 +14,7 @@ You do **not** need to implement host contracts yourself. Configure your app dir
 |--------|---------|----------|
 | **Browser / PWA** | `@finos/sail-finance` | URL or installable PWA; simplest deployment; no native installer |
 
-`sail-finance` exposes a **Desktop Agent** to FDC3 apps. Your applications use `@finos/fdc3` and `getAgent()` — see [Add your app to Sail](./add-your-app).
+`sail-finance` exposes a **Desktop Agent** to FDC3 apps (**2.2 and 3.0** wire protocols, negotiated per connection). Your applications use `@finos/fdc3` and `getAgent()` — see [Add your app to Sail](./add-your-app).
 
 For details on sandboxing, updates, and OS integration — and the future native-shell direction — see [Deployment targets](./architecture/deployment-targets).
 

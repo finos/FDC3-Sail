@@ -1,26 +1,29 @@
 #!/usr/bin/env node
 /**
- * Generates the FDC3 tag inventory section of
- * `website/docs/packages/browser-agent/conformance.md` from the actual Cucumber
- * feature files under `packages/sail-browser-agent/test/features/`.
+ * Generates the Cucumber BDD inventory section of
+ * `website/docs/packages/headless-agent/bdd.md` from the feature files under
+ * `packages/sail-headless-agent/test/features/{v2,v3}/`.
  *
- * Why this exists: the conformance page used to be hand-maintained and drifted
- * badly (wrong file names, wrong scenario counts, whole `@fdc3_3.0` files never
- * mentioned). This script is the source of truth for the *inventory* — which
- * feature files exist, what FDC3-version tags they (and their scenarios) carry,
- * and how many scenarios each combination has. It does not touch the
- * hand-written prose elsewhere on the page.
+ * This is the engine / DACP messaging suite — not the FINOS FDC3 conformance
+ * toolbox (that lives under `packages/conformance-harness` and runs against
+ * product hosts: sail-one, sail-finance, sail-v2-web).
+ *
+ * Versioning model: FDC3 2.2 vs 3.0 suites live in separate directories
+ * (`test/features/v2/` and `test/features/v3/`). Cucumber runs both trees via
+ * the default profile in `packages/sail-headless-agent/cucumber.yml`.
  *
  * Usage:
- *   node website/scripts/generate-conformance-inventory.mjs          # regenerate the page section
- *   node website/scripts/generate-conformance-inventory.mjs --check  # exit 1 if the page section is stale
+ *   node website/scripts/generate-conformance-inventory.mjs          # regenerate
+ *   node website/scripts/generate-conformance-inventory.mjs --check  # exit 1 if stale
+ *
+ * Also invoked as `prebuild` / `prestart` for `@finos/sail-docs`.
  *
  * Scope note: this parses Gherkin well enough for this repo's feature files —
- * plain `Scenario:` blocks with feature-level and/or scenario-level `@tag`
- * lines. It deliberately does NOT support `Scenario Outline:` / `Examples:`
- * tables (none exist in this suite today per a full-tree grep); it throws
- * loudly if one appears so the counting logic gets updated deliberately
- * instead of silently under-counting.
+ * plain `Scenario:` blocks with optional feature-level and/or scenario-level
+ * `@tag` lines. It deliberately does NOT support `Scenario Outline:` /
+ * `Examples:` tables (none exist in this suite today); it throws loudly if one
+ * appears so the counting logic gets updated deliberately instead of silently
+ * under-counting.
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs"
@@ -29,14 +32,17 @@ import { fileURLToPath } from "node:url"
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(SCRIPT_DIR, "..", "..")
-const FEATURES_DIR = join(REPO_ROOT, "packages/sail-browser-agent/test/features")
-const CUCUMBER_YML = join(REPO_ROOT, "packages/sail-browser-agent/cucumber.yml")
-const CONFORMANCE_DOC = join(REPO_ROOT, "website/docs/packages/browser-agent/conformance.md")
+const AGENT_PKG = "packages/sail-headless-agent"
+const FEATURES_DIR = join(REPO_ROOT, AGENT_PKG, "test/features")
+const BDD_DOC = join(REPO_ROOT, "website/docs/packages/headless-agent/bdd.md")
 
-const START_MARKER = "{/* GENERATED:CONFORMANCE-INVENTORY:START */}"
-const END_MARKER = "{/* GENERATED:CONFORMANCE-INVENTORY:END */}"
+const START_MARKER = "{/* GENERATED:BDD-INVENTORY:START */}"
+const END_MARKER = "{/* GENERATED:BDD-INVENTORY:END */}"
 
-const FDC3_TAGS = ["@fdc3_2.0", "@fdc3_2.2", "@fdc3_3.0"]
+const VERSIONS = [
+  { id: "v2", label: "FDC3 2.2", dirName: "v2" },
+  { id: "v3", label: "FDC3 3.0", dirName: "v3" },
+]
 
 /** Recursively collect .feature files, sorted for stable output. */
 function findFeatureFiles(dir) {
@@ -55,10 +61,7 @@ function findFeatureFiles(dir) {
 
 /** Parse one .feature file into { relPath, featureTags, scenarios: [{name, tags}] }. */
 function parseFeatureFile(absPath) {
-  const relPath = relative(join(REPO_ROOT, "packages/sail-browser-agent"), absPath).replace(
-    /\\/g,
-    "/",
-  )
+  const relPath = relative(join(REPO_ROOT, AGENT_PKG), absPath).replace(/\\/g, "/")
   const lines = readFileSync(absPath, "utf8").split(/\r?\n/)
 
   let pendingTags = []
@@ -73,7 +76,7 @@ function parseFeatureFile(absPath) {
       continue
     }
 
-    if (/^Feature:/.test(line)) {
+    if (line.startsWith("Feature:")) {
       featureTags = pendingTags
       pendingTags = []
       continue
@@ -81,72 +84,58 @@ function parseFeatureFile(absPath) {
 
     if (/^Scenario Outline:/.test(line)) {
       throw new Error(
-        `${relPath}: "Scenario Outline:" found. This generator only counts plain ` +
-          `"Scenario:" blocks — update the parsing logic before trusting counts ` +
-          `that include this file.`,
+        `${relPath}: Scenario Outline is not supported by the BDD inventory script. ` +
+          `Update generate-conformance-inventory.mjs before adding outlines.`,
       )
     }
 
-    if (/^Scenario:/.test(line)) {
-      const name = line.replace(/^Scenario:\s*/, "")
-      scenarios.push({
-        name,
-        tags: [...(featureTags ?? []), ...pendingTags],
-      })
+    if (line.startsWith("Scenario:")) {
+      const name = line.slice("Scenario:".length).trim()
+      scenarios.push({ name, tags: [...pendingTags] })
       pendingTags = []
       continue
     }
 
-    // Any other line (Given/When/Then/table rows/comments/blank) clears a
-    // dangling tag block only if it wasn't consumed — Background: has no tags
-    // in valid Gherkin, so this is a no-op in practice for this repo's files.
-  }
+    if (line === "" || line.startsWith("#")) {
+      continue
+    }
 
-  if (featureTags === null) {
-    throw new Error(`${relPath}: no "Feature:" line found — cannot determine feature tags.`)
-  }
-
-  return { relPath, featureTags, scenarios }
-}
-
-function isActive(scenario) {
-  return !scenario.tags.includes("@failing")
-}
-
-function countByTag(scenarios, tag) {
-  return scenarios.filter(s => isActive(s) && s.tags.includes(tag)).length
-}
-
-function buildInventory() {
-  const files = findFeatureFiles(FEATURES_DIR).map(parseFeatureFile)
-
-  const perFile = files.map(f => ({
-    relPath: f.relPath,
-    total: f.scenarios.filter(isActive).length,
-    counts: Object.fromEntries(FDC3_TAGS.map(t => [t, countByTag(f.scenarios, t)])),
-  }))
-
-  const totals = Object.fromEntries(
-    FDC3_TAGS.map(t => [t, perFile.reduce((sum, f) => sum + f.counts[t], 0)]),
-  )
-
-  const filesWith22 = perFile.filter(f => f.counts["@fdc3_2.2"] > 0)
-  const filesOnly30 = perFile.filter(f => f.counts["@fdc3_3.0"] > 0 && f.counts["@fdc3_2.2"] === 0)
-  const filesWith20 = perFile.filter(f => f.counts["@fdc3_2.0"] > 0)
-
-  // Sanity check against cucumber.yml — fail loudly if the profile names this
-  // generator assumes have been renamed or removed.
-  const cucumberYml = readFileSync(CUCUMBER_YML, "utf8")
-  for (const profile of ["fdc3-2.0:", "fdc3-2.2:", "fdc3-3.0:"]) {
-    if (!cucumberYml.includes(profile)) {
-      throw new Error(
-        `cucumber.yml no longer defines a "${profile}" profile — update this generator ` +
-          `and the conformance page's run instructions.`,
-      )
+    // Non-tag, non-scenario content clears pending tags that weren't attached
+    // (Gherkin attaches tags to the next Feature/Scenario only).
+    if (!line.startsWith("Given") && !line.startsWith("When") && !line.startsWith("Then") &&
+        !line.startsWith("And") && !line.startsWith("But") && !line.startsWith("|") &&
+        !line.startsWith("Background:") && !line.startsWith("Rule:")) {
+      // keep pendingTags — they may belong to a following Scenario
     }
   }
 
-  return { perFile, totals, filesWith22, filesOnly30, filesWith20, totalFiles: perFile.length }
+  return { relPath, featureTags: featureTags ?? [], scenarios }
+}
+
+function buildInventory() {
+  const byVersion = []
+  let totalFiles = 0
+  let totalScenarios = 0
+
+  for (const ver of VERSIONS) {
+    const dir = join(FEATURES_DIR, ver.dirName)
+    const files = findFeatureFiles(dir)
+    const perFile = files.map(parseFeatureFile).map(f => ({
+      relPath: f.relPath,
+      total: f.scenarios.length,
+    }))
+    const verTotal = perFile.reduce((n, f) => n + f.total, 0)
+    byVersion.push({
+      ...ver,
+      perFile,
+      totalFiles: perFile.length,
+      totalScenarios: verTotal,
+    })
+    totalFiles += perFile.length
+    totalScenarios += verTotal
+  }
+
+  return { byVersion, totalFiles, totalScenarios }
 }
 
 function mdTable(rows, headers) {
@@ -157,56 +146,43 @@ function mdTable(rows, headers) {
 }
 
 function renderSection(inv) {
-  const rows22 = inv.filesWith22.map(f => [
-    `\`${f.relPath}\``,
-    String(f.counts["@fdc3_2.2"]),
-    f.counts["@fdc3_2.0"] > 0 ? String(f.counts["@fdc3_2.0"]) : "—",
-  ])
-
-  const rows30 = inv.filesOnly30.map(f => [`\`${f.relPath}\``, String(f.counts["@fdc3_3.0"])])
-
   const lines = []
   lines.push(
-    "_This section is generated from `packages/sail-browser-agent/test/features/` — do not " +
-      "hand-edit between the markers. Regenerate with " +
-      "`npm run conformance:inventory --workspace=@finos/sail-docs` (see " +
-      "`website/scripts/generate-conformance-inventory.mjs`)._",
+    `_This section is generated from \`${AGENT_PKG}/test/features/\` — do not ` +
+      "hand-edit between the markers. Regenerated by docs `prebuild` / `prestart`, or " +
+      "`npm run conformance:inventory --workspace=@finos/sail-docs` " +
+      "(`website/scripts/generate-conformance-inventory.mjs`)._",
   )
   lines.push("")
   lines.push(
-    `**${inv.totalFiles} feature files** under \`test/features/\` today: ` +
-      `**${inv.filesWith22.length}** carry \`@fdc3_2.2\` (the 2.2 pack, ${inv.totals["@fdc3_2.2"]} ` +
-      `scenarios), and **${inv.filesOnly30.length}** more are \`@fdc3_3.0\`-only ` +
-      `(${inv.totals["@fdc3_3.0"] - inv.totals["@fdc3_2.2"]} scenarios) — the 3.0 profile runs both, ` +
-      `**${inv.totals["@fdc3_3.0"]}** scenarios total. \`@fdc3_2.0\` is a scenario-level tag inside the ` +
-      `2.2 files marking scenarios also valid under FDC3 2.0 (**${inv.totals["@fdc3_2.0"]}** scenarios ` +
-      `across **${inv.filesWith20.length}** files).`,
+    `**${inv.totalFiles} feature files** / **${inv.totalScenarios} scenarios** under ` +
+      `\`test/features/\` today, split by FDC3 wire version into ` +
+      inv.byVersion
+        .map(
+          v => `**${v.totalFiles}** \`${v.dirName}/\` (${v.label}, ${v.totalScenarios} scenarios)`,
+        )
+        .join(" and ") +
+      ".",
   )
+
+  for (const ver of inv.byVersion) {
+    lines.push("")
+    lines.push(`#### \`${ver.dirName}/\` — ${ver.label}`)
+    lines.push("")
+    const rows = ver.perFile.map(f => [`\`${f.relPath}\``, String(f.total)])
+    lines.push(mdTable(rows, ["Feature file", "Scenarios"]))
+    lines.push("")
+    lines.push(`**Total: ${ver.totalScenarios} scenarios across ${ver.totalFiles} files.**`)
+  }
+
   lines.push("")
-  lines.push("#### `@fdc3_2.2` feature files")
-  lines.push("")
-  lines.push(mdTable(rows22, ["Feature file", "`@fdc3_2.2` scenarios", "of which `@fdc3_2.0`"]))
-  lines.push("")
-  lines.push(
-    `**Total: ${inv.totals["@fdc3_2.2"]} scenarios across ${inv.filesWith22.length} files.**`,
-  )
-  lines.push("")
-  lines.push("#### `@fdc3_3.0`-only feature files (no `@fdc3_2.2` tag)")
-  lines.push("")
-  lines.push(mdTable(rows30, ["Feature file", "`@fdc3_3.0` scenarios"]))
-  lines.push("")
-  lines.push(
-    `**Total: ${inv.totals["@fdc3_3.0"] - inv.totals["@fdc3_2.2"]} scenarios across ` +
-      `${inv.filesOnly30.length} files.**`,
-  )
-  lines.push("")
-  lines.push("#### Run by profile (`packages/sail-browser-agent/cucumber.yml`)")
+  lines.push(`#### Run (\`${AGENT_PKG}/cucumber.yml\`)`)
   lines.push("")
   lines.push("```bash")
-  lines.push("cd packages/sail-browser-agent")
-  lines.push(`npx cucumber-js --profile fdc3-2.2   # ${inv.totals["@fdc3_2.2"]} scenarios`)
-  lines.push(`npx cucumber-js --profile fdc3-3.0   # ${inv.totals["@fdc3_3.0"]} scenarios`)
-  lines.push(`npx cucumber-js --profile fdc3-2.0   # ${inv.totals["@fdc3_2.0"]} scenarios`)
+  lines.push(`cd ${AGENT_PKG}`)
+  lines.push(
+    `npm test   # default profile: v2 + v3, ${inv.totalScenarios} scenarios (excludes @failing)`,
+  )
   lines.push("```")
 
   return lines.join("\n")
@@ -217,12 +193,12 @@ function main() {
   const inv = buildInventory()
   const section = renderSection(inv)
 
-  const doc = readFileSync(CONFORMANCE_DOC, "utf8")
+  const doc = readFileSync(BDD_DOC, "utf8")
   const startIdx = doc.indexOf(START_MARKER)
   const endIdx = doc.indexOf(END_MARKER)
   if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
     throw new Error(
-      `Could not find ${START_MARKER} / ${END_MARKER} markers in ${CONFORMANCE_DOC}. ` +
+      `Could not find ${START_MARKER} / ${END_MARKER} markers in ${BDD_DOC}. ` +
         "Add them around the generated inventory section before running this script.",
     )
   }
@@ -233,28 +209,23 @@ function main() {
 
   if (checkOnly) {
     if (newDoc === doc) {
-      console.log("conformance.md generated section is up to date.")
+      console.log("headless-agent/bdd.md generated section is up to date.")
       process.exit(0)
     } else {
       console.error(
-        "conformance.md generated section is STALE. Run " +
+        "headless-agent/bdd.md generated section is STALE. Run " +
           "`npm run conformance:inventory --workspace=@finos/sail-docs` and commit the result.",
       )
       process.exit(1)
     }
   } else {
-    writeFileSync(CONFORMANCE_DOC, newDoc, "utf8")
-    console.log(`Wrote generated inventory section to ${relative(REPO_ROOT, CONFORMANCE_DOC)}`)
-    console.log(
-      `  @fdc3_2.2: ${inv.totals["@fdc3_2.2"]} scenarios / ${inv.filesWith22.length} files`,
-    )
-    console.log(
-      `  @fdc3_3.0: ${inv.totals["@fdc3_3.0"]} scenarios / ${inv.totalFiles} files ` +
-        `(${inv.totals["@fdc3_3.0"] - inv.totals["@fdc3_2.2"]} scenarios / ${inv.filesOnly30.length} files are 3.0-only)`,
-    )
-    console.log(
-      `  @fdc3_2.0: ${inv.totals["@fdc3_2.0"]} scenarios / ${inv.filesWith20.length} files`,
-    )
+    writeFileSync(BDD_DOC, newDoc, "utf8")
+    console.log(`Wrote generated inventory section to ${relative(REPO_ROOT, BDD_DOC)}`)
+    for (const ver of inv.byVersion) {
+      console.log(
+        `  ${ver.dirName}/ (${ver.label}): ${ver.totalScenarios} scenarios / ${ver.totalFiles} files`,
+      )
+    }
   }
 }
 

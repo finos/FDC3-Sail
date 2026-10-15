@@ -39,6 +39,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.buttons :global(.button--outline) {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.buttons :global(.button--outline:hover) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
 .features {

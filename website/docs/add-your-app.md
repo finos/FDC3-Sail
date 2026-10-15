@@ -26,7 +26,7 @@ import { fdc3 } from "@finos/fdc3"
 const agent = await fdc3.getAgent()
 ```
 
-When the app starts, `getAgent()` discovers the Sail host by using the FDC3 Web Connection Protocol. Sail handles the handshake, identity validation, and message routing.
+When the app starts, `getAgent()` discovers the Sail host by using the FDC3 Web Connection Protocol. Sail handles the handshake, identity validation, and message routing. Use an `@finos/fdc3` release that matches the API surface you need (**2.2** or **3.0**); Sail negotiates the wire version from your hello payload and serves the matching DACP handlers.
 
 ## App Checklist
 

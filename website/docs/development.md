@@ -38,7 +38,8 @@ npm run dev
 Starts Desktop Agent (watch), platform API (watch), and Sail web UI on **http://localhost:3000**.
 
 ```bash
-npm run dev:browser:2.2 -w @finos/sail-conformance-harness   # FDC3 toolbox clean room on :3001
+npm run dev:browser:2.2 -w @finos/sail-conformance-harness   # FDC3 2.2 toolbox on :3001
+npm run dev:browser:3.0 -w @finos/sail-conformance-harness   # FDC3 3.0 toolbox on :3001
 npm run docs:dev          # Documentation site (use --port 3002 if web app is running)
 ```
 
@@ -48,21 +49,27 @@ FDC3 Sail is an npm workspace monorepo:
 
 ```
 FDC3-Sail/
-├── packages/          
-│   ├── sail-browser-agent/  # Pure FDC3 2.2 Desktop Agent (@finos/sail-browser-agent)
-│   ├── sail-platform/  # Platform composition layer & transports (@finos/sail-platform)
-│   ├── sail-theme/     # Brand tokens + assets, framework-agnostic (@finos/sail-theme)
-│   ├── sail-finance/   # Browser-based finance-specific shell (@finos/sail-finance)
-│   ├── sail-one/       # Browser-based domain-neutral shell (@finos/sail-one)
-│   └── sail-conformance-harness/  # FDC3 toolbox clean room (@finos/sail-conformance-harness)
-└── website/            # Documentation (Docusaurus)
+├── packages/
+│   ├── sail-headless-agent/ # DACP engine + Cucumber BDD (v2/ and v3/)
+│   ├── sail-browser-agent/  # WCP browser host (@finos/sail-browser-agent)
+│   ├── sail-platform/       # Workspaces / layouts (@finos/sail-platform)
+│   ├── sail-env/            # Host bootstrap helpers (@finos/sail-env)
+│   ├── sail-theme/          # Brand tokens + assets
+│   ├── sail-finance/        # Finance example shell
+│   ├── sail-one/            # Domain-neutral example shell
+│   ├── sail-v2-web/         # Previous Socket.IO UI (@finos/fdc3-sail-web)
+│   └── sail-conformance-harness/  # FINOS toolbox Playwright runner
+└── website/                 # Documentation (Docusaurus)
 ```
+
+See [Packages overview](./packages/overview) for the dependency diagram.
 
 ## Internal and Development Packages
 
-The main package docs focus on packages adopters are likely to use directly. These package docs are most useful when working inside the monorepo:
-
-- [@finos/sail-conformance-harness](./packages/conformance-harness/overview) - clean-room FDC3 toolbox host for conformance debugging.
+- [@finos/sail-headless-agent](./packages/headless-agent/overview) — engine + [BDD inventory](./packages/headless-agent/bdd)
+- [@finos/sail-conformance-harness](./packages/conformance-harness/overview) — FINOS toolbox against `sail-one`, `sail-finance`, `sail-v2-web`
+- [@finos/sail-env](./packages/sail-env/overview) — shared host query/env helpers
+- [@finos/fdc3-sail-web](./packages/sail-v2-web/overview) — previous Socket.IO shell (still a conformance host)
 
 ## Common Commands
 
@@ -75,8 +82,9 @@ npm run dev
 # Same, but with the sail-one shell instead of sail-finance
 npm run dev:one
 
-# FDC3 conformance toolbox host (local 2.2; use :3.0 for 3.0)
+# FDC3 conformance toolbox host (2.2 or 3.0)
 npm run dev:browser:2.2 -w @finos/sail-conformance-harness
+npm run dev:browser:3.0 -w @finos/sail-conformance-harness
 
 # Start documentation site
 npm run docs:dev
@@ -109,11 +117,15 @@ npm run test
 # Run tests once
 npm test -- --run
 
-# Desktop Agent tests (Vitest + Cucumber)
+# Desktop Agent unit tests
 npm test -w @finos/sail-browser-agent
 
-# FDC3 Desktop Agent BDD (Cucumber)
-npm run test:cucumber -w @finos/sail-browser-agent
+# FDC3 DACP BDD — features under sail-headless-agent test/features/v2/ and v3/
+npm test -w @finos/sail-headless-agent
+
+# FINOS toolbox in Playwright (2.2 and 3.0)
+npm run test:browser:2.2 -w @finos/sail-conformance-harness
+npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
 ### Building

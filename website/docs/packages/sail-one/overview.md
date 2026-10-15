@@ -6,7 +6,8 @@ sidebar_position: 1
 
 `sail-one` is one of Sail's two **example UIs** — the **domain-neutral** one, for more general use. It
 is a tab-and-grid canvas shell, ported from `packages/sail-web` on FINOS `wip/v2.2` and rewired onto
-the current `@finos/sail-browser-agent` and `@finos/sail-platform`.
+the current `@finos/sail-browser-agent` and `@finos/sail-platform`. The hosted agent speaks **FDC3 2.2
+and 3.0** (same dual-wire negotiation as other Sail hosts).
 
 **Location:** `packages/sail-one/`
 

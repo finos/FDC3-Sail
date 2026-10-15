@@ -62,7 +62,7 @@ Apps still use **`fdc3.getCurrentChannel()`** inside the iframe over MessagePort
 | Consumer | Listen to |
 |----------|-----------|
 | **Host chrome** | `channels.onAppChannelChange` on the agent handle, or a store fed by it |
-| **App iframe** | `fdc3.addEventListener("userChannelChanged", …)` (FDC3 2.2) |
+| **App iframe** | `fdc3.addEventListener("userChannelChanged", …)` (FDC3 2.2 and 3.0) |
 
 Both reflect the same agent state change; the host does not need to poke the iframe DOM.
 

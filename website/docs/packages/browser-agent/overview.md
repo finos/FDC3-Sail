@@ -4,13 +4,13 @@ sidebar_position: 1
 
 # @finos/sail-browser-agent
 
-Browser-ready FDC3 2.2 Desktop Agent — `SailDesktopAgent`, DACP handlers, channel and intent state, app directory, and WCP `BrowserAppConnection`.
+Browser-ready FDC3 Desktop Agent for **2.2 and 3.0** — `SailDesktopAgent`, versioned DACP handlers, channel and intent state, app directory, and WCP `BrowserAppConnection`.
 
 **Location:** `packages/sail-browser-agent/`
 
 ## What it does
 
-- Implements mandatory FDC3 2.2 Desktop Agent APIs via DACP
+- Implements FDC3 Desktop Agent APIs via DACP for **wire versions 2.2 and 3.0** (negotiated per app at WCP1; default advertised max is `3.0`)
 - **Browser-first:** one `DesktopAgent` per host page, with FDC3 web apps connecting via WCP and per-app `MessagePort`
 - Keeps platform concerns (layout, workspace, storage, config) **out** of the core — those belong in [`@finos/sail-platform`](../platform/overview)
 
@@ -52,7 +52,8 @@ packages/sail-browser-agent/src/
 | [Getting started](../../getting-started) | Adoption paths — browser-ready agent, host contracts, `@finos/fdc3` |
 | [Integrator guide](./integrator-guide) | **Deep reference** — host contracts, browser-first agent, WCP/DACP detail, [heartbeat config](./integrator-guide#heartbeat-and-liveness-configuration) |
 | [Composition & internals](./composition) | Diagrams — how edge, DA, and host contracts interact |
-| [Conformance traceability](./conformance) | BDD `@fdc3_2.2` coverage vs FINOS toolbox oracle |
+| [Engine BDD inventory](../headless-agent/bdd) | Cucumber DACP suite in `sail-headless-agent` (`v2/` / `v3/`) |
+| [Conformance harness](../conformance-harness/overview) | FINOS toolbox against `sail-one`, `sail-finance`, `sail-v2-web` |
 
 ## Quick start
 
@@ -95,8 +96,8 @@ import type { AppLauncher, IntentResolver, DirectoryApp } from "@finos/sail-brow
 
 ## Message validation
 
-Inbound DACP and WCP messages are validated against the FDC3 schema shipped by
-`@finos/fdc3-schema`, so the check tracks the FDC3 version this package targets.
+Inbound DACP and WCP messages are validated against the FDC3 schemas shipped by
+`@finos/fdc3-schema` for the connection's negotiated wire version (`2.2` or `3.0`).
 
 | Mode | Behaviour |
 |------|-----------|

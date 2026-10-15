@@ -1,9 +1,6 @@
 /**
- * Shared Sail host bootstrap: query params and Vite env helpers.
- *
- * Desktop Agents adapt FDC3 wire version per app (WCP); this package does not
- * select a canonical DA version. Conformance suite App Directory URLs live in
- * `@finos/sail-conformance-harness`, not here.
+ * Shared Sail host helpers: URL query params, Vite env strings, and the
+ * advertised max FDC3 wire version constant. No FDC3 protocol logic.
  */
 
 /** Advertised maximum FDC3 API version Sail Desktop Agents support. */

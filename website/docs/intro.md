@@ -45,19 +45,19 @@ flowchart LR
 
 ## What Sail is
 
-**FDC3 Sail** is a standards-compliant FDC3 **Desktop Agent** — an implementation of [FDC3 2.2](https://fdc3.finos.org/docs/api/spec) and [FDC3 For-The-Web](https://fdc3.finos.org/docs/api/specs/browserResidentDesktopAgents) that runs in the browser. Concretely, it does:
+**FDC3 Sail** is a standards-compliant FDC3 **Desktop Agent** — an implementation of [FDC3 2.2](https://fdc3.finos.org/docs/api/spec) and [FDC3 3.0](https://fdc3.finos.org/docs/next/api/spec) (For-The-Web / WCP + DACP) that runs in the browser. Concretely, it does:
 
 - **Intent resolution** — route intents between applications
 - **Channel linking** — connect applications via user and app channels
 - **Directory search** — discover and launch FDC3 applications via an app directory
 
-FDC3 Sail implements the Desktop Agent and host wiring for the UI control plane above. Your FDC3 applications use the standard [`@finos/fdc3`](https://www.npmjs.com/package/@finos/fdc3) library and `getAgent()` — the same API regardless of which Sail path you choose.
+FDC3 Sail implements the Desktop Agent and host wiring for the UI control plane above. Your FDC3 applications use the standard [`@finos/fdc3`](https://www.npmjs.com/package/@finos/fdc3) library and `getAgent()` — the same API regardless of which Sail path you choose. Per connection, Sail negotiates the FDC3 **wire version** from the app's WCP hello (`2.2` or `3.0`) and routes DACP through the matching handler set.
 
 ### Is it a good fit for you?
 
 FDC3 Sail is a **good fit** if you:
 
-- Need a **browser FDC3 host** aligned with FDC3 2.2 and For-The-Web
+- Need a **browser FDC3 host** aligned with FDC3 2.2 and/or 3.0 and For-The-Web
 - Want an **open-source** stack you can run, host, embed, or extend
 - Have (or plan) **FDC3-compliant web applications** that call `fdc3.getAgent()`
 - Prefer standards-based interoperability over one-off app-to-app integrations
@@ -70,7 +70,7 @@ Consider alternatives or additional work if you:
 
 ### Status
 
-FDC3 Sail is **under active development** and not yet ready for production use (see the root [README](https://github.com/finos/FDC3-Sail)). It implements FDC3 2.2 (DACP, WCP) and works with the standard `@finos/fdc3` client library unchanged. Packaging Sail as an **enterprise system** — identity, deployment pipelines, operational monitoring, and IT policy — is a separate layer of work for your organisation.
+FDC3 Sail is **under active development** and not yet ready for production use (see the root [README](https://github.com/finos/FDC3-Sail)). It implements FDC3 **2.2 and 3.0** (DACP, WCP) and works with the standard `@finos/fdc3` client library unchanged. Packaging Sail as an **enterprise system** — identity, deployment pipelines, operational monitoring, and IT policy — is a separate layer of work for your organisation.
 
 ## What Sail grows into
 

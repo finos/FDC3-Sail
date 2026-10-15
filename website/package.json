@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
+    "prestart": "npm run conformance:inventory",
     "start": "docusaurus start",
+    "prebuild": "npm run conformance:inventory",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",

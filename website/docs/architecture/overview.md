@@ -27,6 +27,9 @@ Status is read off the code, not off how many hosts in this repo happen to exerc
 - FDC3 apps use the standard `@finos/fdc3` library.
 - App-to-agent communication follows FDC3 For-the-Web: WCP for discovery and connection, DACP for
   Desktop Agent operations.
+- Sail supports **FDC3 2.2 and 3.0** on the same host: each app negotiates its wire version in
+  `WCP1Hello`, and the agent routes DACP through the matching handler set (default advertised max
+  is `3.0`).
 - Sail-specific workspace, layout, config, and product-shell behavior stays outside the FDC3 engine.
 
 ### 2. Clear package ownership

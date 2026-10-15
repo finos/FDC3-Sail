@@ -1,56 +1,60 @@
 # `@finos/sail-env`
 
-Shared **generic** host bootstrap helpers for Sail Desktop Agent shells (`sail-one`, `sail-finance`, `sail-v2-web`).
+Tiny shared helpers so Sail host shells (`sail-finance`, `sail-one`, `sail-v2-web`, …) read the
+**same URL query params and Vite env keys** when they boot a Desktop Agent.
 
-This package does **not** know about FDC3 conformance suites. Suite App Directory URLs and matrix cell mapping live in [`@finos/sail-conformance-harness`](../sail-conformance-harness/).
+This package does not talk to FDC3, open apps, or configure the conformance toolbox. It only
+parses strings and exports one constant.
 
-## FDC3 version model
+## Documentation
 
-Sail has **no canonical FDC3 version**. Each app requests a version on connect (WCP / APP_HELLO). The Desktop Agent uses the matching handler set (`2.2` or `3.0`) or **rejects** unsupported versions. Hosts advertise maximum support via `SAIL_MAX_FDC3_VERSION` (`"3.0"`).
+[finos.github.io/FDC3-Sail/docs/packages/sail-env/overview](https://finos.github.io/FDC3-Sail/docs/packages/sail-env/overview)
 
-Harness env `CONFORMANCE_FDC3_VERSION` only selects which toolbox suite and which App Directory URL to inject into the host — it does not pin the DA wire stack.
+## What it exports
 
-## Query parameters
+| Export | Role |
+|--------|------|
+| `SAIL_MAX_FDC3_VERSION` | `"3.0"` — value hosts pass as advertised max wire version to `SailDesktopAgent` |
+| `resolveDeepLinkAppId(search)` | `?appId=` → open that directory app after start |
+| `resolveFdc3Directory(search)` | `?fdc3Directory=` → sole App Directory URL from the query |
+| `resolveNoSplash(search)` | `?noSplash=1` / `true` → hide splash / welcome chrome |
+| `resolveFdc3DirectoryUrl(raw)` | Non-empty check for `VITE_FDC3_DIRECTORY_URL` |
+| `isAutoResolve(raw)` | `VITE_AUTO_RESOLVE === "1"` → programmatic intent pick |
+| `resolveSoleFdc3Directory({ search, viteDirectoryUrl })` | Query `fdc3Directory` wins over Vite env |
 
-| Param | Values | Effect |
-|-------|--------|--------|
-| `appId` | string | Deep-link open that directory app after the agent starts |
-| `fdc3Directory` | absolute URL | Use **only** this App Directory (overrides other catalogs) |
-| `noSplash` | `1` or `true` | Hide splash / welcome chrome when the host has it |
+Vite host typings:
 
-Example:
-
+```ts
+/// <reference types="@finos/sail-env/vite" />
 ```
-/?appId=Conformance1&fdc3Directory=https://…/website-conformance.json&noSplash=1
-```
 
-## Vite / process environment
+Declares `import.meta.env.VITE_FDC3_DIRECTORY_URL` and `VITE_AUTO_RESOLVE`.
 
-| Variable | Values | Effect |
-|----------|--------|--------|
-| `VITE_FDC3_DIRECTORY_URL` | absolute URL | Default sole App Directory when `fdc3Directory` query is absent |
-| `VITE_AUTO_RESOLVE` | `1` | Programmatic intent resolution (no picker UI) |
-
-Host-only keys (not defined here): `VITE_FORCE_NEW_WINDOW` (`sail-one`), `VITE_CONFORMANCE_TOOLBOX` (harness Vite app).
-
-## API
+## Typical host usage
 
 ```ts
 import {
   SAIL_MAX_FDC3_VERSION,
-  resolveDeepLinkAppId,
-  resolveFdc3Directory,
-  resolveNoSplash,
-  resolveFdc3DirectoryUrl,
-  resolveSoleFdc3Directory,
   isAutoResolve,
+  resolveDeepLinkAppId,
+  resolveSoleFdc3Directory,
 } from "@finos/sail-env"
+
+const soleDirectoryUrl = resolveSoleFdc3Directory({
+  search: window.location.search,
+  viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
+})
+const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
+const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
+
+// then: construct SailDesktopAgent with maxFdc3Version: SAIL_MAX_FDC3_VERSION,
+// optional sole directory, auto-resolve intent UI, and deep-link open
 ```
 
-Vite types for host packages:
+Example URL:
 
-```ts
-/// <reference types="@finos/sail-env/vite" />
+```
+/?appId=Conformance1&fdc3Directory=https://example.com/apps.json&noSplash=1
 ```
 
 ## License

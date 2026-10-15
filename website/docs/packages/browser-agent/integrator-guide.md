@@ -452,28 +452,31 @@ new SailDesktopAgent({ appLauncher, ... }).start()
 
 See `packages/sail-finance/src/contexts/SailDesktopAgentContext.tsx` for provider wiring.
 
-## FDC3 2.2 alignment
+## FDC3 2.2 and 3.0 alignment
 
-This package implements a [Browser-Resident Desktop Agent](https://fdc3.finos.org/docs/api/specs/browserResidentDesktopAgents) with the split prescribed by FDC3 2.2:
+This package implements a [Browser-Resident Desktop Agent](https://fdc3.finos.org/docs/api/specs/browserResidentDesktopAgents) with the WCP / DACP split used by FDC3 2.2 and carried forward in 3.0. The advertised maximum wire version defaults to **`3.0`**; each app's negotiated version selects the `2.2` or `3.0` DACP handler set.
 
-| FDC3 2.2 concept | This package |
-|------------------|--------------|
+| FDC3 concept | This package |
+|--------------|--------------|
 | `getAgent()` / WCP connection | **BrowserAppConnection** — WCP1–3, per-app `MessagePort` |
-| DACP over `MessagePort` | **DA** (`DesktopAgent`) — all `fdc3.*` API behaviour |
+| Per-connection wire version | Negotiated from `WCP1Hello.fdc3Version` against `maxFdc3Version` (default `3.0`) |
+| DACP over `MessagePort` | **DA** (`DesktopAgent`) — `fdc3.*` API behaviour via versioned handlers |
 | WCP4 `ValidateAppIdentity` | **DA** — `app-connection/wcp/wcp-identity-validation.ts` plus handlers |
 | WCP5 success / failure | **DA** responds; **BrowserAppConnection** migrates port map to validated `instanceId` |
 | WCP6 `Goodbye` | **BrowserAppConnection** drops port; **DA** cleans registry |
+| FDC3 3.0-only APIs (e.g. `fdc3.close()`, richer context/intent metadata) | **DA** v3 handlers + optional `AppLauncher.close` |
 
-Spec references (v2.2):
+Spec references:
 
 - [Web Connection Protocol](https://fdc3.finos.org/docs/api/specs/webConnectionProtocol) — handshake, UI URL fields, identity validation
 - [Browser-Resident Desktop Agents](https://fdc3.finos.org/docs/api/specs/browserResidentDesktopAgents) — host shell responsibilities
 - [Desktop Agent Communication Protocol](https://fdc3.finos.org/docs/api/specs/desktopAgentCommunicationProtocol) — DACP request/response routing via `meta.source` / `meta.destination`
+- [FDC3 3.0 API (next)](https://fdc3.finos.org/docs/next/api/spec) — 3.0 surface area (close, metadata, listener conflict, …)
 
 ### WCP phases (spec vs implementation)
 
-| Step | FDC3 2.2 requirement | Owner in this package |
-|------|------------------------|------------|
+| Step | FDC3 requirement | Owner in this package |
+|------|------------------|------------------------|
 | WCP1 `Hello` | App posts to parent; includes `connectionAttemptUuid` | App (`@finos/fdc3`); edge listens |
 | WCP3 `Handshake` | DA returns `MessagePort` + `intentResolverUrl` + `channelSelectorUrl` | BrowserAppConnection sends; values from `appConnectionOptions` |
 | WCP4 | First message on port; `identityUrl` / `actualUrl` origins MUST match `WCP1` origin | DA validates |
@@ -511,7 +514,7 @@ These behaviours stay within FDC3 MUSTs but are host conventions supported by th
 
 ## Heartbeat and liveness configuration
 
-FDC3 2.2 defines [`heartbeatEvent`](https://fdc3.finos.org/docs/api/specs/desktopAgentCommunicationProtocol#checking-apps-are-alive) / [`heartbeatAcknowledgment`](https://fdc3.finos.org/docs/api/specs/desktopAgentCommunicationProtocol#checking-apps-are-alive) as an optional **Desktop Agent** liveness mechanism — “periodically or on demand,” depending on how the app is connected. Apps respond when the DA sends a heartbeat; there is **no** `getAgent()` parameter to disable it from the app side.
+FDC3 defines [`heartbeatEvent`](https://fdc3.finos.org/docs/api/specs/desktopAgentCommunicationProtocol#checking-apps-are-alive) / [`heartbeatAcknowledgment`](https://fdc3.finos.org/docs/api/specs/desktopAgentCommunicationProtocol#checking-apps-are-alive) as an optional **Desktop Agent** liveness mechanism — “periodically or on demand,” depending on how the app is connected. Apps respond when the DA sends a heartbeat; there is **no** `getAgent()` parameter to disable it from the app side. The same heartbeat handler is shared by the 2.2 and 3.0 DACP stacks.
 
 Sail exposes heartbeat as **host-level configuration** on `SailDesktopAgent`. Settings apply to **every** connected instance for that agent — not per app or per entry in the app directory.
 
@@ -807,7 +810,7 @@ best signal available to it.
 
 | Suite | Proves | Does not prove |
 |-------|--------|----------------|
-| Cucumber + `MockTransport` (~135 `@fdc3_2.2`) | DA / DACP handler behaviour | iframe MessagePort delivery |
+| Cucumber + messaging doubles (`sail-headless-agent` `v2/` + `v3/`) | DA / DACP handler behaviour for 2.2 and 3.0 | iframe MessagePort delivery |
 | Vitest handler tests | Individual DACP paths | WCP handshake |
 | **Edge contract** (`wcp-desktop-agent.integration.test.ts`) | Edge + DA + MessagePort seam | Full FINOS toolbox oracle |
 
@@ -828,4 +831,5 @@ npm test -w @finos/sail-browser-agent -- wcp-desktop-agent.integration
 
 - [Package overview](./overview)
 - [Composition & internals](./composition)
-- [Conformance traceability](./conformance)
+- [Engine BDD inventory](../headless-agent/bdd)
+- [Conformance harness](../conformance-harness/overview)

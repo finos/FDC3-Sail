@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Deployment Target: Browser Host
 
-FDC3 Sail's v3 runtime is the browser host: `sail-finance` runs a browser-resident `SailDesktopAgent`, and FDC3 web apps connect through WCP and `MessagePort`. Native packaging and deep OS integration are deferred — see [Future: native shell adapter](#future-native-shell-adapter).
+FDC3 Sail's v3 runtime is the browser host: `sail-finance` runs a browser-resident `SailDesktopAgent`, and FDC3 web apps connect through WCP and `MessagePort`. The same agent serves **FDC3 2.2 and 3.0** clients — wire version is negotiated per connection. Native packaging and deep OS integration are deferred — see [Future: native shell adapter](#future-native-shell-adapter).
 
 ## Layered architecture
 

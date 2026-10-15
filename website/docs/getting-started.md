@@ -58,7 +58,7 @@ Same-page framework components are different. A host page can technically expose
 
 - Node.js **24+** (for local development and building Sail itself)
 - A bundler targeting modern browsers (Vite, webpack, etc.)
-- FDC3 web applications that use `@finos/fdc3`
+- FDC3 web applications that use `@finos/fdc3` (2.2 and/or 3.0 clients — Sail negotiates the wire version per connection)
 
 ## Install
 
