@@ -174,7 +174,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     if (url) {
       const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail
         ?.forceNewWindow
-      const approach = forceNewWindow || channel === null ? AppHosting.Tab : AppHosting.Frame
+      const approach = forceNewWindow ? AppHosting.Tab : AppHosting.Frame
 
       const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
         appDRecord: app[0],
