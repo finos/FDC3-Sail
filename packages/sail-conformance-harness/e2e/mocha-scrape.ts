@@ -53,7 +53,7 @@ export async function installMochaEndHook(frame: Frame): Promise<boolean> {
     const wrapped = ((...args: unknown[]) => {
       w.__sailConformanceMochaEnded = false
       const runner = original(...args)
-      runner?.on?.("end", () => {
+      runner.on?.("end", () => {
         w.__sailConformanceMochaEnded = true
       })
       return runner
@@ -81,12 +81,10 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
     }
 
     const w = window as ConformanceMochaWindow
+    const runnerTotal = w.mocha?.runner?.total
+    const suiteTotal = typeof w.mocha?.suite?.total === "function" ? w.mocha.suite.total() : 0
     const expectedTotal =
-      (typeof w.mocha?.runner?.total === "number" && w.mocha.runner.total > 0
-        ? w.mocha.runner.total
-        : undefined) ??
-      (typeof w.mocha?.suite?.total === "function" ? w.mocha.suite.total() : 0) ??
-      0
+      typeof runnerTotal === "number" && runnerTotal > 0 ? runnerTotal : suiteTotal
     const mochaEnded = w.__sailConformanceMochaEnded === true
 
     const stats = document.querySelector("#mocha-stats")
@@ -107,7 +105,7 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
       // Mocha puts duration in an <span> inside h2; strip it for a stable title.
       const title = Array.from(titleEl.childNodes)
         .filter((node): node is Text => node.nodeType === Node.TEXT_NODE)
-        .map(node => node.textContent ?? "")
+        .map(node => node.data)
         .join("")
         .replace(/\s+/g, " ")
         .trim()
@@ -128,7 +126,7 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
       let suiteEl: Element | null = testEl.parentElement
       while (suiteEl) {
         if (suiteEl.matches("li.suite")) {
-          const suiteTitle = suiteEl.querySelector(":scope > h1")?.textContent?.trim()
+          const suiteTitle = suiteEl.querySelector(":scope > h1")?.textContent.trim()
           if (suiteTitle) {
             suiteTitles.unshift(suiteTitle)
           }
@@ -137,11 +135,9 @@ export async function scrapeMocha(frame: Frame): Promise<MochaSnapshot | null> {
       }
 
       const error =
-        state === "failed"
-          ? (testEl.querySelector("pre.error")?.textContent?.trim() ?? undefined)
-          : undefined
+        state === "failed" ? testEl.querySelector("pre.error")?.textContent.trim() : undefined
 
-      const durationMatch = titleEl.querySelector("span")?.textContent?.match(/([\d.]+)\s*ms/)
+      const durationMatch = titleEl.querySelector("span")?.textContent.match(/([\d.]+)\s*ms/)
       const durationMs = durationMatch ? Number(durationMatch[1]) : undefined
 
       tests.push({

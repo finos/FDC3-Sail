@@ -21,13 +21,15 @@ export function resolveConformanceToolbox(raw?: string): "hosted" | "local" {
 
 export default defineConfig(({ mode }) => {
   // Prefer shell/CI env; fall back to mode `.env` (e.g. `.env.toolbox-local`).
+  // `loadEnv` returns `Record<string, string>` (empty string when unset), so use `||`
+  // rather than `??` to keep falling through blank values.
   const env = loadEnv(mode, process.cwd(), "")
   const toolbox = resolveConformanceToolbox(
-    process.env.CONFORMANCE_TOOLBOX ?? env.CONFORMANCE_TOOLBOX ?? env.VITE_CONFORMANCE_TOOLBOX,
+    process.env.CONFORMANCE_TOOLBOX || env.CONFORMANCE_TOOLBOX || env.VITE_CONFORMANCE_TOOLBOX || undefined,
   )
   const fdc3Version = resolveConformanceFdc3Version(
-    process.env.CONFORMANCE_FDC3_VERSION ??
-      env.CONFORMANCE_FDC3_VERSION ??
+    process.env.CONFORMANCE_FDC3_VERSION ||
+      env.CONFORMANCE_FDC3_VERSION ||
       (toolbox === "hosted" ? "3.0" : undefined),
   )
   const conformancePackage =

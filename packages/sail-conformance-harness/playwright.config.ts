@@ -47,10 +47,13 @@ const webServers: NonNullable<PlaywrightTestConfig["webServer"]> = [
     stdout: "pipe",
     stderr: "pipe",
     // Ensure VITE_* reach the host process (not only via shell prefixes).
-    env: {
-      ...process.env,
-      ...hostProcessEnv(host, fdc3Version),
-    },
+    // Playwright wants `Record<string, string>`; strip undefined from `process.env`.
+    env: Object.fromEntries(
+      Object.entries({
+        ...process.env,
+        ...hostProcessEnv(host, fdc3Version),
+      }).filter((entry): entry is [string, string] => entry[1] !== undefined),
+    ),
   },
 ]
 
