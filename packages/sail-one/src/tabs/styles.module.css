@@ -1,0 +1,68 @@
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 0.3rem;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0.35rem;
+  border: 2px solid transparent;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--sail-focus);
+  outline-offset: 2px;
+}
+
+.tabGlyph {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 40%));
+}
+
+.inactiveTab {
+  opacity: 0.9;
+}
+
+.activeTab {
+  opacity: 1;
+  border-color: #fff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--sail-ink) 25%, transparent),
+    0 2px 8px color-mix(in srgb, var(--sail-ink) 28%, transparent);
+  transform: scale(1.05);
+}
+
+.inactiveTab:hover {
+  opacity: 1;
+}
+
+.railLabel {
+  display: block;
+  margin: 0.1rem 0 0.3rem;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--sail-text-muted);
+  text-align: center;
+}

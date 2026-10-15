@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.root.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "jsx": "react-jsx",
+    "moduleDetection": "force",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "outDir": "./dist",
+    "types": ["node", "vitest/globals"],
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "tests/**/*", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist", "vitest.config.ts"]
+}

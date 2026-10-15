@@ -1,0 +1,91 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  color: var(--sail-ink);
+}
+
+.logoOnDark {
+  color: var(--sail-on-topbar);
+}
+
+.logoImage {
+  height: 1.45rem;
+  width: auto;
+}
+
+.logoTextThin {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--sail-muted);
+}
+
+.logoOnDark .logoTextThin {
+  color: color-mix(in srgb, var(--sail-on-topbar) 72%, var(--sail-cyan));
+}
+
+.logoTextBold {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+}
+
+.toolbarIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+.openAppButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  padding: 0 0.85rem;
+  border: none;
+  border-radius: var(--sail-radius);
+  background-color: var(--sail-cyan);
+  color: var(--sail-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.openAppButton:hover {
+  background-color: var(--sail-cyan-bright);
+}
+
+.openAppButton:focus-visible {
+  outline: 2px solid var(--sail-cyan);
+  outline-offset: 2px;
+}
+
+.settingsButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--sail-on-topbar) 28%, transparent);
+  border-radius: var(--sail-radius);
+  background-color: transparent;
+  color: var(--sail-on-topbar);
+  cursor: pointer;
+}
+
+.settingsButton:hover {
+  background-color: color-mix(in srgb, var(--sail-on-topbar) 10%, transparent);
+  border-color: color-mix(in srgb, var(--sail-on-topbar) 45%, transparent);
+  color: var(--sail-cyan);
+}
+
+.settingsButton:focus-visible {
+  outline: 2px solid var(--sail-cyan);
+  outline-offset: 2px;
+}

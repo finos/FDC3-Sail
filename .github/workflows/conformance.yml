@@ -1,0 +1,73 @@
+name: FDC3 Conformance
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *" # Nightly at 3 AM UTC
+  workflow_dispatch: # Allow manual triggering
+
+# Default: least privilege. This job only reads the repo and writes its own artifacts.
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [sail-one, sail-finance, sail-v2-web]
+        fdc3_version: ["2.2", "3.0"]
+    # Full suite ~5–7 minutes plus host/toolbox startup; ceiling covers hung agents.
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 #v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Only Chromium: the suite opens real popup windows so it does not run cross-browser.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Playwright webServer builds host deps; pre-build shared packages to fail fast.
+      - name: Build shared packages
+        run: |
+          if [ "${{ matrix.host }}" = "sail-v2-web" ]; then
+            npm run build -w @finos/sail-headless-agent
+            npm run build -w @finos/fdc3-sail-common
+          else
+            npm run build -w @finos/sail-headless-agent
+            npm run build -w @finos/sail-browser-agent
+            npm run build -w @finos/sail-platform
+          fi
+
+      # Matrix cell: product Desktop Agent × FDC3 version.
+      # Both 2.2 and 3.0 start @robmoffat/fdc3-conformance locally on :3001.
+      - name: Run ${{ matrix.host }} FDC3 ${{ matrix.fdc3_version }} conformance
+        run: >
+          CONFORMANCE_HOST=${{ matrix.host }}
+          CONFORMANCE_FDC3_VERSION=${{ matrix.fdc3_version }}
+          npm run test:browser -w @finos/sail-conformance-harness
+
+      - name: Upload conformance artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: conformance-${{ matrix.host }}-${{ matrix.fdc3_version }}
+          path: |
+            packages/sail-conformance-harness/artifacts/
+            packages/sail-conformance-harness/test-results/
+          retention-days: 30
+          if-no-files-found: warn

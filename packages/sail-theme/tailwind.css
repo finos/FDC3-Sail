@@ -1,0 +1,77 @@
+/* Tailwind v4 glue for Sail shells. Non-Tailwind consumers (docs site) should import ./tokens.css instead. */
+@import "./tokens.css";
+
+@theme inline {
+  /* Brand Colors for Tailwind */
+  --color-sail-primary: var(--sail-primary);
+  --color-sail-secondary: var(--sail-secondary);
+  --color-sail-accent: var(--sail-accent);
+  --color-sail-ocean: var(--sail-ocean);
+  --color-sail-wave: var(--sail-wave);
+
+  /* Brand Fonts */
+  --font-family-sail: var(--sail-font-family);
+  --font-family-sail-mono: var(--sail-font-mono);
+
+  /* Brand Shadows */
+  --box-shadow-sail: var(--sail-shadow-brand);
+  --box-shadow-sail-secondary: var(--sail-shadow-secondary);
+  --box-shadow-sail-ocean: var(--sail-shadow-ocean);
+}
+
+/* Brand Utility Classes */
+@layer utilities {
+  .font-sail {
+    font-family: var(--sail-font-family);
+  }
+
+  .font-sail-mono {
+    font-family: var(--sail-font-mono);
+  }
+
+  .font-sail-logo {
+    font-family: var(--sail-font-logo);
+  }
+
+  .bg-gradient-sail {
+    background-image: var(--sail-gradient-primary);
+  }
+
+  .bg-gradient-sail-secondary {
+    background-image: var(--sail-gradient-secondary);
+  }
+
+  .bg-gradient-sail-wave {
+    background-image: var(--sail-gradient-wave);
+  }
+
+  .shadow-sail {
+    box-shadow: var(--sail-shadow-brand);
+  }
+
+  .shadow-sail-secondary {
+    box-shadow: var(--sail-shadow-secondary);
+  }
+
+  .shadow-sail-ocean {
+    box-shadow: var(--sail-shadow-ocean);
+  }
+
+  .transition-sail {
+    transition-duration: var(--sail-animation-duration);
+    transition-timing-function: var(--sail-animation-easing);
+  }
+
+  /* Layout utilities */
+  .h-sail-header {
+    height: var(--sail-header-height);
+  }
+
+  .w-sail-sidebar {
+    width: var(--sail-sidebar-width);
+  }
+
+  .w-sail-sidebar-collapsed {
+    width: var(--sail-sidebar-width-collapsed);
+  }
+}
