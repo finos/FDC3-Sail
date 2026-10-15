@@ -239,6 +239,7 @@ const InteropList = ({
       <div className={styles.addIntent}>Intents I Listen To:</div>
       {app.intents.map((e, i) => (
         <IntentItem
+          key={`${e.name}-${i}`}
           ei={e}
           update={(ei: EditableIntent | null) => {
             if (ei) {
