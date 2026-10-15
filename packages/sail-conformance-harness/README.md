@@ -4,7 +4,7 @@ Minimal React host for the [FDC3 conformance toolbox](https://fdc3.finos.org/too
 
 ## Documentation
 
-[finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview](https://finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview)
+[fdc3-sail.finos.org/docs/packages/conformance-harness/overview](https://fdc3-sail.finos.org/docs/packages/conformance-harness/overview)
 
 ## Fixtures and toolbox results
 

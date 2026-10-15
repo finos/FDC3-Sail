@@ -8,7 +8,7 @@ parses strings and exports one constant.
 
 ## Documentation
 
-[finos.github.io/FDC3-Sail/docs/packages/sail-env/overview](https://finos.github.io/FDC3-Sail/docs/packages/sail-env/overview)
+[fdc3-sail.finos.org/docs/packages/sail-env/overview](https://fdc3-sail.finos.org/docs/packages/sail-env/overview)
 
 ## What it exports
 

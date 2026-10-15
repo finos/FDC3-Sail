@@ -106,8 +106,8 @@ createWorkspaceStore({ storage: remote })
 
 | Topic | Link |
 |-------|------|
-| Package overview | [finos.github.io/FDC3-Sail/docs/packages/platform/overview](https://finos.github.io/FDC3-Sail/docs/packages/platform/overview) |
-| Desktop Agent integrator guide | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide) |
+| Package overview | [fdc3-sail.finos.org/docs/packages/platform/overview](https://fdc3-sail.finos.org/docs/packages/platform/overview) |
+| Desktop Agent integrator guide | [fdc3-sail.finos.org/docs/packages/browser-agent/integrator-guide](https://fdc3-sail.finos.org/docs/packages/browser-agent/integrator-guide) |
 
 ## License
 

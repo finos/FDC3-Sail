@@ -11,11 +11,10 @@ const config: Config = {
     v4: true,
   },
 
-  // Set the production url of your site here
-  url: "https://finos.github.io",
-  baseUrl: "/FDC3-Sail/",
+  // Canonical host (Netlify). Also available at https://fdc3-sail.netlify.app
+  url: "https://fdc3-sail.finos.org",
+  baseUrl: "/",
 
-  // GitHub pages deployment config
   organizationName: "finos",
   projectName: "FDC3-Sail",
 

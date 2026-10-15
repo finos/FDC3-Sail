@@ -4,7 +4,7 @@ Browser deployment of FDC3 Sail — React host for the Desktop Agent, workspace 
 
 ## Documentation
 
-[finos.github.io/FDC3-Sail/docs/packages/sail-finance/overview](https://finos.github.io/FDC3-Sail/docs/packages/sail-finance/overview)
+[fdc3-sail.finos.org/docs/packages/sail-finance/overview](https://fdc3-sail.finos.org/docs/packages/sail-finance/overview)
 
 ## Development
 

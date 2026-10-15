@@ -32,7 +32,7 @@ If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
 
 FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: `@finos/sail-browser-agent` owns WCP and `MessagePort` connections in the page, and hosts `@finos/sail-headless-agent` for FDC3 2.2 and 3.0 DACP behavior. Shells and `@finos/sail-platform` compose that agent into example workspaces.
 
-For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://finos.github.io/FDC3-Sail/docs/architecture/overview); this README does not repeat it.
+For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://fdc3-sail.finos.org/docs/architecture/overview); this README does not repeat it.
 
 ```mermaid
 graph BT
@@ -78,7 +78,7 @@ graph BT
 | [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance against product hosts |
 | [`packages/sail-v2-common`](packages/sail-v2-common/) / [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
 
-Full documentation, including per-package guides, lives at **[https://finos.github.io/FDC3-Sail/docs/](https://finos.github.io/FDC3-Sail/docs/)** (built from [`website/`](website/) via GitHub Pages).
+Full documentation, including per-package guides, lives at **[https://fdc3-sail.finos.org](https://fdc3-sail.finos.org)** (built from [`website/`](website/) via Netlify).
 
 ## Prerequisites
 
@@ -127,11 +127,11 @@ npm run test:browser:3.0 -w @finos/sail-conformance-harness
 
 (Playwright selects suite **All**, clicks **Run**, scrapes `#mocha` until Mocha ends.)
 
-See the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development) for the full command reference.
+See the [Development Guide](https://fdc3-sail.finos.org/docs/development) for the full command reference.
 
 ## Development
 
-Environment setup, build/test/lint/typecheck, quality gates, and publishing are documented in the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development), not in this README.
+Environment setup, build/test/lint/typecheck, quality gates, and publishing are documented in the [Development Guide](https://fdc3-sail.finos.org/docs/development), not in this README.
 
 Engine behavior for FDC3 2.2 and 3.0 is covered by Cucumber in `packages/sail-headless-agent` (`npm run test -w @finos/sail-headless-agent`).
 
@@ -165,7 +165,7 @@ FDC3 is an open standard; other desktop agents are listed on the [FDC3 website](
 5. Push to the branch (`git push origin feature/fooBar`)
 6. Create a new Pull Request
 
-See the [Development Guide](https://finos.github.io/FDC3-Sail/docs/development) for environment setup and the commands to run before opening a PR.
+See the [Development Guide](https://fdc3-sail.finos.org/docs/development) for environment setup and the commands to run before opening a PR.
 
 _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool (or [EasyCLA](https://github.com/finos/community/blob/master/governance/Software-Projects/EasyCLA.md)). Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
 

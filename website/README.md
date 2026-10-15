@@ -1,41 +1,31 @@
 # Website
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+Documentation site for FDC3 Sail, built with [Docusaurus](https://docusaurus.io/).
 
-## Installation
+**Production:** [https://fdc3-sail.finos.org](https://fdc3-sail.finos.org) (Netlify)
 
-```bash
-yarn
-```
+## Local development
 
-## Local Development
+From the monorepo root (preferred):
 
 ```bash
-yarn start
+npm run docs:dev
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+Or from this directory:
+
+```bash
+npm install   # from repo root once
+npm start
+```
+
+Opens at **http://localhost:3000/** (`baseUrl` is `/`).
 
 ## Build
 
 ```bash
-yarn build
+npm run docs:build   # from repo root
+# or: npm run build  # from this directory (runs inventory prebuild)
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Static output is in `build/`.

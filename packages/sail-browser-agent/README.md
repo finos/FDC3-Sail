@@ -12,11 +12,11 @@ Full documentation lives on the **FDC3 Sail docs site** (single source of truth)
 
 | Topic | Link |
 |-------|------|
-| Overview & quick start | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/overview](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/overview) |
-| **Integrator guide** (start here) | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide) |
-| Composition & diagrams | [finos.github.io/FDC3-Sail/docs/packages/browser-agent/composition](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/composition) |
-| Engine BDD inventory | [finos.github.io/FDC3-Sail/docs/packages/headless-agent/bdd](https://finos.github.io/FDC3-Sail/docs/packages/headless-agent/bdd) |
-| Conformance harness | [finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview](https://finos.github.io/FDC3-Sail/docs/packages/conformance-harness/overview) |
+| Overview & quick start | [fdc3-sail.finos.org/docs/packages/browser-agent/overview](https://fdc3-sail.finos.org/docs/packages/browser-agent/overview) |
+| **Integrator guide** (start here) | [fdc3-sail.finos.org/docs/packages/browser-agent/integrator-guide](https://fdc3-sail.finos.org/docs/packages/browser-agent/integrator-guide) |
+| Composition & diagrams | [fdc3-sail.finos.org/docs/packages/browser-agent/composition](https://fdc3-sail.finos.org/docs/packages/browser-agent/composition) |
+| Engine BDD inventory | [fdc3-sail.finos.org/docs/packages/headless-agent/bdd](https://fdc3-sail.finos.org/docs/packages/headless-agent/bdd) |
+| Conformance harness | [fdc3-sail.finos.org/docs/packages/conformance-harness/overview](https://fdc3-sail.finos.org/docs/packages/conformance-harness/overview) |
 
 ## Install
 
@@ -42,7 +42,7 @@ Inbound messages are validated against the FDC3 schema. The default `validation:
 logs failures and dispatches anyway; use `"strict"` to reject malformed messages, or
 `"off"` to skip the check.
 
-See the [integrator guide](https://finos.github.io/FDC3-Sail/docs/packages/browser-agent/integrator-guide) for host contracts, intent resolution, channel chrome, and browser-first adoption.
+See the [integrator guide](https://fdc3-sail.finos.org/docs/packages/browser-agent/integrator-guide) for host contracts, intent resolution, channel chrome, and browser-first adoption.
 
 ## License
 

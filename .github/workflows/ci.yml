@@ -50,9 +50,6 @@ jobs:
       - name: Knip (unused files, exports and dependencies)
         run: npm run knip -- --no-exit-code
 
-      - name: Docs conformance inventory
-        run: npm run conformance:inventory:check -w @finos/sail-docs
-
       - name: Build docs site
         run: npm run docs:build
 
