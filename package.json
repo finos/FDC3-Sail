@@ -67,7 +67,7 @@
     "@types/react-dom": "^19.1.x",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/ui": "^4.0.18",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.6",
     "knip": "^5.82.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",

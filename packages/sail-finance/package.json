@@ -58,8 +58,8 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "@testing-library/react": "^16.3.0",
+    "@playwright/test": "^1.64.1",
+    "@testing-library/react": "^16.3.3",
     "jsdom": "^26.1.0"
   }
 }
