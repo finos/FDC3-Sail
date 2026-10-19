@@ -1,6 +1,6 @@
 {
   "name": "@finos/sail-platform",
-  "version": "0.0.1",
+  "version": "3.0.0-beta.1",
   "type": "module",
   "description": "Workspaces, layouts and storage for FDC3 Sail hosts - UI-agnostic, zero dependencies",
   "license": "Apache-2.0",
@@ -12,7 +12,8 @@
     "README.md"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",

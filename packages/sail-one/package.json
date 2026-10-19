@@ -1,8 +1,12 @@
 {
   "name": "@finos/sail-one",
-  "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0-beta.1",
   "type": "module",
+  "description": "Minimal FDC3 Sail host shell (gridstack workspace)",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "scripts": {
     "clean": "rimraf dist",
     "build": "vp build",
@@ -38,9 +42,9 @@
     "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0-beta.1",
     "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0-beta.1",
     "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0-beta.1",
-    "@finos/sail-browser-agent": "*",
-    "@finos/sail-env": "*",
-    "@finos/sail-platform": "*",
+    "@finos/sail-browser-agent": "3.0.0-beta.1",
+    "@finos/sail-env": "3.0.0-beta.1",
+    "@finos/sail-platform": "3.0.0-beta.1",
     "color": "^5.0.0",
     "gridstack": "^12.6.0",
     "lucide-react": "^0.542.0",
@@ -51,5 +55,9 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
   }
 }

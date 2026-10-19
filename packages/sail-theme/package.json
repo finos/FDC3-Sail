@@ -1,8 +1,11 @@
 {
   "name": "@finos/sail-theme",
-  "version": "0.0.1",
-  "private": true,
+  "version": "3.0.0-beta.1",
   "description": "Sail brand design tokens and assets: framework-agnostic CSS custom properties, logos and fonts. Consumed by the shells and the docs site.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "type": "module",
   "exports": {
     "./tokens.css": "./tokens.css",
@@ -18,5 +21,12 @@
   ],
   "sideEffects": [
     "*.css"
-  ]
+  ],
+  "scripts": {
+    "build": "node -e \"process.exit(0)\""
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  }
 }

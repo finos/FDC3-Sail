@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@finos/sail-finance", "@finos/sail-conformance-harness", "@finos/sail-docs"]
+  "ignore": ["@finos/sail-conformance-harness", "@finos/sail-docs"]
 }

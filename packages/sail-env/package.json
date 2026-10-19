@@ -1,8 +1,11 @@
 {
   "name": "@finos/sail-env",
-  "version": "0.0.0",
-  "private": true,
+  "version": "3.0.0-beta.1",
   "description": "Shared Sail host URL query and Vite env helpers (appId, fdc3Directory, auto-resolve, SAIL_MAX_FDC3_VERSION).",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,5 +32,9 @@
   "devDependencies": {
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
   }
 }

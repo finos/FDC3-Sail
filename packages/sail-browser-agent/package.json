@@ -1,6 +1,6 @@
 {
   "name": "@finos/sail-browser-agent",
-  "version": "3.0.0-pre.1.0",
+  "version": "3.0.0-beta.1",
   "type": "module",
   "description": "FDC3 browser Desktop Agent for Sail",
   "main": "./dist/index.mjs",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
     "@finos/fdc3-schema": "^2.2.1-beta.3",
-    "@finos/sail-headless-agent": "*"
+    "@finos/sail-headless-agent": "3.0.0-beta.1"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -47,6 +47,7 @@
     "README.md"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   }
 }

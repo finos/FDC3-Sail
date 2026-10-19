@@ -1,8 +1,12 @@
 {
   "name": "@finos/sail-finance",
-  "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0-beta.1",
   "type": "module",
+  "description": "Finance-oriented FDC3 Sail host shell (Dockview workspace)",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "scripts": {
     "build": "vp build",
     "predev": "npm run build -w @finos/sail-env -w @finos/sail-browser-agent -w @finos/sail-platform",
@@ -24,11 +28,21 @@
     "typecheck": "tsc",
     "validate": "npm run typecheck && npm run lint && npm run format"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@finos/fdc3": "^2.2.3",
-    "@finos/sail-browser-agent": "*",
-    "@finos/sail-env": "*",
-    "@finos/sail-platform": "*",
+    "@finos/sail-browser-agent": "3.0.0-beta.1",
+    "@finos/sail-env": "3.0.0-beta.1",
+    "@finos/sail-platform": "3.0.0-beta.1",
+    "@finos/sail-theme": "3.0.0-beta.1",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/vite": "^4.1.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -41,14 +55,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.0.0",
     "tw-animate-css": "^1.3.7",
-    "zustand": "^5.0.0",
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-dropdown-menu": "^2.1.16",
-    "@radix-ui/react-popover": "^1.1.15",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-tooltip": "^1.2.8",
-    "@finos/sail-theme": "*"
+    "zustand": "^5.0.0"
   },
   "peerDependencies": {
     "dockview-react": "^4.7.0",
@@ -61,5 +68,9 @@
     "@playwright/test": "^1.62.1",
     "@testing-library/react": "^16.3.0",
     "jsdom": "^26.1.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
   }
 }
