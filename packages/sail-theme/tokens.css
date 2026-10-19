@@ -1,0 +1,61 @@
+/* Sail Brand Design System */
+
+:root {
+  /* Brand Colors */
+  --sail-primary: oklch(0.25 0.02 256); /* Dark grey primary */
+  --sail-secondary: oklch(0.85 0.1 198); /* Your cyan #2ecffd */
+  --sail-accent: oklch(0.98 0.005 106); /* Crisp white accent */
+  --sail-ocean: oklch(0.45 0.08 220); /* Deep ocean blue */
+  --sail-wave: oklch(0.75 0.12 200); /* Light wave blue */
+  --sail-ocean-deep: #0c2d42; /* Deep ocean — dark surfaces (navbar, footer, hero) */
+  --sail-navy: #0a1f2e; /* Darkest brand navy — dark-mode page background */
+
+  /* Brand Typography */
+  --sail-font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --sail-font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  --sail-font-logo: "Lato", system-ui, -apple-system, sans-serif;
+
+  /* Brand Sizing */
+  --sail-header-height: 3.5rem;
+  --sail-sidebar-width: 16rem;
+  --sail-sidebar-width-collapsed: 3rem;
+
+  /* Brand Shadows */
+  --sail-shadow-brand:
+    0 4px 6px -1px oklch(0.25 0.02 256 / 0.15), 0 2px 4px -1px oklch(0.25 0.02 256 / 0.08);
+  --sail-shadow-secondary:
+    0 4px 6px -1px oklch(0.85 0.1 198 / 0.2), 0 2px 4px -1px oklch(0.85 0.1 198 / 0.1);
+  --sail-shadow-ocean:
+    0 10px 15px -3px oklch(0.45 0.08 220 / 0.15), 0 4px 6px -2px oklch(0.45 0.08 220 / 0.08);
+
+  /* Brand Gradients */
+  --sail-gradient-primary: linear-gradient(135deg, var(--sail-primary) 0%, var(--sail-ocean) 100%);
+  --sail-gradient-secondary: linear-gradient(
+    135deg,
+    var(--sail-secondary) 0%,
+    var(--sail-wave) 100%
+  );
+  --sail-gradient-wave: linear-gradient(90deg, var(--sail-wave) 0%, var(--sail-secondary) 100%);
+
+  /* Brand Animations */
+  --sail-animation-duration: 200ms;
+  --sail-animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark,
+[data-theme="dark"] {
+  /* Brand Colors - Dark Mode Variants */
+  --sail-primary: oklch(0.85 0.02 256); /* Light grey for dark mode */
+  --sail-secondary: oklch(0.8 0.12 195); /* Brighter cyan for dark mode */
+  --sail-accent: oklch(0.08 0.01 256); /* Very dark accent for contrast */
+  --sail-ocean: oklch(0.55 0.1 215); /* Lighter ocean for dark mode */
+  --sail-wave: oklch(0.7 0.15 195); /* Vibrant wave for dark mode */
+
+  /* Brand Shadows - Dark Mode */
+  --sail-shadow-brand: 0 4px 6px -1px oklch(0 0 0 / 0.4), 0 2px 4px -1px oklch(0 0 0 / 0.25);
+  --sail-shadow-secondary:
+    0 4px 6px -1px oklch(0.8 0.12 195 / 0.3), 0 2px 4px -1px oklch(0.8 0.12 195 / 0.15);
+  --sail-shadow-ocean: 0 10px 15px -3px oklch(0 0 0 / 0.5), 0 4px 6px -2px oklch(0 0 0 / 0.3);
+}
+
+/* Tailwind Integration */

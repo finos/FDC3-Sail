@@ -1,0 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Lato:wght@300&family=Quicksand:wght@300..700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+/* 
+  Import the UI library's base styles, which include
+  CSS variables (@theme) and base layer styles (@layer).
+*/
+@import "./shadcn-theme.css";
+/* 
+  Tell Tailwind where to scan for classes.
+  This is crucial for a monorepo setup.
+  NOTE: We must use relative paths here because the Tailwind compiler
+  processes @source and @import before Vite's path aliases are applied.
+*/
+@source "./**/*.{js,ts,jsx,tsx}";

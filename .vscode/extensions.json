@@ -1,7 +1,9 @@
 {
   "recommendations": [
-    "arcanis.vscode-zipfs",
     "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "bradlc.vscode-tailwindcss",
+    "VoidZero.vite-plus-extension-pack"
   ]
 }
