@@ -1,0 +1,101 @@
+.host {
+  /* Light-DOM iframe host; dialog chrome lives in the shadow root. */
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+}
+
+.iframeParked {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  left: -9999px;
+  top: -9999px;
+  border: none;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.iframeOpen {
+  /* Sized via ::slotted in the shadow dialog; keep light-DOM overrides minimal. */
+  border: none;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #00000055;
+  pointer-events: auto;
+}
+
+.dialogInner {
+  position: fixed;
+  top: 10%;
+  bottom: 10%;
+  left: 10%;
+  right: 10%;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 0 30px #000000aa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: auto;
+}
+
+.dialogTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dialogTitleText {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  font-family: "DM Sans", sans-serif;
+}
+
+.dialogClose {
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.dialogBody {
+  flex-grow: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+
+.dialogBody ::slotted(iframe) {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.daPending {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9ca3af;
+}
+
+.daPendingIcon {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+}

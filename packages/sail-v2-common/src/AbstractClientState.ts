@@ -1,4 +1,8 @@
-import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
+import {
+  DirectoryApp,
+  WebAppDetails,
+  sailHostManifestFromApp,
+} from "@finos/sail-headless-agent"
 import { AppPanel, ClientState, IntentResolution } from "./ClientState"
 import {
   ContextHistory,
@@ -52,7 +56,7 @@ export abstract class AbstractClientState implements ClientState {
 
   /** Tabs */
   getActiveTab(): TabDetail {
-    const out = this.tabs.find(t => t.id == this.activeTabId)
+    const out = this.tabs.find((t) => t.id == this.activeTabId)
     if (!out) {
       this.activeTabId = this.tabs[0].id
       this.saveState().catch(() => {
@@ -78,12 +82,12 @@ export abstract class AbstractClientState implements ClientState {
   }
 
   async removeTab(id: string): Promise<void> {
-    this.tabs = this.tabs.filter(t => t.id != id)
+    this.tabs = this.tabs.filter((t) => t.id != id)
     await this.saveState()
   }
 
   async updateTab(td: TabDetail): Promise<void> {
-    const idx = this.tabs.findIndex(t => t.id == td.id)
+    const idx = this.tabs.findIndex((t) => t.id == td.id)
     if (idx != -1) {
       this.tabs[idx] = td
     }
@@ -91,7 +95,7 @@ export abstract class AbstractClientState implements ClientState {
   }
 
   async moveTab(id: string, delta: "up" | "down"): Promise<void> {
-    const idx = this.tabs.findIndex(t => t.id == id)
+    const idx = this.tabs.findIndex((t) => t.id == id)
     if (idx != -1) {
       if (delta == "up" && idx > 0) {
         const temp = this.tabs[idx - 1]
@@ -110,7 +114,7 @@ export abstract class AbstractClientState implements ClientState {
   /** Panels */
   async updatePanel(ap: AppPanel): Promise<void> {
     // console.log("Panels " + JSON.stringify(this.panels))
-    const idx = this.panels.findIndex(p => p.panelId == ap.panelId)
+    const idx = this.panels.findIndex((p) => p.panelId == ap.panelId)
     if (idx != -1) {
       this.panels[idx] = ap
     } else {
@@ -123,13 +127,14 @@ export abstract class AbstractClientState implements ClientState {
   }
 
   async removePanel(id: string): Promise<void> {
-    this.panels = this.panels.filter(p => p.panelId != id)
+    this.panels = this.panels.filter((p) => p.panelId != id)
     await this.saveState()
   }
 
   newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel {
     if (detail.type == "web") {
       const url = (detail.details as WebAppDetails).url
+      const manifest = sailHostManifestFromApp(detail)
 
       const ap: AppPanel = {
         x: -1,
@@ -142,6 +147,9 @@ export abstract class AbstractClientState implements ClientState {
         url,
         appId: detail.appId,
         icon: detail.icons?.[0]?.src ?? null,
+        invisible: manifest.invisible,
+        singleton: manifest.singleton,
+        dialogOpen: false,
       }
 
       this.panels.push(ap)
@@ -176,7 +184,7 @@ export abstract class AbstractClientState implements ClientState {
   }
 
   async updateDirectory(din: Directory) {
-    const idx = this.directories.findIndex(d => d.url == din.url)
+    const idx = this.directories.findIndex((d) => d.url == din.url)
     if (idx > -1) {
       this.directories[idx] = din
     } else {
@@ -189,7 +197,7 @@ export abstract class AbstractClientState implements ClientState {
   createArgs(): SailClientStateArgs {
     return {
       userSessionId: this.userSessionId,
-      directories: this.directories.filter(d => d.active).map(d => d.url),
+      directories: this.directories.filter((d) => d.active).map((d) => d.url),
       channels: this.tabs,
       panels: this.panels,
       customApps: this.customApps,
@@ -262,7 +270,7 @@ export abstract class AbstractClientState implements ClientState {
   }
 
   getWscpPairing(appId: string): WscpPairing | undefined {
-    return this.wscpPairings.find(p => p.appId === appId)
+    return this.wscpPairings.find((p) => p.appId === appId)
   }
 
   async mintWscpPairing(appId: string): Promise<WscpPairing> {
@@ -286,7 +294,10 @@ export abstract class AbstractClientState implements ClientState {
       sharedSecret: uuidv4(),
       instanceId: null,
     }
-    this.wscpPairings = [...this.wscpPairings.filter(p => p.appId !== appId), pairing]
+    this.wscpPairings = [
+      ...this.wscpPairings.filter((p) => p.appId !== appId),
+      pairing,
+    ]
     await this.saveState()
     return pairing
   }
@@ -297,7 +308,7 @@ export abstract class AbstractClientState implements ClientState {
     instanceId: string,
   ): Promise<void> {
     const idx = this.wscpPairings.findIndex(
-      p => p.appId === appId && p.sharedSecret === sharedSecret,
+      (p) => p.appId === appId && p.sharedSecret === sharedSecret,
     )
     if (idx === -1) {
       return
@@ -305,7 +316,9 @@ export abstract class AbstractClientState implements ClientState {
     if (this.wscpPairings[idx].instanceId === instanceId) {
       return
     }
-    this.wscpPairings = this.wscpPairings.map((p, i) => (i === idx ? { ...p, instanceId } : p))
+    this.wscpPairings = this.wscpPairings.map((p, i) =>
+      i === idx ? { ...p, instanceId } : p,
+    )
     await this.saveState()
   }
 }

@@ -68,20 +68,24 @@ export class ServerStateImpl implements ServerState {
     hosting: AppHosting,
     channel: string | null,
     instanceTitle: string,
+    instanceId?: string,
   ): Promise<string> {
     if (!this.socket) {
       throw new Error("Desktop Agent not registered")
     }
 
     const userSessionId = this.cs!.getUserSessionID()
-    const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, {
+    const args: DesktopAgentRegisterAppLaunchArgs = {
       userSessionId,
       appId,
       hosting,
       channel,
       instanceTitle,
-    } as DesktopAgentRegisterAppLaunchArgs)
-    return instanceId
+    }
+    if (instanceId) {
+      args.instanceId = instanceId
+    }
+    return (await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, args)) as string
   }
 
   async reportAppWindowClosed(instanceId: string): Promise<void> {

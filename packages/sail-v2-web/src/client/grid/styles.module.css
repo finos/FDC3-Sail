@@ -68,6 +68,21 @@
   background-color: white;
 }
 
+.daPending {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9ca3af;
+}
+
+.daPendingIcon {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+}
+
 /** Title Bar **/
 
 .contentTitleText {

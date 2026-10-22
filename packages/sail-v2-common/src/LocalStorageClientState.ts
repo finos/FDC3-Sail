@@ -26,7 +26,7 @@ export class LocalStorageClientState extends AbstractClientState {
       } = JSON.parse(theState)
       super(
         tabs,
-        panels,
+        (panels as AppPanel[] | undefined) ?? [],
         activeTabId,
         userSessionId,
         splashScreenVisible ?? true,

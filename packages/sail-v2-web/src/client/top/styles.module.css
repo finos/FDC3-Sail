@@ -47,6 +47,61 @@
 
 .settingsControl {
   height: 1.3rem;
+  cursor: pointer;
+}
+
+.invisibleApps {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.invisibleAppIcon,
+.invisibleAppIconActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid #777;
+  border-radius: 0.35rem;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.invisibleAppIconActive {
+  border-color: #123456;
+  background: #e8eef5;
+}
+
+.invisibleAppIconPending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid #9ca3af;
+  border-radius: 0.35rem;
+  background: #9ca3af;
+  cursor: pointer;
+}
+
+.invisibleAppImg {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+.invisibleAppFallback {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "DM Sans", sans-serif;
 }
 
 .contextHistoryClosed {
@@ -54,8 +109,11 @@
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
-  flex-basis: 20rem;
+  justify-content: flex-end;
+  flex-basis: auto;
+  max-width: 20rem;
+  min-width: 0;
+  cursor: pointer;
 }
 
 .contextHistoryItem {

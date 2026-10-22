@@ -22,6 +22,12 @@ export type AppPanel = GridStackPosition & {
   panelId: string // the instanceId of the app
   appId: string
   icon: string | null
+  /** From hostManifests.sail.invisible — hosted off-grid; shown via dialog. */
+  invisible?: boolean
+  /** From hostManifests.sail.singleton — at most one instance per appId. */
+  singleton?: boolean
+  /** Whether the invisible app dialog is currently projecting this panel. */
+  dialogOpen?: boolean
 }
 
 export interface IntentResolution {
