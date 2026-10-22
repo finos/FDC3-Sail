@@ -5,7 +5,8 @@
   "scripts": {
     "clean": "npx rimraf dist",
     "prebuild": "npm run build -w @finos/sail-env --prefix ../..",
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

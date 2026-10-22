@@ -2,8 +2,14 @@ import { Component } from "react"
 import styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
-import { AppState, getAppState, AppPanel, ClientState } from "@finos/fdc3-sail-common"
+import {
+  AppState,
+  getAppState,
+  AppPanel,
+  ClientState,
+} from "@finos/fdc3-sail-common"
 import { State } from "@finos/sail-headless-agent"
+import { DaPendingPlaceholder } from "../pending/pending"
 //import { AppHosting } from "@finos/fdc3-sail-common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
@@ -18,17 +24,25 @@ export class Grids extends Component<GridsProps> {
   }
 
   render() {
+    const daReady = this.props.as.isDesktopAgentReady()
+    const visiblePanels = this.props.cs.getPanels().filter((p) => !p.invisible)
     return (
       <div className={styles.grids} id={this.props.id}>
-        {this.props.cs.getPanels().map(p => (
-          <AppFrame key={p.panelId} panel={p} />
-        ))}
+        {daReady
+          ? visiblePanels.map((p) => <AppFrame key={p.panelId} panel={p} />)
+          : null}
       </div>
     )
   }
 }
 
-const AppFrame = ({ panel }: { panel: AppPanel }) => {
+export const AppFrame = ({
+  panel,
+  className,
+}: {
+  panel: AppPanel
+  className?: string
+}) => {
   const registerWindow = (iframe: HTMLIFrameElement | null) => {
     const contentWindow = iframe?.contentWindow
     if (contentWindow) {
@@ -42,11 +56,11 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
       id={"iframe_" + panel.panelId}
       name={panel.panelId}
       slot={"slot_" + panel.panelId}
-      className={styles.iframe}
-      onLoad={e => {
+      className={className ?? styles.iframe}
+      onLoad={(e) => {
         registerWindow(e.currentTarget)
       }}
-      ref={ref => {
+      ref={(ref) => {
         // Register ASAP for WCP1Hello; onLoad re-registers after navigation.
         setTimeout(() => {
           registerWindow(ref)
@@ -56,10 +70,19 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
   )
 }
 
-const AppStateIcon = ({ instanceId, as }: { instanceId: string; as: AppState }) => {
+const AppStateIcon = ({
+  instanceId,
+  as,
+}: {
+  instanceId: string
+  as: AppState
+}) => {
   const D = "/icons/app-state/"
 
   function symbolForState(s: State | undefined): string[] {
+    if (!as.isDesktopAgentReady()) {
+      return [D + "pending.svg", "Waiting for Desktop Agent"]
+    }
     if (s == undefined) {
       return [D + "unknown.svg", "Unknown"]
     } else {
@@ -68,7 +91,9 @@ const AppStateIcon = ({ instanceId, as }: { instanceId: string; as: AppState }) 
           return [D + "not-responding.svg", "Not Responding"]
         case State.Connected: {
           const version = as.getFdc3Version(instanceId)
-          const label = version ? `Connected to FDC3 ${version}` : "Connected to FDC3"
+          const label = version
+            ? `Connected to FDC3 ${version}`
+            : "Connected to FDC3"
           return [D + "connected.svg", label]
         }
         case State.Pending:
@@ -81,7 +106,9 @@ const AppStateIcon = ({ instanceId, as }: { instanceId: string; as: AppState }) 
 
   const state = symbolForState(as.getAppState(instanceId))
 
-  return <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
+  return (
+    <img src={state[0]} className={styles.contentTitleIcon} title={state[1]} />
+  )
 }
 
 const CloseIcon = ({ action }: { action: () => void }) => {
@@ -139,7 +166,16 @@ export const Content = ({
           /> */}
         </div>
         <div className={styles.resizeBaffle} />
-        <div className={styles.contentBody}>{panel.url ? <AppSlot panel={panel} /> : <div />}</div>
+        <div className={styles.contentBody}>
+          {as.isDesktopAgentReady() && panel.url ? (
+            <AppSlot panel={panel} />
+          ) : (
+            <DaPendingPlaceholder
+              className={styles.daPending}
+              iconClassName={styles.daPendingIcon}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

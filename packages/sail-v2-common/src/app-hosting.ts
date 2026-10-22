@@ -4,6 +4,13 @@ export enum AppHosting {
   Remote,
 }
 
-export interface SailHostManifest {
-  forceNewWindow: boolean
-}
+export type {
+  SailHostManifest,
+  ResolvedSailHostManifest,
+} from "@finos/sail-headless-agent"
+
+export {
+  SAIL_HOST_MANIFEST_DEFAULTS,
+  parseSailHostManifest,
+  sailHostManifestFromApp,
+} from "@finos/sail-headless-agent"

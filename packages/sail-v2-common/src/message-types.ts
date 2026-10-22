@@ -76,6 +76,8 @@ export type DesktopAgentRegisterAppLaunchArgs = {
   hosting: AppHosting
   channel: string | null
   instanceTitle: string
+  /** When restoring a persisted panel, reuse its instance id. */
+  instanceId?: string
 }
 
 /**
@@ -153,6 +155,8 @@ export type SailAppOpenArgs = {
 export type SailAppOpenResponse = {
   instanceId: string
   instanceTitle: string
+  /** User-channel id the host opened into (active tab for Frame; null for Tab). */
+  channel: string | null
 }
 
 /**

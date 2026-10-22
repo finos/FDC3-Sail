@@ -21,7 +21,7 @@ export function handleRegisterAppLaunch(
   const { appId, userSessionId } = props
   const session = factory.getSession(userSessionId)
   if (session) {
-    const instanceId = "sail-app-" + uuid()
+    const instanceId = props.instanceId || "sail-app-" + uuid()
     session.setInstanceDetails(instanceId, {
       instanceId: instanceId,
       state: State.Pending,
