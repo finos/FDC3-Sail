@@ -6,7 +6,7 @@ import {
   WscpApplicationConnect,
   WscpConnectFailed,
   WscpDesktopAgentConnect,
-} from "@finos/fdc3-sail-common"
+} from "../../../common"
 import { State } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 import { WebSocketConnection } from "../connection"
