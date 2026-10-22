@@ -1,10 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": { "correctness": "off" },
-  "ignorePatterns": [
-    "packages/sail-headless-agent/**",
-    "packages/sail-v2-web/**"
-  ],
+  "ignorePatterns": ["packages/sail-headless-agent/**", "packages/sail-v2-web/**"],
   "overrides": [
     {
       "files": ["packages/sail-browser-agent/**"],
@@ -37,6 +34,29 @@
               {
                 "group": ["@finos/sail-one", "**/sail-one/**"],
                 "message": "Shells must not import each other. Share via @finos/sail-theme or the platform, never shell-to-shell."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/sail-extension/**", "packages/sail-extension-server/**", "extensions/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@finos/sail-one",
+                  "@finos/sail-finance",
+                  "@finos/fdc3-sail-web",
+                  "**/sail-one/**",
+                  "**/sail-finance/**",
+                  "**/sail-v2-web/**"
+                ],
+                "message": "Extensions must not import a Sail shell. Share via @finos/sail-extension."
               }
             ]
           }

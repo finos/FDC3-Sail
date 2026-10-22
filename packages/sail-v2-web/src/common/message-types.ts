@@ -42,6 +42,8 @@ export type DesktopAgentHelloArgs = {
   customApps: DirectoryApp[]
   contextHistory: ContextHistory
   wscpPairings: WscpPairing[]
+  /** Per-extension persisted bags, keyed by extension id. */
+  extensionData: Record<string, Record<string, unknown>>
 }
 
 /**

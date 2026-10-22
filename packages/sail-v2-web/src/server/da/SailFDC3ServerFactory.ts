@@ -1,4 +1,5 @@
 import { DesktopAgentHelloArgs, TabDetail } from "../../common"
+import type { SailExtension } from "@finos/sail-extension"
 import {
   ChannelType,
   ChannelState,
@@ -12,7 +13,9 @@ import {
   OpenHandlerV3,
   LogFunction,
   HandlersByVersion,
+  type FDC3ServerInstance,
 } from "@finos/sail-headless-agent"
+import { createSessionExtensionStorage, type SessionExtensionData } from "./extension-storage"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { SailDirectory } from "../appd/SailDirectory"
 import { SocketIOConnection } from "./connection"
@@ -51,12 +54,16 @@ export function mapChannels(channels: TabDetail[]): ChannelState[] {
 export class SailFDC3ServerFactory {
   protected readonly handlersByVersion: HandlersByVersion
   protected readonly sessions: Map<string, SailFDC3ServerInstance> = new Map()
+  protected readonly extensions: SailExtension[]
+  protected readonly sessionExtensionData = new Map<string, SessionExtensionData>()
 
   constructor(
     heartbeats: boolean,
     intentTimeoutMs: number = 20000,
     openHandlerTimeoutMs: number = 10000,
+    extensions: SailExtension[] = [],
   ) {
+    this.extensions = extensions
     const v2: MessageHandler[] = [
       new BroadcastHandlerV2(createHandlerLog("BroadcastHandlerV2")),
       new IntentHandlerV2(intentTimeoutMs, createHandlerLog("IntentHandlerV2")),
@@ -92,8 +99,21 @@ export class SailFDC3ServerFactory {
     const out = new SailFDC3ServerInstance(d, connection, this.handlersByVersion, channels)
     await out.reloadAppDirectories(args.directories, args.customApps)
     out.setWscpPairings(args.wscpPairings ?? [])
-    this.sessions.set(args.userSessionId, out)
-    return out
+    const holder: SessionExtensionData = { data: args.extensionData ?? {} }
+    this.sessionExtensionData.set(args.userSessionId, holder)
+    const wrapped = this.extensions.reduce((inst, ext) => {
+      const storage = createSessionExtensionStorage(holder, ext.id)
+      return ext.wrapServer?.(inst, { storage }) ?? inst
+    }, out as FDC3ServerInstance)
+    this.sessions.set(args.userSessionId, wrapped as SailFDC3ServerInstance)
+    return wrapped as SailFDC3ServerInstance
+  }
+
+  setSessionExtensionData(sessionId: string, data: Record<string, Record<string, unknown>>): void {
+    const holder = this.sessionExtensionData.get(sessionId)
+    if (holder) {
+      holder.data = data
+    }
   }
 
   getSessionCount(): number {
@@ -106,6 +126,7 @@ export class SailFDC3ServerFactory {
       i.shutdown()
     }
     this.sessions.delete(s)
+    this.sessionExtensionData.delete(s)
   }
 
   async shutdownInstances(): Promise<void> {

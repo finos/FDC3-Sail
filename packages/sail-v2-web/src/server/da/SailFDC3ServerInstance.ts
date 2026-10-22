@@ -123,11 +123,11 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     const instance = this.instances.find((i) => i.instanceId == instanceId)
     if (instance) {
       if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
-        this.log("Posting message to app: " + JSON.stringify(message))
+        log.debug("Posting message to app: " + JSON.stringify(message))
       }
       instance.connection?.emit(FDC3_DA_EVENT, message)
     } else {
-      this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
+      log.debug(`Can't find app: ${JSON.stringify(instanceId)}`)
     }
     return Promise.resolve()
   }
@@ -316,7 +316,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   log(message: string): void {
-    log.debug(message)
+    log.info(message)
   }
 
   provider(): string {

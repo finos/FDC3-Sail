@@ -23,6 +23,7 @@ export class LocalStorageClientState extends AbstractClientState {
         customApps,
         contextHistory,
         wscpPairings,
+        extensionData,
       } = JSON.parse(theState)
       super(
         tabs,
@@ -35,6 +36,7 @@ export class LocalStorageClientState extends AbstractClientState {
         customApps ?? [],
         contextHistory ?? {},
         (wscpPairings as WscpPairing[] | undefined) ?? [],
+        (extensionData as Record<string, Record<string, unknown>> | undefined) ?? {},
       )
     } else {
       super(
@@ -70,6 +72,7 @@ export class LocalStorageClientState extends AbstractClientState {
       customApps: this.customApps,
       contextHistory: this.contextHistory,
       wscpPairings: this.wscpPairings,
+      extensionData: this.extensionData,
     })
     localStorage.setItem(STORAGE_KEY, data)
     this.callbacks.forEach(cb => cb())

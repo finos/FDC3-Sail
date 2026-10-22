@@ -113,4 +113,8 @@ export interface ClientState {
     sharedSecret: string,
     instanceId: string,
   ): Promise<void>
+
+  /** Persisted bag for one extension. Empty object when the extension has not stored anything. */
+  getExtensionData(extensionId: string): Record<string, unknown>
+  setExtensionData(extensionId: string, data: Record<string, unknown>): Promise<void>
 }
