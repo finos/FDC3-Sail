@@ -7,10 +7,10 @@ import {
   getAppState,
   AppPanel,
   ClientState,
-} from "@finos/fdc3-sail-common"
+} from "../../common"
 import { State } from "@finos/sail-headless-agent"
 import { DaPendingPlaceholder } from "../pending/pending"
-//import { AppHosting } from "@finos/fdc3-sail-common"
+//import { AppHosting } from "../../common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 

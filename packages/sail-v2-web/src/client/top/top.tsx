@@ -1,5 +1,5 @@
 import { Context } from "@finos/fdc3-context-v3"
-import { AppPanel } from "@finos/fdc3-sail-common"
+import { AppPanel } from "../../common"
 import { DA_PENDING_ICON } from "../pending/pending"
 import styles from "./styles.module.css"
 

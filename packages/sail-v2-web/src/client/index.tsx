@@ -1,6 +1,6 @@
 import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
-import { AppHosting, getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
+import { AppHosting, getClientState, getAppState, getServerState } from "../common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
 import {
   resolveDeepLinkAppId,

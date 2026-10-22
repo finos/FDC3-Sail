@@ -1,5 +1,5 @@
 import { Component } from "react"
-import { AppPanel, AppState, ClientState } from "@finos/fdc3-sail-common"
+import { AppPanel, AppState, ClientState } from "../../common"
 import { AppFrame } from "../grid/grid"
 import { DA_PENDING_ICON } from "../pending/pending"
 import styles from "./styles.module.css"

@@ -1,4 +1,4 @@
-import { ChannelReceiverUpdate, ChannelReceiverHelloRequest } from "@finos/fdc3-sail-common"
+import { ChannelReceiverUpdate, ChannelReceiverHelloRequest } from "../../../common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { Connection } from "../connection/Connection"
 import { ConnectionContext, ConnectionType } from "./types"

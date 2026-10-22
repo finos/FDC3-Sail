@@ -17,7 +17,6 @@ export default defineConfig({
     alias: {
       react: reactRoot,
       "react-dom": reactDomRoot,
-      "@finos/fdc3-sail-common": path.resolve(packageRoot, "../sail-v2-common/src/index.ts"),
     },
   },
   optimizeDeps: {

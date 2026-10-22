@@ -5,11 +5,11 @@ import {
   getClientState,
   FDC3_WEBSOCKET_PROPERTY,
   WscpPairing,
-} from "@finos/fdc3-sail-common"
+} from "../../common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails, parseSailHostManifest } from "@finos/sail-headless-agent"
-import { AppHosting } from "@finos/fdc3-sail-common"
+import { AppHosting } from "../../common"
 import { AppMetadata, Image } from "@finos/fdc3-standard-v3"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

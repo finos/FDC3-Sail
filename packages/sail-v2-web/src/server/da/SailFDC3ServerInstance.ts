@@ -29,7 +29,7 @@ import {
   TabDetail,
   WscpPairing,
   sailHostManifestFromApp,
-} from "@finos/fdc3-sail-common"
+} from "../../common"
 import { BrowserTypes } from "@finos/fdc3-schema-v3"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard-v3"
 import { v4 as uuidv4 } from "uuid"

@@ -1,4 +1,4 @@
-import { getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { getClientState, getServerState } from "../../common"
 import styles from "./styles.module.css"
 import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"

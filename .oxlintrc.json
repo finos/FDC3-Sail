@@ -3,7 +3,6 @@
   "categories": { "correctness": "off" },
   "ignorePatterns": [
     "packages/sail-headless-agent/**",
-    "packages/sail-v2-common/**",
     "packages/sail-v2-web/**"
   ],
   "overrides": [

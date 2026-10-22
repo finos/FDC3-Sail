@@ -8,7 +8,7 @@ import {
   AppState,
   getServerState,
   AppPanel,
-} from "@finos/fdc3-sail-common"
+} from "../../common"
 import { Component } from "react"
 import { AppDPanel } from "../appd/appd"
 import { Content, Grids } from "../grid/grid"

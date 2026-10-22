@@ -1,4 +1,4 @@
-import { Directory, getClientState } from "@finos/fdc3-sail-common"
+import { Directory, getClientState } from "../../common"
 import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
 import { refreshKnownAppsAndAutostart } from "../autostart"

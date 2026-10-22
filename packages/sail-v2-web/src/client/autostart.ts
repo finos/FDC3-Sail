@@ -1,4 +1,4 @@
-import { getAppState, getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { getAppState, getClientState, getServerState } from "../common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
 
 /**
