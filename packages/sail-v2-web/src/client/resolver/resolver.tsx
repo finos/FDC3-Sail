@@ -3,7 +3,7 @@ import { Popup, PopupButton } from "../popups/popup"
 import { Context } from "@finos/fdc3-context-v3"
 import { AppIdentifier, Intent } from "@finos/fdc3-standard-v3"
 import { useState } from "react"
-import { AugmentedAppIntent, AugmentedAppMetadata, TabDetail } from "@finos/fdc3-sail-common"
+import { AugmentedAppIntent, AugmentedAppMetadata, TabDetail } from "../../common"
 import { selectHighestContrast } from "../../util/contrast"
 import { DEFAULT_ICON, getIcon } from "../appd/appd"
 

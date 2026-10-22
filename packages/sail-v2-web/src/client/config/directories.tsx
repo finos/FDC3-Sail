@@ -1,6 +1,7 @@
-import { Directory, getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { Directory, getClientState } from "../../common"
 import styles from "./styles.module.css"
 import { InlineButton } from "./shared"
+import { refreshKnownAppsAndAutostart } from "../autostart"
 
 function updateText(url: string, text: string) {
   const directories = getClientState().getDirectories()
@@ -27,7 +28,7 @@ function updateDirectories(directories: Directory[]) {
   getClientState()
     .setDirectories(directories)
     .then(async () => {
-      getClientState().setKnownApps(await getServerState().getApplications())
+      await refreshKnownAppsAndAutostart()
     })
 }
 

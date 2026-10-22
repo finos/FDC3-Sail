@@ -1,0 +1,54 @@
+{
+  "name": "@finos/sail-extension",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Isomorphic contract for Sail Desktop Agent extensions",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./ui": {
+      "types": "./dist/ui.d.mts",
+      "import": "./dist/ui.mjs",
+      "default": "./dist/ui.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "clean": "rimraf dist",
+    "typecheck": "tsc",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt .",
+    "validate": "npm run typecheck && npm run lint && npm run format"
+  },
+  "dependencies": {
+    "@finos/sail-headless-agent": "*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.10"
+  }
+}

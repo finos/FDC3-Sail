@@ -1,0 +1,27 @@
+{
+  "name": "@finos/sail-extension-server",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Local Vite host that serves Sail extension packages on port 9100",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": "github:finos/FDC3-Sail",
+  "bugs": "https://github.com/finos/FDC3-Sail/issues",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "clean": "rimraf dist",
+    "typecheck": "tsc",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt ."
+  },
+  "dependencies": {
+    "@finos/sail-extension": "*",
+    "vite": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

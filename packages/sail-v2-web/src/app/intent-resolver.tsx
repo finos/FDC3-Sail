@@ -6,7 +6,7 @@ import {
   isFdc3UserInterfaceHandshake,
   isFdc3UserInterfaceResolve,
 } from "@finos/fdc3-schema-v3/dist/generated/api/BrowserTypes"
-import { AugmentedAppIntent } from "@finos/fdc3-sail-common"
+import { AugmentedAppIntent } from "../common"
 import { channels, handleChannelUpdates, setAppChannel } from "./util"
 type IframeResolveAction = BrowserTypes.Fdc3UserInterfaceResolveAction
 type IframeResolvePayload = BrowserTypes.Fdc3UserInterfaceResolvePayload

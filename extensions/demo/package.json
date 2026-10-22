@@ -1,0 +1,29 @@
+{
+  "name": "@finos/sail-extension-demo",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Message Log",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ui": "./src/ui.tsx"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "clean": "rimraf dist",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@finos/sail-extension": "*",
+    "@finos/sail-headless-agent": "*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.x"
+  }
+}

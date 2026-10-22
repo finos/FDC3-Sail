@@ -28,7 +28,8 @@ import {
   SailIntentResolveResponse,
   TabDetail,
   WscpPairing,
-} from "@finos/fdc3-sail-common"
+  sailHostManifestFromApp,
+} from "../../common"
 import { BrowserTypes } from "@finos/fdc3-schema-v3"
 import { AppIdentifier, AppIntent, OpenError } from "@finos/fdc3-standard-v3"
 import { v4 as uuidv4 } from "uuid"
@@ -64,6 +65,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private readonly connection: SocketIOConnection
   private readonly channelState: ChannelState[] = []
   private readonly appStartDestinations: Map<string, string | null> = new Map()
+  /** Shared in-flight singleton opens keyed by appId. */
+  private readonly pendingSingletonLaunches = new Map<string, Promise<InstanceID>>()
   /** In-memory mirror of browser WSCP pairings (source of truth is LocalStorageClientState). */
   private wscpPairings: WscpPairing[] = []
 
@@ -112,11 +115,11 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     const instance = this.instances.find(i => i.instanceId == instanceId)
     if (instance) {
       if (!(message as { type?: string })?.type?.startsWith("heartbeat")) {
-        this.log("Posting message to app: " + JSON.stringify(message))
+        log.debug("Posting message to app: " + JSON.stringify(message))
       }
       instance.connection?.emit(FDC3_DA_EVENT, message)
     } else {
-      this.log(`Can't find app: ${JSON.stringify(instanceId)}`)
+      log.debug(`Can't find app: ${JSON.stringify(instanceId)}`)
     }
     return Promise.resolve()
   }
@@ -170,37 +173,69 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       throw new Error(OpenError.AppNotFound)
     }
 
-    const url = (app[0].details as { url?: string })?.url ?? undefined
-    if (url) {
-      const forceNewWindow = (app[0].hostManifests as { sail?: { forceNewWindow?: boolean } })?.sail
-        ?.forceNewWindow
-      const approach = forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+    const directoryApp = app[0]
+    const manifest = sailHostManifestFromApp(directoryApp)
 
-      const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
-        appDRecord: app[0],
-        approach,
-        channel,
-      } as SailAppOpenArgs)
-
-      this.setInstanceDetails(details.instanceId, {
-        appId,
-        instanceId: details.instanceId,
-        url,
-        state: State.Pending,
-        hosting: approach,
-        channel: channel ?? null,
-        instanceTitle: details.instanceTitle,
-        channelConnections: [],
-      })
-
-      if (channel) {
-        this.notifyUserChannelsChanged(details.instanceId, channel)
+    if (manifest.singleton) {
+      const existing = this.instances.find(i => i.appId === appId && i.state !== State.Terminated)
+      if (existing) {
+        return existing.instanceId
       }
-
-      return details.instanceId
+      const pending = this.pendingSingletonLaunches.get(appId)
+      if (pending) {
+        return pending
+      }
     }
 
-    throw new Error(OpenError.AppNotFound)
+    const url = (directoryApp.details as { url?: string })?.url ?? undefined
+    if (!url) {
+      throw new Error(OpenError.AppNotFound)
+    }
+
+    const launch = this.launchSailApp(directoryApp, appId, url, channel, manifest.forceNewWindow)
+    if (manifest.singleton) {
+      this.pendingSingletonLaunches.set(appId, launch)
+      void launch.finally(() => {
+        this.pendingSingletonLaunches.delete(appId)
+      })
+    }
+    return launch
+  }
+
+  private async launchSailApp(
+    directoryApp: DirectoryApp,
+    appId: string,
+    url: string,
+    channel: string | null,
+    forceNewWindow: boolean,
+  ): Promise<InstanceID> {
+    const approach = forceNewWindow ? AppHosting.Tab : AppHosting.Frame
+
+    const details: SailAppOpenResponse = await this.connection.emitWithAck(SAIL_APP_OPEN, {
+      appDRecord: directoryApp,
+      approach,
+      channel,
+    } as SailAppOpenArgs)
+
+    // Prefer the channel the host actually opened into (active tab for Frame).
+    const openedChannel = details.channel ?? channel ?? null
+
+    this.setInstanceDetails(details.instanceId, {
+      appId,
+      instanceId: details.instanceId,
+      url,
+      state: State.Pending,
+      hosting: approach,
+      channel: openedChannel,
+      instanceTitle: details.instanceTitle,
+      channelConnections: [],
+    })
+
+    if (openedChannel) {
+      this.notifyUserChannelsChanged(details.instanceId, openedChannel)
+    }
+
+    return details.instanceId
   }
 
   setInstanceDetails(uuid: InstanceID, details: SailData): void {
@@ -267,7 +302,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   log(message: string): void {
-    log.debug(message)
+    log.info(message)
   }
 
   provider(): string {
