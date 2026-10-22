@@ -25,7 +25,7 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
   }
 
   private invisiblePanels(): AppPanel[] {
-    return this.props.cs.getPanels().filter((p) => p.invisible)
+    return this.props.cs.getPanels().filter(p => p.invisible)
   }
 
   private syncShadowDialog(): void {
@@ -38,12 +38,12 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
     if (!shadow) {
       shadow = host.attachShadow({ mode: "open" })
       const pageStyles = Array.from(document.querySelectorAll("style"))
-      const links = Array.from(document.querySelectorAll("link")).filter((l) =>
+      const links = Array.from(document.querySelectorAll("link")).filter(l =>
         l.href.endsWith(".css"),
       )
       ;[...pageStyles, ...links]
-        .map((el) => el.cloneNode(true))
-        .forEach((el) => shadow!.appendChild(el))
+        .map(el => el.cloneNode(true))
+        .forEach(el => shadow!.appendChild(el))
       // ::slotted rules must live in the shadow tree
       const local = document.createElement("style")
       local.textContent = `
@@ -58,7 +58,7 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
       shadow.appendChild(local)
     }
 
-    const openPanel = this.invisiblePanels().find((p) => p.dialogOpen)
+    const openPanel = this.invisiblePanels().find(p => p.dialogOpen)
     let dialog = shadow.getElementById("invisible-dialog")
 
     if (!openPanel) {
@@ -75,7 +75,7 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
 
     dialog.innerHTML = ""
     dialog.className = styles.dialogBackdrop
-    dialog.onclick = (e) => {
+    dialog.onclick = e => {
       if (e.target === dialog) {
         void this.closeDialog(openPanel)
       }
@@ -83,7 +83,7 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
 
     const inner = document.createElement("div")
     inner.className = styles.dialogInner
-    inner.onclick = (e) => e.stopPropagation()
+    inner.onclick = e => e.stopPropagation()
 
     const titleBar = document.createElement("div")
     titleBar.className = styles.dialogTitle
@@ -128,12 +128,10 @@ export class InvisibleAppsHost extends Component<InvisibleAppsHostProps> {
   }
 
   render() {
-    const panels = this.props.as.isDesktopAgentReady()
-      ? this.invisiblePanels()
-      : []
+    const panels = this.props.as.isDesktopAgentReady() ? this.invisiblePanels() : []
     return (
       <div id={INVISIBLE_HOST_ID} className={styles.host}>
-        {panels.map((p) => (
+        {panels.map(p => (
           <AppFrame
             key={p.panelId}
             panel={p}

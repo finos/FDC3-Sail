@@ -61,8 +61,7 @@ export function handleAppHello(
         url: (directoryItem[0].details as WebAppDetails).url,
         hosting: shm.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
         channel: null,
-        instanceTitle:
-          directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++,
+        instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++,
         channelConnections: [],
       }
 
@@ -72,10 +71,7 @@ export function handleAppHello(
       return callback(instanceDetails.hosting)
     }
 
-    log.error(
-      { appInstanceId: ctx.appInstanceId },
-      "App tried to connect with invalid instance id",
-    )
+    log.error({ appInstanceId: ctx.appInstanceId }, "App tried to connect with invalid instance id")
     return callback(null, "Invalid instance id")
   } else {
     log.error(

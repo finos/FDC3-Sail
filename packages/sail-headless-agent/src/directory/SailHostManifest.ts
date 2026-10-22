@@ -54,17 +54,11 @@ export function parseSailHostManifest(raw: unknown): ResolvedSailHostManifest {
   }
 
   return {
-    forceNewWindow: asBoolean(
-      source.forceNewWindow,
-      SAIL_HOST_MANIFEST_DEFAULTS.forceNewWindow,
-    ),
+    forceNewWindow: asBoolean(source.forceNewWindow, SAIL_HOST_MANIFEST_DEFAULTS.forceNewWindow),
     invisible: asBoolean(source.invisible, SAIL_HOST_MANIFEST_DEFAULTS.invisible),
     singleton: asBoolean(source.singleton, SAIL_HOST_MANIFEST_DEFAULTS.singleton),
     autostart: asBoolean(source.autostart, SAIL_HOST_MANIFEST_DEFAULTS.autostart),
-    searchable: asBoolean(
-      source.searchable,
-      SAIL_HOST_MANIFEST_DEFAULTS.searchable,
-    ),
+    searchable: asBoolean(source.searchable, SAIL_HOST_MANIFEST_DEFAULTS.searchable),
   }
 }
 

@@ -4,10 +4,7 @@ export enum AppHosting {
   Remote,
 }
 
-export type {
-  SailHostManifest,
-  ResolvedSailHostManifest,
-} from "@finos/sail-headless-agent"
+export type { SailHostManifest, ResolvedSailHostManifest } from "@finos/sail-headless-agent"
 
 export {
   SAIL_HOST_MANIFEST_DEFAULTS,

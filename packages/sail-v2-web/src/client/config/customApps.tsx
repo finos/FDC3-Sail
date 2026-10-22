@@ -14,24 +14,24 @@ function getAllContextTypes(): string[] {
   const allContexts = [...CONTEXT_TYPES]
   getClientState()
     .getKnownApps()
-    .forEach((a) => {
+    .forEach(a => {
       if (a.interop?.userChannels) {
         allContexts.concat(a.interop.userChannels.listensFor ?? [])
         allContexts.concat(a.interop.userChannels.broadcasts ?? [])
       }
       if (a.interop?.appChannels) {
-        a.interop.appChannels.forEach((ac) => {
+        a.interop.appChannels.forEach(ac => {
           allContexts.concat(ac.broadcasts ?? [])
           allContexts.concat(ac.listensFor ?? [])
         })
       }
       if (a.interop?.intents?.listensFor) {
-        Object.values(a.interop.intents.listensFor).forEach((v) => {
+        Object.values(a.interop.intents.listensFor).forEach(v => {
           allContexts.concat(v.contexts)
         })
       }
       if (a.interop?.intents?.raises) {
-        Object.values(a.interop.intents.raises).forEach((v) => {
+        Object.values(a.interop.intents.raises).forEach(v => {
           allContexts.concat(v)
         })
       }
@@ -42,11 +42,11 @@ function getAllContextTypes(): string[] {
 }
 
 function getAllIntentNames(): string[] {
-  const allIntents = intentTypes.map((i) => i.title)
+  const allIntents = intentTypes.map(i => i.title)
 
   getClientState()
     .getKnownApps()
-    .forEach((a) => {
+    .forEach(a => {
       if (a.interop?.intents?.listensFor) {
         allIntents.concat(Object.keys(a.interop.intents.listensFor) ?? [])
       }
@@ -94,7 +94,7 @@ function newApp(): EditableState {
 function createInitialState(): EditableState[] {
   return getClientState()
     .getCustomApps()
-    .map((a) => {
+    .map(a => {
       const lf = a.interop?.intents?.listensFor ?? {}
       return {
         id: a.appId,
@@ -102,7 +102,7 @@ function createInitialState(): EditableState[] {
         url: (a.details as WebAppDetails)?.url ?? "",
         title: a.title,
         description: a.description ?? "",
-        intents: Object.keys(lf).map((k) => {
+        intents: Object.keys(lf).map(k => {
           const val = lf[k] ?? { contexts: [] }
           return {
             name: k,
@@ -114,7 +114,7 @@ function createInitialState(): EditableState[] {
 }
 
 function convertToDirectoryApps(es: EditableState[]): DirectoryApp[] {
-  return es.map((s) => {
+  return es.map(s => {
     return {
       appId: s.id,
       title: s.title,
@@ -129,7 +129,7 @@ function convertToDirectoryApps(es: EditableState[]): DirectoryApp[] {
       interop: {
         intents: {
           listensFor: Object.fromEntries(
-            s.intents.map((i) => [
+            s.intents.map(i => [
               i.name,
               {
                 displayName: i.name,
@@ -159,21 +159,10 @@ const AddIntentButton = ({ onClick }: { onClick: () => void }) => {
   )
 }
 
-const IntentPicker = ({
-  name,
-  update,
-}: {
-  name: string
-  update: (x: string) => void
-}) => {
+const IntentPicker = ({ name, update }: { name: string; update: (x: string) => void }) => {
   return (
     <div className={styles.picker}>
-      <Combobox
-        hideEmptyPopup
-        data={getAllIntentNames()}
-        value={name}
-        onChange={update}
-      />
+      <Combobox hideEmptyPopup data={getAllIntentNames()} value={name} onChange={update} />
     </div>
   )
 }
@@ -193,7 +182,7 @@ const ContextPicker = ({
         data={getAllContextTypes()}
         allowCreate="onFilter"
         onChange={update}
-        onCreate={(n) => {
+        onCreate={n => {
           update([...contextTypes, n])
         }}
       />
@@ -212,7 +201,7 @@ const IntentItem = ({
     <>
       <IntentPicker
         name={ei.name}
-        update={(x) => {
+        update={x => {
           const ei2 = { ...ei, name: x }
           update(ei2)
         }}
@@ -220,7 +209,7 @@ const IntentItem = ({
 
       <ContextPicker
         contextTypes={ei.contexts}
-        update={(x) => {
+        update={x => {
           const ei2 = { ...ei, contexts: x }
           update(ei2)
         }}
@@ -295,7 +284,7 @@ const CustomAppItem = ({
           className={styles.name}
           value={d.title}
           placeholder="App Title"
-          onChange={(e) => {
+          onChange={e => {
             update({ ...d, title: e.target.value })
           }}
         />
@@ -304,7 +293,7 @@ const CustomAppItem = ({
           className={styles.description}
           value={d.description}
           placeholder="App Description"
-          onChange={(e) => {
+          onChange={e => {
             update({ ...d, description: e.target.value })
           }}
         />
@@ -313,7 +302,7 @@ const CustomAppItem = ({
           <select
             className={styles.typeSelect}
             value={d.type}
-            onChange={(e) => {
+            onChange={e => {
               update({ ...d, type: e.target.value as AppType })
             }}
           >
@@ -327,7 +316,7 @@ const CustomAppItem = ({
           value={d.url}
           placeholder="https://your.app.url/here"
           disabled={d.type === "native"}
-          onChange={(e) => {
+          onChange={e => {
             update({ ...d, url: e.target.value })
           }}
         />
@@ -360,18 +349,18 @@ export const CustomAppList = () => {
 
   return (
     <div className={styles.list}>
-      {apps.map((d) => (
+      {apps.map(d => (
         <CustomAppItem
           key={d.id}
           d={d}
-          update={(app) => {
+          update={app => {
             if (app) {
-              const idx = apps.findIndex((a) => a.id == d.id)
+              const idx = apps.findIndex(a => a.id == d.id)
               const newApps = [...apps]
               newApps[idx] = app
               updateApps(newApps)
             } else {
-              const idx = apps.findIndex((a) => a.id == d.id)
+              const idx = apps.findIndex(a => a.id == d.id)
               const newApps = [...apps]
               newApps.splice(idx, 1)
               updateApps(newApps)

@@ -1,9 +1,4 @@
-import {
-  InstanceID,
-  State,
-  AppRegistration,
-  Fdc3ApiVersion,
-} from "./AppRegistration"
+import { InstanceID, State, AppRegistration, Fdc3ApiVersion } from "./AppRegistration"
 import {
   ChannelState,
   ChannelType,
