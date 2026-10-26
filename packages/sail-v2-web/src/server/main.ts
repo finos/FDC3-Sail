@@ -1,3 +1,4 @@
+import { register } from "node:module"
 import express from "express"
 import ViteExpress from "vite-express"
 import { SailFDC3ServerFactory } from "./da/SailFDC3ServerFactory"
@@ -6,6 +7,9 @@ import { RemoteSocketService } from "./da/RemoteSocketService"
 import { getSailUrl } from "./da/sail-handlers"
 import { loadExtensionCores } from "./extensions-runtime"
 import { createLogger } from "./logger"
+
+// Allow import("http://…") for the same SAIL_EXTENSION_URLS the browser uses.
+register("./http-esm-extension-loader.mjs", import.meta.url)
 
 const log = createLogger("main")
 

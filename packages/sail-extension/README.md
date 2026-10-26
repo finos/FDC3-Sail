@@ -49,8 +49,14 @@ namespaces keys (sail-one `ext/<id>/…`, v2-web `ClientState` bag).
 
 ## How a host loads extensions
 
-A host obtains core modules however it wants. For each module it recognises as
-a `SailExtension` (`pickSailExtension`):
+The address of a core is a URL. Every host `import()`s that string:
+
+```ts
+const core = pickSailExtension(await import("https://example.com/my-extension/index.js"))
+```
+
+
+For each module recognised as a `SailExtension`, the  `pickSailExtension` function will:
 
 1. Call `wrapServer` if present, passing a `SailExtensionContext` whose
    `storage` is namespaced to that extension.
@@ -58,24 +64,7 @@ a `SailExtension` (`pickSailExtension`):
 3. Load each UI module and keep the `SailExtensionUI` values
    (`pickSailExtensionUIs`) whose `type` the host has a slot for.
 
-Three usual ways to obtain a core:
 
-### URL
-
-`import()` any `https:` or `file:` URL of an ESM module. UI contributions use
-the same kind of URL, resolved from that module’s `import.meta.url`.
-
-```ts
-const core = pickSailExtension(await import("https://example.com/my-extension/index.js"))
-```
-
-### npm
-
-Add the package and import its specifier.
-
-```ts
-const core = pickSailExtension(await import("@finos/sail-extension-demo"))
-```
 
 ### Local development (`@finos/sail-extension-server`)
 
@@ -97,11 +86,10 @@ serves **this package** on its port:
 npm run dev
 ```
 
-Each extension is one origin. Pin those URLs on the host (`SAIL_EXTENSION_URLS`)
-and `import()` them. UI URLs come from the loaded module’s `getUIExtensions()`.
+Each extension will run on one origin.
 
 ```ts
-const core : SailExtension = pickSailExtension(await import("http://localhost:9100/src/index.ts"))
+const core = pickSailExtension(await import("http://localhost:9100/src/index.ts"))
 ```
 
 ## License

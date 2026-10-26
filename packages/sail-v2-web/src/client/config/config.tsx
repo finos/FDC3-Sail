@@ -108,6 +108,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
               {this.state.item == CONFIG_ITEMS[2] ? <CustomAppList /> : null}
               {extension ? (
                 <ExtensionScreen
+                  key={extension.id}
                   ui={extension}
                   storage={createClientStateExtensionStorage(
                     this.props.cs,

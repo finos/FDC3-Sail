@@ -28,7 +28,3 @@ sail-extension-server --root /path/to/extension --port 9101
 Vite’s `root` is the extension folder, so that package’s `node_modules`
 resolve normally. JSX is esbuild-only (no React Fast Refresh) so a different
 origin (`sail-v2-web`, `sail-one`) can `import()` the UI.
-
-Hosts pin that origin in `SAIL_EXTENSION_URLS` and `import()` the core
-(`http://localhost:9100/src/index.ts`). UI URLs come from the loaded module’s
-`getUIExtensions()`.
