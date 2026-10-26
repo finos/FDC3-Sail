@@ -54,6 +54,14 @@ export const SAIL_CLIENT_STATE = "sail-client-state"
 export type SailClientStateArgs = DesktopAgentHelloArgs
 
 /**
+ * Server → client: session extension storage changed (e.g. wrapServer wrote logs).
+ * Bags are keyed by core extension id.
+ */
+export const SAIL_EXTENSION_DATA = "sail-extension-data"
+
+export type SailExtensionDataArgs = Record<string, Record<string, unknown>>
+
+/**
  * Sent when an App connects to the server
  */
 export const APP_HELLO = "app-hello"

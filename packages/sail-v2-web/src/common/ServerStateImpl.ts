@@ -18,6 +18,7 @@ import {
   SAIL_CHANNEL_CHANGE,
   SAIL_CHANNEL_SETUP,
   SAIL_CLIENT_STATE,
+  SAIL_EXTENSION_DATA,
   SAIL_INTENT_RESOLVE,
   SAIL_WSCP_PAIRING_UPDATE,
   SailAppCloseArgs,
@@ -27,6 +28,7 @@ import {
   SailBroadcastContextArgs,
   SailChannelChangeArgs,
   SailClientStateArgs,
+  SailExtensionDataArgs,
   SailIntentResolveArgs,
   SailIntentResolveResponse,
   SailWscpPairingUpdateArgs,
@@ -216,6 +218,15 @@ export class ServerStateImpl implements ServerState {
 
     this.socket.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
       this.cs!.appendContextHistory(data.channelId, data.context)
+    })
+
+    this.socket.on(SAIL_EXTENSION_DATA, (data: SailExtensionDataArgs) => {
+      for (const [extensionId, bag] of Object.entries(data)) {
+        void this.cs!.setExtensionData(extensionId, {
+          ...this.cs!.getExtensionData(extensionId),
+          ...bag,
+        })
+      }
     })
 
     this.socket.on(SAIL_WSCP_PAIRING_UPDATE, (data: SailWscpPairingUpdateArgs) => {

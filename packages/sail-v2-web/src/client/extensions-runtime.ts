@@ -1,13 +1,11 @@
-import {
-  loadExtensionCoreUrls,
-  pickSailExtension,
-  pickSailExtensionUIs,
-} from "@finos/sail-extension"
+import { pickSailExtension, pickSailExtensionUIs } from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
 
 import { SAIL_EXTENSION_URLS } from "../extensions"
 
-let loaded: SailExtensionUI[] | null = null
+export type LoadedSailExtensionUI = SailExtensionUI & { coreId: string }
+
+let loaded: LoadedSailExtensionUI[] | null = null
 const listeners = new Set<() => void>()
 
 function notify(): void {
@@ -23,14 +21,13 @@ export function subscribeExtensionUIs(listener: () => void): () => void {
   }
 }
 
-export async function loadExtensionUIs(): Promise<SailExtensionUI[]> {
+export async function loadExtensionUIs(): Promise<LoadedSailExtensionUI[]> {
   if (loaded) {
     return loaded
   }
 
-  const { urls } = await loadExtensionCoreUrls(SAIL_EXTENSION_URLS)
-  const uis: SailExtensionUI[] = []
-  for (const url of urls) {
+  const uis: LoadedSailExtensionUI[] = []
+  for (const url of SAIL_EXTENSION_URLS) {
     try {
       const coreMod: unknown = await import(/* @vite-ignore */ url)
       const core = pickSailExtension(coreMod)
@@ -49,7 +46,7 @@ export async function loadExtensionUIs(): Promise<SailExtensionUI[]> {
         if (found.length === 0) {
           console.warn(`[Sail] Extension UI at ${uiUrl} did not export a SailExtensionUI`)
         }
-        uis.push(...found)
+        uis.push(...found.map(ui => ({ ...ui, coreId: core.id })))
       }
     } catch (error) {
       console.warn(`[Sail] Failed to load extension UI from ${url}`, error)
@@ -60,7 +57,7 @@ export async function loadExtensionUIs(): Promise<SailExtensionUI[]> {
   return uis
 }
 
-export function getLoadedExtensionUIs(type?: string): SailExtensionUI[] {
+export function getLoadedExtensionUIs(type?: string): LoadedSailExtensionUI[] {
   const all = loaded ?? []
   return type ? all.filter(ui => ui.type === type) : all
 }

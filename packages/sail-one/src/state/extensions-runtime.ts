@@ -1,9 +1,4 @@
-import {
-  loadExtensionCoreUrls,
-  pickSailExtension,
-  pickSailExtensionUIs,
-  type SailExtension,
-} from "@finos/sail-extension"
+import { pickSailExtension, pickSailExtensionUIs, type SailExtension } from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
 import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
@@ -32,9 +27,8 @@ export async function loadExtensionCores(): Promise<SailExtension[]> {
     return cores
   }
 
-  const { urls } = await loadExtensionCoreUrls(SAIL_EXTENSION_URLS)
   const loaded: SailExtension[] = []
-  for (const url of urls) {
+  for (const url of SAIL_EXTENSION_URLS) {
     try {
       const mod: unknown = await import(/* @vite-ignore */ url)
       const extension = pickSailExtension(mod)
@@ -56,9 +50,8 @@ export async function loadExtensionUIs(): Promise<SailExtensionUI[]> {
     return uis
   }
 
-  const { urls } = await loadExtensionCoreUrls(SAIL_EXTENSION_URLS)
   const loaded: SailExtensionUI[] = []
-  for (const url of urls) {
+  for (const url of SAIL_EXTENSION_URLS) {
     try {
       const coreMod: unknown = await import(/* @vite-ignore */ url)
       const core = pickSailExtension(coreMod)

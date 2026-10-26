@@ -1,74 +1,47 @@
-import { pathToFileURL } from "node:url"
-
-import {
-  fetchExtensionCatalog,
-  mergeExtensionCoreUrls,
-  pickSailExtension,
-  type SailExtension,
-  type SailExtensionCatalogEntry,
-} from "@finos/sail-extension"
+import { pickSailExtension, type SailExtension } from "@finos/sail-extension"
 
 import { SAIL_EXTENSION_URLS } from "../extensions"
 import { createLogger } from "./logger"
 
 const log = createLogger("Extensions")
 
-function localPackageName(url: string): string | null {
-  try {
-    const parsed = new URL(url)
-    if (parsed.hostname !== "localhost" || parsed.port !== "9100") {
-      return null
-    }
-    const id = parsed.pathname.split("/").filter(Boolean)[0]
-    return id ? `@finos/sail-extension-${id}` : null
-  } catch {
-    return null
-  }
+const WORKSPACE_CORE: Record<string, string> = {
+  "http://localhost:9100/src/index.ts": "@finos/sail-extension-demo",
+  "http://localhost:9101/src/index.ts": "@finos/sail-extension-sail-governance",
 }
 
-async function importFromUrl(url: string): Promise<unknown> {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed: ${response.status}`)
-  }
-  const code = await response.text()
-  const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`
-  return import(dataUrl)
-}
-
-async function importExtensionCore(url: string, file?: string): Promise<unknown> {
-  const local = localPackageName(url)
-  if (local) {
-    try {
-      return await import(local)
-    } catch {
-      // Not a workspace package — try the scanned file next.
-    }
-  }
-  if (file) {
-    return import(pathToFileURL(file).href)
-  }
-  return importFromUrl(url)
-}
-
-async function loadCatalog(): Promise<SailExtensionCatalogEntry[]> {
+async function waitForUrl(url: string): Promise<void> {
   for (let attempt = 0; attempt < 25; attempt++) {
     try {
-      return await fetchExtensionCatalog()
+      const response = await fetch(url)
+      if (response.ok) {
+        return
+      }
     } catch {
-      await new Promise(resolve => setTimeout(resolve, 200))
+      // server not up yet
+    }
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
+}
+
+async function importExtensionCore(url: string): Promise<unknown> {
+  const workspace = WORKSPACE_CORE[url]
+  if (workspace) {
+    try {
+      return await import(workspace)
+    } catch {
+      // Not a workspace package of this host.
     }
   }
-  return []
+  await waitForUrl(url)
+  return import(url)
 }
 
 export async function loadExtensionCores(): Promise<SailExtension[]> {
-  const catalog = await loadCatalog()
-  const files = new Map(catalog.map(entry => [entry.core, entry.file]))
   const extensions: SailExtension[] = []
-  for (const url of mergeExtensionCoreUrls(SAIL_EXTENSION_URLS, catalog)) {
+  for (const url of SAIL_EXTENSION_URLS) {
     try {
-      const mod = await importExtensionCore(url, files.get(url))
+      const mod = await importExtensionCore(url)
       const extension = pickSailExtension(mod)
       if (extension) {
         extensions.push(extension)

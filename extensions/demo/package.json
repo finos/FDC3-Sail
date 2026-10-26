@@ -12,6 +12,7 @@
   "scripts": {
     "build": "vp pack",
     "clean": "rimraf dist",
+    "dev": "sail-extension-server --port 9100",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
+    "@finos/sail-extension-server": "*",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.x"
   }

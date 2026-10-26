@@ -7,7 +7,9 @@ export type SessionExtensionData = {
 export function createSessionExtensionStorage(
   holder: SessionExtensionData,
   extensionId: string,
+  onChange?: (data: Record<string, Record<string, unknown>>) => void,
 ): SailExtensionStorage {
+  const notify = () => onChange?.(holder.data)
   return {
     get<T>(key: string): Promise<T | null> {
       const bag = holder.data[extensionId]
@@ -18,6 +20,7 @@ export function createSessionExtensionStorage(
     },
     set<T>(key: string, value: T): Promise<void> {
       holder.data[extensionId] = { ...holder.data[extensionId], [key]: value }
+      notify()
       return Promise.resolve()
     },
     remove(key: string): Promise<void> {
@@ -28,6 +31,7 @@ export function createSessionExtensionStorage(
       const next = { ...bag }
       delete next[key]
       holder.data[extensionId] = next
+      notify()
       return Promise.resolve()
     },
   }

@@ -1,19 +1,34 @@
 # @finos/sail-extension-server
 
-Dev-only Vite host for **writing new extensions**. It serves source from local
-scan roots on **port 9100** so you can iterate without packing. It is not how
-hosts load extensions in production.
+Dev-only Vite host for **one** Sail extension package. Run it from that
+package’s directory. 
 
-Scan roots live in `src/scan-dirs.ts` (`SAIL_EXTENSION_SCAN_DIRS`, relative to
-this package). The in-repo tree is one of them:
+Put it on the extension as a `dev` script (see `extensions/demo`):
 
-```ts
-export const SAIL_EXTENSION_SCAN_DIRS: string[] = ["../../extensions"]
+```json
+{
+  "scripts": {
+    "dev": "sail-extension-server --port 9100"
+  },
+  "devDependencies": {
+    "@finos/sail-extension-server": "*"
+  }
+}
 ```
 
-`SAIL_EXTENSION_DIRS` (colon-separated) appends more roots.
+```bash
+npm run dev
+# or, from elsewhere:
+sail-extension-server --root /path/to/extension --port 9101
+```
 
-`GET /extensions.json` lists scanned cores as `{ id, title, core, file? }`.
-Hosts typically merge that list with any pinned core URLs, then `import()` each
-`core`. UI URLs come from the loaded module’s `getUIExtensions()`, not from the
-catalog.
+`--root` defaults to the current working directory. `--port` defaults to
+`9100` (`SAIL_EXTENSION_PORT` / `SAIL_EXTENSION_ROOT` also work).
+
+Vite’s `root` is the extension folder, so that package’s `node_modules`
+resolve normally. JSX is esbuild-only (no React Fast Refresh) so a different
+origin (`sail-v2-web`, `sail-one`) can `import()` the UI.
+
+Hosts pin that origin in `SAIL_EXTENSION_URLS` and `import()` the core
+(`http://localhost:9100/src/index.ts`). UI URLs come from the loaded module’s
+`getUIExtensions()`.

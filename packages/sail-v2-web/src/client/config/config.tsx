@@ -109,7 +109,10 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
               {extension ? (
                 <ExtensionScreen
                   ui={extension}
-                  storage={createClientStateExtensionStorage(this.props.cs, extension.id)}
+                  storage={createClientStateExtensionStorage(
+                    this.props.cs,
+                    extension.coreId ?? extension.id,
+                  )}
                 />
               ) : null}
             </div>

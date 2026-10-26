@@ -79,13 +79,29 @@ const core = pickSailExtension(await import("@finos/sail-extension-demo"))
 
 ### Local development (`@finos/sail-extension-server`)
 
-While writing an extension, the Vite host serves source on port 9100 and lists
-cores at `GET /extensions.json`. Merge that catalog with any pinned URLs
-(`loadExtensionCoreUrls`) so the host picks them up without packing. Scan
-roots are documented in that package.
+Add the host as a dev dependency of the extension and a `dev` script that
+serves **this package** on its port:
+
+```json
+{
+  "scripts": {
+    "dev": "sail-extension-server --port 9100"
+  },
+  "devDependencies": {
+    "@finos/sail-extension-server": "*"
+  }
+}
+```
+
+```bash
+npm run dev
+```
+
+Each extension is one origin. Pin those URLs on the host (`SAIL_EXTENSION_URLS`)
+and `import()` them. UI URLs come from the loaded module’s `getUIExtensions()`.
 
 ```ts
-const core = pickSailExtension(await import("http://localhost:9100/demo/src/index.ts"))
+const core : SailExtension = pickSailExtension(await import("http://localhost:9100/src/index.ts"))
 ```
 
 ## License

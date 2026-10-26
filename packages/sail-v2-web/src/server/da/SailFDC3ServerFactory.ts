@@ -1,4 +1,4 @@
-import { DesktopAgentHelloArgs, TabDetail } from "../../common"
+import { DesktopAgentHelloArgs, SAIL_EXTENSION_DATA, TabDetail } from "../../common"
 import type { SailExtension } from "@finos/sail-extension"
 import {
   ChannelType,
@@ -102,7 +102,9 @@ export class SailFDC3ServerFactory {
     const holder: SessionExtensionData = { data: args.extensionData ?? {} }
     this.sessionExtensionData.set(args.userSessionId, holder)
     const wrapped = this.extensions.reduce((inst, ext) => {
-      const storage = createSessionExtensionStorage(holder, ext.id)
+      const storage = createSessionExtensionStorage(holder, ext.id, data => {
+        connection.emit(SAIL_EXTENSION_DATA, data)
+      })
       return ext.wrapServer?.(inst, { storage }) ?? inst
     }, out as FDC3ServerInstance)
     this.sessions.set(args.userSessionId, wrapped as SailFDC3ServerInstance)
@@ -111,9 +113,14 @@ export class SailFDC3ServerFactory {
 
   setSessionExtensionData(sessionId: string, data: Record<string, Record<string, unknown>>): void {
     const holder = this.sessionExtensionData.get(sessionId)
-    if (holder) {
-      holder.data = data
+    if (!holder) {
+      return
     }
+    const merged: Record<string, Record<string, unknown>> = { ...holder.data }
+    for (const [id, bag] of Object.entries(data)) {
+      merged[id] = mergeExtensionBags(holder.data[id] ?? {}, bag)
+    }
+    holder.data = merged
   }
 
   getSessionCount(): number {
@@ -164,4 +171,20 @@ export class SailFDC3ServerFactory {
     }
     return undefined
   }
+}
+
+function mergeExtensionBags(
+  server: Record<string, unknown>,
+  client: Record<string, unknown>,
+): Record<string, unknown> {
+  const next = { ...server, ...client }
+  for (const [key, value] of Object.entries(server)) {
+    if (Array.isArray(value)) {
+      const incoming = client[key]
+      if (!Array.isArray(incoming) || incoming.length < value.length) {
+        next[key] = value
+      }
+    }
+  }
+  return next
 }

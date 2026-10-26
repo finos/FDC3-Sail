@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npx vp build",
-    "dev": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-extension --prefix ../.. && concurrently -k -n ext,v2 -c magenta,blue \"npm run dev -w @finos/sail-extension-server --prefix ../..\" \"nodemon -w src/server -w src/common -e ts,tsx,js,d.ts -x tsx src/server/main.ts --trace-uncaught\"",
+    "dev": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-extension --prefix ../.. && concurrently -k -n ext,v2 -c magenta,blue \"npm run dev -w @finos/sail-extension-demo --prefix ../..\" \"nodemon -w src/server -w src/common -e ts,tsx,js,d.ts -x tsx src/server/main.ts --trace-uncaught\"",
     "apps": "fdc3-example-apps",
     "conformance-2.2": "npx --yes @robmoffat/fdc3-conformance@2.2.3-test.1",
     "conformance-3.0": "npx --yes @robmoffat/fdc3-conformance@3.0.0-beta.1",
@@ -44,7 +44,6 @@
     "@finos/sail-env": "*",
     "@finos/sail-extension-demo": "*",
     "@finos/sail-extension": "*",
-    "@finos/sail-extension-server": "*",
     "@finos/sail-headless-agent": "0.0.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
