@@ -15,6 +15,9 @@ Feature: Raising Intents
       | uniqueIntent | fdc3.magazine | {empty}     |
     And "unusedApp" is an app with the following intents
       | Intent Name | Context Type | Result Type |
+    And "singletonApp" is a singleton app with the following intents
+      | Intent Name | Context Type | Result Type |
+      | returnBook  | fdc3.book    | {empty}     |
     And A newly instantiated FDC3 Server
     And "uniqueIntentApp/c1" is opened with connection id "c1"
     And "uniqueIntentApp/c1" registers an intent listener for "uniqueIntent"
@@ -53,6 +56,27 @@ Feature: Raising Intents
       | msg.matches_type    | msg.payload.context.type | msg.payload.intent | msg.payload.metadata.source.appId | msg.payload.metadata.source.instanceId | msg.payload.intentResolution.intent | to.instanceId | to.appId    | msg.payload.intentResolution.source.appId |
       | intentEvent         | fdc3.book                | returnBook         | App1                              | a1                                     | {null}                              | b1            | listenerApp | {null}                                    |
       | raiseIntentResponse | {null}                   | {null}             | {null}                            | {null}                                 | returnBook                          | a1            | App1        | listenerApp                               |
+
+  Scenario: Raising An Intent To A Running singleton by appId reuses the existing instance
+    And "singletonApp/s1" is opened with connection id "s1"
+    And "singletonApp/s1" registers an intent listener for "returnBook"
+    When "App1/a1" raises an intent for "returnBook" with contextType "fdc3.book" on app "singletonApp"
+    Then messaging will have outgoing posts
+      | msg.matches_type    | msg.payload.context.type | msg.payload.intent | msg.payload.intentResolution.intent | to.instanceId | to.appId      | msg.payload.intentResolution.source.appId |
+      | intentEvent         | fdc3.book                | returnBook         | {null}                              | s1            | singletonApp  | {null}                                    |
+      | raiseIntentResponse | {null}                   | {null}             | returnBook                          | a1            | App1          | singletonApp                              |
+
+  Scenario: Raising An Intent To A Running non-singleton by appId launches a new instance
+    And "libraryApp/l1" is opened with connection id "l1"
+    And "libraryApp/l1" registers an intent listener for "returnBook"
+    When "App1/a1" raises an intent for "returnBook" with contextType "fdc3.book" on app "libraryApp"
+    And "uuid-0" sends validate
+    And "libraryApp/0" registers an intent listener for "returnBook"
+    Then messaging will have outgoing posts
+      | msg.matches_type          | msg.payload.intent | to.instanceId | to.appId   | msg.payload.context.type |
+      | addIntentListenerResponse | {null}             | 0             | libraryApp | {null}                   |
+      | intentEvent               | returnBook         | 0             | libraryApp | fdc3.book                |
+      | raiseIntentResponse       | {null}             | a1            | App1       | {null}                   |
 
   Scenario: Raising an intent with app-provided metadata forwards to intent listener
     When "App1/a1" raises an intent for "uniqueIntent" with contextType "fdc3.magazine" with metadata traceId "intent-trace" signature "intent-sig" and custom key "EMEA"

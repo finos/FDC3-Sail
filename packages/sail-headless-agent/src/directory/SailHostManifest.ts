@@ -4,6 +4,10 @@
  * Cardinality:
  * - `autostart`: ensure at least one live instance of this appId
  * - `singleton`: allow at most one live instance of this appId
+ *
+ * `raiseIntent` / `raiseIntentForContext` targeting `{ appId }` (no
+ * `instanceId`) launches a new instance, unless this app is a singleton
+ * that is already running — then the live instance is reused.
  */
 
 export type SailHostManifest = {
@@ -67,4 +71,11 @@ export function sailHostManifestFromApp(app: {
   hostManifests?: { [key: string]: unknown }
 }): ResolvedSailHostManifest {
   return parseSailHostManifest(app.hostManifests?.sail)
+}
+
+/** True when the AppD record sets `hostManifests.sail.singleton`. */
+export function isSingletonDirectoryApp(
+  app: { hostManifests?: { [key: string]: unknown } } | undefined,
+): boolean {
+  return app !== undefined && sailHostManifestFromApp(app).singleton
 }

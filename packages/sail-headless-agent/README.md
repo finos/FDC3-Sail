@@ -32,11 +32,25 @@ This package is the source of truth for that shape. It exports `SailHostManifest
 |---|---|---|
 | `forceNewWindow` | `false` | Open in a browser tab (`AppHosting.Tab`) instead of a workspace iframe (`AppHosting.Frame`). An explicit launch destination still wins. |
 | `invisible` | `false` | Host off-grid. The iframe stays mounted (and keeps its FDC3 connection); the user sees it through a dialog rather than a grid panel. Close hides the dialog instead of tearing the instance down. |
-| `singleton` | `false` | At most one live instance of this `appId`. A later `open` returns the existing instance; concurrent opens share the in-flight launch. |
+| `singleton` | `false` | At most one live instance of this `appId`. A later `open` returns the existing instance; concurrent opens share the in-flight launch. `raiseIntent` / `raiseIntentForContext` targeting `{ appId }` (no `instanceId`) also reuse that live instance instead of launching a second one. |
 | `autostart` | `false` | After the Desktop Agent is ready, ensure at least one live or pending instance of this `appId`. |
 | `searchable` | `true` | Include the app in the Sail app directory / launcher. Set `false` to hide helper or conformance apps from the picker while still allowing `fdc3.open` and intent routing. |
 
 Cardinality is `autostart` (≥ 1) combined with `singleton` (≤ 1). Both can be set together for a single always-on instance.
+
+### Intent targeting (`appId` vs `instanceId`)
+
+When a raise names a target:
+
+| Target | Behaviour |
+|---|---|
+| `{ appId, instanceId }` | Deliver to that instance (or `TargetInstanceUnavailable`). |
+| `{ appId }` only | **Launch a new instance**, then deliver once it adds the intent listener. |
+| `{ appId }` only, and the app is a **singleton that is already running** | **Reuse** the live instance. A second instance is not allowed, so Sail does not park a pending-intent waiting for a new `addIntentListener`. |
+| `newInstance: false` | Must use a running instance; never launch. |
+| `newInstance: true` | Launch a new instance, except a running singleton, which is still reused. |
+
+An untargeted raise (`raiseIntent(intent, context)` with no `app`) still uses the usual resolver / auto-resolve path and may pick a running instance.
 
 Example AppD fragment:
 

@@ -25,6 +25,7 @@ import {
   SAIL_HOST_MANIFEST_DEFAULTS,
   parseSailHostManifest,
   sailHostManifestFromApp,
+  isSingletonDirectoryApp,
 } from "./directory/SailHostManifest"
 import {
   BroadcastHandler as BroadcastHandlerV2,
@@ -72,6 +73,7 @@ export {
   SAIL_HOST_MANIFEST_DEFAULTS,
   parseSailHostManifest,
   sailHostManifestFromApp,
+  isSingletonDirectoryApp,
   BroadcastHandlerV2 as BroadcastHandler,
   IntentHandlerV2 as IntentHandler,
   OpenHandlerV2 as OpenHandler,
