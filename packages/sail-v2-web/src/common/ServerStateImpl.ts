@@ -1,6 +1,7 @@
 import { DirectoryApp } from "@finos/sail-headless-agent"
 import { isAutoResolve } from "@finos/sail-env"
 import { io, Socket } from "socket.io-client"
+import type { SailReviewDecision, SailReviewRequest } from "@finos/sail-extension"
 import { AppIdentifier, ResolveError } from "@finos/fdc3-standard-v3"
 import {
   DA_APP_WINDOW_CLOSED,
@@ -20,6 +21,9 @@ import {
   SAIL_CLIENT_STATE,
   SAIL_EXTENSION_DATA,
   SAIL_INTENT_RESOLVE,
+  SAIL_REVIEW_CLOSED,
+  SAIL_REVIEW_REQUEST,
+  SailReviewClosedArgs,
   SAIL_WSCP_PAIRING_UPDATE,
   SailAppCloseArgs,
   SailAppOpenArgs,
@@ -41,6 +45,8 @@ import { ClientState } from "./ClientState"
 export class ServerStateImpl implements ServerState {
   socket: Socket | null = null
   resolveCallback: (x: SailIntentResolveResponse) => void = () => {}
+  /** Socket acks for reviews the dialog is showing, by request id. */
+  reviewCallbacks = new Map<string, (x: SailReviewDecision) => void>()
   cs: ClientState | null = null
   as: AppState | null = null
 
@@ -216,6 +222,21 @@ export class ServerStateImpl implements ServerState {
       this.resolveCallback = callback
     })
 
+    this.socket.on(
+      SAIL_REVIEW_REQUEST,
+      (data: SailReviewRequest, callback: (x: SailReviewDecision) => void) => {
+        this.reviewCallbacks.set(data.requestId, callback)
+        this.cs!.addReviewRequest(data)
+      },
+    )
+
+    // The server settled the review itself (deadline, disconnect, error): close the dialog,
+    // and drop the ack so a late Allow / Block is never sent.
+    this.socket.on(SAIL_REVIEW_CLOSED, (data: SailReviewClosedArgs) => {
+      this.reviewCallbacks.delete(data.requestId)
+      this.cs!.removeReviewRequest(data.requestId)
+    })
+
     this.socket.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
       this.cs!.appendContextHistory(data.channelId, data.context)
     })
@@ -244,6 +265,13 @@ export class ServerStateImpl implements ServerState {
       channel: channelId,
       userSessionId: this.cs!.getUserSessionID(),
     } as SailChannelChangeArgs)
+  }
+
+  reviewChosen(requestId: string, decision: SailReviewDecision): void {
+    // The server stops waiting at the deadline, so a late answer is simply ignored there.
+    this.reviewCallbacks.get(requestId)?.(decision)
+    this.reviewCallbacks.delete(requestId)
+    this.cs!.removeReviewRequest(requestId)
   }
 
   intentChosen(

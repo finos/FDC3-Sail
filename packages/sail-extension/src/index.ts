@@ -1,4 +1,5 @@
 export { applyExtensions } from "./apply-extensions"
+export { readExtensionUrls } from "./read-extension-urls"
 export {
   SAIL_CONFIG_UI,
   type SailExtension,
@@ -6,6 +7,15 @@ export {
   type SailExtensionStorage,
   type SailExtensionUIRef,
 } from "./types"
+export {
+  REVIEW_TIMED_OUT,
+  settleReview,
+  toReviewDecision,
+  type SailRequestReview,
+  type SailReviewDecision,
+  type SailReviewDetails,
+  type SailReviewRequest,
+} from "./review"
 export {
   isSailExtension,
   isSailExtensionUI,

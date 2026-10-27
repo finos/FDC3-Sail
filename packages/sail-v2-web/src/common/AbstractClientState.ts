@@ -9,6 +9,7 @@ import {
 } from "./message-types"
 import { Context } from "@finos/fdc3-context-v3"
 import { v4 as uuidv4 } from "uuid"
+import type { SailReviewRequest } from "@finos/sail-extension"
 
 export abstract class AbstractClientState implements ClientState {
   protected tabs: TabDetail[] = []
@@ -19,6 +20,7 @@ export abstract class AbstractClientState implements ClientState {
   protected directories: Directory[] = []
   callbacks: (() => void)[] = []
   protected intentResolution: IntentResolution | null = null
+  protected reviewRequests: SailReviewRequest[] = []
   protected knownApps: DirectoryApp[] = []
   protected customApps: DirectoryApp[] = []
   protected contextHistory: ContextHistory = {}
@@ -224,6 +226,24 @@ export abstract class AbstractClientState implements ClientState {
     this.saveState().catch((e: unknown) => {
       console.error("Error saving state", e)
     })
+  }
+
+  getReviewRequests(): SailReviewRequest[] {
+    return this.reviewRequests
+  }
+
+  setReviewRequests(requests: SailReviewRequest[]): void {
+    // Not persisted or sent to the server: a review only lives while the server waits on it.
+    this.reviewRequests = requests
+    this.callbacks.forEach(cb => cb())
+  }
+
+  addReviewRequest(request: SailReviewRequest): void {
+    this.setReviewRequests([...this.reviewRequests, request])
+  }
+
+  removeReviewRequest(requestId: string): void {
+    this.setReviewRequests(this.reviewRequests.filter(r => r.requestId !== requestId))
   }
 
   getKnownApps(): DirectoryApp[] {

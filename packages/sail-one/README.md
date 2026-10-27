@@ -12,6 +12,28 @@ npm run dev -w @finos/sail-one     # http://localhost:8090
 npm run dev:one                    # agent + platform watch builds alongside the shell
 ```
 
+## Extensions
+
+`SAIL_EXTENSION_URLS` is a comma-separated list of extension module URLs. Set it in the
+shell or in `packages/sail-one/.env`. When it's unset, Sail loads the demo extension at
+`http://localhost:9100/src/index.ts`. Entries that aren't `http(s)` URLs are skipped with
+a warning.
+
+```bash
+# local
+SAIL_EXTENSION_URLS=http://localhost:3000/sail-extension/index.js
+
+# remote
+SAIL_EXTENSION_URLS=https://<engine-host>/sail-extension/index.js
+
+# several
+SAIL_EXTENSION_URLS=http://localhost:9100/src/index.ts,http://localhost:3000/sail-extension/index.js
+```
+
+The list is fixed when Vite builds the shell. On a deployed Sail (Netlify), set
+`SAIL_EXTENSION_URLS` in the build settings and redeploy. A Sail served over `https` can't
+load an `http` extension (mixed content), so a remote engine must use `https`.
+
 ## Shape
 
 `src/state/` holds the three seams the UI talks to:

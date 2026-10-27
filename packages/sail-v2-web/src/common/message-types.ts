@@ -151,6 +151,23 @@ export type SailIntentResolveResponse = {
 }
 
 /**
+ * Server → client: an extension called `ctx.requestReview`. The browser shows the
+ * review dialog and acks with a `SailReviewDecision` (Allow / Block, optional note).
+ * Payload is `SailReviewRequest` from `@finos/sail-extension`.
+ */
+export const SAIL_REVIEW_REQUEST = "sail-review-request"
+
+/**
+ * Server → client: the server has settled a review on its own (deadline, browser
+ * disconnect, error), so the browser removes that request and closes its dialog.
+ * Sent even if the browser's clock thinks there is time left.
+ */
+export const SAIL_REVIEW_CLOSED = "sail-review-closed"
+
+/** Payload of SAIL_REVIEW_CLOSED. */
+export type SailReviewClosedArgs = { requestId: string }
+
+/**
  * A request by the server to the desktop agent client to open a new panel/tab for an app to go in,
  * and start the load process.
  */

@@ -7,6 +7,7 @@ import { AppDPanel } from "../appd/appd"
 import { Grids } from "../grid/grid"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
+import { ReviewPanel } from "../resolver/review"
 
 enum Popup {
   NONE,
@@ -20,6 +21,8 @@ interface FrameProps {
 
 export function Frame({ cs }: FrameProps) {
   const [popup, setPopup] = useState(Popup.NONE)
+  // One review at a time, oldest first; the rest wait their turn.
+  const review = cs.getReviewRequests()[0]
   const openAppDirectory = () => setPopup(Popup.APPD)
 
   return (
@@ -60,6 +63,15 @@ export function Frame({ cs }: FrameProps) {
               chosenIntent,
               chosenChannel,
             )
+          }}
+        />
+      ) : null}
+      {review ? (
+        <ReviewPanel
+          key={review.requestId}
+          request={review}
+          decide={decision => {
+            getServerState().reviewChosen(review.requestId, decision)
           }}
         />
       ) : null}

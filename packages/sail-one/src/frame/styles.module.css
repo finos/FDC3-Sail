@@ -47,6 +47,8 @@
   bottom: 0;
   right: 0;
   left: var(--sail-rail-width);
-  overflow: hidden;
+  /* Panels have a fixed row height, so the grid can grow past the window: scroll it. */
+  overflow-x: hidden;
+  overflow-y: auto;
   background-color: var(--sail-canvas);
 }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { DirectoryApp, SailDesktopAgent } from "@finos/sail-browser-agent"
+import { REVIEW_TIMED_OUT } from "@finos/sail-extension"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
@@ -216,5 +217,41 @@ describe("SailHost", () => {
     expect(host.getAppInstanceState(instanceId)).toBe(AppInstanceState.Terminated)
 
     vi.useRealTimers()
+  })
+
+  describe("requestReview", () => {
+    const details = {
+      ruleId: "desk/trade-size",
+      score: 0.6,
+      message: "Large order",
+      activity: { intent: "PlaceOrder" },
+    }
+
+    it("shows the review and resolves with the user's choice", async () => {
+      const host = new SailHost()
+      const pending = host.requestReview(details)
+
+      const [shown] = getClientState().getReviewRequests()
+      expect(shown).toMatchObject(details)
+
+      host.reviewChosen(shown!.requestId, { outcome: "Allow", note: "checked" })
+
+      await expect(pending).resolves.toEqual({ outcome: "Allow", note: "checked" })
+      expect(getClientState().getReviewRequests()).toEqual([])
+    })
+
+    it("closes the review and blocks when the deadline passes", async () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(1_000_000)
+      const host = new SailHost()
+
+      const pending = host.requestReview({ ...details, deadline: 1_003_000 })
+      expect(getClientState().getReviewRequests()).toHaveLength(1)
+      await vi.advanceTimersByTimeAsync(3_000)
+
+      await expect(pending).resolves.toEqual(REVIEW_TIMED_OUT)
+      expect(getClientState().getReviewRequests()).toEqual([])
+      vi.useRealTimers()
+    })
   })
 })

@@ -109,6 +109,44 @@ npm run dev:v2
 
 Starts the Socket.IO-based app in `packages/sail-v2-web` against the same `sail-headless-agent` engine.
 
+### Running with extensions (e.g. the Jev governance engine)
+
+`sail-one` and `sail-v2-web` load extensions from `SAIL_EXTENSION_URLS`, a comma-separated list of URLs. When it's unset, they load the demo extension at `http://localhost:9100/src/index.ts`.
+
+```mermaid
+flowchart LR
+    ENG["Jev engine<br/>localhost:3000"] -->|/sail-extension/index.js| ONE["sail-one<br/>npm run dev:one"]
+    ENG -->|/sail-extension/index.js| V2["sail-v2-web<br/>npm run dev:v2"]
+```
+
+1. Start the engine first, and check it serves the extension:
+
+   ```bash
+   curl -I http://localhost:3000/sail-extension/index.js   # expect 200
+   ```
+
+2. From the repo root, start one host with the variable set:
+
+   ```bash
+   # sail-one → http://localhost:8090
+   SAIL_EXTENSION_URLS=http://localhost:3000/sail-extension/index.js npm run dev:one
+
+   # or sail-v2-web → http://localhost:8090
+   SAIL_EXTENSION_URLS=http://localhost:3000/sail-extension/index.js npm run dev:v2
+   ```
+
+   To keep the demo extension as well, list both URLs:
+   `SAIL_EXTENSION_URLS=http://localhost:9100/src/index.ts,http://localhost:3000/sail-extension/index.js`
+
+| Need to know | |
+| --- | --- |
+| Where to set it | The shell, as above, works from the root. A `.env` file only works inside the package folder (`packages/sail-one/.env`, `packages/sail-v2-web/.env`), not at the repo root. |
+| When it's read | At start-up. Restart the host after changing it, or after starting the engine. |
+| Engine down | The URL is skipped with a warning and the host runs without it. |
+| Remote engine | Use `https`. A Sail served over `https` can't load an `http` engine. |
+| `npm run dev` | Don't use it with the engine. `sail-finance` also uses port 3000. |
+| Both hosts at once | Not supported yet. Both use port 8090, and both start the demo extension on port 9100. |
+
 ### Conformance harness
 
 ```bash

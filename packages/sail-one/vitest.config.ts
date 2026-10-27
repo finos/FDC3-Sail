@@ -7,6 +7,10 @@ const packageRoot = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
+  // Tests always use the default extension list, whatever the shell or `.env` says.
+  define: {
+    __SAIL_EXTENSION_URLS__: JSON.stringify(""),
+  },
   resolve: {
     alias: {
       "@": path.resolve(packageRoot, "./src"),

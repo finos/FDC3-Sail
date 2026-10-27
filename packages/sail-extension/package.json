@@ -30,6 +30,7 @@
   "scripts": {
     "build": "vp pack",
     "clean": "rimraf dist",
+    "test": "vp test run",
     "typecheck": "tsc",
     "lint": "vp lint .",
     "lint:fix": "vp lint . --fix",

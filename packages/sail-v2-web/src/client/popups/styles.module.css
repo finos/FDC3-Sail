@@ -75,3 +75,13 @@
 .popupButton:hover {
   background-color: #69451244;
 }
+
+.popupButtonPrimary {
+  background-color: #694512;
+  border-color: #694512;
+  color: #fafafa;
+}
+
+.popupButtonPrimary:hover {
+  background-color: #694512cc;
+}
