@@ -72,7 +72,12 @@ export interface ClientState {
   setIntentResolution(ir: IntentResolution | null): void
   /** Extension reviews waiting for the user, oldest first. */
   getReviewRequests(): SailReviewRequest[]
+  /** Replaces the waiting reviews and re-renders; add/remove below are the usual entry points. */
   setReviewRequests(requests: SailReviewRequest[]): void
+  /** Shows one more review, after those already waiting. */
+  addReviewRequest(request: SailReviewRequest): void
+  /** Closes the review with `requestId`; does nothing if it is already gone. */
+  removeReviewRequest(requestId: string): void
 }
 
 /**
@@ -429,6 +434,14 @@ export class PlatformClientState implements ClientState {
     // Not persisted: a review only lives while its extension call is waiting.
     this.reviewRequests = requests
     this.callbacks.forEach(cb => cb())
+  }
+
+  addReviewRequest(request: SailReviewRequest): void {
+    this.setReviewRequests([...this.reviewRequests, request])
+  }
+
+  removeReviewRequest(requestId: string): void {
+    this.setReviewRequests(this.reviewRequests.filter(r => r.requestId !== requestId))
   }
 
   async setCustomApps(apps: DirectoryApp[]): Promise<void> {

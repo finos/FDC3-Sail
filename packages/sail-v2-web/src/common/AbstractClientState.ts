@@ -238,6 +238,14 @@ export abstract class AbstractClientState implements ClientState {
     this.callbacks.forEach(cb => cb())
   }
 
+  addReviewRequest(request: SailReviewRequest): void {
+    this.setReviewRequests([...this.reviewRequests, request])
+  }
+
+  removeReviewRequest(requestId: string): void {
+    this.setReviewRequests(this.reviewRequests.filter(r => r.requestId !== requestId))
+  }
+
   getKnownApps(): DirectoryApp[] {
     console.log(`SAIL Get Known Apps: ${this.knownApps.length.toString()}`)
     return this.knownApps

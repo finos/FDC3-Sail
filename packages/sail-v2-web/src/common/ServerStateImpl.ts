@@ -21,7 +21,9 @@ import {
   SAIL_CLIENT_STATE,
   SAIL_EXTENSION_DATA,
   SAIL_INTENT_RESOLVE,
+  SAIL_REVIEW_CLOSED,
   SAIL_REVIEW_REQUEST,
+  SailReviewClosedArgs,
   SAIL_WSCP_PAIRING_UPDATE,
   SailAppCloseArgs,
   SailAppOpenArgs,
@@ -224,9 +226,16 @@ export class ServerStateImpl implements ServerState {
       SAIL_REVIEW_REQUEST,
       (data: SailReviewRequest, callback: (x: SailReviewDecision) => void) => {
         this.reviewCallbacks.set(data.requestId, callback)
-        this.cs!.setReviewRequests([...this.cs!.getReviewRequests(), data])
+        this.cs!.addReviewRequest(data)
       },
     )
+
+    // The server settled the review itself (deadline, disconnect, error): close the dialog,
+    // and drop the ack so a late Allow / Block is never sent.
+    this.socket.on(SAIL_REVIEW_CLOSED, (data: SailReviewClosedArgs) => {
+      this.reviewCallbacks.delete(data.requestId)
+      this.cs!.removeReviewRequest(data.requestId)
+    })
 
     this.socket.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
       this.cs!.appendContextHistory(data.channelId, data.context)
@@ -262,7 +271,7 @@ export class ServerStateImpl implements ServerState {
     // The server stops waiting at the deadline, so a late answer is simply ignored there.
     this.reviewCallbacks.get(requestId)?.(decision)
     this.reviewCallbacks.delete(requestId)
-    this.cs!.setReviewRequests(this.cs!.getReviewRequests().filter(r => r.requestId !== requestId))
+    this.cs!.removeReviewRequest(requestId)
   }
 
   intentChosen(

@@ -625,12 +625,12 @@ export class SailHost implements ServerState {
       d =>
         new Promise<SailReviewDecision>(resolve => {
           this.reviewAnswers.set(requestId, resolve)
-          cs.setReviewRequests([...cs.getReviewRequests(), { ...d, requestId }])
+          cs.addReviewRequest({ ...d, requestId })
         }),
     ).finally(() => {
       // Closes the dialog whether the user answered or the deadline passed.
       this.reviewAnswers.delete(requestId)
-      cs.setReviewRequests(cs.getReviewRequests().filter(r => r.requestId !== requestId))
+      cs.removeReviewRequest(requestId)
     })
   }
 

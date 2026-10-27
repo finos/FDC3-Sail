@@ -91,7 +91,12 @@ export interface ClientState {
    * Extension reviews waiting for the user, oldest first (see SAIL_REVIEW_REQUEST)
    */
   getReviewRequests(): SailReviewRequest[]
+  /** Replaces the waiting reviews and re-renders; add/remove below are the usual entry points. */
   setReviewRequests(requests: SailReviewRequest[]): void
+  /** Shows one more review, after those already waiting. */
+  addReviewRequest(request: SailReviewRequest): void
+  /** Closes the review with `requestId`; does nothing if it is already gone. */
+  removeReviewRequest(requestId: string): void
 
   /**
    * Context History

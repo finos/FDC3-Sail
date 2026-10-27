@@ -50,7 +50,7 @@ describe("requestReviewOverSocket", () => {
   })
 
   it("asks the browser with a request id and returns its decision", async () => {
-    const { socket, sent } = fakeSocket(true, () =>
+    const { socket, sent, emitted } = fakeSocket(true, () =>
       Promise.resolve({ outcome: "Allow", note: "checked" }),
     )
 
@@ -60,6 +60,8 @@ describe("requestReviewOverSocket", () => {
     expect(sent).toHaveLength(1)
     expect(sent[0].event).toBe(SAIL_REVIEW_REQUEST)
     expect(sent[0].data).toMatchObject({ ...details, requestId: expect.any(String) })
+    // The browser closed its own dialog when it answered.
+    expect(emitted).toEqual([])
   })
 
   it("blocks without asking when no browser is connected", async () => {
