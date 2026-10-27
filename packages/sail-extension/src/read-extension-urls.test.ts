@@ -8,8 +8,9 @@ describe("readExtensionUrls", () => {
     expect(readExtensionUrls(undefined, DEFAULTS)).toEqual(DEFAULTS)
   })
 
-  it("returns the defaults when the value is empty or only commas and spaces", () => {
+  it("returns the defaults when the value has no entries (empty, whitespace or only commas)", () => {
     expect(readExtensionUrls("", DEFAULTS)).toEqual(DEFAULTS)
+    expect(readExtensionUrls("   ", DEFAULTS)).toEqual(DEFAULTS)
     expect(readExtensionUrls(" , ,", DEFAULTS)).toEqual(DEFAULTS)
   })
 
@@ -40,9 +41,10 @@ describe("readExtensionUrls", () => {
     warn.mockRestore()
   })
 
-  it("falls back to the defaults when every entry is invalid", () => {
+  it("loads nothing (not the defaults) when something was set but every entry is invalid", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
-    expect(readExtensionUrls("nope", DEFAULTS)).toEqual(DEFAULTS)
+    expect(readExtensionUrls("nope, ftp://x.example.com/a.js", DEFAULTS)).toEqual([])
+    expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
   })
 })
