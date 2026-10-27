@@ -9,6 +9,7 @@ import { Content, Grids } from "../grid/grid"
 import { GridsStateImpl, GridsState } from "../grid/gridstate"
 import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
+import { ReviewPanel } from "../resolver/review"
 import { ContextHistoryPanel } from "../context/ContextHistory"
 import { SplashScreen } from "../splash/splash"
 import { InvisibleAppsHost } from "../invisible/invisible-host"
@@ -68,6 +69,8 @@ export class Frame extends Component<FrameProps, FrameState> {
   render() {
     const activeTab = this.props.cs.getActiveTab()
     const invisiblePanels = this.props.cs.getPanels().filter(p => p.invisible)
+    // One review at a time, oldest first; the rest wait their turn.
+    const review = this.props.cs.getReviewRequests()[0]
 
     return (
       <div className={styles.outer}>
@@ -142,6 +145,15 @@ export class Frame extends Component<FrameProps, FrameState> {
                 chosenIntent,
                 chosenChannel,
               )
+            }}
+          />
+        ) : null}
+        {review ? (
+          <ReviewPanel
+            key={review.requestId}
+            request={review}
+            decide={decision => {
+              getServerState().reviewChosen(review.requestId, decision)
             }}
           />
         ) : null}

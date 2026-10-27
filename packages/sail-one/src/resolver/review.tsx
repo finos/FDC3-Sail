@@ -8,6 +8,20 @@ function secondsLeft(deadline: number | undefined): number | null {
   return deadline === undefined ? null : Math.max(0, Math.ceil((deadline - Date.now()) / 1000))
 }
 
+/** Pretty JSON of the activity, falling back to plain text when it can't be serialised. */
+function describeActivity(activity: unknown): string {
+  // JSON.stringify gives undefined for these, despite its return type.
+  if (activity === undefined || typeof activity === "function") {
+    return String(activity)
+  }
+  try {
+    return JSON.stringify(activity, null, 2)
+  } catch {
+    // e.g. a circular object
+    return "(activity can't be shown)"
+  }
+}
+
 /** Shows an extension's review: what the agent tried and why, with Allow / Block and a note. */
 export function ReviewPanel({
   request,
@@ -63,7 +77,7 @@ export function ReviewPanel({
             ) : null}
           </dl>
           <p className={styles.reviewLabel}>What the agent tried</p>
-          <pre className={styles.reviewActivity}>{JSON.stringify(request.activity, null, 2)}</pre>
+          <pre className={styles.reviewActivity}>{describeActivity(request.activity)}</pre>
           <label className={styles.reviewLabel}>
             Note (optional)
             <textarea

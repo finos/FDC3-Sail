@@ -8,6 +8,7 @@ import {
 } from "./message-types"
 import { Context } from "@finos/fdc3-context-v3"
 import { DirectoryApp } from "@finos/sail-headless-agent"
+import type { SailReviewRequest } from "@finos/sail-extension"
 
 /**
  * @deprecated Prefer the stable WSCP endpoint (`/fdc3/ws`) plus sharedSecret.
@@ -85,6 +86,12 @@ export interface ClientState {
    */
   getIntentResolution(): IntentResolution | null
   setIntentResolution(ir: IntentResolution | null): void
+
+  /**
+   * Extension reviews waiting for the user, oldest first (see SAIL_REVIEW_REQUEST)
+   */
+  getReviewRequests(): SailReviewRequest[]
+  setReviewRequests(requests: SailReviewRequest[]): void
 
   /**
    * Context History
