@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react"
-import type { SailReviewDecision, SailReviewRequest } from "@finos/sail-extension"
+import {
+  REVIEW_TIMED_OUT,
+  type SailReviewDecision,
+  type SailReviewRequest,
+} from "@finos/sail-extension"
 import { Popup, PopupButton } from "../popups/popup"
 import styles from "./styles.module.css"
 
@@ -48,7 +52,7 @@ export function ReviewPanel({
   useEffect(() => {
     // The server already treats the review as Block at the deadline; this closes the dialog.
     if (remaining === 0) {
-      decide({ outcome: "Block", note: "Review timed out" })
+      decide(REVIEW_TIMED_OUT)
     }
   }, [remaining, decide])
 
@@ -90,7 +94,13 @@ export function ReviewPanel({
         </div>
       }
       buttons={[
-        <PopupButton key="allow" text="Allow" disabled={false} onClick={() => answer("Allow")} />,
+        <PopupButton
+          key="allow"
+          text="Allow"
+          primary
+          disabled={false}
+          onClick={() => answer("Allow")}
+        />,
       ]}
       closeAction={() => answer("Block")}
       closeName="Block"

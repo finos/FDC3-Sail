@@ -8,6 +8,7 @@ export {
   type SailExtensionUIRef,
 } from "./types"
 export {
+  REVIEW_TIMED_OUT,
   settleReview,
   toReviewDecision,
   type SailRequestReview,

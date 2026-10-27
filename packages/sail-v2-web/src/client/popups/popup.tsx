@@ -47,15 +47,17 @@ export const PopupButton = ({
   text,
   onClick,
   disabled,
+  primary = false,
 }: {
   text: string
   onClick: () => void
   disabled: boolean
+  primary?: boolean
 }) => {
   return (
     <button
       id="cancel"
-      className={styles.popupButton}
+      className={`${styles.popupButton} ${primary ? styles.popupButtonPrimary : ""}`}
       onClick={() => onClick()}
       disabled={disabled}
     >

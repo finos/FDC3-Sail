@@ -13,7 +13,10 @@ export type SailReviewDetails = {
 /** The user's answer to a review. */
 export type SailReviewDecision = { outcome: "Allow" | "Block"; note?: string }
 
-/** Asks the host to show a review; resolves with the user's decision. */
+/** The decision when a review's deadline passes before the user answers. */
+export const REVIEW_TIMED_OUT: SailReviewDecision = { outcome: "Block", note: "Review timed out" }
+
+/** Asks the host to show a review;resolves with the user's decision. */
 export type SailRequestReview = (details: SailReviewDetails) => Promise<SailReviewDecision>
 
 /** A host's view of a review it is showing: the details plus an id to answer it by. */
@@ -44,13 +47,13 @@ export function settleReview(
   }
   const remaining = details.deadline - Date.now()
   if (remaining <= 0) {
-    return Promise.resolve({ outcome: "Block", note: "Review timed out" })
+    return Promise.resolve(REVIEW_TIMED_OUT)
   }
   const answer = askSafely(details, ask)
   let timer: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<SailReviewDecision>(resolve => {
     timer = setTimeout(() => {
-      resolve({ outcome: "Block", note: "Review timed out" })
+      resolve(REVIEW_TIMED_OUT)
     }, remaining)
   })
   return Promise.race([answer, timeout]).finally(() => {

@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react"
-import type { SailReviewDecision, SailReviewRequest } from "@finos/sail-extension"
+import {
+  REVIEW_TIMED_OUT,
+  type SailReviewDecision,
+  type SailReviewRequest,
+} from "@finos/sail-extension"
 import { Popup, PopupButton } from "../popups/popup"
 import styles from "./styles.module.css"
 
@@ -48,7 +52,7 @@ export function ReviewPanel({
   useEffect(() => {
     // The host also blocks at the deadline; this just closes the dialog promptly.
     if (remaining === 0) {
-      decide({ outcome: "Block", note: "Review timed out" })
+      decide(REVIEW_TIMED_OUT)
     }
   }, [remaining, decide])
 

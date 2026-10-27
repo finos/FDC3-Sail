@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { DirectoryApp, SailDesktopAgent } from "@finos/sail-browser-agent"
+import { REVIEW_TIMED_OUT } from "@finos/sail-extension"
 import { AppInstanceState, SailHost } from "../sail-host"
 import { AppHosting } from "../default-app-state"
 import type { SailClientStateArgs } from "../client-state"
@@ -248,7 +249,7 @@ describe("SailHost", () => {
       expect(getClientState().getReviewRequests()).toHaveLength(1)
       await vi.advanceTimersByTimeAsync(3_000)
 
-      await expect(pending).resolves.toEqual({ outcome: "Block", note: "Review timed out" })
+      await expect(pending).resolves.toEqual(REVIEW_TIMED_OUT)
       expect(getClientState().getReviewRequests()).toEqual([])
       vi.useRealTimers()
     })
