@@ -1,4 +1,5 @@
 export { applyExtensions } from "./apply-extensions"
+export { readExtensionUrls } from "./read-extension-urls"
 export {
   SAIL_CONFIG_UI,
   type SailExtension,
