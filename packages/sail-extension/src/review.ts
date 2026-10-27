@@ -63,11 +63,11 @@ function askSafely(
   details: SailReviewDetails,
   ask: (details: SailReviewDetails) => Promise<unknown>,
 ): Promise<SailReviewDecision> {
-  // Start from a resolved promise so a synchronous throw also becomes Block.
-  return Promise.resolve()
-    .then(() => ask(details))
-    .then(toReviewDecision, () => ({
-      outcome: "Block" as const,
-      note: "Review unavailable",
-    }))
+  const unavailable: SailReviewDecision = { outcome: "Block", note: "Review unavailable" }
+  // Call `ask` synchronously so the host shows the dialog straight away; a throw is Block.
+  try {
+    return ask(details).then(toReviewDecision, () => unavailable)
+  } catch {
+    return Promise.resolve(unavailable)
+  }
 }
