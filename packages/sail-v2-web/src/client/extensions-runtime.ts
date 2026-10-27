@@ -1,7 +1,10 @@
-import { pickSailExtension, pickSailExtensionUIs } from "@finos/sail-extension"
+import { pickSailExtension, pickSailExtensionUIs, readExtensionUrls } from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
 
-import { SAIL_EXTENSION_URLS } from "../extensions"
+import { DEFAULT_SAIL_EXTENSION_URLS } from "../extensions"
+
+// Set at build time by vite.config.ts from the same SAIL_EXTENSION_URLS the server reads.
+const SAIL_EXTENSION_URLS = readExtensionUrls(__SAIL_EXTENSION_URLS__, DEFAULT_SAIL_EXTENSION_URLS)
 
 export type LoadedSailExtensionUI = SailExtensionUI & { coreId: string }
 
