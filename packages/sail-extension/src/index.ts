@@ -7,6 +7,14 @@ export {
   type SailExtensionUIRef,
 } from "./types"
 export {
+  settleReview,
+  toReviewDecision,
+  type SailRequestReview,
+  type SailReviewDecision,
+  type SailReviewDetails,
+  type SailReviewRequest,
+} from "./review"
+export {
   isSailExtension,
   isSailExtensionUI,
   pickSailExtension,
