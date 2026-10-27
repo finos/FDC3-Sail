@@ -2,7 +2,7 @@
 
 .grids {
   position: relative;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   padding: 0.35rem;
   box-sizing: border-box;
