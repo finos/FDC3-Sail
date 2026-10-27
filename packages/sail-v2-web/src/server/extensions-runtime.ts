@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url"
 import { pickSailExtension, readExtensionUrls, type SailExtension } from "@finos/sail-extension"
+// Vite is already loaded at runtime in production too: vite-express (main.ts) imports it to resolve vite.config.ts.
 import { loadEnv } from "vite"
 
 import { DEFAULT_SAIL_EXTENSION_URLS } from "../extensions"
