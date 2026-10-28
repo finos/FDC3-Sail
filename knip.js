@@ -50,6 +50,18 @@ const config = {
     },
     "packages/sail-one": {
       entry: ["html/**/*.html"],
+      ignoreDependencies: ["@finos/sail-extension-demo"],
+    },
+    "packages/sail-extension": {
+      entry: ["src/index.ts", "src/ui.ts"],
+    },
+    "packages/sail-extension-server": {
+      entry: ["src/index.ts", "src/cli.ts", "bin/sail-extension-server.mjs"],
+      ignoreDependencies: ["tsx"],
+    },
+    "extensions/demo": {
+      entry: ["src/index.ts", "src/ui.tsx"],
+      ignoreDependencies: ["@finos/sail-extension-server"],
     },
     website: {
       entry: ["src/css/custom.css"],

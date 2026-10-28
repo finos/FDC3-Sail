@@ -3,6 +3,7 @@ import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
 import { resolveDeepLinkAppId, resolveSoleFdc3Directory } from "@finos/sail-env"
 import { AppHosting, getClientState, getServerState, bindClientStateToHost } from "./state"
+import { loadExtensionCores, loadExtensionUIs } from "./state/extensions-runtime"
 import { useSailState } from "./state/use-sail-state"
 
 function App() {
@@ -58,6 +59,8 @@ async function bootstrap(): Promise<void> {
   // Desktop Agent would be seeded with default channels and then immediately
   // restarted when the persisted set arrived.
   await getClientState().load()
+  await loadExtensionCores()
+  await loadExtensionUIs()
   await ensureSoleFdc3Directory()
 
   const container = document.getElementById("app")

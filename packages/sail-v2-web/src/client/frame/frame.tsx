@@ -1,8 +1,8 @@
 import { Bin, Controls, NewPanel } from "../controls/controls"
-import { ContextHistory, Logo, Settings } from "../top/top"
+import { ContextHistory, InvisibleAppIcons, Logo, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
 import styles from "./styles.module.css"
-import { ClientState, getClientState, AppState, getServerState } from "@finos/fdc3-sail-common"
+import { ClientState, getClientState, AppState, getServerState, AppPanel } from "../../common"
 import { Component } from "react"
 import { AppDPanel } from "../appd/appd"
 import { Content, Grids } from "../grid/grid"
@@ -11,6 +11,7 @@ import { ConfigPanel } from "../config/config"
 import { ResolverPanel } from "../resolver/resolver"
 import { ContextHistoryPanel } from "../context/ContextHistory"
 import { SplashScreen } from "../splash/splash"
+import { InvisibleAppsHost } from "../invisible/invisible-host"
 
 enum Popup {
   NONE,
@@ -53,18 +54,37 @@ export class Frame extends Component<FrameProps, FrameState> {
     void this.props.cs.setSplashScreenVisible(false)
   }
 
+  private toggleInvisibleDialog = (panel: AppPanel) => {
+    const opening = !panel.dialogOpen
+    const invisible = this.props.cs.getPanels().filter(p => p.invisible)
+    for (const p of invisible) {
+      const dialogOpen = p.panelId === panel.panelId ? opening : opening ? false : p.dialogOpen
+      if (dialogOpen !== !!p.dialogOpen) {
+        void this.props.cs.updatePanel({ ...p, dialogOpen })
+      }
+    }
+  }
+
   render() {
     const activeTab = this.props.cs.getActiveTab()
+    const invisiblePanels = this.props.cs.getPanels().filter(p => p.invisible)
 
     return (
       <div className={styles.outer}>
         <div className={styles.top}>
           <Logo onClick={this.openSplashScreen} />
-          <ContextHistory
-            onClick={() => this.setState({ popup: Popup.CONTEXT_HISTORY })}
-            contextHistory={this.props.cs.getContextHistory(activeTab.id)}
-          />
-          <Settings onClick={() => this.setState({ popup: Popup.SETTINGS })} />
+          <div className={styles.topRight}>
+            <ContextHistory
+              onClick={() => this.setState({ popup: Popup.CONTEXT_HISTORY })}
+              contextHistory={this.props.cs.getContextHistory(activeTab.id)}
+            />
+            <InvisibleAppIcons
+              panels={invisiblePanels}
+              onToggle={this.toggleInvisibleDialog}
+              daReady={this.props.as.isDesktopAgentReady()}
+            />
+            <Settings onClick={() => this.setState({ popup: Popup.SETTINGS })} />
+          </div>
         </div>
         <div className={styles.left}>
           <Tabs cs={this.props.cs} />
@@ -128,6 +148,7 @@ export class Frame extends Component<FrameProps, FrameState> {
         {this.props.cs.isSplashScreenVisible() ? (
           <SplashScreen closeAction={this.closeSplashScreen} />
         ) : null}
+        <InvisibleAppsHost cs={this.props.cs} as={this.props.as} />
       </div>
     )
   }

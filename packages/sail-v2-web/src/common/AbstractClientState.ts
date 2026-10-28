@@ -1,4 +1,4 @@
-import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
+import { DirectoryApp, WebAppDetails, sailHostManifestFromApp } from "@finos/sail-headless-agent"
 import { AppPanel, ClientState, IntentResolution } from "./ClientState"
 import {
   ContextHistory,
@@ -23,6 +23,7 @@ export abstract class AbstractClientState implements ClientState {
   protected customApps: DirectoryApp[] = []
   protected contextHistory: ContextHistory = {}
   protected wscpPairings: WscpPairing[] = []
+  protected extensionData: Record<string, Record<string, unknown>> = {}
 
   constructor(
     tabs: TabDetail[],
@@ -35,6 +36,7 @@ export abstract class AbstractClientState implements ClientState {
     customApps: DirectoryApp[],
     history: ContextHistory,
     wscpPairings: WscpPairing[] = [],
+    extensionData: Record<string, Record<string, unknown>> = {},
   ) {
     this.tabs = tabs
     this.panels = panels
@@ -46,6 +48,7 @@ export abstract class AbstractClientState implements ClientState {
     this.customApps = customApps
     this.contextHistory = history
     this.wscpPairings = wscpPairings
+    this.extensionData = extensionData
   }
 
   abstract saveState(): Promise<void>
@@ -130,6 +133,7 @@ export abstract class AbstractClientState implements ClientState {
   newPanel(detail: DirectoryApp, instanceId: string, title: string): AppPanel {
     if (detail.type == "web") {
       const url = (detail.details as WebAppDetails).url
+      const manifest = sailHostManifestFromApp(detail)
 
       const ap: AppPanel = {
         x: -1,
@@ -142,6 +146,9 @@ export abstract class AbstractClientState implements ClientState {
         url,
         appId: detail.appId,
         icon: detail.icons?.[0]?.src ?? null,
+        invisible: manifest.invisible,
+        singleton: manifest.singleton,
+        dialogOpen: false,
       }
 
       this.panels.push(ap)
@@ -195,7 +202,17 @@ export abstract class AbstractClientState implements ClientState {
       customApps: this.customApps,
       contextHistory: this.contextHistory,
       wscpPairings: this.wscpPairings,
+      extensionData: this.extensionData,
     }
+  }
+
+  getExtensionData(extensionId: string): Record<string, unknown> {
+    return this.extensionData[extensionId] ?? {}
+  }
+
+  async setExtensionData(extensionId: string, data: Record<string, unknown>): Promise<void> {
+    this.extensionData = { ...this.extensionData, [extensionId]: data }
+    await this.saveState()
   }
 
   getIntentResolution(): IntentResolution | null {

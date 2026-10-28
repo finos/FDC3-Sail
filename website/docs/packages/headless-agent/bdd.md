@@ -90,7 +90,7 @@ the live-browser WCP path); **missing** means no BDD coverage. Paths below are r
 | Private channels | `v2/private-channel.feature`, `v3/private-channel.feature` | covered | Includes grant / `AccessDenied` paths |
 | Context broadcast | `v2/broadcast.feature`, `v3/broadcast.feature` | covered | v3 adds app-provided / DA-generated metadata (`traceId`, …) |
 | Context / event listeners | `v2/event-listeners.feature`, `v3/event-listeners.feature` | covered | v3 suite is broader |
-| `raiseIntent` | `v2/raise-intent.feature`, `v3/raise-intent.feature` | covered | v3 includes app-provided intent metadata |
+| `raiseIntent` | `v2/raise-intent.feature`, `v3/raise-intent.feature` | covered | v3 includes app-provided intent metadata; both cover singleton reuse vs non-singleton relaunch when targeting by `appId` only |
 | `raiseIntentForContext` | `v2/raise-intent-with-context.feature`, `v3/raise-intent-with-context.feature` | covered | Running/non-running targeting, resolver paths |
 | `findIntent` / find-by-context | `v2/find-intent.feature`, `v3/find-intent.feature` | covered | Result filters and closed-instance exclusions |
 | Intent results / `getResult` | `v2/intent-result.feature`, `v3/intent-result.feature` | covered | v3 covers result metadata shapes |

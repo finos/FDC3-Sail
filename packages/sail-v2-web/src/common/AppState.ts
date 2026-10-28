@@ -17,14 +17,33 @@ export interface AppOpenDetails {
 export interface AppState {
   init(ss: ServerState, cs: ClientState): void
 
+  /** True after DA_HELLO has completed for this browser session. */
+  isDesktopAgentReady(): boolean
+
+  /**
+   * Mark the Desktop Agent connected. App iframes (grid frames and invisible
+   * hosts) mount only after this, so APP_HELLO has a session to join.
+   */
+  markDesktopAgentReady(): void
+
   registerAppWindow(window: Window, instanceId: string): void
 
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
 
   /**
    * Tear down the app container opened for this instance (tab or Sail frame).
+   * Invisible Frame apps hide their dialog instead of terminating.
    */
   closeApp(instanceId: string, hosting: AppHosting): Promise<void>
+
+  /**
+   * Ensure each autostart app has at least one live or pending instance.
+   * Safe to call after directory refreshes (no-op when count ≥ 1).
+   */
+  ensureAutostartApps(apps: DirectoryApp[]): Promise<void>
+
+  /** Live (non-terminated) instance for appId, if any. */
+  findLiveInstance(appId: string): AppOpenDetails | undefined
 
   getAppState(instanceId: string): State | undefined
 

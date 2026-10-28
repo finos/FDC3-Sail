@@ -1,6 +1,12 @@
 import { AppOpenDetails, AppState } from "./AppState"
 import { AppHosting } from "./app-hosting"
-import { DirectoryApp, WebAppDetails, State, Fdc3ApiVersion } from "@finos/sail-headless-agent"
+import {
+  DirectoryApp,
+  WebAppDetails,
+  State,
+  Fdc3ApiVersion,
+  sailHostManifestFromApp,
+} from "@finos/sail-headless-agent"
 import {
   normalizeIdentityUrl,
   normalizeUrlPathname,
@@ -16,10 +22,30 @@ export class DefaultAppState implements AppState {
   /** Tab/popup windows polled for `window.closed` (2.2 mock window.close()). */
   private popupWindows = new Map<string, Window>()
   private popupPollId: ReturnType<typeof setInterval> | undefined
+  /** In-flight opens keyed by appId — shared for singleton concurrent launches. */
+  private pendingLaunches = new Map<string, Promise<AppOpenDetails>>()
+  /** Set after DA_HELLO; app iframes must wait for this. */
+  private desktopAgentReady = false
+  /** Restored localStorage panels have been re-registered with this DA session. */
+  private restoredPanelsRegistered = false
   states: SailAppStateArgs = []
   callbacks: (() => void)[] = []
   cs: ClientState | null = null
   ss: ServerState | null = null
+
+  isDesktopAgentReady(): boolean {
+    return this.desktopAgentReady
+  }
+
+  markDesktopAgentReady(): void {
+    if (this.desktopAgentReady) {
+      return
+    }
+    this.desktopAgentReady = true
+    this.callbacks.forEach(x => {
+      x()
+    })
+  }
 
   getAppState(instanceId: string): State | undefined {
     return this.states.find(x => x.instanceId == instanceId)?.state
@@ -250,6 +276,17 @@ export class DefaultAppState implements AppState {
 
   async closeApp(instanceId: string, hosting: AppHosting): Promise<void> {
     if (hosting === AppHosting.Frame) {
+      const panel = this.getClientState()
+        .getPanels()
+        .find(p => p.panelId === instanceId)
+      // Invisible hosted pages: hide dialog, keep iframe / FDC3 connection.
+      if (panel?.invisible) {
+        await this.getClientState().updatePanel({
+          ...panel,
+          dialogOpen: false,
+        })
+        return
+      }
       await this.getClientState().removePanel(instanceId)
       this.forgetWindow(instanceId)
       return
@@ -261,6 +298,81 @@ export class DefaultAppState implements AppState {
       this.forgetWindow(instanceId)
       if (win && !win.closed) {
         win.close()
+      }
+    }
+  }
+
+  findLiveInstance(appId: string): AppOpenDetails | undefined {
+    const fromState = this.states.find(s => s.appId === appId && s.state !== State.Terminated)
+    if (fromState) {
+      const panel = this.cs?.getPanels().find(p => p.panelId === fromState.instanceId)
+      return {
+        instanceId: fromState.instanceId,
+        channel: panel?.tabId ?? null,
+        instanceTitle: panel?.title ?? fromState.appId,
+      }
+    }
+
+    const panel = this.cs?.getPanels().find(p => p.appId === appId)
+    if (panel) {
+      return {
+        instanceId: panel.panelId,
+        channel: panel.tabId,
+        instanceTitle: panel.title,
+      }
+    }
+
+    return undefined
+  }
+
+  async ensureAutostartApps(apps: DirectoryApp[]): Promise<void> {
+    if (!this.restoredPanelsRegistered) {
+      await this.reregisterRestoredPanels()
+      this.restoredPanelsRegistered = true
+    }
+    for (const app of apps) {
+      const manifest = sailHostManifestFromApp(app)
+      if (!manifest.autostart) {
+        continue
+      }
+      if (this.pendingLaunches.has(app.appId) || this.findLiveInstance(app.appId)) {
+        continue
+      }
+      try {
+        await this.open(app)
+      } catch (e: unknown) {
+        console.error(`[Sail] Autostart failed for ${app.appId}`, e)
+      }
+    }
+  }
+
+  /**
+   * Re-register persisted panels with the current DA session so APP_HELLO can
+   * join using the same instance ids. Frames stay; only iframe load is deferred.
+   */
+  private async reregisterRestoredPanels(): Promise<void> {
+    const cs = this.getClientState()
+    const ss = this.getServerState()
+    const known = cs.getKnownApps()
+    for (const panel of cs.getPanels()) {
+      if (!panel.appId || !panel.panelId) {
+        continue
+      }
+      const app = known.find(a => a.appId === panel.appId)
+      const url = app ? (app.details as WebAppDetails).url : undefined
+      if (typeof url === "string" && url !== panel.url) {
+        await cs.updatePanel({ ...panel, url })
+      }
+      try {
+        await ss.registerAppLaunch(
+          panel.appId,
+          AppHosting.Frame,
+          panel.tabId ?? null,
+          panel.title,
+          panel.panelId,
+        )
+      } catch (e: unknown) {
+        console.error(`[Sail] Failed to re-register restored panel ${panel.panelId}`, e)
       }
     }
   }
@@ -337,43 +449,58 @@ export class DefaultAppState implements AppState {
    * returns the instance id for the new thing.
    */
   open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails> {
-    return new Promise(resolve => {
-      const sailManifest = detail.hostManifests?.sail ?? {}
-      const forceNewWindow =
-        (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ?? false
-      // Explicit destination (e.g. deep-link Frame for Playwright) wins over manifest.
-      const hosting: AppHosting =
-        destination ?? (forceNewWindow ? AppHosting.Tab : AppHosting.Frame)
-      const instanceTitle = this.createTitle(detail)
-      if (hosting == AppHosting.Tab) {
-        this.getServerState()
-          .registerAppLaunch(detail.appId, hosting, null, instanceTitle)
-          .then(instanceId => {
-            // Use instanceId as window.name so closePopupForInstance / mocks can match.
-            const w = window.open((detail.details as WebAppDetails).url, instanceId)
-            if (w) {
-              this.registerAppWindow(w, instanceId)
-              this.registerPopup(instanceId, w)
-              resolve({ instanceId, channel: null, instanceTitle })
-            } else {
-              throw new Error("Failed to open window")
-            }
-          })
-          .catch((e: unknown) => {
-            console.error("Error registering app launch", e)
-          })
-      } else {
-        const channel = this.getClientState().getActiveTab().id
-        this.getServerState()
-          .registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
-          .then(instanceId => {
-            this.getClientState().newPanel(detail, instanceId, instanceTitle)
-            resolve({ instanceId, channel, instanceTitle })
-          })
-          .catch((e: unknown) => {
-            console.error("Error registering app launch", e)
-          })
+    const manifest = sailHostManifestFromApp(detail)
+
+    if (manifest.singleton) {
+      const existing = this.findLiveInstance(detail.appId)
+      if (existing) {
+        return Promise.resolve(existing)
       }
-    })
+      const pending = this.pendingLaunches.get(detail.appId)
+      if (pending) {
+        return pending
+      }
+    }
+
+    const launch = this.launchApp(detail, destination, manifest.forceNewWindow)
+    if (manifest.singleton) {
+      this.pendingLaunches.set(detail.appId, launch)
+      void launch.finally(() => {
+        this.pendingLaunches.delete(detail.appId)
+      })
+    }
+    return launch
+  }
+
+  private launchApp(
+    detail: DirectoryApp,
+    destination: AppHosting | undefined,
+    forceNewWindow: boolean,
+  ): Promise<AppOpenDetails> {
+    // Explicit destination (e.g. deep-link Frame for Playwright) wins over manifest.
+    const hosting: AppHosting = destination ?? (forceNewWindow ? AppHosting.Tab : AppHosting.Frame)
+    const instanceTitle = this.createTitle(detail)
+
+    if (hosting == AppHosting.Tab) {
+      return this.getServerState()
+        .registerAppLaunch(detail.appId, hosting, null, instanceTitle)
+        .then(instanceId => {
+          const w = window.open((detail.details as WebAppDetails).url, instanceId)
+          if (w) {
+            this.registerAppWindow(w, instanceId)
+            this.registerPopup(instanceId, w)
+            return { instanceId, channel: null, instanceTitle }
+          }
+          throw new Error("Failed to open window")
+        })
+    }
+
+    const channel = this.getClientState().getActiveTab().id
+    return this.getServerState()
+      .registerAppLaunch(detail.appId, hosting, channel, instanceTitle)
+      .then(instanceId => {
+        this.getClientState().newPanel(detail, instanceId, instanceTitle)
+        return { instanceId, channel, instanceTitle }
+      })
   }
 }

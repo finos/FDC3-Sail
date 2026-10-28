@@ -2,9 +2,10 @@ import { Component } from "react"
 import styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
-import { AppState, getAppState, AppPanel, ClientState } from "@finos/fdc3-sail-common"
+import { AppState, getAppState, AppPanel, ClientState } from "../../common"
 import { State } from "@finos/sail-headless-agent"
-//import { AppHosting } from "@finos/fdc3-sail-common"
+import { DaPendingPlaceholder } from "../pending/pending"
+//import { AppHosting } from "../../common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 
@@ -18,17 +19,17 @@ export class Grids extends Component<GridsProps> {
   }
 
   render() {
+    const daReady = this.props.as.isDesktopAgentReady()
+    const visiblePanels = this.props.cs.getPanels().filter(p => !p.invisible)
     return (
       <div className={styles.grids} id={this.props.id}>
-        {this.props.cs.getPanels().map(p => (
-          <AppFrame key={p.panelId} panel={p} />
-        ))}
+        {daReady ? visiblePanels.map(p => <AppFrame key={p.panelId} panel={p} />) : null}
       </div>
     )
   }
 }
 
-const AppFrame = ({ panel }: { panel: AppPanel }) => {
+export const AppFrame = ({ panel, className }: { panel: AppPanel; className?: string }) => {
   const registerWindow = (iframe: HTMLIFrameElement | null) => {
     const contentWindow = iframe?.contentWindow
     if (contentWindow) {
@@ -42,7 +43,7 @@ const AppFrame = ({ panel }: { panel: AppPanel }) => {
       id={"iframe_" + panel.panelId}
       name={panel.panelId}
       slot={"slot_" + panel.panelId}
-      className={styles.iframe}
+      className={className ?? styles.iframe}
       onLoad={e => {
         registerWindow(e.currentTarget)
       }}
@@ -60,6 +61,9 @@ const AppStateIcon = ({ instanceId, as }: { instanceId: string; as: AppState }) 
   const D = "/icons/app-state/"
 
   function symbolForState(s: State | undefined): string[] {
+    if (!as.isDesktopAgentReady()) {
+      return [D + "pending.svg", "Waiting for Desktop Agent"]
+    }
     if (s == undefined) {
       return [D + "unknown.svg", "Unknown"]
     } else {
@@ -139,7 +143,16 @@ export const Content = ({
           /> */}
         </div>
         <div className={styles.resizeBaffle} />
-        <div className={styles.contentBody}>{panel.url ? <AppSlot panel={panel} /> : <div />}</div>
+        <div className={styles.contentBody}>
+          {as.isDesktopAgentReady() && panel.url ? (
+            <AppSlot panel={panel} />
+          ) : (
+            <DaPendingPlaceholder
+              className={styles.daPending}
+              iconClassName={styles.daPendingIcon}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

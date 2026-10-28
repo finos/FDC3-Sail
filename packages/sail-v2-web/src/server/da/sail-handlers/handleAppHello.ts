@@ -1,4 +1,4 @@
-import { AppHosting, AppHelloArgs, SailHostManifest } from "@finos/fdc3-sail-common"
+import { AppHosting, AppHelloArgs, parseSailHostManifest } from "../../../common"
 import { State, WebAppDetails } from "@finos/sail-headless-agent"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { SailData } from "../SailFDC3ServerInstance"
@@ -50,7 +50,7 @@ export function handleAppHello(
         "App tried to connect with invalid instance id, allowing connection anyway",
       )
 
-      const shm: SailHostManifest = directoryItem[0]?.hostManifests?.sail as any
+      const shm = parseSailHostManifest(directoryItem[0]?.hostManifests?.sail)
 
       const instanceDetails: SailData = {
         appId: props.appId,
@@ -59,7 +59,7 @@ export function handleAppHello(
         fdc3Version: props.fdc3Version ?? "2.2",
         connection,
         url: (directoryItem[0].details as WebAppDetails).url,
-        hosting: shm?.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
+        hosting: shm.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
         channel: null,
         instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++,
         channelConnections: [],
