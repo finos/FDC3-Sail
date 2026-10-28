@@ -141,6 +141,9 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
   async close(instanceId: InstanceID): Promise<void> {
     const details = this.getInstanceDetails(instanceId)
+    const directoryApp = details ? this.getDirectory().retrieveAppsById(details.appId)[0] : undefined
+    const minimizeOnly = directoryApp !== undefined && sailHostManifestFromApp(directoryApp).invisible
+
     if (details) {
       try {
         await this.connection.emitWithAck(SAIL_APP_CLOSE, {
@@ -150,6 +153,11 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       } catch (e) {
         log.error({ instanceId, error: e }, "Failed to close app container in browser DA")
         throw e
+      }
+
+      // Invisible apps: hide the dialog only. Autostart listeners must stay up.
+      if (minimizeOnly) {
+        return
       }
 
       // Remote apps keep an app-side socket; drop it when closing.

@@ -353,9 +353,15 @@ export class DefaultAppState implements AppState {
   private async reregisterRestoredPanels(): Promise<void> {
     const cs = this.getClientState()
     const ss = this.getServerState()
+    const known = cs.getKnownApps()
     for (const panel of cs.getPanels()) {
       if (!panel.appId || !panel.panelId) {
         continue
+      }
+      const app = known.find(a => a.appId === panel.appId)
+      const url = app ? (app.details as WebAppDetails).url : undefined
+      if (typeof url === "string" && url !== panel.url) {
+        await cs.updatePanel({ ...panel, url })
       }
       try {
         await ss.registerAppLaunch(
