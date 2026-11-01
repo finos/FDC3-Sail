@@ -36,21 +36,30 @@ export function handleAppHello(
       "App connected",
     )
     const appInstance = fdc3Server.getInstanceDetails(ctx.appInstanceId)
-    const directoryItem = fdc3Server.directory.retrieveAppsById(props.appId)
+    const directoryApp = fdc3Server.directory.retrieveAppsById(props.appId)[0]
+    const directoryUrl = (directoryApp?.details as WebAppDetails | undefined)?.url
     if (appInstance != undefined && appInstance.state == State.Pending) {
+      const url = directoryUrl ?? appInstance.url
+      if (!url) {
+        log.error(
+          { appInstanceId: ctx.appInstanceId, appId: props.appId },
+          "App hello: directory record unavailable and instance has no url",
+        )
+        return callback(null, "App not found in directory")
+      }
       appInstance.connection = connection
-      appInstance.url = (directoryItem[0].details as WebAppDetails).url
+      appInstance.url = url
       appInstance.fdc3Version = props.fdc3Version ?? "2.2"
       ctx.fdc3ServerInstance = fdc3Server
       ctx.fdc3ServerInstance.setInstanceDetails(ctx.appInstanceId, appInstance)
       return callback(appInstance.hosting)
-    } else if (DEBUG_MODE && directoryItem.length > 0) {
+    } else if (DEBUG_MODE && directoryApp && directoryUrl) {
       log.warn(
-        { appInstanceId: ctx.appInstanceId },
+        { appInstanceId: ctx.appInstanceId, appId: props.appId },
         "App tried to connect with invalid instance id, allowing connection anyway",
       )
 
-      const shm = parseSailHostManifest(directoryItem[0]?.hostManifests?.sail)
+      const shm = parseSailHostManifest(directoryApp.hostManifests?.sail)
 
       const instanceDetails: SailData = {
         appId: props.appId,
@@ -58,10 +67,10 @@ export function handleAppHello(
         state: State.Pending,
         fdc3Version: props.fdc3Version ?? "2.2",
         connection,
-        url: (directoryItem[0].details as WebAppDetails).url,
+        url: directoryUrl,
         hosting: shm.forceNewWindow ? AppHosting.Tab : AppHosting.Frame,
         channel: null,
-        instanceTitle: directoryItem[0].title + " - RECOVERED " + debugReconnectionNumber++,
+        instanceTitle: directoryApp.title + " - RECOVERED " + debugReconnectionNumber++,
         channelConnections: [],
       }
 
@@ -71,8 +80,13 @@ export function handleAppHello(
       return callback(instanceDetails.hosting)
     }
 
-    log.error({ appInstanceId: ctx.appInstanceId }, "App tried to connect with invalid instance id")
-    return callback(null, "Invalid instance id")
+    log.error(
+      { appInstanceId: ctx.appInstanceId, appId: props.appId, inDirectory: Boolean(directoryApp) },
+      directoryApp
+        ? "App tried to connect with invalid instance id"
+        : "App hello: appId not in directory",
+    )
+    return callback(null, directoryApp ? "Invalid instance id" : "App not found in directory")
   } else {
     log.error(
       { userSessionId: ctx.userSessionId, appInstanceId: ctx.appInstanceId },

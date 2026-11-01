@@ -359,7 +359,13 @@ export class DefaultAppState implements AppState {
         continue
       }
       const app = known.find(a => a.appId === panel.appId)
-      const url = app ? (app.details as WebAppDetails).url : undefined
+      if (!app) {
+        console.warn(
+          `[Sail] Skipping restored panel ${panel.panelId}: ${panel.appId} is not in the current directory`,
+        )
+        continue
+      }
+      const url = (app.details as WebAppDetails).url
       if (typeof url === "string" && url !== panel.url) {
         await cs.updatePanel({ ...panel, url })
       }
