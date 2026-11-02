@@ -18,6 +18,7 @@ import {
   SAIL_CHANNEL_CHANGE,
   SAIL_CHANNEL_SETUP,
   SAIL_CLIENT_STATE,
+  SAIL_EXTENSION_DATA,
   SAIL_INTENT_RESOLVE,
   SAIL_WSCP_PAIRING_UPDATE,
   SailAppCloseArgs,
@@ -27,6 +28,7 @@ import {
   SailBroadcastContextArgs,
   SailChannelChangeArgs,
   SailClientStateArgs,
+  SailExtensionDataArgs,
   SailIntentResolveArgs,
   SailIntentResolveResponse,
   SailWscpPairingUpdateArgs,
@@ -68,20 +70,24 @@ export class ServerStateImpl implements ServerState {
     hosting: AppHosting,
     channel: string | null,
     instanceTitle: string,
+    instanceId?: string,
   ): Promise<string> {
     if (!this.socket) {
       throw new Error("Desktop Agent not registered")
     }
 
     const userSessionId = this.cs!.getUserSessionID()
-    const instanceId: string = await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, {
+    const args: DesktopAgentRegisterAppLaunchArgs = {
       userSessionId,
       appId,
       hosting,
       channel,
       instanceTitle,
-    } as DesktopAgentRegisterAppLaunchArgs)
-    return instanceId
+    }
+    if (instanceId) {
+      args.instanceId = instanceId
+    }
+    return (await this.socket.emitWithAck(DA_REGISTER_APP_LAUNCH, args)) as string
   }
 
   async reportAppWindowClosed(instanceId: string): Promise<void> {
@@ -212,6 +218,15 @@ export class ServerStateImpl implements ServerState {
 
     this.socket.on(SAIL_BROADCAST_CONTEXT, (data: SailBroadcastContextArgs) => {
       this.cs!.appendContextHistory(data.channelId, data.context)
+    })
+
+    this.socket.on(SAIL_EXTENSION_DATA, (data: SailExtensionDataArgs) => {
+      for (const [extensionId, bag] of Object.entries(data)) {
+        void this.cs!.setExtensionData(extensionId, {
+          ...this.cs!.getExtensionData(extensionId),
+          ...bag,
+        })
+      }
     })
 
     this.socket.on(SAIL_WSCP_PAIRING_UPDATE, (data: SailWscpPairingUpdateArgs) => {

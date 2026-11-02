@@ -1,4 +1,4 @@
-import { DesktopAgentAppWindowClosedArgs } from "@finos/fdc3-sail-common"
+import { DesktopAgentAppWindowClosedArgs } from "../../../common"
 import { State } from "@finos/sail-headless-agent"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { createLogger } from "../../logger"

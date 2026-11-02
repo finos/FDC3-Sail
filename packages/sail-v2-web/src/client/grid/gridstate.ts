@@ -1,6 +1,6 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
-import { AppPanel, ClientState, getServerState } from "@finos/fdc3-sail-common"
+import { AppPanel, ClientState, getServerState } from "../../common"
 import { createRoot, Root } from "react-dom/client"
 import styles from "./styles.module.css"
 
@@ -279,14 +279,17 @@ export class GridsStateImpl implements GridsState {
         .forEach(el => shadowRoot!.appendChild(el))
     }
 
+    // Invisible apps are hosted outside GridStack (shadow dialog host).
+    const panels = this.cs.getPanels().filter(p => !p.invisible)
+
     // remove old panels
-    const panelIds = this.cs.getPanels().map(p => p.panelId)
+    const panelIds = panels.map(p => p.panelId)
     const mountedIds = this.panelsInGrid.map(p => p.panelId)
     const removedPanels = this.panelsInGrid.filter(p => !panelIds.includes(p.panelId))
     const changedTabPanels = this.panelsInGrid.filter(
-      p => p.mountedTab != this.cs.getPanels().find(q => q.panelId == p.panelId)?.tabId,
+      p => p.mountedTab != panels.find(q => q.panelId == p.panelId)?.tabId,
     )
-    const addedPanels = this.cs.getPanels().filter(p => !mountedIds.includes(p.panelId))
+    const addedPanels = panels.filter(p => !mountedIds.includes(p.panelId))
 
     // reset destination
     this.newTabState = null
@@ -313,7 +316,7 @@ export class GridsStateImpl implements GridsState {
     removedPanels.forEach(p => this.removePanel(p))
 
     changedTabPanels.forEach(mp => {
-      const cp = this.cs.getPanels().find(p => p.panelId == mp.panelId)
+      const cp = panels.find(p => p.panelId == mp.panelId)
       if (cp) {
         mp.tabId = cp.tabId
         this.changeTab(shadowRoot, mp)

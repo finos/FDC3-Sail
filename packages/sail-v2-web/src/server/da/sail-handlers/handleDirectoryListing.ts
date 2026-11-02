@@ -1,4 +1,4 @@
-import { DesktopAgentDirectoryListingArgs } from "@finos/fdc3-sail-common"
+import { DesktopAgentDirectoryListingArgs } from "../../../common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { createLogger } from "../../logger"
 

@@ -1,8 +1,10 @@
 import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
-import { AppHosting, getClientState, getAppState, getServerState } from "@finos/fdc3-sail-common"
+import { AppHosting, getClientState, getAppState, getServerState } from "../common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
 import { resolveDeepLinkAppId, resolveNoSplash, resolveSoleFdc3Directory } from "@finos/sail-env"
+import { refreshKnownAppsAndAutostart } from "./autostart"
+import { loadExtensionUIs } from "./extensions-runtime"
 
 const container = document.getElementById("app")
 const root = createRoot(container!)
@@ -54,11 +56,12 @@ async function openDeepLinkApp(appId: string): Promise<void> {
   const detail = await waitForDirectoryApp(appId)
   // Explicit Frame destination must win over Conformance1 forceNewWindow for Playwright.
   const opened = await getAppState().open(detail, AppHosting.Frame)
-  console.log("[Sail v2] Deep-linked open %s", appId, opened)
+  console.log("[Sail v2] Deep-linked open", appId, opened)
   ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady = appId
 }
 
 async function bootstrap(): Promise<void> {
+  await loadExtensionUIs()
   await ensureSoleFdc3Directory()
 
   if (resolveNoSplash(window.location.search)) {
@@ -68,12 +71,16 @@ async function bootstrap(): Promise<void> {
   getAppState().init(getServerState(), getClientState())
   await getServerState().registerDesktopAgent(getClientState().createArgs())
 
+  // Register app instances with the DA first, then mount iframes.
+  await refreshKnownAppsAndAutostart()
+  getAppState().markDesktopAgentReady()
+
   const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
   if (deepLinkAppId) {
     try {
       await openDeepLinkApp(deepLinkAppId)
     } catch (e: unknown) {
-      console.error("[Sail v2] Deep-link open failed for %s", deepLinkAppId, e)
+      console.error("[Sail v2] Deep-link open failed for", deepLinkAppId, e)
       ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
         e instanceof Error ? e.message : String(e)
     }

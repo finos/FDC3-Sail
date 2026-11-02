@@ -1,15 +1,10 @@
 import { Component, useEffect, useState } from "react"
 import { Icon } from "../icon/icon"
-import {
-  getAppState,
-  getClientState,
-  FDC3_WEBSOCKET_PROPERTY,
-  WscpPairing,
-} from "@finos/fdc3-sail-common"
+import { getAppState, getClientState, FDC3_WEBSOCKET_PROPERTY, WscpPairing } from "../../common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
-import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
-import { AppHosting } from "@finos/fdc3-sail-common"
+import { DirectoryApp, WebAppDetails, parseSailHostManifest } from "@finos/sail-headless-agent"
+import { AppHosting } from "../../common"
 import { AppMetadata, Image } from "@finos/fdc3-standard-v3"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -205,7 +200,7 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
       chosen: null,
       apps: getClientState()
         .getKnownApps()
-        .filter(d => onlyRelevantApps(d)),
+        .filter(d => onlyRelevantApps(d) && !isLoadedSingleton(d)),
       activeTab: "info",
     }
   }
@@ -339,8 +334,14 @@ export class AppDPanel extends Component<AppPanelProps, AppPanelState> {
   }
 }
 function onlyRelevantApps(d: DirectoryApp): boolean {
-  const sail = d.hostManifests?.sail as { [key: string]: boolean }
-  const show = sail ? sail.searchable != false : true
+  const show = parseSailHostManifest(d.hostManifests?.sail).searchable
   const url = (d.details as WebAppDetails).url
   return show && ((d.type == "web" && url != null) || d.type == "native")
+}
+
+function isLoadedSingleton(d: DirectoryApp): boolean {
+  if (!parseSailHostManifest(d.hostManifests?.sail).singleton) {
+    return false
+  }
+  return getAppState().findLiveInstance(d.appId) != null
 }

@@ -10,7 +10,7 @@ import {
   DA_REGISTER_APP_LAUNCH,
   CHANNEL_RECEIVER_HELLO,
   SAIL_INTENT_RESOLVE_ON_CHANNEL,
-} from "@finos/fdc3-sail-common"
+} from "../../../common"
 import { ConnectionContext } from "./types"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 

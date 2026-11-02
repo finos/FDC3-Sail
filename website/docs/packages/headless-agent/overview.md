@@ -19,6 +19,12 @@ Browser WCP / `MessagePort` hosting lives in [`@finos/sail-browser-agent`](../br
 The older Socket.IO shell [`@finos/fdc3-sail-web`](../sail-v2-web/overview) also consumes this engine
 directly.
 
+`hostManifests.sail` (singleton, autostart, invisible, …) and how `raiseIntent`
+targets `{ appId }` vs `{ appId, instanceId }` are documented in
+`packages/sail-headless-agent/README.md`. A raise that names only `appId`
+launches a new instance, unless the app is a **singleton that is already
+running** — then the live instance is reused.
+
 ## Tests
 
 Engine behaviour is covered by **Cucumber** feature files under `test/features/v2/` and `v3/` — not

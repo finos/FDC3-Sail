@@ -10,7 +10,7 @@ matrix, but the supported product path for new hosts is the browser-resident
 
 **Location:** `packages/sail-v2-web/` (npm name `@finos/fdc3-sail-web`)
 
-Shared Socket.IO / directory helpers live in sibling `packages/sail-v2-common` (`@finos/fdc3-sail-common`).
+Socket.IO protocol types, client/server session state, and App Directory helpers live in `src/common/`.
 
 ## What it does
 

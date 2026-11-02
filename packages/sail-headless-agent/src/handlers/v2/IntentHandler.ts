@@ -2,6 +2,7 @@ import { LogFunction, MessageHandler } from "../MessageHandler"
 import { FDC3ServerInstance, IntentListenerRegistration } from "../../FDC3ServerInstance"
 import { AppRegistration, InstanceID, State, ReceivableMessage } from "../../AppRegistration"
 import { DirectoryIntent } from "../../directory/DirectoryInterface"
+import { isSingletonDirectoryApp } from "../../directory/SailHostManifest"
 import { Context } from "@finos/fdc3-context-v2"
 import { AppIntent, ResolveError, AppIdentifier } from "@finos/fdc3-standard-v2"
 import {
@@ -303,12 +304,20 @@ export class IntentHandler implements MessageHandler {
     sc: FDC3ServerInstance,
     target: AppIdentifier,
   ): Promise<void> {
-    // app exists but needs starting
     const pi = new PendingIntent(arg0, sc, this, target)
     this.pendingIntents.add(pi)
-    sc.open(target.appId).then(() => {
-      return undefined
-    })
+    try {
+      const instanceId = await sc.open(target.appId)
+      // Singleton (or any host that reused a live instance): the listener is
+      // already registered, so PendingIntent.accept will never fire.
+      if (this.hasListener(instanceId, arg0.intent, sc, arg0.context.type)) {
+        pi.complete = true
+        this.pendingIntents.delete(pi)
+        return forwardRequest(arg0, { appId: target.appId, instanceId }, sc)
+      }
+    } catch {
+      // Leave the pending intent to time out if open() failed.
+    }
   }
 
   async raiseIntentRequestToSpecificInstance(
@@ -375,6 +384,15 @@ export class IntentHandler implements MessageHandler {
       )
     }
 
+    // `{ appId }` without `instanceId` means launch a new instance — except a
+    // singleton that is already running, where a second instance is not allowed.
+    if (isSingletonDirectoryApp(appRecords[0])) {
+      const running = await this.retrieveRunningInstances(target.appId, sc)
+      if (running.length == 1) {
+        return this.raiseIntentRequestToSpecificInstance(arg0, sc, running[0])
+      }
+    }
+
     const convertDirectoryIntentsToAppIntents = (
       intents: DirectoryIntent[],
       appId: string,
@@ -394,8 +412,7 @@ export class IntentHandler implements MessageHandler {
       return appIntents.every(ai => ai.apps.length > 0)
     }
 
-    // in this version of the method, we always open an app as no
-    // specific instance is specified.  But only if the app supports the intent.
+    // No live instance. Launch the app if the directory says it supports the intent.
     const context: Context = arg0[0].context
     const matchingIntents: DirectoryIntent[] = sc
       .getDirectory()

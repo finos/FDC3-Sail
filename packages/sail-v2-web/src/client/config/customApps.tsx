@@ -1,4 +1,4 @@
-import { getClientState, getServerState } from "@finos/fdc3-sail-common"
+import { getClientState, getServerState } from "../../common"
 import styles from "./styles.module.css"
 import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
@@ -239,7 +239,6 @@ const InteropList = ({
       <div className={styles.addIntent}>Intents I Listen To:</div>
       {app.intents.map((e, i) => (
         <IntentItem
-          key={`${e.name}-${i}`}
           ei={e}
           update={(ei: EditableIntent | null) => {
             if (ei) {
@@ -343,7 +342,8 @@ export const CustomAppList = () => {
     return getClientState()
       .setCustomApps(convertToDirectoryApps(newApps))
       .then(async () => {
-        getClientState().setKnownApps(await getServerState().getApplications())
+        const { refreshKnownAppsAndAutostart } = await import("../autostart")
+        await refreshKnownAppsAndAutostart()
       })
   }
 

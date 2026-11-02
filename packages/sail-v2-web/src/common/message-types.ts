@@ -42,6 +42,8 @@ export type DesktopAgentHelloArgs = {
   customApps: DirectoryApp[]
   contextHistory: ContextHistory
   wscpPairings: WscpPairing[]
+  /** Per-extension persisted bags, keyed by extension id. */
+  extensionData: Record<string, Record<string, unknown>>
 }
 
 /**
@@ -50,6 +52,14 @@ export type DesktopAgentHelloArgs = {
 export const SAIL_CLIENT_STATE = "sail-client-state"
 
 export type SailClientStateArgs = DesktopAgentHelloArgs
+
+/**
+ * Server → client: session extension storage changed (e.g. wrapServer wrote logs).
+ * Bags are keyed by core extension id.
+ */
+export const SAIL_EXTENSION_DATA = "sail-extension-data"
+
+export type SailExtensionDataArgs = Record<string, Record<string, unknown>>
 
 /**
  * Sent when an App connects to the server
@@ -76,6 +86,8 @@ export type DesktopAgentRegisterAppLaunchArgs = {
   hosting: AppHosting
   channel: string | null
   instanceTitle: string
+  /** When restoring a persisted panel, reuse its instance id. */
+  instanceId?: string
 }
 
 /**
@@ -153,6 +165,8 @@ export type SailAppOpenArgs = {
 export type SailAppOpenResponse = {
   instanceId: string
   instanceTitle: string
+  /** User-channel id the host opened into (active tab for Frame; null for Tab). */
+  channel: string | null
 }
 
 /**

@@ -40,7 +40,6 @@ graph BT
   Env["@finos/sail-env"]
   Theme["@finos/sail-theme"]
   Platform["@finos/sail-platform"]
-  Common["@finos/fdc3-sail-common"]
   DA["@finos/sail-browser-agent"]
   V2["@finos/fdc3-sail-web"]
   Harness["@finos/sail-conformance-harness"]
@@ -49,7 +48,6 @@ graph BT
 
   DA --> Engine
   V2 --> Engine
-  V2 --> Common
   V2 --> Env
   Harness --> DA
   Harness --> Env
@@ -76,7 +74,7 @@ graph BT
 | [`packages/sail-finance`](packages/sail-finance/) | Example shell — finance-specific workspace dashboard |
 | [`packages/sail-one`](packages/sail-one/) | Example shell — domain-neutral tab-and-grid canvas |
 | [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance against product hosts |
-| [`packages/sail-v2-common`](packages/sail-v2-common/) / [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
+| [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
 
 Full documentation, including per-package guides, lives at **[https://fdc3-sail.finos.org](https://fdc3-sail.finos.org)** (built from [`website/`](website/) via Netlify).
 

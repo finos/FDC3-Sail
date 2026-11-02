@@ -55,7 +55,7 @@ export default defineConfig({
   optimizeDeps: {
     // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent /
     // sail-platform trigger a reload.
-    exclude: ["@finos/sail-browser-agent", "@finos/sail-platform"],
+    exclude: ["@finos/sail-browser-agent", "@finos/sail-platform", "@finos/sail-extension"],
   },
   server: {
     port: 8090,
@@ -65,6 +65,7 @@ export default defineConfig({
         "**/.git/**",
         "!**/node_modules/@finos/sail-browser-agent/**",
         "!**/node_modules/@finos/sail-platform/**",
+        "!**/node_modules/@finos/sail-extension/**",
       ],
     },
   },

@@ -1,4 +1,4 @@
-import { SailIntentResolveOpenChannelArgs } from "@finos/fdc3-sail-common"
+import { SailIntentResolveOpenChannelArgs } from "../../../common"
 import { ConnectionContext } from "./types"
 import { createLogger } from "../../logger"
 

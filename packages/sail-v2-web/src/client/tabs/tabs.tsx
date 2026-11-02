@@ -1,6 +1,6 @@
 import { Icon } from "../icon/icon"
-import { ClientState } from "@finos/fdc3-sail-common"
-import { TabDetail } from "@finos/fdc3-sail-common"
+import { ClientState } from "../../common"
+import { TabDetail } from "../../common"
 import styles from "./styles.module.css"
 
 const Tab = ({ td, active, onClick }: { td: TabDetail; active: boolean; onClick: () => void }) => {

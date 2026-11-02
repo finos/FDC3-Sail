@@ -68,6 +68,33 @@ Given(
   },
 )
 
+Given(
+  "{string} is a singleton app with the following intents",
+  function (this: CustomWorld, appId: string, dt: DataTable) {
+    const currentApps = this.props[APP_FIELD] ?? []
+
+    const newApp: DirectoryApp = {
+      appId,
+      type: "web",
+      description: "",
+      title: "",
+      details: {},
+      interop: {
+        intents: {
+          listensFor: convertDataTableToListensFor(this, dt),
+        },
+      },
+      hostManifests: {
+        sail: JSON.stringify({ singleton: true }),
+      },
+    }
+
+    currentApps.push(newApp)
+
+    this.props[APP_FIELD] = currentApps
+  },
+)
+
 When(
   "{string} finds intents with intent {string} and contextType {string} and result type {string}",
   async function (

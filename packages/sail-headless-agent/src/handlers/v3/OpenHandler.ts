@@ -260,7 +260,8 @@ export class OpenHandler implements MessageHandler {
     }
 
     try {
-      await sc.close(from.instanceId)
+      // Acknowledge before teardown so the app receives closeResponse.
+      successResponse(sc, arg0, from, {}, "closeResponse")
     } catch (e) {
       errorResponse(
         sc,
@@ -269,6 +270,12 @@ export class OpenHandler implements MessageHandler {
         (e as Error).message ?? CloseError.ErrorOnClose,
         "closeResponse",
       )
+      return
+    }
+    try {
+      await sc.close(from.instanceId)
+    } catch {
+      /* already acknowledged */
     }
   }
 

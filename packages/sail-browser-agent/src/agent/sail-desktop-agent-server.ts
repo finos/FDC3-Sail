@@ -222,7 +222,7 @@ export abstract class SailDesktopAgentServer extends AbstractFDC3ServerInstance 
   }
 
   log(message: string): void {
-    this.logger.debug(message)
+    this.logger.info(message)
   }
 
   provider(): string {

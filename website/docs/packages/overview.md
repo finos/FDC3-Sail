@@ -12,7 +12,6 @@ graph BT
   Env["@finos/sail-env"]
   Theme["@finos/sail-theme"]
   Platform["@finos/sail-platform"]
-  Common["@finos/fdc3-sail-common"]
   DA["@finos/sail-browser-agent"]
   V2["@finos/fdc3-sail-web"]
   Harness["@finos/sail-conformance-harness"]
@@ -21,7 +20,6 @@ graph BT
 
   DA --> Engine
   V2 --> Engine
-  V2 --> Common
   V2 --> Env
   Harness --> DA
   Harness --> Env

@@ -14,6 +14,7 @@ import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
 import { resolveSailForceNewWindow } from "./force-new-window"
+import { wrapWithExtensions } from "./extensions-runtime"
 import { getAppState, getClientState } from "./index"
 
 /**
@@ -237,17 +238,18 @@ export class SailHost implements ServerState {
       },
     })
 
-    agent.start()
-    this.agent = agent
+    const wrapped = wrapWithExtensions(agent)
+    wrapped.start()
+    this.agent = wrapped
 
     this.unsubscribes.push(
-      agent.channels.onAppChannelChange(() => {
+      wrapped.channels.onAppChannelChange(() => {
         this.notify()
       }),
     )
     if (!autoResolve) {
       this.unsubscribes.push(
-        agent.intentResolver.onRequest(request => {
+        wrapped.intentResolver.onRequest(request => {
           this.presentIntentResolution(request)
         }),
       )

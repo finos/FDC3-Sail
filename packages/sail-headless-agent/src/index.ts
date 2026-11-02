@@ -20,6 +20,14 @@ import {
 } from "./directory/DirectoryInterface"
 import { BasicDirectory } from "./directory/BasicDirectory"
 import {
+  SailHostManifest,
+  ResolvedSailHostManifest,
+  SAIL_HOST_MANIFEST_DEFAULTS,
+  parseSailHostManifest,
+  sailHostManifestFromApp,
+  isSingletonDirectoryApp,
+} from "./directory/SailHostManifest"
+import {
   BroadcastHandler as BroadcastHandlerV2,
   IntentHandler as IntentHandlerV2,
   OpenHandler as OpenHandlerV2,
@@ -60,6 +68,12 @@ export {
   BasicDirectory,
   type DirectoryApp,
   type DirectoryIntent,
+  type SailHostManifest,
+  type ResolvedSailHostManifest,
+  SAIL_HOST_MANIFEST_DEFAULTS,
+  parseSailHostManifest,
+  sailHostManifestFromApp,
+  isSingletonDirectoryApp,
   BroadcastHandlerV2 as BroadcastHandler,
   IntentHandlerV2 as IntentHandler,
   OpenHandlerV2 as OpenHandler,

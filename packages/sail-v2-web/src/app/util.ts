@@ -10,7 +10,7 @@ import {
   SAIL_INTENT_RESOLVE_ON_CHANNEL,
   SailIntentResolveOpenChannelArgs,
   TabDetail,
-} from "@finos/fdc3-sail-common"
+} from "../common"
 
 export const channels: TabDetail[] = []
 const socket = io()

@@ -1,4 +1,4 @@
-import { DesktopAgentHelloArgs } from "@finos/fdc3-sail-common"
+import { DesktopAgentHelloArgs } from "../../../common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { ConnectionContext, ConnectionType } from "./types"
 import { SocketIOConnection } from "../connection"

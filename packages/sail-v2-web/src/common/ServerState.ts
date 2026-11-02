@@ -26,6 +26,7 @@ export interface ServerState {
     hosting: AppHosting,
     channel: string | null,
     instanceTitle: string,
+    instanceId?: string,
   ): Promise<string>
 
   /**
