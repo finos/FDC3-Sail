@@ -43,7 +43,7 @@
     },
     "tinypool": "2.2.0",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
-    "vitest": "4.1.10"
+    "vitest": "5.0.5"
   },
   "workspaces": [
     "packages/sail-env",
@@ -73,6 +73,6 @@
     "typescript": "^5.8.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
     "vite-plus": "0.2.5",
-    "vitest": "4.1.10"
+    "vitest": "5.0.5"
   }
 }
