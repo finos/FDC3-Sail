@@ -11,6 +11,11 @@ updates:
     versioning-strategy: increase
     labels: ["dependencies"]
     groups:
+      # One PR for all open security fixes instead of one PR per package.
+      # Routine major bumps are not grouped below, so each breaking change gets its own PR.
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
       dev-dependencies:
         dependency-type: development
         update-types: ["minor", "patch"]
