@@ -27,7 +27,7 @@
     "lint": "vp lint ."
   },
   "devDependencies": {
-    "rimraf": "^6.0.1",
+    "rimraf": "^6.1.4",
     "typescript": "^5.8.2"
   }
 }
