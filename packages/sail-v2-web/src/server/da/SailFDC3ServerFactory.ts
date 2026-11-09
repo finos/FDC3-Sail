@@ -16,6 +16,7 @@ import {
   type FDC3ServerInstance,
 } from "@finos/sail-headless-agent"
 import { createSessionExtensionStorage, type SessionExtensionData } from "./extension-storage"
+import { requestReviewOverSocket } from "./request-review"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { SailDirectory } from "../appd/SailDirectory"
 import { SocketIOConnection } from "./connection"
@@ -105,7 +106,12 @@ export class SailFDC3ServerFactory {
       const storage = createSessionExtensionStorage(holder, ext.id, data => {
         connection.emit(SAIL_EXTENSION_DATA, data)
       })
-      return ext.wrapServer?.(inst, { storage }) ?? inst
+      return (
+        ext.wrapServer?.(inst, {
+          storage,
+          requestReview: details => requestReviewOverSocket(connection.getSocket(), details),
+        }) ?? inst
+      )
     }, out as FDC3ServerInstance)
     this.sessions.set(args.userSessionId, wrapped as SailFDC3ServerInstance)
     return wrapped as SailFDC3ServerInstance

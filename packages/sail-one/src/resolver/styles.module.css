@@ -123,3 +123,49 @@
   border-radius: 0.25rem;
   width: 3rem;
 }
+
+.reviewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sail-space-3);
+  width: min(40rem, 90vw);
+}
+
+.reviewMessage {
+  margin: 0;
+  font-weight: 600;
+}
+
+.reviewFacts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--sail-space-1) var(--sail-space-4);
+  margin: 0;
+}
+
+.reviewFacts dd {
+  margin: 0;
+}
+
+.reviewLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sail-space-1);
+  margin: 0;
+}
+
+.reviewActivity {
+  max-height: 12rem;
+  overflow: auto;
+  margin: 0;
+  padding: var(--sail-space-2);
+  border: 1px solid var(--sail-border);
+  border-radius: var(--sail-radius-sm);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}
+
+.reviewNote {
+  font: inherit;
+  resize: vertical;
+}

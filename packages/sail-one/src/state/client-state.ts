@@ -5,6 +5,7 @@ import {
   type SailStorage,
 } from "@finos/sail-platform"
 import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
+import type { SailReviewRequest } from "@finos/sail-extension"
 import type { IntentResolution } from "../resolver/types"
 
 type ClientStateSyncTarget = {
@@ -69,6 +70,14 @@ export interface ClientState {
   createArgs(): SailClientStateArgs
   getIntentResolution(): IntentResolution | null
   setIntentResolution(ir: IntentResolution | null): void
+  /** Extension reviews waiting for the user, oldest first. */
+  getReviewRequests(): SailReviewRequest[]
+  /** Replaces the waiting reviews and re-renders; add/remove below are the usual entry points. */
+  setReviewRequests(requests: SailReviewRequest[]): void
+  /** Shows one more review, after those already waiting. */
+  addReviewRequest(request: SailReviewRequest): void
+  /** Closes the review with `requestId`; does nothing if it is already gone. */
+  removeReviewRequest(requestId: string): void
 }
 
 /**
@@ -156,6 +165,7 @@ export class PlatformClientState implements ClientState {
   private directories: Directory[] = DEFAULT_DIRECTORIES
   private callbacks: (() => void)[] = []
   private intentResolution: IntentResolution | null = null
+  private reviewRequests: SailReviewRequest[] = []
   private customApps: DirectoryApp[] = []
   private ss: ClientStateSyncTarget | null = null
   private readonly storage: SailStorage
@@ -414,6 +424,24 @@ export class PlatformClientState implements ClientState {
     this.saveState().catch((e: unknown) => {
       console.error("Error saving state", e)
     })
+  }
+
+  getReviewRequests(): SailReviewRequest[] {
+    return this.reviewRequests
+  }
+
+  setReviewRequests(requests: SailReviewRequest[]): void {
+    // Not persisted: a review only lives while its extension call is waiting.
+    this.reviewRequests = requests
+    this.callbacks.forEach(cb => cb())
+  }
+
+  addReviewRequest(request: SailReviewRequest): void {
+    this.setReviewRequests([...this.reviewRequests, request])
+  }
+
+  removeReviewRequest(requestId: string): void {
+    this.setReviewRequests(this.reviewRequests.filter(r => r.requestId !== requestId))
   }
 
   async setCustomApps(apps: DirectoryApp[]): Promise<void> {

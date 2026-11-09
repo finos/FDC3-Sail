@@ -1,4 +1,9 @@
-import { pickSailExtension, pickSailExtensionUIs, type SailExtension } from "@finos/sail-extension"
+import {
+  pickSailExtension,
+  pickSailExtensionUIs,
+  type SailExtension,
+  type SailRequestReview,
+} from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
 import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
@@ -86,9 +91,12 @@ export function getLoadedExtensionUIs(type?: string): SailExtensionUI[] {
   return type ? all.filter(ui => ui.type === type) : all
 }
 
-export function wrapWithExtensions(instance: SailDesktopAgent): SailDesktopAgent {
+export function wrapWithExtensions(
+  instance: SailDesktopAgent,
+  requestReview: SailRequestReview,
+): SailDesktopAgent {
   return (cores ?? []).reduce((inst, ext) => {
     const storage = createSailOneExtensionStorage(ext.id)
-    return (ext.wrapServer?.(inst, { storage }) ?? inst) as SailDesktopAgent
+    return (ext.wrapServer?.(inst, { storage, requestReview }) ?? inst) as SailDesktopAgent
   }, instance)
 }

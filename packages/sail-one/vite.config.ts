@@ -1,6 +1,6 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { defineConfig, lazyPlugins } from "vite-plus"
+import { defineConfig, lazyPlugins, loadEnv } from "vite-plus"
 import type { Plugin } from "vite-plus"
 import react from "@vitejs/plugin-react"
 import { globSync } from "glob"
@@ -45,38 +45,45 @@ function sailOneRootEntry(): Plugin {
   }
 }
 
-export default defineConfig({
-  plugins: lazyPlugins(() => [react(), sailOneRootEntry()]),
-  resolve: {
-    alias: {
-      "@": path.resolve(packageRoot, "./src"),
+export default defineConfig(({ mode }) => {
+  // Shell env wins over the package `.env`. Fixed at build time, so a deployed Sail needs a rebuild.
+  const env = loadEnv(mode, packageRoot, "")
+  return {
+    define: {
+      __SAIL_EXTENSION_URLS__: JSON.stringify(env.SAIL_EXTENSION_URLS ?? ""),
     },
-  },
-  optimizeDeps: {
-    // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent /
-    // sail-platform trigger a reload.
-    exclude: ["@finos/sail-browser-agent", "@finos/sail-platform", "@finos/sail-extension"],
-  },
-  server: {
-    port: 8090,
-    watch: {
-      ignored: [
-        "**/node_modules/**",
-        "**/.git/**",
-        "!**/node_modules/@finos/sail-browser-agent/**",
-        "!**/node_modules/@finos/sail-platform/**",
-        "!**/node_modules/@finos/sail-extension/**",
-      ],
+    plugins: lazyPlugins(() => [react(), sailOneRootEntry()]),
+    resolve: {
+      alias: {
+        "@": path.resolve(packageRoot, "./src"),
+      },
     },
-  },
-  preview: {
-    port: 8090,
-  },
-  build: {
-    cssMinify: false,
-    sourcemap: true,
-    rollupOptions: {
-      input: globSync("html/**/*.html", { cwd: packageRoot, absolute: true }),
+    optimizeDeps: {
+      // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent /
+      // sail-platform trigger a reload.
+      exclude: ["@finos/sail-browser-agent", "@finos/sail-platform", "@finos/sail-extension"],
     },
-  },
+    server: {
+      port: 8090,
+      watch: {
+        ignored: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "!**/node_modules/@finos/sail-browser-agent/**",
+          "!**/node_modules/@finos/sail-platform/**",
+          "!**/node_modules/@finos/sail-extension/**",
+        ],
+      },
+    },
+    preview: {
+      port: 8090,
+    },
+    build: {
+      cssMinify: false,
+      sourcemap: true,
+      rollupOptions: {
+        input: globSync("html/**/*.html", { cwd: packageRoot, absolute: true }),
+      },
+    },
+  }
 })

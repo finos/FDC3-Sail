@@ -9,6 +9,11 @@ import {
   type WebAppDetails,
 } from "@finos/sail-browser-agent"
 import { isAutoResolve, SAIL_MAX_FDC3_VERSION } from "@finos/sail-env"
+import {
+  settleReview,
+  type SailReviewDecision,
+  type SailReviewDetails,
+} from "@finos/sail-extension"
 import type { BrowserTypes } from "@finos/fdc3-schema-v3"
 import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
@@ -127,6 +132,10 @@ export interface ServerState {
     intent: string | null,
     channel: string | null,
   ): void
+  /** `ctx.requestReview` for extensions: shows the review dialog and waits for the user. */
+  requestReview(details: SailReviewDetails): Promise<SailReviewDecision>
+  /** The user answered the review dialog for `requestId`. */
+  reviewChosen(requestId: string, decision: SailReviewDecision): void
   sendClientState(cs: SailClientStateArgs): Promise<void>
 }
 
@@ -175,6 +184,8 @@ export class SailHost implements ServerState {
   private lastCustomAppsKey: string | null = null
 
   private unsubscribes: (() => void)[] = []
+  /** Resolvers for reviews the dialog is showing, by request id. */
+  private reviewAnswers = new Map<string, (decision: SailReviewDecision) => void>()
   /** Detects 2.2 mock `window.close()` so Chrome does not keep a Connected zombie. */
   private popupWatcher: PopupCloseWatcher = createPopupCloseWatcher({
     onPopupClosed: instanceId => {
@@ -238,7 +249,7 @@ export class SailHost implements ServerState {
       },
     })
 
-    const wrapped = wrapWithExtensions(agent)
+    const wrapped = wrapWithExtensions(agent, details => this.requestReview(details))
     wrapped.start()
     this.agent = wrapped
 
@@ -604,5 +615,26 @@ export class SailHost implements ServerState {
     }
 
     this.agent.intentResolver.select(requestId, chosen)
+  }
+
+  requestReview(details: SailReviewDetails): Promise<SailReviewDecision> {
+    const requestId = crypto.randomUUID()
+    const cs = getClientState()
+    return settleReview(
+      details,
+      d =>
+        new Promise<SailReviewDecision>(resolve => {
+          this.reviewAnswers.set(requestId, resolve)
+          cs.addReviewRequest({ ...d, requestId })
+        }),
+    ).finally(() => {
+      // Closes the dialog whether the user answered or the deadline passed.
+      this.reviewAnswers.delete(requestId)
+      cs.removeReviewRequest(requestId)
+    })
+  }
+
+  reviewChosen(requestId: string, decision: SailReviewDecision): void {
+    this.reviewAnswers.get(requestId)?.(decision)
   }
 }

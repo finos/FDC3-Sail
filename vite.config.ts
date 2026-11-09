@@ -442,6 +442,14 @@ export default defineConfig({
         rules: {},
         jsPlugins: [],
       },
+      {
+        // Injected by each host's vite.config.ts `define`; declared in the host's .d.ts.
+        files: ["packages/sail-one/src/**/*.{ts,tsx}", "packages/sail-v2-web/src/**/*.{ts,tsx}"],
+        excludeFiles: ["**/*.d.ts"],
+        globals: {
+          __SAIL_EXTENSION_URLS__: "readonly",
+        },
+      },
     ],
     jsPlugins: [
       {

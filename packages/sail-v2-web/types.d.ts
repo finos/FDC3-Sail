@@ -5,6 +5,9 @@ declare module "*.css" {
   export default styles
 }
 
+/** Raw `SAIL_EXTENSION_URLS` value injected by vite.config.ts `define` (empty when unset). */
+declare const __SAIL_EXTENSION_URLS__: string
+
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }

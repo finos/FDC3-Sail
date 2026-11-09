@@ -2,6 +2,7 @@ import { DirectoryApp } from "@finos/sail-headless-agent"
 import { AppHosting } from "./app-hosting"
 import { SailClientStateArgs } from "./message-types"
 import { AppIdentifier } from "@finos/fdc3-standard-v3"
+import type { SailReviewDecision } from "@finos/sail-extension"
 import { ClientState } from "./ClientState"
 import { AppState } from "./AppState"
 
@@ -56,6 +57,11 @@ export interface ServerState {
     intent: string | null,
     channel: string | null,
   ): void
+
+  /**
+   * The user answered the review dialog for `requestId` (see SAIL_REVIEW_REQUEST).
+   */
+  reviewChosen(requestId: string, decision: SailReviewDecision): void
 
   /**
    * This is used when the user changes the directories or the details of the
