@@ -28,7 +28,8 @@
 
 ## What is FDC3 Sail?
 
-If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
+ - If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
+ - If you want to try FDC3 Sail in your browser, [start here](https://sail.fdc3.finos.org).
 
 FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: `@finos/sail-browser-agent` owns WCP and `MessagePort` connections in the page, and hosts `@finos/sail-headless-agent` for FDC3 2.2 and 3.0 DACP behavior. Shells and `@finos/sail-platform` compose that agent into example workspaces.
 
