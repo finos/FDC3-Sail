@@ -16,9 +16,7 @@ on:
 concurrency: release-${{ github.ref }}
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 defaults:
   run:
@@ -27,6 +25,10 @@ defaults:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # push version commit + tags
+      pull-requests: write # open "Version Packages" PR
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
         with:

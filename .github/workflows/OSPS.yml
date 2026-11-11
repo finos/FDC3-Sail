@@ -15,10 +15,9 @@ jobs:
 
     permissions:
       contents: read
-      # code-scanning / Advanced Security SARIF upload (osps-baseline-action upload-sarif)
+      # SARIF upload. Scorecard warns because the upload-sarif call is nested
+      # inside osps-baseline-action, but the permission is genuinely required.
       security-events: write
-      # actions/upload-artifact
-      actions: write
 
     steps:
       - name: Checkout repository
