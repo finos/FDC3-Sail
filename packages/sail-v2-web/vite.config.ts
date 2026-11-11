@@ -1,6 +1,6 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { defineConfig } from "vite"
+import { defineConfig } from "vite-plus"
 import { globSync } from "glob"
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url))

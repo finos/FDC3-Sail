@@ -85,7 +85,6 @@ const Layout = (props: DockviewSailProps) => {
     if (
       !savedLayoutState ||
       typeof savedLayoutState !== "object" || // oxlint-disable-line typescript/no-unnecessary-condition -- localStorage-persisted state: savedLayoutState is read back from the workspace store's persisted layout, whose actual shape can predate the current type
-      savedLayoutState === null ||
       // Check if it has at least some structure (not just empty object)
       Object.keys(savedLayoutState).length === 0
     ) {
