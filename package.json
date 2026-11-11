@@ -43,7 +43,7 @@
     },
     "tinypool": "2.2.0",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
-    "vitest": "5.0.5"
+    "vitest": "5.1.0"
   },
   "workspaces": [
     "packages/sail-env",
@@ -67,12 +67,12 @@
     "@types/react-dom": "^19.1.x",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/ui": "^4.0.18",
-    "concurrently": "^10.0.6",
+    "concurrently": "^10.0.7",
     "knip": "^5.82.1",
     "rimraf": "^6.1.4",
     "typescript": "^5.8.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
     "vite-plus": "1.6.0",
-    "vitest": "5.0.5"
+    "vitest": "5.1.0"
   }
 }
