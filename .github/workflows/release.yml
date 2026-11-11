@@ -16,9 +16,7 @@ on:
 concurrency: release-${{ github.ref }}
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 defaults:
   run:
@@ -27,6 +25,10 @@ defaults:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # push version commit + tags
+      pull-requests: write # open "Version Packages" PR
+      id-token: write
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
