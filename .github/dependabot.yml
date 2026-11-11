@@ -11,12 +11,22 @@ updates:
     versioning-strategy: increase
     labels: ["dependencies"]
     groups:
+      # Group by risk (minor/patch) and by dependency type (dev/prod).
+      # Major bumps match no group, so each breaking change gets its own PR.
       dev-dependencies:
         dependency-type: development
         update-types: ["minor", "patch"]
-      prod-patches:
+      prod-dependencies:
         dependency-type: production
-        update-types: ["patch"]
+        update-types: ["minor", "patch"]
+      security-dev:
+        applies-to: security-updates
+        dependency-type: development
+        update-types: ["minor", "patch"]
+      security-prod:
+        applies-to: security-updates
+        dependency-type: production
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: github-actions
     directory: "/"

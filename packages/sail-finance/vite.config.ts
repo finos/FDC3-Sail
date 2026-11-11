@@ -5,7 +5,6 @@ import path from "path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // @ts-expect-error vite-plus lazyPlugins triggers TS2321 excessive stack depth
   plugins: lazyPlugins(() => [react(), tailwindcss()]),
   resolve: {
     extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
