@@ -36,3 +36,58 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /packages/sail-browser-agent
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-conformance-harness
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-env
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-finance
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-headless-agent
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-one
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-platform
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-theme
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-v2-common
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/sail-v2-web
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /website
+    schedule:
+      interval: daily
