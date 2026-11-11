@@ -26,7 +26,9 @@ export default defineConfig({
     cssMinify: false, // makes the css easier to read
     sourcemap: true, // provide souremap for prod debug
     rollupOptions: {
-      input: globSync("html/**/*.html", { cwd: packageRoot }).map((file) => path.resolve(packageRoot, file)),
+      input: globSync("html/**/*.html", { cwd: packageRoot }).map(file =>
+        path.resolve(packageRoot, file),
+      ),
     },
   },
 })

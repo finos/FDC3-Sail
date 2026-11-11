@@ -52,9 +52,9 @@ export type DesktopAgentEventListener = {
 }
 
 export enum ChannelType {
-  "user",
-  "app",
-  "private",
+  user,
+  app,
+  private,
 }
 
 /**

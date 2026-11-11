@@ -75,7 +75,9 @@ export default defineConfig({
     cssMinify: false,
     sourcemap: true,
     rollupOptions: {
-      input: globSync("html/**/*.html", { cwd: packageRoot }).map((file) => path.resolve(packageRoot, file)),
+      input: globSync("html/**/*.html", { cwd: packageRoot }).map(file =>
+        path.resolve(packageRoot, file),
+      ),
     },
   },
 })
