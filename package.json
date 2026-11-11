@@ -30,10 +30,10 @@
   },
   "overrides": {
     "copy-webpack-plugin": {
-      "serialize-javascript": "7.0.5"
+      "serialize-javascript": "7.1.4"
     },
     "css-minimizer-webpack-plugin": {
-      "serialize-javascript": "7.0.5"
+      "serialize-javascript": "7.1.4"
     },
     "gray-matter": "npm:@11ty/gray-matter@3.0.0",
     "json-canonicalize": "2.0.0",
@@ -43,7 +43,9 @@
     },
     "tinypool": "2.2.0",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "glob@>=9.0.0 <14.0.2": "14.0.5",
+    "minimatch@>=7.0.0 <11.0.1": "11.0.8"
   },
   "workspaces": [
     "packages/sail-env",
