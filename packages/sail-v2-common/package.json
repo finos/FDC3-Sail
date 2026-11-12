@@ -17,9 +17,9 @@
     "rimraf": "^6.1.4"
   },
   "dependencies": {
-    "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0-beta.1",
-    "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0-beta.1",
-    "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0-beta.1",
+    "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0",
+    "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0",
+    "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0",
     "@finos/sail-env": "*",
     "@finos/sail-headless-agent": "*",
     "socket.io-client": "^4.8.3",
