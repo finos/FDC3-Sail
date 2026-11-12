@@ -21,7 +21,7 @@
     "test:browser:3.0": "npm run test:browser:sail-finance:3.0"
   },
   "dependencies": {
-    "@finos/fdc3": "^2.2.3",
+    "@finos/fdc3": "^3.0.0",
     "@finos/sail-browser-agent": "*",
     "@finos/sail-env": "*",
     "@finos/sail-headless-agent": "*",

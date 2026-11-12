@@ -25,7 +25,7 @@
     "validate": "npm run typecheck && npm run lint && npm run format"
   },
   "dependencies": {
-    "@finos/fdc3": "^2.2.3",
+    "@finos/fdc3": "^3.0.0",
     "@finos/sail-browser-agent": "*",
     "@finos/sail-env": "*",
     "@finos/sail-platform": "*",

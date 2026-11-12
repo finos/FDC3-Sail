@@ -25,7 +25,6 @@ export const DEFAULT_SAIL_DESKTOP_AGENT_METADATA: SailDesktopAgentMetadata = {
   providerVersion: pkg.version,
   optionalFeatures: {
     DesktopAgentBridging: false,
-    OriginatingAppMetadata: true,
     UserChannelMembershipAPIs: true,
   },
 }
