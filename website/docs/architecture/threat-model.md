@@ -188,6 +188,8 @@ comparison only and should not be deployed on a shared network.
 
 ## Follow-up work
 
+Tracked in [#485](https://github.com/finos/FDC3-Sail/issues/485).
+
 | Threat | Action | Owner |
 |---|---|---|
 | T1 | Gate or allowlist `?fdc3Directory=` in the shells | maintainers |
