@@ -33,3 +33,4 @@ packages/sail-finance/playwright-report/index.html
 # Conformance harness Playwright output
 packages/sail-conformance-harness/artifacts/
 packages/sail-conformance-harness/test-results/
+.vitest/

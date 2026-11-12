@@ -15,7 +15,7 @@
     "dev:v2": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/fdc3-sail-common && npm run dev -w @finos/fdc3-sail-web",
     "docs:dev": "npm run start --workspace=@finos/sail-docs",
     "docs:build": "npm run build --workspace=@finos/sail-docs",
-    "lint": "vp lint . && oxlint -c .oxlintrc.json packages",
+    "lint": "vp lint . && vp lint -c .oxlintrc.json packages",
     "lint:fix": "vp lint . --fix",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "knip": "knip",
@@ -30,10 +30,10 @@
   },
   "overrides": {
     "copy-webpack-plugin": {
-      "serialize-javascript": "7.0.5"
+      "serialize-javascript": "7.1.4"
     },
     "css-minimizer-webpack-plugin": {
-      "serialize-javascript": "7.0.5"
+      "serialize-javascript": "7.1.4"
     },
     "gray-matter": "npm:@11ty/gray-matter@3.0.0",
     "json-canonicalize": "2.0.0",
@@ -42,8 +42,10 @@
       "uuid": "11.1.1"
     },
     "tinypool": "2.2.0",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
-    "vitest": "5.0.5"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
+    "vitest": "5.1.0",
+    "glob@>=9.0.0 <14.0.2": "14.0.5",
+    "minimatch@>=7.0.0 <11.0.1": "11.0.8"
   },
   "workspaces": [
     "packages/sail-env",
@@ -66,13 +68,13 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.x",
     "@vitejs/plugin-react": "^5.0.0",
-    "@vitest/ui": "^4.0.18",
+    "@vitest/ui": "5.1.0",
     "concurrently": "^10.0.6",
     "knip": "^5.82.1",
     "rimraf": "^6.1.4",
     "typescript": "^5.8.2",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
     "vite-plus": "1.6.0",
-    "vitest": "5.0.5"
+    "vitest": "5.1.0"
   }
 }

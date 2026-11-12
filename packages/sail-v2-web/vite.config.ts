@@ -1,7 +1,7 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { defineConfig } from "vite"
-import { globSync } from "glob"
+import { defineConfig } from "vite-plus"
+import { globSync } from "node:fs"
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url))
 
@@ -26,7 +26,9 @@ export default defineConfig({
     cssMinify: false, // makes the css easier to read
     sourcemap: true, // provide souremap for prod debug
     rollupOptions: {
-      input: globSync("html/**/*.html"),
+      input: globSync("html/**/*.html", { cwd: packageRoot }).map(file =>
+        path.resolve(packageRoot, file),
+      ),
     },
   },
 })

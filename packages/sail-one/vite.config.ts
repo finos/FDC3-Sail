@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import type { Plugin } from "vite-plus"
 import react from "@vitejs/plugin-react"
-import { globSync } from "glob"
+import { globSync } from "node:fs"
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url))
 
@@ -75,7 +75,9 @@ export default defineConfig({
     cssMinify: false,
     sourcemap: true,
     rollupOptions: {
-      input: globSync("html/**/*.html", { cwd: packageRoot, absolute: true }),
+      input: globSync("html/**/*.html", { cwd: packageRoot }).map(file =>
+        path.resolve(packageRoot, file),
+      ),
     },
   },
 })
