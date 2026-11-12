@@ -13,6 +13,7 @@ import type { DockviewSailProps } from "./types"
 import { WatermarkPanel } from "./panel-templates/WatermarkPanel"
 import { FDC3Tab } from "./tab-templates/FDC3Tab"
 import { dockviewPopoutUrl } from "../../utils/dockview-popout"
+import { normalizeDockviewLayout } from "./normalize-layout"
 
 // Custom tab components for rendering tabs with icons
 const TabComponents = {
@@ -78,7 +79,9 @@ const Layout = (props: DockviewSailProps) => {
       return
     }
 
-    const savedLayoutState = getDockviewLayout(activeWorkspaceId)
+    // Drop branches left without leaves, which Dockview would otherwise restore as a blank
+    // column or row holding its share of the grid.
+    const savedLayoutState = normalizeDockviewLayout(getDockviewLayout(activeWorkspaceId))
 
     // Validate that we have a non-empty, valid layout
     // Empty layouts like {}, null, or objects without proper structure should be skipped
