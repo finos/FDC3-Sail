@@ -83,11 +83,14 @@ repository:
   security:
     assessments:
       self:
+        evidence: https://fdc3-sail.finos.org/docs/architecture/threat-model
+        date: "2026-11-12"
         comment: |
-          A self-assessment against the OSPS Baseline has not yet been
-          published. The assessment workflow in .github/workflows/OSPS.yml
-          runs weekly against Maturity Level 2, the level required for FINOS
-          Incubating status.
+          Project-wide threat model and security self-assessment (OSPS-SA-03.01):
+          trust boundaries, STRIDE threats ranked by likelihood and impact,
+          mitigations and open gaps. Reviewed every major or minor release.
+          The OSPS Baseline workflow in .github/workflows/OSPS.yml runs weekly
+          against Maturity Level 2, the level required for FINOS Incubating status.
     tools:
       - name: CodeQL
         type: SAST
