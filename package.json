@@ -72,7 +72,7 @@
     "concurrently": "^10.0.7",
     "knip": "^5.82.1",
     "rimraf": "^6.1.4",
-    "typescript": "^5.8.2",
+    "typescript": "^7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
     "vite-plus": "1.6.0",
     "vitest": "5.1.0"
