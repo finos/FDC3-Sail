@@ -2,6 +2,7 @@
   "name": "@finos/fdc3-sail-common",
   "version": "0.0.0",
   "description": "",
+  "license": "Apache-2.0",
   "scripts": {
     "clean": "npx rimraf dist",
     "prebuild": "npm run build -w @finos/sail-env --prefix ../..",
