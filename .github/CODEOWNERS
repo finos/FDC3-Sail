@@ -1,0 +1,3 @@
+# Code owners for FDC3 Sail. Kept in sync with MAINTAINERS.md.
+# Any one maintainer's approval satisfies "require review from code owners".
+* @SeeWhatsOn @kriswest @robmoffat
