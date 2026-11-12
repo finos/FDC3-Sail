@@ -36,3 +36,13 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+
+  # Hash-pinned Semgrep install for .github/workflows/semgrep.yml
+  - package-ecosystem: pip
+    directory: "/.github"
+    schedule:
+      interval: weekly
+    labels: ["dependencies", "github-actions"]
+    groups:
+      semgrep:
+        patterns: ["*"]
