@@ -78,8 +78,49 @@ jobs:
       - name: Build docs site
         run: npm run docs:build
 
-      - name: Test (Vitest)
-        run: npm test -- --run
+      - name: Test (Vitest, with coverage)
+        run: npm test -- --run --coverage
+
+      - name: Save coverage report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 1
 
       - name: Test (Cucumber)
         run: npm run test -w @finos/sail-headless-agent
+
+  # Separate job so the OIDC token (id-token: write) is never available to the
+  # `ci` job, which installs and runs third-party npm code.
+  codecov:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      # Codecov needs the git history to match the report to the commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: coverage
+
+      # OIDC instead of a CODECOV_TOKEN secret. PRs from forks get no OIDC token;
+      # the action falls back to Codecov's tokenless upload for public-repo forks.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: lcov.info
+          use_oidc: ${{ !github.event.pull_request.head.repo.fork }}
+          # The gate is Codecov's `patch` status check, not this step, so a
+          # Codecov outage doesn't turn CI red on its own.
+          fail_ci_if_error: false

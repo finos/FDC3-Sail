@@ -128,6 +128,37 @@ npm run test:browser:2.2 -w @finos/sail-conformance-harness
 npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
+### Testing policy
+
+New major functionality MUST come with automated tests in the same pull request. Bug fixes SHOULD add a test that fails without the fix. Pick the suite that matches the change:
+
+| Change | Suite | Where tests go |
+| --- | --- | --- |
+| Logic in a package (functions, stores, UI helpers) | Vitest | `*.test.ts` beside the code, or the package's `test/` folder |
+| FDC3 Desktop Agent behaviour (DACP messages, intents, channels) | Cucumber | `.feature` files in `packages/sail-headless-agent/test/features/v2/` or `v3/` |
+| End-to-end FDC3 conformance against a running host | Playwright + FINOS toolbox | `packages/sail-conformance-harness/e2e/` |
+
+Vitest and Cucumber run in `npm run validate` and CI on every pull request. The Playwright conformance suite runs in its own CI workflow (`.github/workflows/conformance.yml`).
+
+#### Coverage
+
+| Rule | Level | Checked by |
+| --- | --- | --- |
+| New and changed lines in a pull request are covered by tests | at least 80% | Codecov `patch` check on the PR |
+| Overall coverage doesn't drop | no more than 1% lower | Codecov `project` check on the PR |
+| Overall coverage stays above the floor | floor set in `vitest.config.ts` | `npm test -- --run --coverage` in CI |
+
+The project's goal is 80% statement coverage overall ([OpenSSF Best Practices `test_statement_coverage80`](https://www.bestpractices.dev/en/criteria/2#2.test_statement_coverage80)). When coverage rises, raise the floor in `vitest.config.ts` to match.
+
+Run coverage locally:
+
+```bash
+npm run build
+npm test -- --run --coverage   # summary in the terminal, full report in coverage/
+```
+
+The Vitest coverage report does not yet include `sail-headless-agent` (tested by Cucumber) or `sail-conformance-harness` (a test suite itself).
+
 ### Building
 
 ```bash

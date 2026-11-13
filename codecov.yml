@@ -1,0 +1,14 @@
+# Coverage checks on pull requests. See website/docs/development.md#testing-policy.
+coverage:
+  status:
+    # New and changed lines in a PR must be at least 80% covered.
+    patch:
+      default:
+        target: 80%
+    # Overall coverage must not drop by more than 1%.
+    project:
+      default:
+        target: auto
+        threshold: 1%
+comment:
+  layout: "diff, files"
