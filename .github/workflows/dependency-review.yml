@@ -2,15 +2,12 @@
 # See https://github.com/actions/dependency-review-action
 name: Dependency Review
 
+# No `paths:` filter on purpose: `dependency-review` is a required check in the
+# main ruleset, and a path-skipped workflow never reports, which blocks merges
+# of PRs that don't touch dependency files. With no dependency changes it passes in seconds.
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "**/package.json"
-      - "**/package-lock.json"
-      - "pnpm-lock.yaml"
-      - "yarn.lock"
-      - ".github/workflows/dependency-review.yml"
 
 permissions:
   contents: read
