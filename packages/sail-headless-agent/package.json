@@ -5,10 +5,12 @@
   "homepage": "https://fdc3.finos.org",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/finos/FDC3.git"
+    "url": "git+https://github.com/finos/FDC3-Sail.git",
+    "directory": "packages/sail-headless-agent"
   },
   "publishConfig": {
-    "tag": "latest"
+    "tag": "latest",
+    "provenance": true
   },
   "license": "Apache-2.0",
   "files": [
