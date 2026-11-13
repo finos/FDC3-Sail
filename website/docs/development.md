@@ -140,6 +140,25 @@ New major functionality MUST come with automated tests in the same pull request.
 
 Vitest and Cucumber run in `npm run validate` and CI on every pull request. The Playwright conformance suite runs in its own CI workflow (`.github/workflows/conformance.yml`).
 
+#### Coverage
+
+| Rule | Level | Checked by |
+| --- | --- | --- |
+| New and changed lines in a pull request are covered by tests | at least 80% | Codecov `patch` check on the PR |
+| Overall coverage doesn't drop | no more than 1% lower | Codecov `project` check on the PR |
+| Overall coverage stays above the floor | floor set in `vitest.config.ts` | `npm test -- --run --coverage` in CI |
+
+The project's goal is 80% statement coverage overall ([OpenSSF Best Practices `test_statement_coverage80`](https://www.bestpractices.dev/en/criteria/2#2.test_statement_coverage80)). When coverage rises, raise the floor in `vitest.config.ts` to match.
+
+Run coverage locally:
+
+```bash
+npm run build
+npm test -- --run --coverage   # summary in the terminal, full report in coverage/
+```
+
+The Vitest coverage report does not yet include `sail-headless-agent` (tested by Cucumber) or `sail-conformance-harness` (a test suite itself).
+
 ### Building
 
 ```bash

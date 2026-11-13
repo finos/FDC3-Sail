@@ -78,8 +78,15 @@ jobs:
       - name: Build docs site
         run: npm run docs:build
 
-      - name: Test (Vitest)
-        run: npm test -- --run
+      - name: Test (Vitest, with coverage)
+        run: npm test -- --run --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Test (Cucumber)
         run: npm run test -w @finos/sail-headless-agent
