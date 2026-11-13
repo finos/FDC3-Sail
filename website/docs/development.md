@@ -128,6 +128,18 @@ npm run test:browser:2.2 -w @finos/sail-conformance-harness
 npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
+### Testing policy
+
+New major functionality MUST come with automated tests in the same pull request. Bug fixes SHOULD add a test that fails without the fix. Pick the suite that matches the change:
+
+| Change | Suite | Where tests go |
+| --- | --- | --- |
+| Logic in a package (functions, stores, UI helpers) | Vitest | `*.test.ts` beside the code, or the package's `test/` folder |
+| FDC3 Desktop Agent behaviour (DACP messages, intents, channels) | Cucumber | `.feature` files in `packages/sail-headless-agent/test/features/v2/` or `v3/` |
+| End-to-end FDC3 conformance against a running host | Playwright + FINOS toolbox | `packages/sail-conformance-harness/e2e/` |
+
+Vitest and Cucumber run in `npm run validate` and CI on every pull request. The Playwright conformance suite runs in its own CI workflow (`.github/workflows/conformance.yml`).
+
 ### Building
 
 ```bash
