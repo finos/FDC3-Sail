@@ -18,7 +18,7 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "clean": "rimraf dist cucumber-report.html coverage node_modules test-results.xml",
-    "directory-openapi": "npx -y -p typescript@5.9.3 -p openapi-typescript@7.13.0 openapi-typescript appd.schema.json --output generated/directory-schema.ts && vp fmt generated/directory-schema.ts",
+    "directory-openapi": "npx -y -p typescript@5.9.3 -p openapi-typescript@7.13.0 openapi-typescript https://fdc3.finos.org/schemas/3.0/appd.schema.json --output generated/directory-schema.ts && vp fmt generated/directory-schema.ts",
     "test": "tsc && c8 --reporter=lcov --reporter=text --reporter=json cucumber-js --exit",
     "build": "tsc --module es2022"
   },
