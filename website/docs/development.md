@@ -326,6 +326,8 @@ Releases use [Changesets](https://github.com/changesets/changesets). Contributor
 4. The **Release** GitHub Action opens or updates a **Version Packages** pull request (version bumps + `CHANGELOG.md` updates).
 5. Merge the Version Packages PR. CI builds, publishes to npm, pushes git tags, and opens GitHub Releases.
 
+Packages are published with npm provenance (`publishConfig.provenance` in each `package.json`), which only works from GitHub Actions. Do not publish from a laptop. Users can verify releases as described in [SECURITY.md](https://github.com/finos/FDC3-Sail/blob/main/SECURITY.md#verifying-releases).
+
 Packages can ship independently and stay on different semver lines. Desktop Agent is in Changesets **pre** mode (`3.0.0-pre.x`); run `npx changeset pre exit` before the first stable `3.0.0` release.
 
 ### Prerequisites
