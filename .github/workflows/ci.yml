@@ -44,6 +44,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      # OSPS-LE-03.02: every published npm tarball must ship the license. npm only
+      # auto-includes a LICENSE from the package's own folder, never the repo root.
+      - name: Check public packages include LICENSE
+        run: |
+          status=0
+          for pkg in packages/*/package.json; do
+            dir="$(dirname "$pkg")/"
+            if [ "$(node -p "require('./${pkg}').private === true")" = "true" ]; then
+              continue
+            fi
+            if ! (cd "$dir" && npm pack --dry-run --json | node -e '
+              const files = JSON.parse(require("fs").readFileSync(0, "utf8"))[0].files;
+              process.exit(files.some((f) => f.path === "LICENSE") ? 0 : 1);
+            '); then
+              echo "::error file=${dir}package.json::${dir} is public but its npm tarball has no LICENSE file"
+              status=1
+            fi
+          done
+          exit $status
+
       - name: Lint
         run: npm run lint
 
