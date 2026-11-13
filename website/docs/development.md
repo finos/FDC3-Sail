@@ -218,6 +218,54 @@ type: brief description
 - **Vitest** - Testing framework
 - **Cucumber** - BDD testing for FDC3 compliance
 
+## Dependency management
+
+How the project selects, obtains and tracks its third-party dependencies. The key words MUST and SHOULD are used as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
+
+```mermaid
+flowchart LR
+  A[New dependency proposed<br/>in a PR] --> B[Automated checks<br/>comment on the PR]
+  B --> C[Maintainer discussion<br/>and review]
+  C --> D[Merged to main<br/>package-lock.json updated]
+  D --> E[Dependabot weekly updates<br/>+ twice-daily CVE scans]
+  E --> B
+```
+
+### Selecting
+
+Every new dependency MUST be raised for discussion in the pull request that adds it. Expect it to be questioned: the default answer is "do we need it?".
+
+When deciding, maintainers consider whether the dependency:
+
+- SHOULD be needed at all: a built-in Node.js or browser API, or an existing dependency, cannot reasonably do the job;
+- SHOULD have a licence compatible with Apache-2.0, ideally FINOS [Category A or B](https://community.finos.org/docs/governance/Software-Projects/license-categories);
+- SHOULD be actively maintained, with no unresolved critical advisories;
+- SHOULD be widely used or come from a trusted publisher, ideally published with npm provenance.
+
+These are guidelines, not hard gates. A dependency that misses one can still be accepted if the PR explains why.
+
+### Obtaining
+
+- All npm packages come from the public npm registry and are installed from the **repository root** (npm workspaces).
+- `package-lock.json` is committed and pins the exact version and integrity hash of every direct and transitive dependency. CI and releases install with `npm ci`, so builds use exactly the locked versions.
+- `overrides` in the root `package.json` force patched versions of transitive dependencies when upstream has not released a fix.
+- GitHub Actions are pinned to full commit SHAs.
+
+### Tracking and updating
+
+| What | Tool | Result |
+| --- | --- | --- |
+| Version updates (npm and GitHub Actions) | Dependabot (`.github/dependabot.yml`) | Weekly PRs; minor/patch grouped, majors separate |
+| New vulnerable dependencies | GitHub Dependency Review (`dependency-review.yml`) | ❌ Fails the PR |
+| Licence outside the allowed list | GitHub Dependency Review (`dependency-review.yml`) | ⚠️ Warning, for discussion |
+| Low OpenSSF Scorecard (below 3) | GitHub Dependency Review (`dependency-review.yml`) | ⚠️ Warning |
+| Lost npm provenance or trusted publishing | [provenance-action](https://github.com/danielroe/provenance-action) (`dependency-review.yml`) | ❌ Fails the PR |
+| New packages, size growth, native or lighter alternatives | [e18e dependency diff](https://github.com/e18e/action-dependency-diff) (`dependency-diff.yml`) | 💬 PR comment |
+| Known CVEs and malicious packages | `npm audit` + OSV-Scanner (`cve-scanning.yml`) | ❌ Fails on critical or malicious; runs on PRs, `main` and twice daily |
+| Unused dependencies | Knip (`npm run knip`) | Report on every CI run |
+
+The PR checks run on every pull request that changes a `package.json` or `package-lock.json`, including Dependabot and fork PRs. Dependency updates go through the same review as any other pull request.
+
 ## Publishing packages (maintainers)
 
 Publishable npm packages (not yet published — see the root [README status](https://github.com/finos/FDC3-Sail#status)): `@finos/sail-browser-agent` and `@finos/sail-platform`. Other workspaces are private and are not versioned or published.

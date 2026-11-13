@@ -16,6 +16,8 @@ Before making a contribution, please take the following steps:
 
 NOTE: All contributors must have a contributor license agreement (CLA) on file with FINOS before their pull requests will be merged. Please review the FINOS [contribution requirements](https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530375/Contribution+Compliance+Requirements) and submit (or have your employer submit) the required CLA before submitting a pull request.
 
+Pull requests that add a dependency must raise it for discussion; see [Dependency management](https://fdc3-sail.finos.org/docs/development#dependency-management) for how dependencies are selected, obtained and tracked.
+
 Maintainers publish `@finos/sail-browser-agent` and `@finos/sail-platform` via Changesets on `main`; see [Publishing packages](https://fdc3-sail.finos.org/docs/development#publishing-packages-maintainers) in the development guide. Contributors do not need to add changesets.
 
 ## Governance

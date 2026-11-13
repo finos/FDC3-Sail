@@ -30,7 +30,7 @@ project:
       primary: false
   documentation:
     quickstart-guide: https://github.com/finos/FDC3-Sail/blob/main/README.md
-    detailed-guide: https://github.com/finos/FDC3-Sail/blob/main/docs/GUIDE.md
+    detailed-guide: https://fdc3-sail.finos.org/docs/development
     code-of-conduct: https://github.com/finos/community/blob/master/governance/Code-of-Conduct.md
   repositories:
     - name: FDC3-Sail
@@ -132,4 +132,31 @@ repository:
           release: false
         results: {}
         comment: |
-          Configured in .github/workflows/dependency-review.yml
+          Configured in .github/workflows/dependency-review.yml. Fails on
+          vulnerable dependencies; warns on licences outside the FINOS
+          Category A/B allow list and on OpenSSF Scorecard below 3.
+      - name: provenance-action
+        type: SCA
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/dependency-review.yml. Fails when
+          a dependency update loses npm provenance or trusted publishing.
+      - name: e18e Dependency Diff
+        type: SCA
+        rulesets:
+          - default
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results: {}
+        comment: |
+          Configured in .github/workflows/dependency-diff.yml and
+          dependency-diff-comment.yml. Comments on PRs with new packages,
+          size growth and suggested native or lighter replacements.
