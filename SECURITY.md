@@ -12,7 +12,7 @@ are listed under a "Breaking changes" heading in each [GitHub release](https://g
 
 ## Verifying Releases
 
-Our npm packages (`@finos/sail-browser-agent`, `@finos/sail-platform`) are published from the
+Our npm packages (`@finos/sail-browser-agent`, `@finos/sail-headless-agent`, `@finos/sail-platform`) are published from the
 [Release workflow](.github/workflows/release.yml) with [npm provenance](https://docs.npmjs.com/generating-provenance-statements).
 Each release is signed through [Sigstore](https://www.sigstore.dev/) and linked to the exact commit and
 workflow run that built it. You do not need to fetch any keys yourself: npm gets the public keys from the registry.
