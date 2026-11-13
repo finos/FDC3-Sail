@@ -126,7 +126,9 @@ export class OpenHandler implements MessageHandler {
   filterPublicDetails(appD: DirectoryApp, appID: AppIdentifier): AppMetadata {
     return {
       appId: appD.appId,
-      name: appD.name,
+      // AppD 3.0 dropped the deprecated `name`, but older directories still send it
+      // and FDC3 AppMetadata still allows it, so pass it through when present.
+      name: "name" in appD && typeof appD.name === "string" ? appD.name : undefined,
       version: appD.version,
       title: appD.title,
       tooltip: appD.tooltip,

@@ -17,10 +17,10 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "clean": "rimraf dist cucumber-report.html coverage node_modules test-results.xml generated",
-    "directory-openapi": "npx openapi-typescript appd.schema.json --output generated/directory-schema.ts",
-    "test": "npm run directory-openapi && tsc && c8 --reporter=lcov --reporter=text --reporter=json cucumber-js --exit",
-    "build": "npm run directory-openapi && tsc --module es2022"
+    "clean": "rimraf dist cucumber-report.html coverage node_modules test-results.xml",
+    "directory-openapi": "npx -y -p typescript@5.9.3 -p openapi-typescript@7.13.0 openapi-typescript https://fdc3.finos.org/schemas/3.0/appd.schema.json --output generated/directory-schema.ts && vp fmt generated/directory-schema.ts",
+    "test": "tsc && c8 --reporter=lcov --reporter=text --reporter=json cucumber-js --exit",
+    "build": "tsc --module es2022"
   },
   "dependencies": {
     "@finos/fdc3-context-v2": "npm:@finos/fdc3-context@2.2.3",
@@ -44,7 +44,6 @@
     "expect": "^29.7.0",
     "is-ci": "2.0.0",
     "jsonpath-plus": "^10.1.0",
-    "openapi-typescript": "^7.13.0",
     "rimraf": "^6.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
