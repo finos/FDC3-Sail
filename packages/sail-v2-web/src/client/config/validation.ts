@@ -43,10 +43,7 @@ export function validateTitle(title: string): ValidationResult {
 /**
  * Validates a URL for web applications
  */
-export function validateUrl(
-  url: string,
-  appType: "web" | "native",
-): ValidationResult {
+export function validateUrl(url: string, appType: "web" | "native"): ValidationResult {
   if (appType === "native") {
     return { isValid: true } // Native apps don't need URLs
   }
@@ -148,8 +145,7 @@ export function validateAppId(appId: string): ValidationResult {
   if (!validIdRegex.test(trimmed)) {
     return {
       isValid: false,
-      error:
-        "App ID can only contain letters, numbers, dots, hyphens, and underscores",
+      error: "App ID can only contain letters, numbers, dots, hyphens, and underscores",
     }
   }
 
@@ -300,8 +296,7 @@ export function validateIntentName(intentName: string): ValidationResult {
   if (!validIntentRegex.test(trimmed)) {
     return {
       isValid: false,
-      error:
-        "Intent name can only contain letters, numbers, dots, hyphens, and underscores",
+      error: "Intent name can only contain letters, numbers, dots, hyphens, and underscores",
     }
   }
 
@@ -337,8 +332,7 @@ export function validateContextType(contextType: string): ValidationResult {
   if (!validContextRegex.test(trimmed)) {
     return {
       isValid: false,
-      error:
-        "Context type can only contain letters, numbers, dots, hyphens, and underscores",
+      error: "Context type can only contain letters, numbers, dots, hyphens, and underscores",
     }
   }
 
@@ -450,7 +444,7 @@ export function validateApp(app: {
  * Checks if an app has any validation errors
  */
 export function hasValidationErrors(errors: AppValidationErrors): boolean {
-  return Object.values(errors).some((error) => error !== undefined)
+  return Object.values(errors).some(error => error !== undefined)
 }
 
 /**

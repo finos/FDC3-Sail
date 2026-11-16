@@ -7,10 +7,7 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": false,
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
+    "lib": ["ESNext", "DOM"],
     "target": "ESNext",
     "jsx": "react-jsx",
     "strict": true,
@@ -24,16 +21,6 @@
       }
     ]
   },
-  "include": [
-    "src/**/*.tsx",
-    "src/**/*.ts",
-    "types.d.ts",
-    "src/**/*.css"
-  ],
-  "exclude": [
-    "dist/**",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/**/__tests__/**"
-  ]
+  "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
+  "exclude": ["dist/**", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__tests__/**"]
 }

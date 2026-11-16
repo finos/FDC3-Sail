@@ -46,14 +46,9 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
     details = { url }
   } else {
     details = {
-      path:
-        typeof raw.details?.path === "string"
-          ? raw.details.path
-          : raw.path || "",
+      path: typeof raw.details?.path === "string" ? raw.details.path : raw.path || "",
       arguments:
-        typeof raw.details?.arguments === "string"
-          ? raw.details.arguments
-          : raw.arguments || "",
+        typeof raw.details?.arguments === "string" ? raw.details.arguments : raw.arguments || "",
     }
   }
 
@@ -61,10 +56,7 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
   let icons: Array<{ src: string; size?: string; type?: string }> = []
   if (Array.isArray(raw.icons) && raw.icons.length > 0) {
     icons = raw.icons.map((icon: any) => ({
-      src:
-        typeof icon === "string"
-          ? icon
-          : icon?.src || "/icons/control/choose-app.svg",
+      src: typeof icon === "string" ? icon : icon?.src || "/icons/control/choose-app.svg",
       ...(icon?.size ? { size: String(icon.size) } : {}),
       ...(icon?.type ? { type: String(icon.type) } : {}),
     }))
@@ -72,9 +64,7 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
     icons = [
       {
         src:
-          typeof raw.icon === "string"
-            ? raw.icon
-            : raw.icon.src || "/icons/control/choose-app.svg",
+          typeof raw.icon === "string" ? raw.icon : raw.icon.src || "/icons/control/choose-app.svg",
       },
     ]
   } else {
@@ -96,9 +86,7 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
       ...(s?.label ? { label: String(s.label) } : {}),
     }))
   } else {
-    screenshots = [
-      { src: "/images/screenshot.webp", label: "Default Screenshot" },
-    ]
+    screenshots = [{ src: "/images/screenshot.webp", label: "Default Screenshot" }]
   }
 
   // Interop normalization (Intents listensFor, raises, channels)
@@ -130,9 +118,7 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
           interop.intents.raises = {}
           raw.interop.intents.raises.forEach((intent: any) => {
             const name = intent.name || intent.intent || "UnknownIntent"
-            interop.intents.raises[name] = Array.isArray(intent.contexts)
-              ? intent.contexts
-              : []
+            interop.intents.raises[name] = Array.isArray(intent.contexts) ? intent.contexts : []
           })
         } else if (typeof raw.interop.intents.raises === "object") {
           interop.intents.raises = raw.interop.intents.raises
@@ -169,12 +155,8 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
     name: title,
     type,
     details,
-    version:
-      typeof raw.version === "string" && raw.version ? raw.version : "1.0.0",
-    publisher:
-      typeof raw.publisher === "string" && raw.publisher
-        ? raw.publisher
-        : "FINOS",
+    version: typeof raw.version === "string" && raw.version ? raw.version : "1.0.0",
+    publisher: typeof raw.publisher === "string" && raw.publisher ? raw.publisher : "FINOS",
     description: typeof raw.description === "string" ? raw.description : "",
     tooltip: typeof raw.tooltip === "string" ? raw.tooltip : "",
     lang: typeof raw.lang === "string" ? raw.lang : "en-US",
@@ -187,9 +169,7 @@ export function normalizeAppRecord(raw: any, index = 0): DirectoryApp {
     ...(typeof raw.supportEmail === "string" && raw.supportEmail
       ? { supportEmail: raw.supportEmail }
       : {}),
-    ...(typeof raw.moreInfo === "string" && raw.moreInfo
-      ? { moreInfo: raw.moreInfo }
-      : {}),
+    ...(typeof raw.moreInfo === "string" && raw.moreInfo ? { moreInfo: raw.moreInfo } : {}),
     ...(Object.keys(interop).length > 0 ? { interop } : {}),
   }
 

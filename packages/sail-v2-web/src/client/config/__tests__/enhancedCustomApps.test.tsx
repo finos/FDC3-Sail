@@ -7,11 +7,7 @@ import {
   EnhancedEditableState,
 } from "../enhancedCustomApps"
 import { DirectoryApp } from "@finos/sail-headless-agent"
-import {
-  parseAppDInput,
-  exportAppDRecord,
-  exportAppDCatalog,
-} from "../appdParser"
+import { parseAppDInput, exportAppDRecord, exportAppDCatalog } from "../appdParser"
 import { STANDARD_FDC3_CATEGORIES } from "../standardCategories"
 
 describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () => {
@@ -86,19 +82,10 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
 
     // Interop
     expect(dirApp.interop?.intents?.listensFor?.ViewOrders).toBeDefined()
-    expect(dirApp.interop?.intents?.listensFor?.ViewOrders.displayName).toBe(
-      "View Active Orders",
-    )
-    expect(dirApp.interop?.intents?.raises?.ViewChart).toEqual([
-      "fdc3.instrument",
-    ])
-    expect(dirApp.interop?.userChannels?.broadcasts).toEqual([
-      "fdc3.instrument",
-    ])
-    expect(dirApp.interop?.userChannels?.listensFor).toEqual([
-      "fdc3.instrument",
-      "fdc3.order",
-    ])
+    expect(dirApp.interop?.intents?.listensFor?.ViewOrders.displayName).toBe("View Active Orders")
+    expect(dirApp.interop?.intents?.raises?.ViewChart).toEqual(["fdc3.instrument"])
+    expect(dirApp.interop?.userChannels?.broadcasts).toEqual(["fdc3.instrument"])
+    expect(dirApp.interop?.userChannels?.listensFor).toEqual(["fdc3.instrument", "fdc3.order"])
     expect(dirApp.interop?.appChannels).toEqual([
       {
         id: "trade-station.quotes",
@@ -136,12 +123,8 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
 
     const dirApp = convertEnhancedToDirectoryApp(nativeState)
     expect(dirApp.type).toBe("native")
-    expect((dirApp.details as { path?: string }).path).toBe(
-      "C:\\Program Files\\Terminal\\run.exe",
-    )
-    expect((dirApp.details as { arguments?: string }).arguments).toBe(
-      "--config production.json",
-    )
+    expect((dirApp.details as { path?: string }).path).toBe("C:\\Program Files\\Terminal\\run.exe")
+    expect((dirApp.details as { arguments?: string }).arguments).toBe("--config production.json")
   })
 
   it("converts DirectoryApp back to EnhancedEditableState without loss of AppD fields", () => {
@@ -163,10 +146,7 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
   })
 
   it("batch converts an array of apps", () => {
-    const stateList = [
-      sampleState,
-      { ...sampleState, id: "app-2", title: "App 2" },
-    ]
+    const stateList = [sampleState, { ...sampleState, id: "app-2", title: "App 2" }]
     const dirApps = convertEnhancedToDirectoryApps(stateList)
     expect(dirApps).toHaveLength(2)
 

@@ -14,11 +14,7 @@ import {
   downloadJsonFile,
   copyToClipboard,
 } from "./appdParser"
-import {
-  validateApp as runValidateApp,
-  validateImageFile,
-  AppValidationErrors,
-} from "./validation"
+import { validateApp as runValidateApp, validateImageFile, AppValidationErrors } from "./validation"
 import Combobox from "react-widgets/Combobox"
 import Multiselect from "react-widgets/Multiselect"
 import "react-widgets/styles.css"
@@ -85,11 +81,8 @@ export type EnhancedEditableState = {
   errors: AppValidationErrors
 }
 
-function checkDuplicateId(
-  id: string,
-  currentApps: EnhancedEditableState[],
-): boolean {
-  return currentApps.filter((app) => app.id === id).length > 1
+function checkDuplicateId(id: string, currentApps: EnhancedEditableState[]): boolean {
+  return currentApps.filter(app => app.id === id).length > 1
 }
 
 function newEnhancedApp(): EnhancedEditableState {
@@ -111,9 +104,7 @@ function newEnhancedApp(): EnhancedEditableState {
     supportEmail: "",
     moreInfo: "",
     icons: [{ src: "/icons/control/choose-app.svg" }],
-    screenshots: [
-      { src: "/images/screenshot.webp", label: "Default Screenshot" },
-    ],
+    screenshots: [{ src: "/images/screenshot.webp", label: "Default Screenshot" }],
     intents: [],
     raisesIntents: [],
     userChannelBroadcasts: [],
@@ -124,11 +115,9 @@ function newEnhancedApp(): EnhancedEditableState {
 }
 
 // Convert state to DirectoryApp format
-export function convertEnhancedToDirectoryApp(
-  app: EnhancedEditableState,
-): DirectoryApp {
+export function convertEnhancedToDirectoryApp(app: EnhancedEditableState): DirectoryApp {
   const listensFor: Record<string, any> = {}
-  app.intents.forEach((i) => {
+  app.intents.forEach(i => {
     if (i.name) {
       listensFor[i.name] = {
         displayName: i.displayName || i.name,
@@ -139,7 +128,7 @@ export function convertEnhancedToDirectoryApp(
   })
 
   const raises: Record<string, string[]> = {}
-  app.raisesIntents.forEach((i) => {
+  app.raisesIntents.forEach(i => {
     if (i.name) {
       raises[i.name] = i.contexts
     }
@@ -148,15 +137,11 @@ export function convertEnhancedToDirectoryApp(
   const interop: any = {}
   if (Object.keys(listensFor).length > 0 || Object.keys(raises).length > 0) {
     interop.intents = {}
-    if (Object.keys(listensFor).length > 0)
-      interop.intents.listensFor = listensFor
+    if (Object.keys(listensFor).length > 0) interop.intents.listensFor = listensFor
     if (Object.keys(raises).length > 0) interop.intents.raises = raises
   }
 
-  if (
-    app.userChannelBroadcasts.length > 0 ||
-    app.userChannelListensFor.length > 0
-  ) {
+  if (app.userChannelBroadcasts.length > 0 || app.userChannelListensFor.length > 0) {
     interop.userChannels = {
       broadcasts: app.userChannelBroadcasts,
       listensFor: app.userChannelListensFor,
@@ -164,8 +149,8 @@ export function convertEnhancedToDirectoryApp(
   }
 
   const appChannels = app.appChannels
-    .filter((ch) => ch.id.trim())
-    .map((ch) => ({
+    .filter(ch => ch.id.trim())
+    .map(ch => ({
       id: ch.id.trim(),
       ...(ch.description.trim() ? { description: ch.description.trim() } : {}),
       ...(ch.broadcasts.length > 0 ? { broadcasts: ch.broadcasts } : {}),
@@ -207,16 +192,12 @@ export function convertEnhancedToDirectoryApp(
   }
 }
 
-export function convertEnhancedToDirectoryApps(
-  apps: EnhancedEditableState[],
-): DirectoryApp[] {
+export function convertEnhancedToDirectoryApps(apps: EnhancedEditableState[]): DirectoryApp[] {
   return apps.map(convertEnhancedToDirectoryApp)
 }
 
 // Convert DirectoryApp format to state
-export function convertFromDirectoryApp(
-  a: DirectoryApp,
-): EnhancedEditableState {
+export function convertFromDirectoryApp(a: DirectoryApp): EnhancedEditableState {
   const lf = a.interop?.intents?.listensFor ?? {}
   const rf = a.interop?.intents?.raises ?? {}
 
@@ -227,7 +208,7 @@ export function convertFromDirectoryApp(
         contexts: intent.contexts || [],
         resultType: intent.resultType || "",
       }))
-    : Object.keys(lf).map((k) => {
+    : Object.keys(lf).map(k => {
         const val = lf[k] ?? { contexts: [] }
         return {
           name: k,
@@ -242,7 +223,7 @@ export function convertFromDirectoryApp(
         name: intent.name || intent.intent || "",
         contexts: intent.contexts || [],
       }))
-    : Object.keys(rf).map((k) => ({
+    : Object.keys(rf).map(k => ({
         name: k,
         contexts: Array.isArray(rf[k]) ? rf[k] : [],
       }))
@@ -266,9 +247,7 @@ export function convertFromDirectoryApp(
     contactEmail: a.contactEmail ?? "",
     supportEmail: a.supportEmail ?? "",
     moreInfo: a.moreInfo ?? "",
-    icons: a.icons?.length
-      ? a.icons
-      : [{ src: "/icons/control/choose-app.svg" }],
+    icons: a.icons?.length ? a.icons : [{ src: "/icons/control/choose-app.svg" }],
     screenshots: a.screenshots?.length
       ? a.screenshots
       : [{ src: "/images/screenshot.webp", label: "Default Screenshot" }],
@@ -277,7 +256,7 @@ export function convertFromDirectoryApp(
     userChannelBroadcasts: a.interop?.userChannels?.broadcasts ?? [],
     userChannelListensFor: a.interop?.userChannels?.listensFor ?? [],
     appChannels: Array.isArray(a.interop?.appChannels)
-      ? a.interop.appChannels.map((ch) => ({
+      ? a.interop.appChannels.map(ch => ({
           id: typeof ch?.id === "string" ? ch.id : "",
           description: typeof ch?.description === "string" ? ch.description : "",
           broadcasts: Array.isArray(ch?.broadcasts) ? ch.broadcasts : [],
@@ -288,9 +267,7 @@ export function convertFromDirectoryApp(
   }
 }
 
-export function convertFromDirectoryApps(
-  apps: DirectoryApp[],
-): EnhancedEditableState[] {
+export function convertFromDirectoryApps(apps: DirectoryApp[]): EnhancedEditableState[] {
   return apps.map(convertFromDirectoryApp)
 }
 
@@ -338,9 +315,7 @@ const ImageUpload = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       const validation = validateImageFile(file)
@@ -366,9 +341,8 @@ const ImageUpload = ({
           src={currentSrc}
           alt={label}
           className={styles.imagePreview}
-          onError={(e) => {
-            ;(e.target as HTMLImageElement).src =
-              "/icons/control/choose-app.svg"
+          onError={e => {
+            ;(e.target as HTMLImageElement).src = "/icons/control/choose-app.svg"
           }}
         />
         <div className={styles.imageUploadControls}>
@@ -389,7 +363,7 @@ const ImageUpload = ({
           <input
             type="text"
             value={currentSrc}
-            onChange={(e) => onUpload(e.target.value)}
+            onChange={e => onUpload(e.target.value)}
             placeholder="Or enter image URL"
             className={styles.urlInput}
           />
@@ -417,18 +391,16 @@ const CategoryEditor = ({
   }
 
   const removeCategory = (catToRemove: string) => {
-    onUpdate(categories.filter((c) => c !== catToRemove))
+    onUpdate(categories.filter(c => c !== catToRemove))
   }
 
-  const suggestedCategories = STANDARD_FDC3_CATEGORIES.filter(
-    (c) => !categories.includes(c),
-  )
+  const suggestedCategories = STANDARD_FDC3_CATEGORIES.filter(c => !categories.includes(c))
 
   return (
     <div className={styles.tagEditor}>
       <label className={styles.fieldLabel}>Categories & Tags:</label>
       <div className={styles.tagList}>
-        {categories.map((cat) => (
+        {categories.map(cat => (
           <span key={cat} className={styles.tag}>
             {cat}
             <button
@@ -452,11 +424,7 @@ const CategoryEditor = ({
           placeholder="Select FDC3 standard category or type custom"
           className={styles.input}
         />
-        <button
-          type="button"
-          onClick={() => addCategory(newCat)}
-          className={styles.addTagButton}
-        >
+        <button type="button" onClick={() => addCategory(newCat)} className={styles.addTagButton}>
           Add
         </button>
       </div>
@@ -464,16 +432,10 @@ const CategoryEditor = ({
   )
 }
 
-const IntentPicker = ({
-  name,
-  update,
-}: {
-  name: string
-  update: (x: string) => void
-}) => {
+const IntentPicker = ({ name, update }: { name: string; update: (x: string) => void }) => {
   const allIntents = [
     ...new Set([
-      ...intentTypes.map((i) => i.title),
+      ...intentTypes.map(i => i.title),
       "ViewChart",
       "ViewNews",
       "StartChat",
@@ -523,7 +485,7 @@ const ContextPicker = ({
         allowCreate="onFilter"
         onChange={update}
         placeholder="Select or add FDC3 context types"
-        onCreate={(n) => {
+        onCreate={n => {
           update([...contextTypes, n])
         }}
       />
@@ -566,7 +528,7 @@ const ExportModal = ({
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div className={styles.modalDialog} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.modalDialog} onClick={e => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>{title}</h3>
           <button className={styles.modalClose} onClick={onClose}>
@@ -580,9 +542,7 @@ const ExportModal = ({
           <pre className={styles.jsonViewer}>{jsonContent}</pre>
         </div>
         <div className={styles.modalFooter}>
-          {copied && (
-            <span className={styles.copiedToast}>✓ Copied to clipboard!</span>
-          )}
+          {copied && <span className={styles.copiedToast}>✓ Copied to clipboard!</span>}
           <button className={styles.outlineButton} onClick={handleCopy}>
             📋 Copy JSON
           </button>
@@ -606,9 +566,7 @@ const ImportModal = ({
   onImport: (newApps: DirectoryApp[], overwrite: boolean) => void
   onClose: () => void
 }) => {
-  const [activeTab, setActiveTab] = useState<"paste" | "upload" | "url">(
-    "paste",
-  )
+  const [activeTab, setActiveTab] = useState<"paste" | "upload" | "url">("paste")
   const [jsonText, setJsonText] = useState("")
   const [remoteUrl, setRemoteUrl] = useState("")
   const [overwrite, setOverwrite] = useState(true)
@@ -673,7 +631,7 @@ const ImportModal = ({
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div className={styles.modalDialog} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.modalDialog} onClick={e => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>Paste / Import AppD Records</h3>
           <button className={styles.modalClose} onClick={onClose}>
@@ -711,12 +669,11 @@ const ImportModal = ({
                   fontSize: "0.85rem",
                 }}
               >
-                Paste an FDC3 AppD record, array of records, or App Directory
-                catalog:
+                Paste an FDC3 AppD record, array of records, or App Directory catalog:
               </p>
               <textarea
                 value={jsonText}
-                onChange={(e) => setJsonText(e.target.value)}
+                onChange={e => setJsonText(e.target.value)}
                 placeholder='{\n  "appId": "market-viewer",\n  "title": "Market Viewer",\n  "type": "web",\n  "details": {\n    "url": "https://example.com/app"\n  }\n}'
                 className={styles.jsonTextarea}
               />
@@ -739,9 +696,7 @@ const ImportModal = ({
                 onChange={handleFileUpload}
                 style={{ display: "none" }}
               />
-              <p
-                style={{ margin: "0 0 1rem 0", color: "#333", fontWeight: 600 }}
-              >
+              <p style={{ margin: "0 0 1rem 0", color: "#333", fontWeight: 600 }}>
                 Select an AppD JSON file from your machine
               </p>
               <button
@@ -759,7 +714,7 @@ const ImportModal = ({
               <input
                 type="url"
                 value={remoteUrl}
-                onChange={(e) => setRemoteUrl(e.target.value)}
+                onChange={e => setRemoteUrl(e.target.value)}
                 placeholder="https://directory.fdc3.finos.org/v2/apps/my-app"
                 className={styles.input}
                 style={{ flex: 1 }}
@@ -781,8 +736,7 @@ const ImportModal = ({
               {parseResult.success ? (
                 <>
                   <div className={styles.importPreviewHeader}>
-                    ✓ Valid AppD Input: {parseResult.apps.length} application(s)
-                    detected
+                    ✓ Valid AppD Input: {parseResult.apps.length} application(s) detected
                   </div>
                   <div
                     style={{
@@ -796,12 +750,8 @@ const ImportModal = ({
                     {parseResult.apps.map((app: DirectoryApp, idx: number) => (
                       <div key={idx} className={styles.previewAppCard}>
                         <div>
-                          <span className={styles.previewAppTitle}>
-                            {app.title}
-                          </span>{" "}
-                          <span className={styles.previewAppMeta}>
-                            ({app.appId})
-                          </span>
+                          <span className={styles.previewAppTitle}>{app.title}</span>{" "}
+                          <span className={styles.previewAppMeta}>({app.appId})</span>
                         </div>
                         <span
                           className={`${styles.badge} ${app.type === "native" ? styles.badgeNative : styles.badgeWeb}`}
@@ -838,7 +788,7 @@ const ImportModal = ({
               type="checkbox"
               id="overwriteApps"
               checked={overwrite}
-              onChange={(e) => setOverwrite(e.target.checked)}
+              onChange={e => setOverwrite(e.target.checked)}
             />
             <label
               htmlFor="overwriteApps"
@@ -859,10 +809,7 @@ const ImportModal = ({
             onClick={handleConfirmImport}
             disabled={!parseResult?.success || parseResult.apps.length === 0}
           >
-            Import{" "}
-            {parseResult?.success
-              ? `(${parseResult.apps.length}) Apps`
-              : "Apps"}
+            Import {parseResult?.success ? `(${parseResult.apps.length}) Apps` : "Apps"}
           </button>
           <button className={styles.secondaryButton} onClick={onClose}>
             Cancel
@@ -888,7 +835,7 @@ const EnhancedCustomAppItem = ({
   onDuplicate: () => void
 }) => {
   const validatedApp = validateApp(app)
-  const hasErrors = Object.values(validatedApp.errors).some((error) => error)
+  const hasErrors = Object.values(validatedApp.errors).some(error => error)
 
   return (
     <div className={`${styles.item} ${hasErrors ? styles.itemWithErrors : ""}`}>
@@ -897,9 +844,7 @@ const EnhancedCustomAppItem = ({
         <div className={styles.appHeaderLeft}>
           <h3 className={styles.appTitle}>
             {app.title || "Untitled Custom App"}
-            {isDuplicate && (
-              <span className={styles.duplicateWarning}> (Duplicate ID)</span>
-            )}
+            {isDuplicate && <span className={styles.duplicateWarning}> (Duplicate ID)</span>}
           </h3>
           <span
             className={`${styles.badge} ${app.type === "native" ? styles.badgeNative : styles.badgeWeb}`}
@@ -948,7 +893,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="text"
                 value={app.id}
-                onChange={(e) => update({ ...app, id: e.target.value })}
+                onChange={e => update({ ...app, id: e.target.value })}
                 className={`${styles.input} ${isDuplicate || validatedApp.errors.appId ? styles.inputError : ""}`}
                 placeholder="unique-app-id"
               />
@@ -961,7 +906,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="text"
                 value={app.title}
-                onChange={(e) => update({ ...app, title: e.target.value })}
+                onChange={e => update({ ...app, title: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.title ? styles.inputError : ""}`}
                 placeholder="Application Display Title"
               />
@@ -975,7 +920,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="text"
                 value={app.publisher}
-                onChange={(e) => update({ ...app, publisher: e.target.value })}
+                onChange={e => update({ ...app, publisher: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.publisher ? styles.inputError : ""}`}
                 placeholder="Publisher / Organization"
               />
@@ -987,7 +932,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="text"
                 value={app.version}
-                onChange={(e) => update({ ...app, version: e.target.value })}
+                onChange={e => update({ ...app, version: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.version ? styles.inputError : ""}`}
                 placeholder="1.0.0"
               />
@@ -999,7 +944,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="text"
                 value={app.lang}
-                onChange={(e) => update({ ...app, lang: e.target.value })}
+                onChange={e => update({ ...app, lang: e.target.value })}
                 className={styles.input}
                 placeholder="en-US"
               />
@@ -1011,7 +956,7 @@ const EnhancedCustomAppItem = ({
             <input
               type="text"
               value={app.tooltip}
-              onChange={(e) => update({ ...app, tooltip: e.target.value })}
+              onChange={e => update({ ...app, tooltip: e.target.value })}
               className={styles.input}
               placeholder="Short launcher tooltip"
             />
@@ -1021,7 +966,7 @@ const EnhancedCustomAppItem = ({
             <label className={styles.fieldLabel}>Description:</label>
             <textarea
               value={app.description}
-              onChange={(e) => update({ ...app, description: e.target.value })}
+              onChange={e => update({ ...app, description: e.target.value })}
               className={styles.textarea}
               placeholder="Detailed description of the application..."
               rows={2}
@@ -1030,7 +975,7 @@ const EnhancedCustomAppItem = ({
 
           <CategoryEditor
             categories={app.categories}
-            onUpdate={(categories) => update({ ...app, categories })}
+            onUpdate={categories => update({ ...app, categories })}
           />
         </div>
 
@@ -1043,9 +988,7 @@ const EnhancedCustomAppItem = ({
               <label className={styles.fieldLabel}>Application Type:</label>
               <select
                 value={app.type}
-                onChange={(e) =>
-                  update({ ...app, type: e.target.value as AppType })
-                }
+                onChange={e => update({ ...app, type: e.target.value as AppType })}
                 className={styles.select}
               >
                 <option value="web">Web Application</option>
@@ -1061,7 +1004,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="url"
                 value={app.url}
-                onChange={(e) => update({ ...app, url: e.target.value })}
+                onChange={e => update({ ...app, url: e.target.value })}
                 disabled={app.type === "native"}
                 className={`${styles.input} ${app.type === "native" ? styles.inputDisabled : ""} ${validatedApp.errors.url ? styles.inputError : ""}`}
                 placeholder="https://example.com/app"
@@ -1069,9 +1012,7 @@ const EnhancedCustomAppItem = ({
               {app.type === "web" ? (
                 <ValidationError error={validatedApp.errors.url} />
               ) : (
-                <p className={styles.fieldHint}>
-                  Native apps do not use a launch URL in Sail.
-                </p>
+                <p className={styles.fieldHint}>Native apps do not use a launch URL in Sail.</p>
               )}
             </div>
           </div>
@@ -1079,18 +1020,14 @@ const EnhancedCustomAppItem = ({
 
         {/* Visual Assets */}
         <div className={styles.formSection}>
-          <h4 className={styles.sectionTitle}>
-            3. Visual Assets (Icons & Screenshots)
-          </h4>
+          <h4 className={styles.sectionTitle}>3. Visual Assets (Icons & Screenshots)</h4>
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
               <ImageUpload
                 label="Primary App Icon"
-                currentSrc={
-                  app.icons[0]?.src || "/icons/control/choose-app.svg"
-                }
-                onUpload={(src) =>
+                currentSrc={app.icons[0]?.src || "/icons/control/choose-app.svg"}
+                onUpload={src =>
                   update({
                     ...app,
                     icons: [{ src, type: "image/png" }],
@@ -1102,15 +1039,11 @@ const EnhancedCustomAppItem = ({
             <div className={styles.formField}>
               <ImageUpload
                 label="Application Screenshot"
-                currentSrc={
-                  app.screenshots[0]?.src || "/images/screenshot.webp"
-                }
-                onUpload={(src) =>
+                currentSrc={app.screenshots[0]?.src || "/images/screenshot.webp"}
+                onUpload={src =>
                   update({
                     ...app,
-                    screenshots: [
-                      { src, label: "Screenshot", type: "image/png" },
-                    ],
+                    screenshots: [{ src, label: "Screenshot", type: "image/png" }],
                   })
                 }
               />
@@ -1120,16 +1053,11 @@ const EnhancedCustomAppItem = ({
 
         {/* FDC3 Interop */}
         <div className={styles.formSection}>
-          <h4 className={styles.sectionTitle}>
-            4. FDC3 Interop (Intents & Channels)
-          </h4>
+          <h4 className={styles.sectionTitle}>4. FDC3 Interop (Intents & Channels)</h4>
 
           {/* Listens For */}
           <div style={{ marginBottom: "1rem" }}>
-            <div
-              className={styles.fieldLabel}
-              style={{ marginBottom: "0.5rem" }}
-            >
+            <div className={styles.fieldLabel} style={{ marginBottom: "0.5rem" }}>
               Intents I Listen To:
             </div>
             {app.intents.map((intent, i) => (
@@ -1145,7 +1073,7 @@ const EnhancedCustomAppItem = ({
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <IntentPicker
                       name={intent.name}
-                      update={(name) => {
+                      update={name => {
                         const newIntents = [...app.intents]
                         newIntents[i] = { ...intent, name }
                         update({ ...app, intents: newIntents })
@@ -1154,7 +1082,7 @@ const EnhancedCustomAppItem = ({
                     <input
                       type="text"
                       value={intent.displayName || ""}
-                      onChange={(e) => {
+                      onChange={e => {
                         const newIntents = [...app.intents]
                         newIntents[i] = {
                           ...intent,
@@ -1169,7 +1097,7 @@ const EnhancedCustomAppItem = ({
                   </div>
                   <ContextPicker
                     contextTypes={intent.contexts}
-                    update={(contexts) => {
+                    update={contexts => {
                       const newIntents = [...app.intents]
                       newIntents[i] = { ...intent, contexts }
                       update({ ...app, intents: newIntents })
@@ -1210,10 +1138,7 @@ const EnhancedCustomAppItem = ({
 
           {/* Raises */}
           <div style={{ marginBottom: "1rem" }}>
-            <div
-              className={styles.fieldLabel}
-              style={{ marginBottom: "0.5rem" }}
-            >
+            <div className={styles.fieldLabel} style={{ marginBottom: "0.5rem" }}>
               Intents I Raise:
             </div>
             {app.raisesIntents.map((intent, i) => (
@@ -1228,7 +1153,7 @@ const EnhancedCustomAppItem = ({
                 >
                   <IntentPicker
                     name={intent.name}
-                    update={(name) => {
+                    update={name => {
                       const newRaises = [...app.raisesIntents]
                       newRaises[i] = { ...intent, name }
                       update({ ...app, raisesIntents: newRaises })
@@ -1236,7 +1161,7 @@ const EnhancedCustomAppItem = ({
                   />
                   <ContextPicker
                     contextTypes={intent.contexts}
-                    update={(contexts) => {
+                    update={contexts => {
                       const newRaises = [...app.raisesIntents]
                       newRaises[i] = { ...intent, contexts }
                       update({ ...app, raisesIntents: newRaises })
@@ -1274,35 +1199,24 @@ const EnhancedCustomAppItem = ({
           {/* User Channels Contexts */}
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <label className={styles.fieldLabel}>
-                User Channels - Broadcasts:
-              </label>
+              <label className={styles.fieldLabel}>User Channels - Broadcasts:</label>
               <ContextPicker
                 contextTypes={app.userChannelBroadcasts}
-                update={(contexts) =>
-                  update({ ...app, userChannelBroadcasts: contexts })
-                }
+                update={contexts => update({ ...app, userChannelBroadcasts: contexts })}
               />
             </div>
             <div className={styles.formField}>
-              <label className={styles.fieldLabel}>
-                User Channels - Listens For:
-              </label>
+              <label className={styles.fieldLabel}>User Channels - Listens For:</label>
               <ContextPicker
                 contextTypes={app.userChannelListensFor}
-                update={(contexts) =>
-                  update({ ...app, userChannelListensFor: contexts })
-                }
+                update={contexts => update({ ...app, userChannelListensFor: contexts })}
               />
             </div>
           </div>
 
           {/* App Channels */}
           <div style={{ marginTop: "1rem" }}>
-            <div
-              className={styles.fieldLabel}
-              style={{ marginBottom: "0.5rem" }}
-            >
+            <div className={styles.fieldLabel} style={{ marginBottom: "0.5rem" }}>
               App Channels:
             </div>
             {app.appChannels.map((channel, i) => (
@@ -1321,7 +1235,7 @@ const EnhancedCustomAppItem = ({
                       <input
                         type="text"
                         value={channel.id}
-                        onChange={(e) => {
+                        onChange={e => {
                           const next = [...app.appChannels]
                           next[i] = { ...channel, id: e.target.value }
                           update({ ...app, appChannels: next })
@@ -1335,7 +1249,7 @@ const EnhancedCustomAppItem = ({
                       <input
                         type="text"
                         value={channel.description}
-                        onChange={(e) => {
+                        onChange={e => {
                           const next = [...app.appChannels]
                           next[i] = { ...channel, description: e.target.value }
                           update({ ...app, appChannels: next })
@@ -1350,7 +1264,7 @@ const EnhancedCustomAppItem = ({
                       <label className={styles.fieldLabel}>Broadcasts:</label>
                       <ContextPicker
                         contextTypes={channel.broadcasts}
-                        update={(broadcasts) => {
+                        update={broadcasts => {
                           const next = [...app.appChannels]
                           next[i] = { ...channel, broadcasts }
                           update({ ...app, appChannels: next })
@@ -1361,7 +1275,7 @@ const EnhancedCustomAppItem = ({
                       <label className={styles.fieldLabel}>Listens For:</label>
                       <ContextPicker
                         contextTypes={channel.listensFor}
-                        update={(listensFor) => {
+                        update={listensFor => {
                           const next = [...app.appChannels]
                           next[i] = { ...channel, listensFor }
                           update({ ...app, appChannels: next })
@@ -1414,9 +1328,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="email"
                 value={app.contactEmail}
-                onChange={(e) =>
-                  update({ ...app, contactEmail: e.target.value })
-                }
+                onChange={e => update({ ...app, contactEmail: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.contactEmail ? styles.inputError : ""}`}
                 placeholder="contact@company.com"
               />
@@ -1428,9 +1340,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="email"
                 value={app.supportEmail}
-                onChange={(e) =>
-                  update({ ...app, supportEmail: e.target.value })
-                }
+                onChange={e => update({ ...app, supportEmail: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.supportEmail ? styles.inputError : ""}`}
                 placeholder="support@company.com"
               />
@@ -1442,7 +1352,7 @@ const EnhancedCustomAppItem = ({
               <input
                 type="url"
                 value={app.moreInfo}
-                onChange={(e) => update({ ...app, moreInfo: e.target.value })}
+                onChange={e => update({ ...app, moreInfo: e.target.value })}
                 className={`${styles.input} ${validatedApp.errors.moreInfo ? styles.inputError : ""}`}
                 placeholder="https://company.com/docs/app"
               />
@@ -1460,16 +1370,13 @@ export const EnhancedCustomAppList = () => {
   const [apps, setApps] = useState<EnhancedEditableState[]>(() =>
     convertFromDirectoryApps(getClientState().getCustomApps()),
   )
-  const [exportAppTarget, setExportAppTarget] =
-    useState<EnhancedEditableState | null>(null)
+  const [exportAppTarget, setExportAppTarget] = useState<EnhancedEditableState | null>(null)
   const [showExportAll, setShowExportAll] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
 
   async function updateApps(newApps: EnhancedEditableState[]): Promise<void> {
     const validatedApps = newApps.map(validateApp)
-    const hasErrors = validatedApps.some((app) =>
-      Object.values(app.errors).some((error) => error),
-    )
+    const hasErrors = validatedApps.some(app => Object.values(app.errors).some(error => error))
 
     setApps(validatedApps)
 
@@ -1477,22 +1384,17 @@ export const EnhancedCustomAppList = () => {
       return getClientState()
         .setCustomApps(convertEnhancedToDirectoryApps(validatedApps))
         .then(async () => {
-          getClientState().setKnownApps(
-            await getServerState().getApplications(),
-          )
+          getClientState().setKnownApps(await getServerState().getApplications())
         })
     }
   }
 
-  const handleImportApps = async (
-    importedApps: DirectoryApp[],
-    overwrite: boolean,
-  ) => {
+  const handleImportApps = async (importedApps: DirectoryApp[], overwrite: boolean) => {
     const convertedImported = convertFromDirectoryApps(importedApps)
     const currentList = [...apps]
 
-    convertedImported.forEach((imp) => {
-      const existingIdx = currentList.findIndex((a) => a.id === imp.id)
+    convertedImported.forEach(imp => {
+      const existingIdx = currentList.findIndex(a => a.id === imp.id)
       if (existingIdx >= 0) {
         if (overwrite) {
           currentList[existingIdx] = imp
@@ -1525,10 +1427,7 @@ export const EnhancedCustomAppList = () => {
       {/* Header and Toolbar */}
       <div className={styles.listHeader}>
         <h2>Custom Applications</h2>
-        <p>
-          Create, edit, import, and export FDC3 Application Directory (AppD)
-          records.
-        </p>
+        <p>Create, edit, import, and export FDC3 Application Directory (AppD) records.</p>
 
         <div className={styles.toolbar}>
           <div className={styles.toolbarActions}>
@@ -1559,21 +1458,21 @@ export const EnhancedCustomAppList = () => {
       </div>
 
       {/* App List */}
-      {apps.map((app) => (
+      {apps.map(app => (
         <EnhancedCustomAppItem
           key={app.id}
           app={app}
           isDuplicate={checkDuplicateId(app.id, apps)}
           onExport={() => setExportAppTarget(app)}
           onDuplicate={() => handleDuplicateApp(app)}
-          update={(updatedApp) => {
+          update={updatedApp => {
             if (updatedApp) {
-              const idx = apps.findIndex((a) => a.id === app.id)
+              const idx = apps.findIndex(a => a.id === app.id)
               const newApps = [...apps]
               newApps[idx] = updatedApp
               updateApps(newApps)
             } else {
-              const idx = apps.findIndex((a) => a.id === app.id)
+              const idx = apps.findIndex(a => a.id === app.id)
               const newApps = [...apps]
               newApps.splice(idx, 1)
               updateApps(newApps)
@@ -1586,17 +1485,14 @@ export const EnhancedCustomAppList = () => {
         <div style={{ textAlign: "center", padding: "2rem", color: "#6c757d" }}>
           <p>No custom applications yet.</p>
           <p>
-            Click <strong>"+ Add New App"</strong> or{" "}
-            <strong>"Paste / Import AppD"</strong> to get started.
+            Click <strong>"+ Add New App"</strong> or <strong>"Paste / Import AppD"</strong> to get
+            started.
           </p>
         </div>
       )}
 
       {/* Add App Button Card */}
-      <div
-        className={styles.add}
-        onClick={() => updateApps([...apps, newEnhancedApp()])}
-      >
+      <div className={styles.add} onClick={() => updateApps([...apps, newEnhancedApp()])}>
         <p>+ Click to Add A New Custom App</p>
       </div>
 
@@ -1620,10 +1516,7 @@ export const EnhancedCustomAppList = () => {
 
       {/* Import / Paste AppD Modal */}
       {showImportModal && (
-        <ImportModal
-          onImport={handleImportApps}
-          onClose={() => setShowImportModal(false)}
-        />
+        <ImportModal onImport={handleImportApps} onClose={() => setShowImportModal(false)} />
       )}
     </div>
   )

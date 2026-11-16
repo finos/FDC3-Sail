@@ -71,7 +71,7 @@ function fileToDataUrl(
       reject(new Error("Failed to read file"))
     }
 
-    reader.onprogress = (event) => {
+    reader.onprogress = event => {
       if (onProgress && event.lengthComputable) {
         onProgress({
           loaded: event.loaded,
@@ -129,7 +129,7 @@ export async function resizeImage(
 
       // Convert to blob
       canvas.toBlob(
-        (blob) => {
+        blob => {
           if (blob) {
             const resizedFile = new File([blob], file.name, {
               type: file.type,
@@ -156,10 +156,7 @@ export async function resizeImage(
 /**
  * Generates a thumbnail from an image file
  */
-export async function generateThumbnail(
-  file: File,
-  size: number = 64,
-): Promise<string> {
+export async function generateThumbnail(file: File, size: number = 64): Promise<string> {
   const thumbnailFile = await resizeImage(file, size, size, 0.7)
   const result = await uploadFile(thumbnailFile)
 
@@ -181,7 +178,7 @@ export async function uploadMultipleFiles(
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const result = await uploadFile(file, (progress) => {
+    const result = await uploadFile(file, progress => {
       onProgress?.(i, progress)
     })
     results.push(result)
@@ -287,9 +284,7 @@ export async function uploadWithRetry(
 
     // Wait before retry (exponential backoff)
     if (attempt < maxRetries) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.pow(2, attempt) * 1000),
-      )
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000))
     }
   }
 
@@ -308,13 +303,13 @@ export async function uploadToServer(
   endpoint: string = "/api/upload",
   onProgress?: (progress: UploadProgress) => void,
 ): Promise<UploadResult> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const formData = new FormData()
     formData.append("file", file)
 
     const xhr = new XMLHttpRequest()
 
-    xhr.upload.onprogress = (event) => {
+    xhr.upload.onprogress = event => {
       if (onProgress && event.lengthComputable) {
         onProgress({
           loaded: event.loaded,

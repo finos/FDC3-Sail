@@ -55,9 +55,7 @@ describe("FDC3 AppD Parser & Normalizer (Issue #194)", () => {
     expect(app.version).toBe("1.2.0")
     expect(app.publisher).toBe("FinTech Inc")
     expect(app.categories).toEqual(["charts", "market data"])
-    expect(app.interop?.intents?.listensFor?.ViewChart?.contexts).toEqual([
-      "fdc3.instrument",
-    ])
+    expect(app.interop?.intents?.listensFor?.ViewChart?.contexts).toEqual(["fdc3.instrument"])
   })
 
   it("parses an array of AppD JSON records", () => {
@@ -135,9 +133,7 @@ describe("FDC3 AppD Parser & Normalizer (Issue #194)", () => {
     const app = result.apps[0]
     expect(app.title).toBe("Legacy App")
     expect(app.appId).toBe("legacy-app")
-    expect((app.details as any).url).toBe(
-      "https://legacy.example.com/manifest.json",
-    )
+    expect((app.details as any).url).toBe("https://legacy.example.com/manifest.json")
   })
 
   it("handles empty or whitespace-only input", () => {
@@ -176,12 +172,8 @@ describe("FDC3 AppD Parser & Normalizer (Issue #194)", () => {
 
     const app = normalizeAppRecord(raw)
     expect(app.interop?.intents?.listensFor?.ViewChart).toBeDefined()
-    expect(app.interop?.intents?.listensFor?.ViewChart.displayName).toBe(
-      "Chart Display",
-    )
-    expect(app.interop?.intents?.listensFor?.ViewChart.resultType).toBe(
-      "channel",
-    )
+    expect(app.interop?.intents?.listensFor?.ViewChart.displayName).toBe("Chart Display")
+    expect(app.interop?.intents?.listensFor?.ViewChart.resultType).toBe("channel")
   })
 
   it("exports a single AppD record to pretty JSON", () => {
@@ -349,15 +341,9 @@ describe("Enhanced State Conversion (Issue #194)", () => {
     expect(dirApp.title).toBe("Chart Viewer")
     expect(dirApp.categories).toContain("charts")
     expect(dirApp.contactEmail).toBe("contact@finos.org")
-    expect(dirApp.interop?.intents?.listensFor?.ViewChart?.displayName).toBe(
-      "Display Chart",
-    )
-    expect(dirApp.interop?.intents?.raises?.ViewNews).toEqual([
-      "fdc3.instrument",
-    ])
-    expect(dirApp.interop?.userChannels?.broadcasts).toEqual([
-      "fdc3.instrument",
-    ])
+    expect(dirApp.interop?.intents?.listensFor?.ViewChart?.displayName).toBe("Display Chart")
+    expect(dirApp.interop?.intents?.raises?.ViewNews).toEqual(["fdc3.instrument"])
+    expect(dirApp.interop?.userChannels?.broadcasts).toEqual(["fdc3.instrument"])
 
     const roundtrip = convertFromDirectoryApp(dirApp)
     expect(roundtrip.id).toBe(state.id)
