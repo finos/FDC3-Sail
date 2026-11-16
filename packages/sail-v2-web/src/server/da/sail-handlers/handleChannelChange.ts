@@ -1,4 +1,4 @@
-import { SailChannelChangeArgs } from "@finos/fdc3-sail-common"
+import { SailChannelChangeArgs } from "../../../common"
 import { BrowserTypes } from "@finos/fdc3-schema-v3"
 import { v4 as uuid } from "uuid"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"

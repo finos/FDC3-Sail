@@ -1,4 +1,4 @@
-import { TabDetail } from "@finos/fdc3-sail-common"
+import { TabDetail } from "../common"
 import { Icon } from "./Icon"
 import styles from "./styles.module.css"
 
