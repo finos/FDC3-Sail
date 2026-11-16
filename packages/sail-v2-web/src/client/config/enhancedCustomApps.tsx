@@ -52,6 +52,13 @@ export type EditableRaisesIntent = {
   contexts: string[]
 }
 
+export type EditableAppChannel = {
+  id: string
+  description: string
+  broadcasts: string[]
+  listensFor: string[]
+}
+
 export type EnhancedEditableState = {
   id: string
   title: string
@@ -74,6 +81,7 @@ export type EnhancedEditableState = {
   raisesIntents: EditableRaisesIntent[]
   userChannelBroadcasts: string[]
   userChannelListensFor: string[]
+  appChannels: EditableAppChannel[]
   errors: AppValidationErrors
 }
 
@@ -110,6 +118,7 @@ function newEnhancedApp(): EnhancedEditableState {
     raisesIntents: [],
     userChannelBroadcasts: [],
     userChannelListensFor: [],
+    appChannels: [],
     errors: {},
   }
 }
@@ -152,6 +161,18 @@ export function convertEnhancedToDirectoryApp(
       broadcasts: app.userChannelBroadcasts,
       listensFor: app.userChannelListensFor,
     }
+  }
+
+  const appChannels = app.appChannels
+    .filter((ch) => ch.id.trim())
+    .map((ch) => ({
+      id: ch.id.trim(),
+      ...(ch.description.trim() ? { description: ch.description.trim() } : {}),
+      ...(ch.broadcasts.length > 0 ? { broadcasts: ch.broadcasts } : {}),
+      ...(ch.listensFor.length > 0 ? { listensFor: ch.listensFor } : {}),
+    }))
+  if (appChannels.length > 0) {
+    interop.appChannels = appChannels
   }
 
   // Match main for native: DirectoryApp details use `{ path: "" }` (Sail does not
@@ -255,6 +276,14 @@ export function convertFromDirectoryApp(
     raisesIntents,
     userChannelBroadcasts: a.interop?.userChannels?.broadcasts ?? [],
     userChannelListensFor: a.interop?.userChannels?.listensFor ?? [],
+    appChannels: Array.isArray(a.interop?.appChannels)
+      ? a.interop.appChannels.map((ch) => ({
+          id: typeof ch?.id === "string" ? ch.id : "",
+          description: typeof ch?.description === "string" ? ch.description : "",
+          broadcasts: Array.isArray(ch?.broadcasts) ? ch.broadcasts : [],
+          listensFor: Array.isArray(ch?.listensFor) ? ch.listensFor : [],
+        }))
+      : [],
     errors: {},
   }
 }
@@ -1265,6 +1294,112 @@ const EnhancedCustomAppItem = ({
                   update({ ...app, userChannelListensFor: contexts })
                 }
               />
+            </div>
+          </div>
+
+          {/* App Channels */}
+          <div style={{ marginTop: "1rem" }}>
+            <div
+              className={styles.fieldLabel}
+              style={{ marginBottom: "0.5rem" }}
+            >
+              App Channels:
+            </div>
+            {app.appChannels.map((channel, i) => (
+              <div key={i} className={styles.intentItem}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.5rem",
+                    flex: 1,
+                  }}
+                >
+                  <div className={styles.formRow} style={{ marginBottom: 0 }}>
+                    <div className={styles.formField}>
+                      <label className={styles.fieldLabel}>Channel ID *:</label>
+                      <input
+                        type="text"
+                        value={channel.id}
+                        onChange={(e) => {
+                          const next = [...app.appChannels]
+                          next[i] = { ...channel, id: e.target.value }
+                          update({ ...app, appChannels: next })
+                        }}
+                        className={styles.input}
+                        placeholder="myApp.quotes"
+                      />
+                    </div>
+                    <div className={styles.formField}>
+                      <label className={styles.fieldLabel}>Description:</label>
+                      <input
+                        type="text"
+                        value={channel.description}
+                        onChange={(e) => {
+                          const next = [...app.appChannels]
+                          next[i] = { ...channel, description: e.target.value }
+                          update({ ...app, appChannels: next })
+                        }}
+                        className={styles.input}
+                        placeholder="How this channel is used"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.formRow} style={{ marginBottom: 0 }}>
+                    <div className={styles.formField}>
+                      <label className={styles.fieldLabel}>Broadcasts:</label>
+                      <ContextPicker
+                        contextTypes={channel.broadcasts}
+                        update={(broadcasts) => {
+                          const next = [...app.appChannels]
+                          next[i] = { ...channel, broadcasts }
+                          update({ ...app, appChannels: next })
+                        }}
+                      />
+                    </div>
+                    <div className={styles.formField}>
+                      <label className={styles.fieldLabel}>Listens For:</label>
+                      <ContextPicker
+                        contextTypes={channel.listensFor}
+                        update={(listensFor) => {
+                          const next = [...app.appChannels]
+                          next[i] = { ...channel, listensFor }
+                          update({ ...app, appChannels: next })
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <InlineButton
+                  onClick={() => {
+                    const next = [...app.appChannels]
+                    next.splice(i, 1)
+                    update({ ...app, appChannels: next })
+                  }}
+                  text="Remove App Channel"
+                  url="/icons/control/bin.svg"
+                  className={styles.miniButton}
+                />
+              </div>
+            ))}
+            <div
+              className={styles.addIntent}
+              onClick={() => {
+                update({
+                  ...app,
+                  appChannels: [
+                    ...app.appChannels,
+                    {
+                      id: "",
+                      description: "",
+                      broadcasts: [],
+                      listensFor: [],
+                    },
+                  ],
+                })
+              }}
+            >
+              <p>+ Add App Channel</p>
             </div>
           </div>
         </div>

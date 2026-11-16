@@ -56,6 +56,14 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
     ],
     userChannelBroadcasts: ["fdc3.instrument"],
     userChannelListensFor: ["fdc3.instrument", "fdc3.order"],
+    appChannels: [
+      {
+        id: "trade-station.quotes",
+        description: "Streaming quotes for the selected instrument",
+        broadcasts: ["fdc3.valuation"],
+        listensFor: ["fdc3.instrument"],
+      },
+    ],
     errors: {},
   }
 
@@ -90,6 +98,14 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
     expect(dirApp.interop?.userChannels?.listensFor).toEqual([
       "fdc3.instrument",
       "fdc3.order",
+    ])
+    expect(dirApp.interop?.appChannels).toEqual([
+      {
+        id: "trade-station.quotes",
+        description: "Streaming quotes for the selected instrument",
+        broadcasts: ["fdc3.valuation"],
+        listensFor: ["fdc3.instrument"],
+      },
     ])
   })
 
@@ -140,6 +156,7 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
     expect(convertedState.supportEmail).toBe(sampleState.supportEmail)
     expect(convertedState.moreInfo).toBe(sampleState.moreInfo)
     expect(convertedState.categories).toEqual(sampleState.categories)
+    expect(convertedState.appChannels).toEqual(sampleState.appChannels)
     expect(convertedState.intents[0].displayName).toBe("View Active Orders")
     expect(convertedState.raisesIntents[0].name).toBe("ViewChart")
     expect(convertedState.userChannelBroadcasts).toEqual(["fdc3.instrument"])

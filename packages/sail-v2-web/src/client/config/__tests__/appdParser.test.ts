@@ -333,6 +333,14 @@ describe("Enhanced State Conversion (Issue #194)", () => {
       ],
       userChannelBroadcasts: ["fdc3.instrument"],
       userChannelListensFor: ["fdc3.chart"],
+      appChannels: [
+        {
+          id: "chart-app.symbols",
+          description: "Shared chart symbol stream",
+          broadcasts: ["fdc3.instrument"],
+          listensFor: ["fdc3.instrument"],
+        },
+      ],
       errors: {},
     }
 
