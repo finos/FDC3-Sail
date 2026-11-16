@@ -1,0 +1,42 @@
+name: Welcome first-time contributors
+
+on:
+  issues:
+    types: [opened]
+  # pull_request_target gives a write token on fork PRs so the bot can comment.
+  # Safe here: this workflow never checks out or runs the PR's code.
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
+        with:
+          issue_message: |
+            Hi there, welcome to FDC3 Sail, and thanks for opening your first issue! 👋
+
+            We're really glad you're here. Every bug report, question and idea helps make Sail better.
+
+            A maintainer will reply soon. In the meantime:
+            - 📖 The [docs](https://fdc3-sail.finos.org) might have an answer
+            - 🙋 If you'd like to work on this yourself, just say so. We're happy to help you get started.
+          pr_message: |
+            Hi there, thanks for your first pull request to FDC3 Sail! 🎉
+
+            Contributing to open source takes effort, and we really appreciate you choosing to spend it here.
+
+            **One thing to check:** FINOS projects need a contributor license agreement (CLA) before we can merge. If the CLA bot comments below, follow its link. It only takes a few minutes. ([More info](https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530375/Contribution+Compliance+Requirements))
+
+            A maintainer will review your PR soon. Don't worry if CI flags something. We're happy to help you sort it out. The [development guide](https://fdc3-sail.finos.org/docs/development) has setup and test commands.
