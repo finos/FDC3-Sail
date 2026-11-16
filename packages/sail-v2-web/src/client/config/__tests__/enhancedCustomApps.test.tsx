@@ -93,7 +93,22 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
     ])
   })
 
-  it("converts native application state to launch details with path and arguments", () => {
+  it("converts native apps like main: empty path by default, no launch URL", () => {
+    const nativeState: EnhancedEditableState = {
+      ...sampleState,
+      id: "native-terminal",
+      type: "native",
+      url: "",
+      path: "",
+      arguments: "",
+    }
+
+    const dirApp = convertEnhancedToDirectoryApp(nativeState)
+    expect(dirApp.type).toBe("native")
+    expect(dirApp.details).toEqual({ path: "" })
+  })
+
+  it("preserves native path/arguments when present from AppD import", () => {
     const nativeState: EnhancedEditableState = {
       ...sampleState,
       id: "native-terminal",
@@ -105,10 +120,12 @@ describe("EnhancedCustomApps - Model & AppD Creation (Issue #194 & #177)", () =>
 
     const dirApp = convertEnhancedToDirectoryApp(nativeState)
     expect(dirApp.type).toBe("native")
-    expect((dirApp.details as any).path).toBe(
+    expect((dirApp.details as { path?: string }).path).toBe(
       "C:\\Program Files\\Terminal\\run.exe",
     )
-    expect((dirApp.details as any).arguments).toBe("--config production.json")
+    expect((dirApp.details as { arguments?: string }).arguments).toBe(
+      "--config production.json",
+    )
   })
 
   it("converts DirectoryApp back to EnhancedEditableState without loss of AppD fields", () => {

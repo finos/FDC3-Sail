@@ -112,6 +112,18 @@
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
 
+.inputDisabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.fieldHint {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
 .textarea {
   padding: 0.5rem;
   border: 1px solid #ced4da;

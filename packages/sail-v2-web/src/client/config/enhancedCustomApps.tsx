@@ -154,11 +154,14 @@ export function convertEnhancedToDirectoryApp(
     }
   }
 
+  // Match main for native: DirectoryApp details use `{ path: "" }` (Sail does not
+  // collect executable path/args in the config UI). Preserve non-empty path/args
+  // only when they arrived via AppD import/export round-trip.
   const details: any =
     app.type === "web"
       ? { url: app.url }
       : {
-          path: app.path,
+          path: app.path || "",
           ...(app.arguments ? { arguments: app.arguments } : {}),
         }
 
@@ -1021,44 +1024,27 @@ const EnhancedCustomAppItem = ({
               </select>
             </div>
 
-            {app.type === "web" ? (
-              <div className={styles.formField}>
-                <label className={styles.fieldLabel}>Web URL *:</label>
-                <input
-                  type="url"
-                  value={app.url}
-                  onChange={(e) => update({ ...app, url: e.target.value })}
-                  className={`${styles.input} ${validatedApp.errors.url ? styles.inputError : ""}`}
-                  placeholder="https://example.com/app"
-                />
+            {/* Match main: URL field always shown; disabled for native (no path/args editors). */}
+            <div className={styles.formField}>
+              <label className={styles.fieldLabel}>
+                {app.type === "web" ? "Web URL *:" : "Web URL:"}
+              </label>
+              <input
+                type="url"
+                value={app.url}
+                onChange={(e) => update({ ...app, url: e.target.value })}
+                disabled={app.type === "native"}
+                className={`${styles.input} ${app.type === "native" ? styles.inputDisabled : ""} ${validatedApp.errors.url ? styles.inputError : ""}`}
+                placeholder="https://example.com/app"
+              />
+              {app.type === "web" ? (
                 <ValidationError error={validatedApp.errors.url} />
-              </div>
-            ) : (
-              <>
-                <div className={styles.formField}>
-                  <label className={styles.fieldLabel}>Executable Path:</label>
-                  <input
-                    type="text"
-                    value={app.path}
-                    onChange={(e) => update({ ...app, path: e.target.value })}
-                    className={styles.input}
-                    placeholder="C:\Program Files\App\app.exe"
-                  />
-                </div>
-                <div className={styles.formField}>
-                  <label className={styles.fieldLabel}>Arguments:</label>
-                  <input
-                    type="text"
-                    value={app.arguments}
-                    onChange={(e) =>
-                      update({ ...app, arguments: e.target.value })
-                    }
-                    className={styles.input}
-                    placeholder="--port 8080"
-                  />
-                </div>
-              </>
-            )}
+              ) : (
+                <p className={styles.fieldHint}>
+                  Native apps do not use a launch URL in Sail.
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
