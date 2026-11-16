@@ -223,11 +223,10 @@ npm run validate
 ### Commit Message Format
 
 ```bash
-type: brief description
+type(scope): summary (#issue)
 
 - More detailed explanation if needed
 - Use bullet points for multiple changes
-- Reference issue numbers: Fixes #123
 ```
 
 **Common types:**
