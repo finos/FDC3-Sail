@@ -1,11 +1,6 @@
 import { Component, useEffect, useState } from "react"
 import { Icon } from "../icon/icon"
-import {
-  getAppState,
-  getClientState,
-  FDC3_WEBSOCKET_PROPERTY,
-  WscpPairing,
-} from "../../common"
+import { getAppState, getClientState, FDC3_WEBSOCKET_PROPERTY, WscpPairing } from "../../common"
 import styles from "./styles.module.css"
 import { Popup, PopupButton } from "../popups/popup"
 import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
