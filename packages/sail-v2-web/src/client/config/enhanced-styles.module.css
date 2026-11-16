@@ -320,16 +320,16 @@
   }
 }
 
-/* Enhanced button styles */
+/* Icon buttons — applied to <img> via InlineButton (bin.svg is 1200pt intrinsic) */
 .actionButton {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.15rem;
+  box-sizing: content-box;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.15s ease-in-out;
+  background-color: #dc3545;
+  object-fit: contain;
 }
 
 .actionButton:hover {
@@ -337,17 +337,16 @@
 }
 
 .miniButton {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.1rem;
+  box-sizing: content-box;
   cursor: pointer;
-  font-size: 0.8rem;
+  object-fit: contain;
 }
 
 .miniButton:hover {
-  background-color: #5a6268;
+  opacity: 0.75;
 }
 
 /* Add button enhancement */
