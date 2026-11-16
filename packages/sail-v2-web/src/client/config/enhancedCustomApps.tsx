@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getClientState, getServerState } from "@finos/fdc3-sail-common"
 import styles from "./enhanced-styles.module.css"
-import { DirectoryApp, WebAppDetails } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 import { InlineButton } from "./shared"
 import { intentTypes } from "./intentTypes"

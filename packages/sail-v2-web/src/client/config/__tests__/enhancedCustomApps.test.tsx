@@ -6,7 +6,7 @@ import {
   convertFromDirectoryApps,
   EnhancedEditableState,
 } from "../enhancedCustomApps"
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp } from "@finos/sail-headless-agent"
 import {
   parseAppDInput,
   exportAppDRecord,

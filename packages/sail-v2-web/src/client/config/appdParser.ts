@@ -1,4 +1,4 @@
-import { DirectoryApp } from "@finos/fdc3-sail-da-impl"
+import { DirectoryApp } from "@finos/sail-headless-agent"
 import { v4 as uuid } from "uuid"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
