@@ -28,7 +28,7 @@
     "copyfiles": "^2.4.1",
     "fast-check": "^4.9.0",
     "pm2": "^7.1.2",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "rimraf": "^6.1.4",
     "ts-node": "^10.9.2",
     "typescript-plugin-css-modules": "^5.3.0",
