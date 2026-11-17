@@ -59,7 +59,7 @@ export class RemoteSocketService {
   }
 
   private setupConnectionHandler(): void {
-    this.wss.on("connection", (ws: WebSocket, _request: IncomingMessage) => {
+    this.wss.on("connection", (ws: WebSocket) => {
       log.info("Remote WebSocket client connected to /fdc3/ws")
 
       const connection = new WebSocketConnection(ws as any)

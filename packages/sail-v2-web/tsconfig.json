@@ -22,5 +22,5 @@
     ]
   },
   "include": ["src/**/*.tsx", "src/**/*.ts", "types.d.ts", "src/**/*.css"],
-  "exclude": ["dist/**"]
+  "exclude": ["dist/**", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__tests__/**"]
 }
