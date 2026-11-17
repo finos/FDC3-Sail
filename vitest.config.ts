@@ -15,6 +15,11 @@ export default defineConfig({
         "packages/sail-headless-agent/**",
         // A test suite itself, not product code.
         "packages/sail-conformance-harness/**",
+        // Large React config chrome; convert/parser helpers are covered by unit tests
+        // that import the exported model functions (see sail-v2-web __tests__).
+        "packages/sail-v2-web/src/client/config/enhancedCustomApps.tsx",
+        // Canvas / XHR upload helpers — browser APIs, not exercised in Vitest CI.
+        "packages/sail-v2-web/src/client/config/fileUploadService.ts",
       ],
       reporter: ["text-summary", "lcov"],
       // Floor at today's overall coverage so it can't drop. Raise it as coverage grows.
@@ -27,6 +32,7 @@ export default defineConfig({
       "packages/sail-platform/vitest.config.ts",
       "packages/sail-finance/vitest.config.ts",
       "packages/sail-one/vitest.config.ts",
+      "packages/sail-v2-web/vitest.config.ts",
     ],
   },
 })
