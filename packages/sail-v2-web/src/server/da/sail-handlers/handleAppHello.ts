@@ -1,4 +1,4 @@
-import { AppHosting, AppHelloArgs, SailHostManifest } from "@finos/fdc3-sail-common"
+import { AppHosting, AppHelloArgs, SailHostManifest } from "../../../common"
 import { State, WebAppDetails } from "@finos/sail-headless-agent"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { SailData } from "../SailFDC3ServerInstance"

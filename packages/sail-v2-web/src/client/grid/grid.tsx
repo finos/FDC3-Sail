@@ -2,9 +2,9 @@ import { Component } from "react"
 import styles from "./styles.module.css"
 import "gridstack/dist/gridstack.css"
 import { GridsState } from "./gridstate"
-import { AppState, getAppState, AppPanel, ClientState } from "@finos/fdc3-sail-common"
+import { AppState, getAppState, AppPanel, ClientState } from "../../common"
 import { State } from "@finos/sail-headless-agent"
-//import { AppHosting } from "@finos/fdc3-sail-common"
+//import { AppHosting } from "../../common"
 
 type GridsProps = { cs: ClientState; gs: GridsState; as: AppState; id: string }
 
