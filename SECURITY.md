@@ -10,6 +10,28 @@ Only the latest release is supported. Earlier releases (v1.0.0 Electron agent, v
 were demos marked "not intended for production" and receive no fixes. From 3.0.0 on, breaking changes
 are listed under a "Breaking changes" heading in each [GitHub release](https://github.com/finos/FDC3-Sail/releases).
 
+## Verifying Releases
+
+Our npm packages (`@finos/sail-browser-agent`, `@finos/sail-headless-agent`, `@finos/sail-platform`) are published from the
+[Release workflow](.github/workflows/release.yml) with [npm provenance](https://docs.npmjs.com/generating-provenance-statements).
+Each release is signed through [Sigstore](https://www.sigstore.dev/) and linked to the exact commit and
+workflow run that built it. You do not need to fetch any keys yourself: npm gets the public keys from the registry.
+
+To check a release:
+
+1. **From the command line.** In a project that has installed the packages, run:
+
+   ```bash
+   npm audit signatures
+   ```
+
+   It checks the registry signature and the provenance attestation of each installed package, and reports any that fail.
+
+2. **On npmjs.com.** Open the package page (for example [@finos/sail-browser-agent](https://www.npmjs.com/package/@finos/sail-browser-agent)).
+   Under **Provenance**, check that the source commit is in `finos/FDC3-Sail` and that the build ran from `.github/workflows/release.yml`.
+
+Provenance covers releases published after it was turned on. Earlier releases have registry signatures only.
+
 ## Reporting a Vulnerability
 
 - **GitHub private vulnerability reporting (preferred):** use the ["Report a vulnerability"](https://github.com/finos/FDC3-Sail/security/advisories/new) button under this repository's **Security** tab.

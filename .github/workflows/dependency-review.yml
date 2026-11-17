@@ -1,4 +1,9 @@
-# Flags new vulnerable dependencies introduced on the PR diff (GitHub Advisory DB).
+# Checks dependency changes on every PR. Policy is described in the
+# Development Guide: website/docs/development.md#dependency-management
+#   - vulnerabilities (GitHub Advisory DB): fail the PR
+#   - OpenSSF Scorecard below 3: warning
+#   - licences outside the allowed list: warning only, for maintainers to discuss
+#   - npm provenance / trusted-publisher downgrades: fail the PR
 # See https://github.com/actions/dependency-review-action
 name: Dependency Review
 
@@ -21,5 +26,48 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
-      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 #5.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Vulnerabilities and OpenSSF Scorecard
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          license-check: false
+          show-openssf-scorecard: true
+          warn-on-openssf-scorecard-level: 3
+
+      # A separate step because warn-only applies to the whole action run:
+      # licence findings warn, while vulnerabilities above still fail.
+      # Allowed list = FINOS Category A + Category B (used unmodified), see
+      # https://community.finos.org/docs/governance/Software-Projects/license-categories
+      - name: Licences (warning only)
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          vulnerability-check: false
+          warn-only: true
+          allow-licenses: >-
+            0BSD, Apache-2.0, BlueOak-1.0.0, BSD-2-Clause, BSD-3-Clause,
+            BSL-1.0, CC0-1.0, CC-BY-3.0, CC-BY-4.0, EPL-2.0, ISC, MIT, MIT-0,
+            MPL-2.0, Python-2.0, Unlicense, WTFPL, Zlib
+
+  # Fails when an updated dependency loses npm provenance, trusted publishing
+  # or staged publishing, a common sign of a stolen publish token.
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      # Full history so the lockfile can be diffed against origin/main.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check provenance downgrades
+        uses: danielroe/provenance-action@fcc45fd5a5b818c477432b32c838dcd0c79cd2dd # v0.2.0
+        with:
+          lockfile: package-lock.json

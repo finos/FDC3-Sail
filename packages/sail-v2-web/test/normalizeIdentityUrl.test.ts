@@ -4,7 +4,7 @@ import {
   normalizeIdentityUrl,
   normalizeUrlPathname,
   urlsReferToSameApp,
-} from "../src/normalizeIdentityUrl"
+} from "../src/common/normalizeIdentityUrl"
 
 describe("normalizeIdentityUrl", () => {
   it("is idempotent", () => {

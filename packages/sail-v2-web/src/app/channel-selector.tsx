@@ -1,7 +1,7 @@
 import { BrowserTypes } from "@finos/fdc3-schema-v3"
 import { createRoot } from "react-dom/client"
 import { ChannelPicker } from "./channel"
-import { TabDetail } from "@finos/fdc3-sail-common"
+import { TabDetail } from "../common"
 import {
   isFdc3UserInterfaceChannels,
   isFdc3UserInterfaceHandshake,

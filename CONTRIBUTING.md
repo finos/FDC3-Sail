@@ -16,6 +16,8 @@ Before making a contribution, please take the following steps:
 
 NOTE: All contributors must have a contributor license agreement (CLA) on file with FINOS before their pull requests will be merged. Please review the FINOS [contribution requirements](https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530375/Contribution+Compliance+Requirements) and submit (or have your employer submit) the required CLA before submitting a pull request.
 
+Pull requests that add a dependency must raise it for discussion; see [Dependency management](https://fdc3-sail.finos.org/docs/development#dependency-management) for how dependencies are selected, obtained and tracked.
+
 Maintainers publish `@finos/sail-browser-agent` and `@finos/sail-platform` via Changesets on `main`; see [Publishing packages](https://fdc3-sail.finos.org/docs/development#publishing-packages-maintainers) in the development guide. Contributors do not need to add changesets.
 
 ## Governance
@@ -34,6 +36,7 @@ Anyone is welcome to submit a contribution to the project. The rules below apply
 
 - All contributions MUST be submitted as pull requests, including contributions by Maintainers.
 - All pull requests SHOULD be reviewed by a Maintainer (other than the Contributor) before being merged.
+- Pull requests that add major new functionality MUST add automated tests for it to the project's test suites. Bug fixes SHOULD add a regression test. New and changed code SHOULD have at least 80% test coverage, checked in CI. Maintainers MAY ask for tests before merging. See the [Testing policy](https://fdc3-sail.finos.org/docs/development#testing-policy) for which suite to use.
 - Pull requests for non-trivial contributions SHOULD remain open for a review period sufficient to give all Maintainers a sufficient opportunity to review and comment on them.
 - After the review period, if no Maintainer has an objection to the pull request, any Maintainer MAY merge it.
 - If any Maintainer objects to a pull request, the Maintainers SHOULD try to come to consensus through discussion. If not consensus can be reached, any Maintainer MAY call for a vote on the contribution.

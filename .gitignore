@@ -34,3 +34,4 @@ packages/sail-finance/playwright-report/index.html
 packages/sail-conformance-harness/artifacts/
 packages/sail-conformance-harness/test-results/
 .vitest/
+coverage/

@@ -40,13 +40,18 @@
   "author": "",
   "license": "Apache-2.0",
   "homepage": "https://github.com/finos/FDC3-Sail",
-  "repository": "github:finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finos/FDC3-Sail.git",
+    "directory": "packages/sail-browser-agent"
+  },
   "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "files": [
     "dist",
     "README.md"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }

@@ -5,14 +5,19 @@
   "description": "Workspaces, layouts and storage for FDC3 Sail hosts - UI-agnostic, zero dependencies",
   "license": "Apache-2.0",
   "homepage": "https://github.com/finos/FDC3-Sail",
-  "repository": "github:finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finos/FDC3-Sail.git",
+    "directory": "packages/sail-platform"
+  },
   "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "files": [
     "dist",
     "README.md"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",

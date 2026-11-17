@@ -128,6 +128,37 @@ npm run test:browser:2.2 -w @finos/sail-conformance-harness
 npm run test:browser:3.0 -w @finos/sail-conformance-harness
 ```
 
+### Testing policy
+
+New major functionality MUST come with automated tests in the same pull request. Bug fixes SHOULD add a test that fails without the fix. Pick the suite that matches the change:
+
+| Change | Suite | Where tests go |
+| --- | --- | --- |
+| Logic in a package (functions, stores, UI helpers) | Vitest | `*.test.ts` beside the code, or the package's `test/` folder |
+| FDC3 Desktop Agent behaviour (DACP messages, intents, channels) | Cucumber | `.feature` files in `packages/sail-headless-agent/test/features/v2/` or `v3/` |
+| End-to-end FDC3 conformance against a running host | Playwright + FINOS toolbox | `packages/sail-conformance-harness/e2e/` |
+
+Vitest and Cucumber run in `npm run validate` and CI on every pull request. The Playwright conformance suite runs in its own CI workflow (`.github/workflows/conformance.yml`).
+
+#### Coverage
+
+| Rule | Level | Checked by |
+| --- | --- | --- |
+| New and changed lines in a pull request are covered by tests | at least 80% | Codecov `patch` check on the PR |
+| Overall coverage doesn't drop | no more than 1% lower | Codecov `project` check on the PR |
+| Overall coverage stays above the floor | floor set in `vitest.config.ts` | `npm test -- --run --coverage` in CI |
+
+The project's goal is 80% statement coverage overall ([OpenSSF Best Practices `test_statement_coverage80`](https://www.bestpractices.dev/en/criteria/2#2.test_statement_coverage80)). When coverage rises, raise the floor in `vitest.config.ts` to match.
+
+Run coverage locally:
+
+```bash
+npm run build
+npm test -- --run --coverage   # summary in the terminal, full report in coverage/
+```
+
+The Vitest coverage report does not yet include `sail-headless-agent` (tested by Cucumber) or `sail-conformance-harness` (a test suite itself).
+
 ### Building
 
 ```bash
@@ -218,6 +249,54 @@ type: brief description
 - **Vitest** - Testing framework
 - **Cucumber** - BDD testing for FDC3 compliance
 
+## Dependency management
+
+How the project selects, obtains and tracks its third-party dependencies. The key words MUST and SHOULD are used as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
+
+```mermaid
+flowchart LR
+  A[New dependency proposed<br/>in a PR] --> B[Automated checks<br/>comment on the PR]
+  B --> C[Maintainer discussion<br/>and review]
+  C --> D[Merged to main<br/>package-lock.json updated]
+  D --> E[Dependabot weekly updates<br/>+ twice-daily CVE scans]
+  E --> B
+```
+
+### Selecting
+
+Every new dependency MUST be raised for discussion in the pull request that adds it. Expect it to be questioned: the default answer is "do we need it?".
+
+When deciding, maintainers consider whether the dependency:
+
+- SHOULD be needed at all: a built-in Node.js or browser API, or an existing dependency, cannot reasonably do the job;
+- SHOULD have a licence compatible with Apache-2.0, ideally FINOS [Category A or B](https://community.finos.org/docs/governance/Software-Projects/license-categories);
+- SHOULD be actively maintained, with no unresolved critical advisories;
+- SHOULD be widely used or come from a trusted publisher, ideally published with npm provenance.
+
+These are guidelines, not hard gates. A dependency that misses one can still be accepted if the PR explains why.
+
+### Obtaining
+
+- All npm packages come from the public npm registry and are installed from the **repository root** (npm workspaces).
+- `package-lock.json` is committed and pins the exact version and integrity hash of every direct and transitive dependency. CI and releases install with `npm ci`, so builds use exactly the locked versions.
+- `overrides` in the root `package.json` force patched versions of transitive dependencies when upstream has not released a fix.
+- GitHub Actions are pinned to full commit SHAs.
+
+### Tracking and updating
+
+| What | Tool | Result |
+| --- | --- | --- |
+| Version updates (npm and GitHub Actions) | Dependabot (`.github/dependabot.yml`) | Weekly PRs; minor/patch grouped, majors separate |
+| New vulnerable dependencies | GitHub Dependency Review (`dependency-review.yml`) | ❌ Fails the PR |
+| Licence outside the allowed list | GitHub Dependency Review (`dependency-review.yml`) | ⚠️ Warning, for discussion |
+| Low OpenSSF Scorecard (below 3) | GitHub Dependency Review (`dependency-review.yml`) | ⚠️ Warning |
+| Lost npm provenance or trusted publishing | [provenance-action](https://github.com/danielroe/provenance-action) (`dependency-review.yml`) | ❌ Fails the PR |
+| New packages, size growth, native or lighter alternatives | [e18e dependency diff](https://github.com/e18e/action-dependency-diff) (`dependency-diff.yml`) | 💬 PR comment |
+| Known CVEs and malicious packages | `npm audit` + OSV-Scanner (`cve-scanning.yml`) | ❌ Fails on critical or malicious; runs on PRs, `main` and twice daily |
+| Unused dependencies | Knip (`npm run knip`) | Report on every CI run |
+
+The PR checks run on every pull request that changes a `package.json` or `package-lock.json`, including Dependabot and fork PRs. Dependency updates go through the same review as any other pull request.
+
 ## Publishing packages (maintainers)
 
 Publishable npm packages (not yet published — see the root [README status](https://github.com/finos/FDC3-Sail#status)): `@finos/sail-browser-agent` and `@finos/sail-platform`. Other workspaces are private and are not versioned or published.
@@ -246,6 +325,8 @@ Releases use [Changesets](https://github.com/changesets/changesets). Contributor
 3. Commit and push the `.changeset/` file(s) to `main`.
 4. The **Release** GitHub Action opens or updates a **Version Packages** pull request (version bumps + `CHANGELOG.md` updates).
 5. Merge the Version Packages PR. CI builds, publishes to npm, pushes git tags, and opens GitHub Releases.
+
+Packages are published with npm provenance (`publishConfig.provenance` in each `package.json`), which only works from GitHub Actions. Do not publish from a laptop. Users can verify releases as described in [SECURITY.md](https://github.com/finos/FDC3-Sail/blob/main/SECURITY.md#verifying-releases).
 
 Packages can ship independently and stay on different semver lines. Desktop Agent is in Changesets **pre** mode (`3.0.0-pre.x`); run `npx changeset pre exit` before the first stable `3.0.0` release.
 

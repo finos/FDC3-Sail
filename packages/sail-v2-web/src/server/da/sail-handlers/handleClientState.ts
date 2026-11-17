@@ -2,7 +2,7 @@ import {
   SailClientStateArgs,
   ChannelReceiverUpdate,
   CHANNEL_RECEIVER_UPDATE,
-} from "@finos/fdc3-sail-common"
+} from "../../../common"
 import { SailFDC3ServerFactory } from "../SailFDC3ServerFactory"
 import { createLogger } from "../../logger"
 

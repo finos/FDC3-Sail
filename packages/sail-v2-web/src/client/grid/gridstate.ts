@@ -1,6 +1,6 @@
 import { GridItemHTMLElement, GridStack, GridStackElement, GridStackWidget } from "gridstack"
 import { ReactElement } from "react"
-import { AppPanel, ClientState, getServerState } from "@finos/fdc3-sail-common"
+import { AppPanel, ClientState, getServerState } from "../../common"
 import { createRoot, Root } from "react-dom/client"
 import styles from "./styles.module.css"
 
