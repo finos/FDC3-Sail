@@ -100,17 +100,6 @@ repository:
         results: {}
         comment: |
           Configured in .github/workflows/ql.yml
-      - name: Semgrep
-        type: SAST
-        rulesets:
-          - default
-        integration:
-          adhoc: false
-          ci: true
-          release: false
-        results: {}
-        comment: |
-          Configured in .github/workflows/semgrep.yml
       - name: OpenSSF Scorecard
         type: other
         rulesets:
