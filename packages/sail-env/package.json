@@ -28,6 +28,6 @@
   },
   "devDependencies": {
     "rimraf": "^6.1.4",
-    "typescript": "^5.8.2"
+    "typescript": "^7.0.2"
   }
 }
