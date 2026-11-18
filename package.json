@@ -65,7 +65,7 @@
     "@finos/fdc3-example-apps": "^3.0.0",
     "@types/node": "^25.9.5",
     "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.x",
+    "@types/react-dom": "^19.3.x",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "5.1.0",
     "@vitest/ui": "5.1.0",
