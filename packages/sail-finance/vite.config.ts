@@ -2,14 +2,24 @@ import { defineConfig, lazyPlugins } from "vite-plus"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import path from "path"
+import { fileURLToPath } from "node:url"
+import { createExtensionsJsonVitePlugin } from "@finos/sail-extension-server"
+
+const packageRoot = path.dirname(fileURLToPath(import.meta.url))
+const extensionsDir = path.resolve(packageRoot, "../../extensions")
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: lazyPlugins(() => [react(), tailwindcss()]),
+  plugins: lazyPlugins(() => [
+    react(),
+    tailwindcss(),
+    createExtensionsJsonVitePlugin({ root: packageRoot, extensionsDir }),
+  ]),
   resolve: {
+    dedupe: ["react", "react-dom"],
     extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(packageRoot, "./src"),
     },
   },
   optimizeDeps: {
@@ -19,6 +29,8 @@ export default defineConfig({
       // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent / sail-platform trigger reload
       "@finos/sail-browser-agent",
       "@finos/sail-platform",
+      "@finos/sail-extension",
+      "@finos/sail-extension-fdc3",
     ],
   },
   build: {

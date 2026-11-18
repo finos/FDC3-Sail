@@ -1,12 +1,13 @@
-import type { SailStorage } from "./types"
+import { createChangeEmitter } from "./change"
+import type { SailUserStorage } from "./types"
 
 /**
- * Configuration for the `Storage`-backed {@link SailStorage} implementation.
+ * Configuration for a browser `Storage`-backed {@link SailUserStorage}.
  */
-export interface LocalStorageOptions {
+export interface LocalUserStorageOptions {
   /**
    * Prefix applied to every key, so several Sail hosts can share one origin
-   * without colliding. Stripped again by {@link SailStorage.list}.
+   * without colliding. Stripped again by {@link SailUserStorage.list}.
    * @defaultValue "sail_"
    */
   keyPrefix?: string
@@ -14,6 +15,7 @@ export interface LocalStorageOptions {
   /**
    * Backing `Storage` implementation.
    * @defaultValue `globalThis.localStorage`
+   * Browser hosts may pass `sessionStorage` when tab-scoped state is enough.
    */
   backing?: Storage
 
@@ -22,22 +24,16 @@ export interface LocalStorageOptions {
 }
 
 /**
- * {@link SailStorage} over a synchronous `Storage` — browser `localStorage` by
- * default, or any `Storage`-shaped object.
+ * {@link SailUserStorage} over a synchronous browser `Storage` —
+ * `localStorage` by default (or `sessionStorage` / any `Storage`-shaped object).
  *
- * Reads never throw: a corrupt or unreadable value resolves to `null` so a bad
- * entry cannot stop a host from booting.
- *
- * @example
- * ```typescript
- * const storage = createLocalStorage({ keyPrefix: "sail_one_" })
- * await storage.set("workspace:default", workspace)
- * ```
+ * Reads never throw: a corrupt or unreadable value resolves to `null`.
  */
-export function createLocalStorage(options?: LocalStorageOptions): SailStorage {
+export function createLocalUserStorage(options?: LocalUserStorageOptions): SailUserStorage {
   const keyPrefix = options?.keyPrefix ?? "sail_"
   const backing = options?.backing ?? globalThis.localStorage
   const debug = options?.debug ?? false
+  const changes = createChangeEmitter()
 
   const scoped = (key: string): string => `${keyPrefix}${key}`
 
@@ -48,7 +44,7 @@ export function createLocalStorage(options?: LocalStorageOptions): SailStorage {
         return Promise.resolve(item === null ? null : (JSON.parse(item) as T))
       } catch (error) {
         if (debug) {
-          console.error(`[SailStorage] cannot read ${scoped(key)}:`, error)
+          console.error(`[SailUserStorage] cannot read ${scoped(key)}:`, error)
         }
         return Promise.resolve(null)
       }
@@ -56,11 +52,13 @@ export function createLocalStorage(options?: LocalStorageOptions): SailStorage {
 
     set<T>(key: string, value: T): Promise<void> {
       backing.setItem(scoped(key), JSON.stringify(value))
+      changes.notify({ key, op: "set" })
       return Promise.resolve()
     },
 
     remove(key: string): Promise<void> {
       backing.removeItem(scoped(key))
+      changes.notify({ key, op: "remove" })
       return Promise.resolve()
     },
 
@@ -77,5 +75,7 @@ export function createLocalStorage(options?: LocalStorageOptions): SailStorage {
 
       return Promise.resolve(keys)
     },
+
+    onChange: changes.onChange,
   }
 }

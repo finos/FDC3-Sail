@@ -28,7 +28,7 @@ GitHub Actions (`.github/workflows/conformance.yml`) runs the six cells above. A
 
 ### Toolbox sourcing
 
-Suite App Directory URLs are owned by `@finos/sail-conformance-harness`. Hosts receive a concrete directory via `VITE_FDC3_DIRECTORY_URL` / `?fdc3Directory=` (see [`@finos/sail-env`](../sail-env/overview)).
+Suite App Directory URLs are owned by `@finos/sail-conformance-harness`. `sail.fdc3.directories` picks them up from `VITE_FDC3_DIRECTORY_URL` / `?fdc3Directory=` (see [`@finos/sail-env`](../sail-env/overview)).
 
 | FDC3 version | Toolbox | App Directory |
 |---|---|---|

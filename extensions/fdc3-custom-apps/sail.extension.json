@@ -1,0 +1,26 @@
+{
+  "$schema": "../../packages/sail-extension/sail.extension.schema.json",
+  "id": "sail.fdc3.customApps",
+  "title": "Custom Apps",
+  "version": "0.0.1",
+  "description": "Define inline apps and contribute them into sail.fdc3.appDirectory.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/FDC3-Sail.git",
+    "directory": "extensions/fdc3-custom-apps"
+  },
+  "activation": {
+    "module": "./src/activate.ts"
+  },
+  "extensionDependencies": ["sail.fdc3.appDirectory"],
+  "contributes": {
+    "sail.ui.config": [
+      {
+        "title": "Custom Apps",
+        "module": "./src/ui.tsx"
+      }
+    ]
+  }
+}

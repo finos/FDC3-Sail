@@ -2,31 +2,30 @@ import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
 import { AppHosting, getClientState, getAppState, getServerState } from "../common"
 import type { DirectoryApp } from "@finos/sail-headless-agent"
-import { resolveDeepLinkAppId, resolveNoSplash, resolveSoleFdc3Directory } from "@finos/sail-env"
+import { resolveDeepLinkAppId, resolveNoSplash } from "@finos/sail-env"
+import { HiddenExtensionHost } from "./extensions/HiddenExtensionHost"
 import { loadExtensionUIs } from "./extensions-runtime"
+
+function renderApp() {
+  root.render(
+    <>
+      <HiddenExtensionHost />
+      <Frame cs={getClientState()} as={getAppState()} />
+    </>,
+  )
+}
 
 const container = document.getElementById("app")
 const root = createRoot(container!)
-root.render(<Frame cs={getClientState()} as={getAppState()} />)
+renderApp()
 
 getClientState().addStateChangeCallback(() => {
-  root.render(<Frame cs={getClientState()} as={getAppState()} />)
+  renderApp()
 })
 
 getAppState().addStateChangeCallback(() => {
-  root.render(<Frame cs={getClientState()} as={getAppState()} />)
+  renderApp()
 })
-
-async function ensureSoleFdc3Directory(): Promise<void> {
-  const url = resolveSoleFdc3Directory({
-    search: window.location.search,
-    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
-  })
-  if (!url) {
-    return
-  }
-  await getClientState().setDirectories([{ label: "App Directory", url, active: true }])
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => {
@@ -61,7 +60,6 @@ async function openDeepLinkApp(appId: string): Promise<void> {
 
 async function bootstrap(): Promise<void> {
   await loadExtensionUIs()
-  await ensureSoleFdc3Directory()
 
   if (resolveNoSplash(window.location.search)) {
     await getClientState().setSplashScreenVisible(false)

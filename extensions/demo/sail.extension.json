@@ -1,0 +1,26 @@
+{
+  "$schema": "../../packages/sail-extension/sail.extension.schema.json",
+  "id": "sail.demo",
+  "title": "Message Log",
+  "version": "0.0.1",
+  "description": "Logs each user session's bus traffic when enabled.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/FDC3-Sail.git",
+    "directory": "extensions/demo"
+  },
+  "activation": {
+    "module": "./src/activate.ts"
+  },
+  "extensionDependencies": ["sail.platform.bus", "sail.platform.session"],
+  "contributes": {
+    "sail.ui.config": [
+      {
+        "title": "Message Log",
+        "module": "./src/ui.tsx"
+      }
+    ]
+  }
+}

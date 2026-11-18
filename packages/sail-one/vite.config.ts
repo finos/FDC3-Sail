@@ -4,8 +4,10 @@ import { defineConfig, lazyPlugins } from "vite-plus"
 import type { Plugin } from "vite-plus"
 import react from "@vitejs/plugin-react"
 import { globSync } from "node:fs"
+import { createExtensionsJsonVitePlugin } from "@finos/sail-extension-server"
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url))
+const extensionsDir = path.resolve(packageRoot, "../../extensions")
 
 const mainHtmlPath = "/html/index.html"
 
@@ -46,8 +48,13 @@ function sailOneRootEntry(): Plugin {
 }
 
 export default defineConfig({
-  plugins: lazyPlugins(() => [react(), sailOneRootEntry()]),
+  plugins: lazyPlugins(() => [
+    react(),
+    sailOneRootEntry(),
+    createExtensionsJsonVitePlugin({ root: packageRoot, extensionsDir }),
+  ]),
   resolve: {
+    dedupe: ["react", "react-dom"],
     alias: {
       "@": path.resolve(packageRoot, "./src"),
     },

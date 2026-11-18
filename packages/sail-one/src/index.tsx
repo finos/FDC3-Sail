@@ -1,7 +1,7 @@
 import "./styles/global.css"
 import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
-import { resolveDeepLinkAppId, resolveSoleFdc3Directory } from "@finos/sail-env"
+import { resolveDeepLinkAppId } from "@finos/sail-env"
 import { AppHosting, getClientState, getServerState, bindClientStateToHost } from "./state"
 import { loadExtensionCores, loadExtensionUIs } from "./state/extensions-runtime"
 import { useSailState } from "./state/use-sail-state"
@@ -15,18 +15,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
-}
-
-async function ensureSoleFdc3Directory(): Promise<void> {
-  const url = resolveSoleFdc3Directory({
-    search: window.location.search,
-    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
-  })
-  if (!url) {
-    return
-  }
-  // Sole directory so findIntent counts match the injected AppD only.
-  await getClientState().setDirectories([{ label: "App Directory", url, active: true }])
 }
 
 async function waitForDirectoryApp(appId: string, timeoutMs = 60_000): Promise<void> {
@@ -61,7 +49,6 @@ async function bootstrap(): Promise<void> {
   await getClientState().load()
   await loadExtensionCores()
   await loadExtensionUIs()
-  await ensureSoleFdc3Directory()
 
   const container = document.getElementById("app")
   const root = createRoot(container!)

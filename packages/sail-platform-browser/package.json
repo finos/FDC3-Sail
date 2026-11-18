@@ -1,0 +1,28 @@
+{
+  "name": "@finos/sail-platform-browser",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Browser SailUserSession host hooks (mount/tear down browsing contexts). Not FDC3/WCP.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/FDC3-Sail.git",
+    "directory": "packages/sail-platform-browser"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint . --fix",
+    "format": "vp fmt --check .",
+    "format:fix": "vp fmt ."
+  },
+  "dependencies": {
+    "@finos/sail-platform": "*"
+  },
+  "devDependencies": {}
+}

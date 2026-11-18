@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
+import { SAIL_UI_CONFIG } from "@finos/sail-platform"
+import type { SailExtensionUI, SailExtensionUIProps } from "@finos/sail-extension/ui"
+
 import {
-  SAIL_CONFIG_UI,
-  type SailExtensionConfigProps,
-  type SailExtensionUI,
-} from "@finos/sail-extension/ui"
+  DEMO_DEFAULT_SETTINGS,
+  DEMO_EXTENSION_ID,
+  DEMO_SETTINGS_KEY,
+  type DemoSettings,
+} from "./settings"
 
-import { DEMO_DEFAULT_SETTINGS, DEMO_SETTINGS_KEY, type DemoSettings } from "./settings"
-
-export function ConfigScreen({ storage }: SailExtensionConfigProps) {
+export function ConfigScreen({ storage }: SailExtensionUIProps) {
   const [enabled, setEnabled] = useState(DEMO_DEFAULT_SETTINGS.enabled)
   const [label, setLabel] = useState(DEMO_DEFAULT_SETTINGS.label)
   const [ready, setReady] = useState(false)
@@ -35,7 +37,7 @@ export function ConfigScreen({ storage }: SailExtensionConfigProps) {
       onSubmit={event => event.preventDefault()}
     >
       <p style={{ margin: 0 }}>
-        When enabled, inbound DACP messages are written to the Desktop Agent log.
+        When enabled, messages on <code>sail.platform.bus</code> are written to the console.
       </p>
       <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <input
@@ -47,7 +49,7 @@ export function ConfigScreen({ storage }: SailExtensionConfigProps) {
             void persist(next)
           }}
         />
-        Log inbound messages
+        Log bus messages
       </label>
       <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
         Log label
@@ -65,7 +67,7 @@ export function ConfigScreen({ storage }: SailExtensionConfigProps) {
   )
 }
 
-export function mount(el: HTMLElement, props: SailExtensionConfigProps): () => void {
+export function mount(el: HTMLElement, props: SailExtensionUIProps): () => void {
   const root = createRoot(el)
   root.render(<ConfigScreen {...props} />)
   return () => {
@@ -74,9 +76,9 @@ export function mount(el: HTMLElement, props: SailExtensionConfigProps): () => v
 }
 
 export const demoExtensionUI: SailExtensionUI = {
-  id: "demo",
+  id: DEMO_EXTENSION_ID,
   title: "Message Log",
-  type: SAIL_CONFIG_UI,
+  type: SAIL_UI_CONFIG,
   ConfigScreen,
   mount,
 }

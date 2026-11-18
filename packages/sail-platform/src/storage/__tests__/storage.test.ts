@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test"
 
-import { createLocalStorage } from "../local"
-import { createMemoryStorage } from "../memory"
-import type { SailStorage } from "../types"
+import { createLocalUserStorage } from "../local"
+import { createMemoryUserStorage } from "../memory"
+import { createSailStorage } from "../store"
+import type { SailUserStorage } from "../types"
 
 /** Minimal in-process `Storage`, so the local adapter can be tested without a DOM. */
 function createFakeStorage(): Storage {
@@ -26,11 +27,11 @@ function createFakeStorage(): Storage {
   }
 }
 
-describe.each<[string, () => SailStorage]>([
-  ["memory", () => createMemoryStorage()],
-  ["local", () => createLocalStorage({ backing: createFakeStorage() })],
-])("SailStorage (%s)", (_name, create) => {
-  let storage: SailStorage
+describe.each<[string, () => SailUserStorage]>([
+  ["memory", () => createMemoryUserStorage()],
+  ["local", () => createLocalUserStorage({ backing: createFakeStorage() })],
+])("SailUserStorage (%s)", (_name, create) => {
+  let storage: SailUserStorage
 
   beforeEach(() => {
     storage = create()
@@ -77,12 +78,30 @@ describe.each<[string, () => SailStorage]>([
 
     await expect(storage.get("config")).resolves.toEqual({ tabs: ["one"] })
   })
+
+  it("notifies onChange listeners for set and remove", async () => {
+    const seen: Array<{ key: string; op: string }> = []
+    const stop = storage.onChange(change => {
+      seen.push(change)
+    })
+
+    await storage.set("config", { ok: true })
+    await storage.remove("config")
+    expect(seen).toEqual([
+      { key: "config", op: "set" },
+      { key: "config", op: "remove" },
+    ])
+
+    stop()
+    await storage.set("config", { ok: false })
+    expect(seen).toHaveLength(2)
+  })
 })
 
-describe("createLocalStorage", () => {
+describe("createLocalUserStorage", () => {
   it("prefixes keys in the backing store and strips the prefix again on list", async () => {
     const backing = createFakeStorage()
-    const storage = createLocalStorage({ keyPrefix: "sail_one_", backing })
+    const storage = createLocalUserStorage({ keyPrefix: "sail_one_", backing })
 
     await storage.set("config", { ok: true })
 
@@ -93,7 +112,7 @@ describe("createLocalStorage", () => {
   it("ignores entries belonging to another prefix", async () => {
     const backing = createFakeStorage()
     backing.setItem("other_app_config", JSON.stringify({ ok: false }))
-    const storage = createLocalStorage({ keyPrefix: "sail_one_", backing })
+    const storage = createLocalUserStorage({ keyPrefix: "sail_one_", backing })
 
     await storage.set("config", { ok: true })
 
@@ -104,8 +123,21 @@ describe("createLocalStorage", () => {
   it("resolves null rather than throwing when a stored value is corrupt", async () => {
     const backing = createFakeStorage()
     backing.setItem("sail_config", "{ not json")
-    const storage = createLocalStorage({ backing })
+    const storage = createLocalUserStorage({ backing })
 
     await expect(storage.get("config")).resolves.toBeNull()
+  })
+})
+
+describe("createSailStorage", () => {
+  it("resolves SailUserStorage by SailSessionId", () => {
+    const root = createSailStorage({
+      createUserStorage: () => createMemoryUserStorage(),
+    })
+    expect(root.getUserStorage("sess-1")).toBeUndefined()
+    const user = root.ensureUserStorage("sess-1")
+    expect(root.getUserStorage("sess-1")).toBe(user)
+    root.removeUserStorage("sess-1")
+    expect(root.getUserStorage("sess-1")).toBeUndefined()
   })
 })

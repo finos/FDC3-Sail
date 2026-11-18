@@ -10,6 +10,7 @@
   "bugs": "https://github.com/finos/FDC3-Sail/issues",
   "files": [
     "dist",
+    "sail.extension.schema.json",
     "README.md"
   ],
   "main": "./dist/index.mjs",
@@ -36,9 +37,6 @@
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
     "validate": "npm run typecheck && npm run lint && npm run format"
-  },
-  "dependencies": {
-    "@finos/sail-headless-agent": "*"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

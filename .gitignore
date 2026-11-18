@@ -30,6 +30,11 @@ packages/sail-headless-agent/.nyc_output/
 
 packages/sail-finance/playwright-report/index.html
 
+# Host-local extension enablement (auto-seeded; not per-user)
+packages/sail-one/extensions.json
+packages/sail-finance/extensions.json
+packages/sail-v2-web/extensions.json
+
 # Conformance harness Playwright output
 packages/sail-conformance-harness/artifacts/
 packages/sail-conformance-harness/test-results/

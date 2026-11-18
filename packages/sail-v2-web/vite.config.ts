@@ -2,8 +2,10 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig } from "vite-plus"
 import { globSync } from "node:fs"
+import { createExtensionsJsonVitePlugin } from "@finos/sail-extension-server"
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url))
+const extensionsDir = path.resolve(packageRoot, "../../extensions")
 
 // Monorepo hoist can put React 19 at the repo root (e.g. from sail-conformance-harness)
 // while this package pins React 18. Without dedupe/alias, react-widgets resolves the
@@ -12,6 +14,7 @@ const reactRoot = path.resolve(packageRoot, "node_modules/react")
 const reactDomRoot = path.resolve(packageRoot, "node_modules/react-dom")
 
 export default defineConfig({
+  plugins: [createExtensionsJsonVitePlugin({ root: packageRoot, extensionsDir })],
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {

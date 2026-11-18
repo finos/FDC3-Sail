@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.github.io/FDC3-Sail/schemas/sail.extension.schema.json",
+  "title": "Sail Extension Manifest",
+  "description": "Manifest for a Sail Desktop Agent extension (sail.extension.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "version", "activation"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable extension id (publisher.name style, e.g. sail.fdc3)."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable label."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Semver (or semver-compatible) version string."
+    },
+    "description": {
+      "type": "string",
+      "description": "Short summary for directory / Marketplace listings."
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX id or SEE LICENSE IN <file>."
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Project or docs URL."
+    },
+    "repository": {
+      "description": "Source repository as a URL string or structured object.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url"],
+          "properties": {
+            "type": { "type": "string" },
+            "url": { "type": "string" },
+            "directory": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module"],
+      "properties": {
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relative URL to an ESM module that exports activate (and optional deactivate)."
+        }
+      }
+    },
+    "extensionDependencies": {
+      "type": "array",
+      "description": "Capability ids that must be published before this extension activates.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "exports": {
+      "type": "object",
+      "description": "Capability id → metadata. activate() must return matching export keys.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "contributes": {
+      "type": "object",
+      "description": "Extension-point id → contribution array (VS Code–style).",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["module"],
+          "properties": {
+            "title": { "type": "string" },
+            "module": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Relative URL to an ESM UI or contribution module."
+            }
+          }
+        }
+      }
+    }
+  }
+}

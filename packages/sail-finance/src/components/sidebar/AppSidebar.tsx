@@ -28,7 +28,7 @@ interface SidebarItem {
 }
 
 export function AppSidebar() {
-  const { openAppDirectory, openWorkspaceDirectory } = useUIStore()
+  const { openAppDirectory, openWorkspaceDirectory, openExtensionSettings } = useUIStore()
   const { setOpen } = useSidebar()
 
   const handleAppsClick = () => {
@@ -39,6 +39,11 @@ export function AppSidebar() {
   const handleWorkspacesClick = () => {
     openWorkspaceDirectory()
     setOpen(false) // Close sidebar when opening workspace directory
+  }
+
+  const handleSettingsClick = () => {
+    openExtensionSettings()
+    setOpen(false)
   }
 
   const items: SidebarItem[] = [
@@ -60,7 +65,7 @@ export function AppSidebar() {
     {
       title: "Settings",
       icon: Settings,
-      action: { type: "url", value: "#" },
+      action: { type: "handler", value: handleSettingsClick },
     },
   ]
 

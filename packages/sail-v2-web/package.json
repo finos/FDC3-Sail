@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npx vp build",
-    "dev": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-extension --prefix ../.. && concurrently -k -n ext,v2 -c magenta,blue \"npm run dev -w @finos/sail-extension-demo --prefix ../..\" \"tsx watch --include src/server --include src/common src/server/main.ts --trace-uncaught\"",
+    "dev": "npm run build -w @finos/sail-env -w @finos/sail-headless-agent -w @finos/sail-extension --prefix ../.. && tsx watch --include src/server --include src/common src/server/main.ts --trace-uncaught",
     "apps": "fdc3-example-apps",
     "conformance-2.2": "npx --yes @robmoffat/fdc3-conformance@2.2.3-test.1",
     "conformance-3.0": "npx --yes @robmoffat/fdc3-conformance@3.0.0-beta.1",
@@ -39,7 +39,14 @@
     "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0",
     "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0",
     "@finos/sail-env": "*",
+    "@finos/sail-extension": "*",
+    "@finos/sail-extension-demo": "*",
+    "@finos/sail-extension-fdc3": "*",
+    "@finos/sail-extension-fdc3-custom-apps": "*",
+    "@finos/sail-extension-fdc3-directories": "*",
+    "@finos/sail-extension-server": "*",
     "@finos/sail-headless-agent": "0.0.0",
+    "@finos/sail-platform": "*",
     "@types/react-dom": "^18.2.25",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.18.2",
@@ -59,9 +66,6 @@
     "typescript": "^5.3.2",
     "uuid": "^14.0.3",
     "vite-express": "^0.22.1",
-    "ws": "^8.22.2",
-    "@finos/sail-extension": "*",
-    "@finos/sail-extension-server": "*",
-    "@finos/sail-extension-demo": "*"
+    "ws": "^8.22.2"
   }
 }

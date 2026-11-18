@@ -9,7 +9,6 @@ import {
 import {
   isAutoResolve,
   resolveDeepLinkAppId,
-  resolveSoleFdc3Directory,
   SAIL_MAX_FDC3_VERSION,
 } from "@finos/sail-env"
 import type { AppMetadata } from "@finos/fdc3"
@@ -20,6 +19,7 @@ import "./index.css"
 import App from "./App"
 import { useWorkspaceStore } from "./stores/workspace-store"
 import { ChannelSelectorTestPage } from "./tests/ChannelSelectorTestPage"
+import { wrapWithExtensions, loadExtensionUIs } from "./state/extensions-runtime"
 
 const FINOS_APP_DIRECTORY_URL = "https://directory.fdc3.finos.org/v2/apps"
 
@@ -62,10 +62,6 @@ if (isDockviewPopoutShell()) {
   // This ensures the agent is listening for WCP1Hello messages when getAgent() is called
   console.log("[Sail] Initializing FDC3 Desktop Agent")
 
-  const soleDirectoryUrl = resolveSoleFdc3Directory({
-    search: window.location.search,
-    viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
-  })
   const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
   const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
 
@@ -177,58 +173,65 @@ if (isDockviewPopoutShell()) {
     },
   }
 
-  agent = new SailDesktopAgent({
-    appLauncher,
-    appDirectories: soleDirectoryUrl
-      ? [soleDirectoryUrl]
-      : [FINOS_APP_DIRECTORY_URL, EXAMPLE_APPS_DIRECTORY_URL],
-    implementationMetadata: {
-      fdc3Version: SAIL_MAX_FDC3_VERSION,
-    },
-    ...(autoResolve
-      ? {
-          intentResolver: createProgrammaticIntentResolver({
-            log: (message, detail) => {
-              console.log(message.replace("[ProgrammaticIntentResolver]", "[Sail]"), detail ?? "")
-            },
-          }),
-        }
-      : {}),
-  })
+  void (async () => {
+    const rawAgent = new SailDesktopAgent({
+      appLauncher,
+      // Directories extension publishes into appDirectory on activate; defaults
+      // below apply only when that catalog is empty.
+      appDirectories: [],
+      implementationMetadata: {
+        fdc3Version: SAIL_MAX_FDC3_VERSION,
+      },
+      ...(autoResolve
+        ? {
+            intentResolver: createProgrammaticIntentResolver({
+              log: (message, detail) => {
+                console.log(message.replace("[ProgrammaticIntentResolver]", "[Sail]"), detail ?? "")
+              },
+            }),
+          }
+        : {}),
+    })
 
-  agent.start()
+    agent = await wrapWithExtensions(rawAgent)
+    if (agent.apps.getAll().length === 0) {
+      await agent.apps.addDirectory(FINOS_APP_DIRECTORY_URL)
+      await agent.apps.addDirectory(EXAMPLE_APPS_DIRECTORY_URL)
+    }
+    agent.start()
+    await loadExtensionUIs()
 
-  console.log("[Sail] FDC3 Browser Desktop Agent started and listening for connections", {
-    maxFdc3Version: SAIL_MAX_FDC3_VERSION,
-    soleDirectoryUrl,
-    autoResolve,
-  })
+    console.log("[Sail] FDC3 Browser Desktop Agent started and listening for connections", {
+      maxFdc3Version: SAIL_MAX_FDC3_VERSION,
+      autoResolve,
+    })
 
-  if (deepLinkAppId) {
-    // Conformance1 declares forceNewWindow; Playwright scrapes the host-page iframe.
-    forceFrameForNextLaunch = true
-    void agent.directoriesLoaded
-      .then(() => agent.apps.open(deepLinkAppId))
-      .then(id => {
-        console.log("[Sail] Deep-linked open %s", deepLinkAppId, id)
-        ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady =
-          deepLinkAppId
-      })
-      .catch((err: unknown) => {
-        console.error("[Sail] Deep-link open failed for %s", deepLinkAppId, err)
-        ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
-          err instanceof Error ? err.message : String(err)
-      })
-  }
+    if (deepLinkAppId) {
+      // Conformance1 declares forceNewWindow; Playwright scrapes the host-page iframe.
+      forceFrameForNextLaunch = true
+      void agent.directoriesLoaded
+        .then(() => agent!.apps.open(deepLinkAppId))
+        .then(id => {
+          console.log("[Sail] Deep-linked open %s", deepLinkAppId, id)
+          ;(window as Window & { __sailConformanceReady?: string }).__sailConformanceReady =
+            deepLinkAppId
+        })
+        .catch((err: unknown) => {
+          console.error("[Sail] Deep-link open failed for %s", deepLinkAppId, err)
+          ;(window as Window & { __sailConformanceOpenError?: string }).__sailConformanceOpenError =
+            err instanceof Error ? err.message : String(err)
+        })
+    }
 
-  if (import.meta.env.DEV) {
-    // Smoke / local debugging only — call `await __sailAppLauncher.close(instanceId)`.
-    ;(window as Window & { __sailAppLauncher?: typeof appLauncher }).__sailAppLauncher = appLauncher
-  }
+    if (import.meta.env.DEV) {
+      // Smoke / local debugging only — call `await __sailAppLauncher.close(instanceId)`.
+      ;(window as Window & { __sailAppLauncher?: typeof appLauncher }).__sailAppLauncher = appLauncher
+    }
 
-  createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-      <App agent={agent} />
-    </StrictMode>,
-  )
+    createRoot(document.getElementById("root")!).render(
+      <StrictMode>
+        <App agent={agent} />
+      </StrictMode>,
+    )
+  })()
 }

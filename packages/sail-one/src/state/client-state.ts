@@ -1,8 +1,8 @@
 import type { GridStackPosition } from "gridstack"
 import {
-  createLocalStorage,
-  type LocalStorageOptions,
-  type SailStorage,
+  createLocalUserStorage,
+  type LocalUserStorageOptions,
+  type SailUserStorage,
 } from "@finos/sail-platform"
 import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
 import type { IntentResolution } from "../resolver/types"
@@ -74,7 +74,7 @@ export interface ClientState {
 /**
  * Persisted shape of the shell's own state.
  *
- * Stored through a {@link SailStorage}, which wraps raw `localStorage`
+ * Stored through a {@link SailUserStorage}, which wraps raw `localStorage`
  * reads/writes behind a small typed get/set surface.
  */
 type PersistedClientState = {
@@ -86,7 +86,7 @@ type PersistedClientState = {
   customApps: DirectoryApp[]
 }
 
-const STORAGE_CONFIG: LocalStorageOptions = {
+const STORAGE_CONFIG: LocalUserStorageOptions = {
   keyPrefix: "sail_one_",
 }
 
@@ -158,9 +158,9 @@ export class PlatformClientState implements ClientState {
   private intentResolution: IntentResolution | null = null
   private customApps: DirectoryApp[] = []
   private ss: ClientStateSyncTarget | null = null
-  private readonly storage: SailStorage
+  private readonly storage: SailUserStorage
 
-  constructor(storage: SailStorage = createLocalStorage(STORAGE_CONFIG)) {
+  constructor(storage: SailUserStorage = createLocalUserStorage(STORAGE_CONFIG)) {
     this.storage = storage
   }
 

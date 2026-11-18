@@ -2,6 +2,7 @@ import { Sheet, SheetContent } from "@/components/ui"
 
 import { AppDirectory } from "../app-directory/AppDirectory"
 import { WorkspaceDirectory } from "../workspace-directory/WorkspaceDirectory"
+import { ExtensionSettings } from "../extensions/ExtensionSettings"
 import { useUIStore, type QuickAccessPanelContent } from "../../stores/ui-store"
 
 const QuickAccessContent = ({ content }: { content: QuickAccessPanelContent }) => {
@@ -10,6 +11,8 @@ const QuickAccessContent = ({ content }: { content: QuickAccessPanelContent }) =
       return <AppDirectory />
     case "workspace-directory":
       return <WorkspaceDirectory />
+    case "extension-settings":
+      return <ExtensionSettings />
     default:
       return null
   }

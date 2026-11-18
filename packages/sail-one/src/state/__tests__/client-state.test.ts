@@ -3,7 +3,7 @@ import type { DirectoryApp } from "@finos/sail-browser-agent"
 import { PlatformClientState } from "../client-state"
 import { installLocalStorage } from "./local-storage-mock"
 
-/** The `SailStorage` localStorage backend writes state under `<prefix>config`. */
+/** The `SailUserStorage` localStorage backend writes state under `<prefix>config`. */
 const STORAGE_KEY = "sail_one_config"
 
 async function loadedState(): Promise<PlatformClientState> {

@@ -238,7 +238,7 @@ export class SailHost implements ServerState {
       },
     })
 
-    const wrapped = wrapWithExtensions(agent)
+    const wrapped = await wrapWithExtensions(agent)
     wrapped.start()
     this.agent = wrapped
 

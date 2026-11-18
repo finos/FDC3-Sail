@@ -1,6 +1,6 @@
 import { Component } from "react"
 import type { SailExtensionStorage } from "@finos/sail-extension"
-import { SAIL_CONFIG_UI, type SailExtensionUI } from "@finos/sail-extension/ui"
+import { SAIL_UI_CONFIG, type SailExtensionUI } from "@finos/sail-extension/ui"
 import styles from "./styles.module.css"
 import { ClientState } from "../../common"
 import { Popup } from "../popups/popup"
@@ -70,7 +70,7 @@ export class ConfigPanel extends Component<AppPanelProps, AppPanelState> {
   }
 
   render() {
-    const extensionUIs = getLoadedExtensionUIs(SAIL_CONFIG_UI)
+    const extensionUIs = getLoadedExtensionUIs(SAIL_UI_CONFIG)
     const extension = extensionUIs.find(
       ui => ui.id === this.state.item || ui.title === this.state.item,
     )

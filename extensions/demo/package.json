@@ -7,6 +7,7 @@
   "license": "Apache-2.0",
   "exports": {
     ".": "./src/index.ts",
+    "./activate": "./src/activate.ts",
     "./ui": "./src/ui.tsx"
   },
   "scripts": {
@@ -17,7 +18,7 @@
   },
   "dependencies": {
     "@finos/sail-extension": "*",
-    "@finos/sail-headless-agent": "*"
+    "@finos/sail-platform": "*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

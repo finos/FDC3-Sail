@@ -16,15 +16,24 @@ is decided by the host or by [`@finos/sail-conformance-harness`](../conformance-
 
 ## Exports
 
-| Export | Role |
-|--------|------|
-| `SAIL_MAX_FDC3_VERSION` | `"3.0"` — advertised max wire version hosts pass into `SailDesktopAgent` |
-| `resolveDeepLinkAppId(search)` | `?appId=` → open that directory app after start |
-| `resolveFdc3Directory(search)` | `?fdc3Directory=` → sole App Directory URL from the query |
-| `resolveNoSplash(search)` | `?noSplash=1` / `true` → hide splash / welcome chrome |
-| `resolveFdc3DirectoryUrl(raw)` | Non-empty check for `VITE_FDC3_DIRECTORY_URL` |
-| `isAutoResolve(raw)` | `VITE_AUTO_RESOLVE === "1"` → programmatic intent pick |
-| `resolveSoleFdc3Directory({ search, viteDirectoryUrl })` | Query `fdc3Directory` wins over Vite env |
+| Function | Variable | Role | Used by |
+|----------|----------|------|---------|
+| | `SAIL_MAX_FDC3_VERSION` | `"3.0"` — advertised max wire version for `SailDesktopAgent` | `sail-one`, `sail-finance` |
+| `resolveDeepLinkAppId(search)` | | `?appId=` → open that directory app after start | `sail-one`, `sail-finance`, `sail-v2-web` |
+| `resolveNoSplash(search)` | | `?noSplash=1` / `true` → hide splash / welcome chrome | `sail-v2-web` |
+| `isAutoResolve(raw)` | | `VITE_AUTO_RESOLVE === "1"` → programmatic intent pick | `sail-one`, `sail-finance`, `sail-v2-web` |
+| `resolveFdc3Directory({ search, viteDirectoryUrl })` | | Sole App Directory URL from explicit inputs | `resolveBootFdc3DirectoryUrl` |
+| `resolveBootFdc3DirectoryUrl()` | | Same resolution from live `location` / Vite / `process.env` | `sail.fdc3.directories` (on activate) |
+
+### App Directory override order
+
+First non-empty value wins:
+
+1. `?fdc3Directory=` from the page query (`location.search`)
+2. `import.meta.env.VITE_FDC3_DIRECTORY_URL`
+3. `process.env.VITE_FDC3_DIRECTORY_URL` (Node)
+
+Hosts do **not** call these — `sail.fdc3.directories` calls `resolveBootFdc3DirectoryUrl()` on activate.
 
 ## Query parameters
 
@@ -54,21 +63,17 @@ import {
   SAIL_MAX_FDC3_VERSION,
   isAutoResolve,
   resolveDeepLinkAppId,
-  resolveSoleFdc3Directory,
 } from "@finos/sail-env"
 
-const soleDirectoryUrl = resolveSoleFdc3Directory({
-  search: window.location.search,
-  viteDirectoryUrl: import.meta.env.VITE_FDC3_DIRECTORY_URL,
-})
 const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
 const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
 ```
 
-Hosts then construct `SailDesktopAgent` with `maxFdc3Version: SAIL_MAX_FDC3_VERSION`, optional sole
-directory, auto-resolve intent UI, and deep-link open — see
+Hosts construct `SailDesktopAgent` with `maxFdc3Version: SAIL_MAX_FDC3_VERSION`, auto-resolve, and
+deep-link open. Sole AppD (`?fdc3Directory=` / `VITE_FDC3_DIRECTORY_URL`) is owned by
+`sail.fdc3.directories`. See
 [`sail-finance` `main.tsx`](https://github.com/finos/FDC3-Sail/blob/main/packages/sail-finance/src/main.tsx)
-for a full wiring.
+for host wiring.
 
 ## Related
 

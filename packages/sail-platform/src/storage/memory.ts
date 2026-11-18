@@ -1,13 +1,15 @@
-import type { SailStorage } from "./types"
+import { createChangeEmitter } from "./change"
+import type { SailUserStorage } from "./types"
 
 /**
- * In-memory {@link SailStorage}, for tests and hosts with no `localStorage`.
+ * In-memory {@link SailUserStorage}, for tests and hosts with no browser Storage.
  *
  * Values are serialised on write, so a caller holding a reference to the object
  * it stored cannot mutate what comes back out.
  */
-export function createMemoryStorage(): SailStorage {
+export function createMemoryUserStorage(): SailUserStorage {
   const entries = new Map<string, string>()
+  const changes = createChangeEmitter()
 
   return {
     get<T>(key: string): Promise<T | null> {
@@ -17,11 +19,13 @@ export function createMemoryStorage(): SailStorage {
 
     set<T>(key: string, value: T): Promise<void> {
       entries.set(key, JSON.stringify(value))
+      changes.notify({ key, op: "set" })
       return Promise.resolve()
     },
 
     remove(key: string): Promise<void> {
       entries.delete(key)
+      changes.notify({ key, op: "remove" })
       return Promise.resolve()
     },
 
@@ -29,5 +33,7 @@ export function createMemoryStorage(): SailStorage {
       const scope = prefix ?? ""
       return Promise.resolve([...entries.keys()].filter(key => key.startsWith(scope)))
     },
+
+    onChange: changes.onChange,
   }
 }

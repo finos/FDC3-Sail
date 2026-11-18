@@ -54,6 +54,7 @@
     "packages/sail-browser-agent",
     "packages/sail-theme",
     "packages/sail-platform",
+    "packages/sail-platform-browser",
     "packages/sail-finance",
     "packages/sail-one",
     "packages/sail-conformance-harness",

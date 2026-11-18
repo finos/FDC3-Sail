@@ -1,4 +1,14 @@
-import type { FDC3ServerInstance } from "@finos/sail-headless-agent"
+/**
+ * Change from {@link SailExtensionStorage.set} / {@link SailExtensionStorage.remove}.
+ */
+export type SailExtensionStorageChange = {
+  key: string
+  op: "set" | "remove"
+}
+
+export type SailExtensionStorageChangeListener = (
+  change: SailExtensionStorageChange,
+) => void
 
 /**
  * Host-owned persistence for one extension.
@@ -11,30 +21,63 @@ export interface SailExtensionStorage {
   get<T>(key: string): Promise<T | null>
   set<T>(key: string, value: T): Promise<void>
   remove(key: string): Promise<void>
-}
-
-export interface SailExtensionContext {
-  storage: SailExtensionStorage
+  /**
+   * Subscribe to key changes. Listeners are shared across adapter instances that
+   * wrap the same backing store (so the config UI can notify `activate`).
+   * Returns an unsubscribe function.
+   */
+  onChange(listener: SailExtensionStorageChangeListener): () => void
 }
 
 /** Settings-panel contribution. Hosts filter loaded UI modules with this type. */
 export const SAIL_CONFIG_UI = "sail.config"
 
-/** One browser UI module: a type slot and the URL to import. */
-export type SailExtensionUIRef = {
-  type: string
-  url: string
+export interface SailExtensionDisposable {
+  dispose(): void
+}
+
+export interface SailExtensionHandle {
+  id: string
+  /** Capability id → value (same map registered from activate result). */
+  exports: Record<string, unknown>
 }
 
 /**
- * Isomorphic extension module (no React, no Node APIs).
- *
- * `wrapServer` must not close over user settings — re-read `ctx.storage` on
- * each intercepted call.
+ * Context passed to `activate()`. Host-owned; isomorphic (no React / Node APIs).
  */
-export interface SailExtension {
+export interface SailExtensionContext {
+  id: string
+  storage: SailExtensionStorage
+  /** Resolve a capability published by the platform or an activated extension. */
+  getExport<T = unknown>(capabilityId: string): T | undefined
+  getExtension(id: string): SailExtensionHandle | undefined
+  subscriptions: { push(d: SailExtensionDisposable): void }
+}
+
+/** Keys must match capability ids declared in the manifest `exports` map. */
+export type ActivateResult = { exports?: Record<string, unknown> } | void
+
+export type ActivateFn = (
+  ctx: SailExtensionContext,
+) => ActivateResult | Promise<ActivateResult>
+
+export type DeactivateFn = () => void | Promise<void>
+
+/**
+ * Shape of a `sail.extension.json` document (validated against
+ * `sail.extension.schema.json`).
+ */
+export interface SailExtensionManifest {
+  $schema?: string
   id: string
   title: string
-  wrapServer?: (instance: FDC3ServerInstance, ctx: SailExtensionContext) => FDC3ServerInstance
-  getUIExtensions(): SailExtensionUIRef[]
+  version: string
+  description?: string
+  license?: string
+  homepage?: string
+  repository?: string | { type?: string; url: string; directory?: string }
+  activation: { module: string }
+  extensionDependencies?: string[]
+  exports?: Record<string, { description?: string }>
+  contributes?: Record<string, Array<{ title?: string; module: string; [key: string]: unknown }>>
 }

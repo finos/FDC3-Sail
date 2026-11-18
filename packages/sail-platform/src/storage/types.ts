@@ -1,14 +1,16 @@
+import type { SailSessionId } from "../session/types"
+import type { SailStorageChangeListener } from "./change"
+
+export type { SailStorageChange, SailStorageChangeListener } from "./change"
+
 /**
- * Storage port for Sail platform state.
+ * Per-user key/value storage (one Sail user / desktop session).
  *
- * The default implementation is browser `localStorage` (`createLocalStorage`).
- * Supply your own object to push state to a remote service — nothing in the
- * platform assumes the backing store is local, or that reads are cheap.
- *
- * Keys are opaque strings. The platform namespaces its own keys; a host may
- * store anything alongside them.
+ * Browser hosts (sail-one, sail-finance) typically back this with
+ * `localStorage` / `sessionStorage`. Node hosts (sail-v2-web) proxy to the
+ * browser — the platform only defines the port.
  */
-export interface SailStorage {
+export interface SailUserStorage {
   /** Read a value, or `null` when the key is absent or cannot be read. */
   get<T>(key: string): Promise<T | null>
 
@@ -20,8 +22,19 @@ export interface SailStorage {
 
   /**
    * List stored keys, optionally restricted to those starting with `prefix`.
-   *
-   * Required for listing saved workspaces without loading them.
    */
   list(prefix?: string): Promise<string[]>
+
+  /**
+   * Subscribe to key changes from {@link set} / {@link remove}.
+   * Returns an unsubscribe function.
+   */
+  onChange(listener: SailStorageChangeListener): () => void
+}
+
+/**
+ * sail.platform.storage — resolve per-user storage for a {@link SailSessionId}.
+ */
+export interface SailStorage {
+  getUserStorage(sessionId: SailSessionId): SailUserStorage | undefined
 }
