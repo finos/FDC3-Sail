@@ -20,6 +20,8 @@ Pull requests that add a dependency must raise it for discussion; see [Dependenc
 
 Maintainers publish `@finos/sail-browser-agent` and `@finos/sail-platform` via Changesets on `main`; see [Publishing packages](https://fdc3-sail.finos.org/docs/development#publishing-packages-maintainers) in the development guide. Contributors do not need to add changesets.
 
+The human who opens a pull request owns it and must be able to explain every change — reviewers may ask the author to explain any part of it. This applies whether or not an AI coding agent helped write the change.
+
 ## Governance
 
 ### Roles
