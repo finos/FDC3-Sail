@@ -54,6 +54,7 @@ the directory.
 
 ## Related
 
+- [Threat model](./threat-model) — the project-wide security self-assessment this page feeds into.
 - [@finos/sail-browser-agent](../packages/browser-agent/overview) — where admission is enforced.
 - [Desktop Agent integrator guide](../packages/browser-agent/integrator-guide) — supplying the app
   directory a host admits from.
