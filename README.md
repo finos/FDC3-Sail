@@ -18,6 +18,7 @@
 <br />
 
 [![CI](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/ci.yml)
+[![FDC3 Conformance](https://github.com/finos/FDC3-Sail/actions/workflows/conformance.yml/badge.svg?branch=main&event=schedule)](https://fdc3.finos.org/docs/fdc3-compliance#conformance-testing)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/12272/badge)](https://bestpractices.coreinfrastructure.org/projects/12272)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/finos/FDC3-Sail/badge)](https://scorecard.dev/viewer/?uri=github.com/finos/FDC3-Sail)
 [![CodeQL](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml/badge.svg?branch=main)](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml)
@@ -145,6 +146,20 @@ Meeting agendas and minutes are tracked through GitHub issues with the `meeting`
 ## Status
 
 FDC3 Sail targets [FDC3 2.2](https://fdc3.finos.org/docs/api/spec) conformance and is extending toward FDC3 3.0 via `sail-headless-agent`'s versioned handlers. It is in active development and **not yet ready for production use**. Contributions and bug reports are welcome.
+
+## Conformance and security
+
+Evidence for risk, security and procurement reviews. Each badge at the top of this page links to its source.
+
+| Check | What it shows | Evidence |
+| --- | --- | --- |
+| FDC3 conformance | The [FINOS FDC3 conformance suite](https://github.com/finos/FDC3-conformance-framework) for FDC3 2.2 and 3.0, run nightly on `main` against `sail-one`, `sail-finance` and `sail-v2-web` | [Nightly runs](https://github.com/finos/FDC3-Sail/actions/workflows/conformance.yml?query=branch%3Amain+event%3Aschedule) · [About FDC3 conformance](https://fdc3.finos.org/docs/fdc3-compliance#conformance-testing) |
+| OpenSSF Scorecard | Automated score for supply-chain security practices | [Scorecard report](https://scorecard.dev/viewer/?uri=github.com/finos/FDC3-Sail) |
+| OpenSSF Best Practices | Self-certified open source best-practice criteria | [Project 12272](https://bestpractices.coreinfrastructure.org/projects/12272) |
+| CodeQL | Static analysis for security bugs on every PR | [CodeQL runs](https://github.com/finos/FDC3-Sail/actions/workflows/ql.yml) |
+| CVE scanning | Known vulnerabilities in npm dependencies | [CVE scan runs](https://github.com/finos/FDC3-Sail/actions/workflows/cve-scanning.yml) |
+
+Passing the conformance suite is **not** FINOS FDC3 certification. Certification is a separate process under the [FDC3 certification terms](https://github.com/finos/FDC3-conformance-framework/blob/main/terms-conditions/FDC3-Certified-Terms.md). To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Mailing List
 
