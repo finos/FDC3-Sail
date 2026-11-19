@@ -29,17 +29,8 @@ export interface SailExtensionStorage {
   onChange(listener: SailExtensionStorageChangeListener): () => void
 }
 
-/** Settings-panel contribution. Hosts filter loaded UI modules with this type. */
-export const SAIL_CONFIG_UI = "sail.config"
-
 export interface SailExtensionDisposable {
   dispose(): void
-}
-
-export interface SailExtensionHandle {
-  id: string
-  /** Capability id → value (same map registered from activate result). */
-  exports: Record<string, unknown>
 }
 
 /**
@@ -50,7 +41,6 @@ export interface SailExtensionContext {
   storage: SailExtensionStorage
   /** Resolve a capability published by the platform or an activated extension. */
   getExport<T = unknown>(capabilityId: string): T | undefined
-  getExtension(id: string): SailExtensionHandle | undefined
   subscriptions: { push(d: SailExtensionDisposable): void }
 }
 

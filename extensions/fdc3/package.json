@@ -15,7 +15,8 @@
     ".": "./src/index.ts",
     "./api": "./src/api.ts",
     "./activate": "./src/activate.ts",
-    "./ui-hidden": "./src/ui-hidden.ts"
+    "./ui-hidden": "./src/ui-hidden.ts",
+    "./ui-app-bar-connection": "./src/ui-app-bar-connection.ts"
   },
   "scripts": {
     "build": "vp pack",
@@ -24,6 +25,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@finos/fdc3-context-v2": "npm:@finos/fdc3-context@2.2.3",
+    "@finos/fdc3-standard-v2": "npm:@finos/fdc3-standard@2.2.3",
     "@finos/sail-extension": "*",
     "@finos/sail-headless-agent": "*",
     "@finos/sail-platform": "*"

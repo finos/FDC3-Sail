@@ -6,15 +6,14 @@ import {
   type SailExtensionManifest,
 } from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
-import type { FDC3ServerInstance } from "@finos/sail-headless-agent"
 import {
-  SAIL_FDC3_APP_DIRECTORY,
+  SAIL_FDC3_APP_CONTRIBUTION,
   SAIL_FDC3_SERVER_FACTORY,
   SailFDC3ServerFactory,
-  createRegisterMiddleware,
-  type SailFdc3AppDirectory,
+  type CreateInstanceOptions,
+  type SailFdc3AppContribution,
+  type SailFdc3SessionHandle,
 } from "@finos/sail-extension-fdc3"
-import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 import {
   SAIL_PLATFORM_BUS,
   SAIL_PLATFORM_CATALOG,
@@ -74,6 +73,10 @@ function ensurePlatformCaps(): {
   return platformCaps
 }
 
+export function getPlatformCaps(): ReturnType<typeof ensurePlatformCaps> {
+  return ensurePlatformCaps()
+}
+
 function platformExportsFromCaps(caps: ReturnType<typeof ensurePlatformCaps>) {
   return {
     [SAIL_PLATFORM_SESSION]: caps.sessions,
@@ -109,8 +112,8 @@ export function getSailFdc3Factory(): SailFDC3ServerFactory | undefined {
   return platformRegistry?.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
 }
 
-export function getSailFdc3AppDirectory(): SailFdc3AppDirectory | undefined {
-  return platformRegistry?.getExport<SailFdc3AppDirectory>(SAIL_FDC3_APP_DIRECTORY)
+export function getSailFdc3AppContribution(): SailFdc3AppContribution | undefined {
+  return platformRegistry?.getExport<SailFdc3AppContribution>(SAIL_FDC3_APP_CONTRIBUTION)
 }
 
 export async function loadExtensionUIs(): Promise<LoadedSailExtensionUI[]> {
@@ -146,39 +149,15 @@ export function getLoadedExtensionUIs(type?: string): LoadedSailExtensionUI[] {
   return type ? all.filter(ui => ui.type === type) : all
 }
 
-/**
- * Preferred boot: `sail.fdc3` factory {@link SailFDC3ServerFactory.createInstance}.
- */
-export async function createFdc3SessionAgent(session: SailUserSession) {
+/** Boot a DA for a {@link SailUserSession} via `sail.fdc3` factory. */
+export async function createFdc3SessionAgent(
+  session: SailUserSession,
+  options?: CreateInstanceOptions,
+): Promise<SailFdc3SessionHandle> {
   const registry = await loadExtensionCores()
   const factory = registry.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
   if (!factory) {
     throw new Error("sail.fdc3.serverFactory missing — is sail.fdc3 active in extensions.json?")
   }
-  return factory.createInstance(session)
-}
-
-/**
- * Legacy browser DA: apply factory-queued middleware (demo / WCP) onto a host-built agent.
- * Prefer {@link createFdc3SessionAgent} once the host uses session open/close only.
- */
-export async function wrapWithExtensions(instance: SailDesktopAgent): Promise<SailDesktopAgent> {
-  const registry = await loadExtensionCores()
-  const factory = registry.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
-  if (!factory) {
-    throw new Error("sail.fdc3.serverFactory missing — is sail.fdc3 active in extensions.json?")
-  }
-
-  const { agent, registerMiddleware } = createRegisterMiddleware(
-    instance as unknown as FDC3ServerInstance,
-  )
-  factory.applyQueuedMiddleware(registerMiddleware)
-
-  const appDirectory = factory.appDirectory
-  const published = appDirectory.retrieveAllApps()
-  if (published.length > 0) {
-    instance.apps.addAll(published)
-  }
-
-  return agent as unknown as SailDesktopAgent
+  return factory.createInstance(session, options)
 }

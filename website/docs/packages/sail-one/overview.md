@@ -6,7 +6,7 @@ sidebar_position: 1
 
 `sail-one` is one of Sail's two **example UIs** — the **domain-neutral** one, for more general use. It
 is a tab-and-grid canvas shell, ported from `packages/sail-web` on FINOS `wip/v2.2` and rewired onto
-the current `@finos/sail-browser-agent` and `@finos/sail-platform`. The hosted agent speaks **FDC3 2.2
+the current `sail.fdc3` extension (`@finos/sail-extension-fdc3`) and `@finos/sail-platform`. The hosted agent speaks **FDC3 2.2
 and 3.0** (same dual-wire negotiation as other Sail hosts).
 
 **Location:** `packages/sail-one/`
@@ -121,6 +121,6 @@ those URLs a host policy rather than a constant.
 ## Related
 
 - [@finos/sail-platform](../platform/overview) — workspaces, layouts, and the storage this shell uses.
-- [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine this shell constructs.
+- `@finos/sail-extension-fdc3` — the FDC3 Desktop Agent extension this shell constructs.
 - [@finos/sail-finance](../sail-finance/overview) — the finance-specific sibling shell.
 - [Architecture Overview](../../architecture/overview) — package ownership and how the two compose.

@@ -1,0 +1,32 @@
+{
+  "$schema": "../../packages/sail-extension/sail.extension.schema.json",
+  "id": "sail.fdc3.channelSettings",
+  "title": "User Channels",
+  "version": "0.0.1",
+  "description": "Edit the FDC3 user-channel catalog via sail.fdc3.channels; contribute a channel selector to sail.ui.app.bar.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/finos/FDC3-Sail",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/FDC3-Sail.git",
+    "directory": "extensions/fdc3-channels"
+  },
+  "activation": {
+    "module": "./src/activate.ts"
+  },
+  "extensionDependencies": ["sail.fdc3.channels"],
+  "contributes": {
+    "sail.ui.config": [
+      {
+        "title": "User Channels",
+        "module": "./src/ui.tsx"
+      }
+    ],
+    "sail.ui.app.bar": [
+      {
+        "title": "Channel selector",
+        "module": "./src/ui-app-bar.tsx"
+      }
+    ]
+  }
+}

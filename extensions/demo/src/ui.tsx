@@ -79,7 +79,6 @@ export const demoExtensionUI: SailExtensionUI = {
   id: DEMO_EXTENSION_ID,
   title: "Message Log",
   type: SAIL_UI_CONFIG,
-  ConfigScreen,
   mount,
 }
 

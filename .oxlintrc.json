@@ -6,27 +6,6 @@
   "ignorePatterns": ["packages/sail-headless-agent/**", "packages/sail-v2-web/**"],
   "overrides": [
     {
-      "files": ["packages/sail-browser-agent/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "@finos/sail-platform",
-                  "@finos/sail-finance",
-                  "@finos/sail-one",
-                  "**/sail-platform/**"
-                ],
-                "message": "sail-browser-agent is the engine: it must not depend on the platform or any shell."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "files": ["packages/sail-finance/**"],
       "rules": {
         "no-restricted-imports": [

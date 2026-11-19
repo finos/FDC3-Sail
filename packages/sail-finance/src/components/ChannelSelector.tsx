@@ -1,7 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import type { BrowserTypes } from "@finos/fdc3"
+/**
+ * Legacy host ChannelSelector kept for ChannelSelectorTestPage e2e.
+ * Production chrome uses `sail.ui.app.bar` via {@link AppBarSlot}.
+ */
 
-import { useSailDesktopAgent, useConnectionStore } from "../contexts"
+import { useEffect, useMemo, useState } from "react"
+import {
+  SAIL_FDC3_CHANNELS,
+  type SailFdc3Channels,
+} from "@finos/sail-extension-fdc3"
+import type { ChannelState } from "@finos/sail-headless-agent"
+
+import { useConnectionStore } from "../contexts"
+import { getExtensionExport } from "../state/extensions-runtime"
 import { ChannelMenu } from "./channel-selector/ChannelMenu"
 
 import "./layout-grid/toolbar/controls/controls.css"
@@ -10,30 +20,38 @@ interface ChannelSelectorProps {
   instanceId: string
 }
 
+function toBrowserChannels(channels: ChannelState[]) {
+  return channels.map(c => ({
+    id: c.id,
+    type: "user" as const,
+    displayMetadata: c.displayMetadata,
+  }))
+}
+
 export function ChannelSelector({ instanceId }: ChannelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [catalog, setCatalog] = useState(() =>
+    toBrowserChannels(getExtensionExport<SailFdc3Channels>(SAIL_FDC3_CHANNELS)?.getUserChannels() ?? []),
+  )
 
-  const agent = useSailDesktopAgent()
-  const agentRef = useRef(agent)
-  agentRef.current = agent
-
-  // Subscribe to connection-store push updates (channelChanged) — not agent state snapshots.
+  const channelsApi = getExtensionExport<SailFdc3Channels>(SAIL_FDC3_CHANNELS)
   const connection = useConnectionStore(state => state.connections.get(instanceId))
-  const currentChannelId = connection?.channelId ?? null
+  const currentChannelId =
+    connection?.channelId ?? channelsApi?.getAppChannelId(instanceId) ?? null
 
-  const channels = useMemo<BrowserTypes.Channel[]>(() => {
-    try {
-      return agentRef.current.channels.getUserChannels()
-    } catch (err) {
-      console.error("[ChannelSelector] Failed to get user channels:", err)
-      return []
-    }
-    // User channels are fixed at Desktop Agent construction.
-  }, [])
+  useEffect(() => {
+    if (!channelsApi) return
+    const refresh = () => setCatalog(toBrowserChannels(channelsApi.getUserChannels()))
+    refresh()
+    return channelsApi.onCatalogChange(refresh)
+  }, [channelsApi])
 
-  const currentChannel = channels.find(channel => channel.id === currentChannelId)
+  const currentChannel = useMemo(
+    () => catalog.find(channel => channel.id === currentChannelId),
+    [catalog, currentChannelId],
+  )
   const currentColor = currentChannel?.displayMetadata?.color ?? "var(--muted-foreground)"
 
   useEffect(() => {
@@ -49,12 +67,14 @@ export function ChannelSelector({ instanceId }: ChannelSelectorProps) {
 
   const handleSelectChannel = (channelId: string | null) => {
     void (async () => {
+      if (!channelsApi) {
+        setError("sail.fdc3.channels is not available")
+        return
+      }
       setIsLoading(true)
       setError(null)
-
       try {
-        // channels.changeAppChannel resolves after onAppChannelChange push; store updates via apps/channels subscriptions.
-        await agentRef.current.channels.changeAppChannel(instanceId, channelId)
+        await channelsApi.changeAppChannel(instanceId, channelId)
         setIsOpen(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to change channel")
@@ -90,7 +110,7 @@ export function ChannelSelector({ instanceId }: ChannelSelectorProps) {
   return (
     <ChannelMenu
       trigger={trigger}
-      channels={channels}
+      channels={catalog}
       selectedChannelId={currentChannelId}
       onChannelSelect={handleSelectChannel}
       open={isOpen}

@@ -76,7 +76,7 @@ Uses the public FINOS app directory. For FDC3 conformance toolbox runs, use
 ## Related
 
 - [Panel model and popout relay](./panel-architecture) — Dockview workspace / tab / panel wiring
-- [@finos/sail-browser-agent](../browser-agent/overview) — the FDC3 engine this shell constructs.
+- `@finos/sail-extension-fdc3` — the FDC3 Desktop Agent extension this shell constructs.
 - [@finos/sail-platform](../platform/overview) — workspaces, layouts, and storage.
 - [@finos/sail-one](../sail-one/overview) — the domain-neutral sibling shell.
 - [Architecture Overview](../../architecture/overview) — package ownership and how the two compose.

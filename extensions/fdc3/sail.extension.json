@@ -3,7 +3,7 @@
   "id": "sail.fdc3",
   "title": "FDC3 Desktop Agent",
   "version": "0.0.1",
-  "description": "Sail FDC3 extension; exports a per-session server factory, middleware registration, and App Directory API.",
+  "description": "Sail FDC3 extension; exports a per-session server factory, middleware registration, app contributions, and user channels API.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/finos/FDC3-Sail",
   "repository": {
@@ -26,8 +26,11 @@
     "sail.fdc3.registerMiddleware": {
       "description": "Register receive/post middleware applied to each new session agent"
     },
-    "sail.fdc3.appDirectory": {
-      "description": "Source-scoped App Directory (replaceSource / removeSource)"
+    "sail.fdc3.appContribution": {
+      "description": "App contributor registry (registerSource / unregisterSource; returnApps per session)"
+    },
+    "sail.fdc3.channels": {
+      "description": "User-channel catalog (persisted) and per-app membership on the active session"
     }
   },
   "contributes": {
@@ -35,6 +38,12 @@
       {
         "title": "WCP MessagePort edge",
         "module": "./src/ui-hidden.ts"
+      }
+    ],
+    "sail.ui.app.bar": [
+      {
+        "title": "FDC3 connection",
+        "module": "./src/ui-app-bar-connection.ts"
       }
     ]
   }

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
-import {
-  SAIL_UI_CONFIG,
-  type SailExtensionUI,
-  type SailExtensionUIProps,
-} from "@finos/sail-extension/ui"
+import { SAIL_UI_CONFIG } from "@finos/sail-platform"
+import type { SailExtensionUI, SailExtensionUIProps } from "@finos/sail-extension/ui"
 import {
   DIRECTORIES_DEFAULT_SETTINGS,
   DIRECTORIES_SETTINGS_KEY,
@@ -26,7 +23,7 @@ export function ConfigScreen({ storage }: SailExtensionUIProps) {
 
   async function save(next: DirectoriesSettings) {
     setSettings(next)
-    // activate() subscribes via storage.onChange and re-syncs appDirectory.
+    // activate() subscribes via storage.onChange and refreshes contributor caches.
     await storage.set(DIRECTORIES_SETTINGS_KEY, next)
   }
 
@@ -46,7 +43,7 @@ export function ConfigScreen({ storage }: SailExtensionUIProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p style={{ margin: 0, opacity: 0.8 }}>
-        AppD directory URLs. Active sources are published into sail.fdc3.appDirectory.
+        AppD directory URLs. Active sources are published into sail.fdc3.appContribution.
       </p>
       <ul style={{ margin: 0, paddingLeft: 18 }}>
         {settings.sources.map(s => (
@@ -96,11 +93,7 @@ export function ConfigScreen({ storage }: SailExtensionUIProps) {
   )
 }
 
-/**
- * Own React root — required when the host dynamically imports this module from
- * the extension server (separate Vite origin). Rendering ConfigScreen inside the
- * host tree hits "Invalid hook call" from two copies of React.
- */
+/** Own React root — safe when the host dynamically imports from another origin. */
 export function mount(el: HTMLElement, props: SailExtensionUIProps): () => void {
   const root = createRoot(el)
   root.render(<ConfigScreen {...props} />)
@@ -113,7 +106,6 @@ export const directoriesUI: SailExtensionUI = {
   id: FDC3_DIRECTORIES_EXTENSION_ID,
   title: "Directories",
   type: SAIL_UI_CONFIG,
-  ConfigScreen,
   mount,
 }
 

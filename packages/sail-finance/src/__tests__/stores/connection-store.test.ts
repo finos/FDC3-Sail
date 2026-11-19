@@ -1,9 +1,9 @@
 import { enableMapSet } from "immer"
 import { describe, it, expect, vi } from "vite-plus/test"
-import type { AppConnectionMetadata, SailDesktopAgent } from "@finos/sail-browser-agent"
-import channelSelectorSource from "../../components/ChannelSelector.tsx?raw"
+import appBarSlotSource from "../../components/extensions/AppBarSlot.tsx?raw"
 import connectionStoreSource from "../../stores/connection-store.ts?raw"
 import { createConnectionStore } from "../../stores/connection-store"
+import type { AppConnectionMetadata, SailHostAgent } from "../../agent/sail-host-agent"
 
 enableMapSet()
 
@@ -77,10 +77,7 @@ function createAppConnectedMetadata(
   return {
     instanceId: INSTANCE_ID,
     appId: APP_ID,
-    connectionAttemptUuid: "connection-attempt-uuid",
-    messageOrigin: "https://example.com",
     source: window,
-    port: {} as MessagePort,
     connectedAt: new Date(),
     hostIdentifier: PANEL_ID,
     ...overrides,
@@ -93,7 +90,7 @@ describe("ConnectionStore panel linking", () => {
     const agent = {
       apps: host.apps,
       channels: host.channels,
-    } as unknown as SailDesktopAgent
+    } as unknown as SailHostAgent
     const store = createConnectionStore(agent)
 
     const panelOne = "pms-1"
@@ -147,7 +144,7 @@ describe("ConnectionStore channel membership", () => {
     const agent = {
       apps: host.apps,
       channels: host.channels,
-    } as unknown as SailDesktopAgent
+    } as unknown as SailHostAgent
     const store = createConnectionStore(agent)
 
     host.apps.emitConnect(createAppConnectedMetadata())
@@ -166,7 +163,7 @@ describe("ConnectionStore channel membership", () => {
       apps: host.apps,
       channels: host.channels,
       getState,
-    } as unknown as SailDesktopAgent
+    } as unknown as SailHostAgent
     const store = createConnectionStore(agent)
 
     host.apps.emitConnect(createAppConnectedMetadata())
@@ -181,7 +178,7 @@ describe("ConnectionStore channel membership", () => {
     const agent = {
       apps: host.apps,
       channels: host.channels,
-    } as unknown as SailDesktopAgent
+    } as unknown as SailHostAgent
     const store = createConnectionStore(agent)
 
     host.apps.emitConnect(createAppConnectedMetadata())
@@ -193,11 +190,11 @@ describe("ConnectionStore channel membership", () => {
 })
 
 describe("Channel UI source audit", () => {
-  it("connection-store and ChannelSelector do not read DesktopAgent getState for channels", () => {
+  it("connection-store and AppBarSlot do not read DesktopAgent getState for channels", () => {
     expect(connectionStoreSource).not.toMatch(/getState\s*\(/)
-    expect(channelSelectorSource).not.toMatch(/getState\s*\(/)
-    expect(channelSelectorSource).toMatch(/connections\.get/)
-    expect(channelSelectorSource).toMatch(/channels\.changeAppChannel/)
+    expect(appBarSlotSource).toMatch(/SAIL_UI_APP_BAR/)
+    expect(appBarSlotSource).toMatch(/properties:\s*\{\s*instanceId/)
+    expect(connectionStoreSource).toMatch(/onAppChannelChange/)
     expect(connectionStoreSource).not.toMatch(/agent\.appConnection/)
   })
 })

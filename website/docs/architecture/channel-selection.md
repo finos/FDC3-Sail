@@ -4,107 +4,76 @@ sidebar_position: 4
 
 # Channel selection: host chrome vs app-hosted UI
 
-FDC3 user channels can be changed in two ways. Sail supports both at the protocol level; **Sail Web uses host-controlled chrome** by default.
-
-For **one agent per browsing context** and why host chrome must not poll `getState()`, see [Integrator guide — One Desktop Agent per context](../packages/browser-agent/integrator-guide.md#one-desktop-agent-per-context).
+FDC3 user channels can be changed in two ways. Sail supports both at the protocol level; **Sail Web uses host-controlled chrome** by default (`channelSelectorUrl: false` in WCP).
 
 ## Roles
 
 | Layer | Responsibility |
 |-------|----------------|
-| **`@finos/sail-browser-agent`** | FDC3 engine: DACP handlers, agent state, WCP routing, events to apps. Stays **protocol-pure** — no Sail UI, no “chrome” concepts. |
-| **`@finos/sail-platform`** | No role here. It holds workspaces, layouts and storage; channels are FDC3 and belong to the agent. |
-| **`@finos/sail-finance`** (example host) | React chrome (`ChannelSelector`), connection store, tiles around iframes. |
+| **`sail.fdc3` (`sail.fdc3.channels`)** | Persists the user-channel catalog in FDC3 extension storage; membership get/set/`onAppChannelChange` on the active session. |
+| **`sail.fdc3.channelSettings`** | Editor-only `sail.ui.config` UI; writes via `setUserChannels`. Also contributes the channel selector to `sail.ui.app.bar`. |
+| **`sail.ui.app.bar`** | Per-app panel header slot. Hosts mount contributions with `properties.instanceId`. |
+| **Host (e.g. sail-finance)** | Mounts `sail.ui.app.bar` in the panel header; connection-store mirrors `onAppChannelChange`. |
+| **Host (sail-one)** | Tabs are channels: `setUserChannels(tabsToChannelStates(tabs))` then recreate the DA from the catalog. No channels config UI. |
 
-**Principle:** Parent chrome does not mutate Desktop Agent state directly. It calls the agent's **`channels` controller**; the agent updates state through the same DACP handlers apps use.
+**Principle:** Chrome does not mutate Desktop Agent state by side channel. It uses **`sail.fdc3.channels`** (`changeAppChannel` / catalog APIs); the agent updates membership through the same paths apps use.
 
 ## Pattern A — Host-controlled channel UI (Sail default)
 
-**When:** `getChannelSelectorUrl()` returns `false` in WCP3 handshake (Sail-controlled UI).
+**When:** WCP3 handshake sets `channelSelectorUrl: false`.
 
-**Where the UI lives:** Parent window chrome next to each app iframe (one desk, consistent UX).
-
-**Layout:**
+**Where the UI lives:** `sail.ui.app.bar` contributions in the parent panel header (channel selector + connection indicator).
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
-│  Host (sail-finance) — tabs, channel dots, workspace chrome   │
+│  Host — panel header: sail.ui.app.bar widgets + host chrome │
 │  ┌────────────────────────────────────────────────────┐  │
 │  │  App iframe — FDC3 API + business UI only           │  │
-│  │  MessagePort ◄──► BrowserAppConnection ◄──► DA       │  │
+│  │  MessagePort ◄──► WCP edge ◄──► DA (sail.fdc3)      │  │
 │  └────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
 
-### Set (join / leave) on behalf of an instance
+### Catalog
 
-Hosts call **`channels.changeAppChannel(instanceId, channelId | null)`** on the `SailDesktopAgent` handle. There is one path:
+- Owned and persisted by **`sail.fdc3`** (`userChannels` in extension storage).
+- Defaults to the eight recommended FDC3 user channels when empty.
+- Name, colour, and glyph must each be unique (`setUserChannels` rejects collisions).
+- Config UI and sail-one tabs are **writers** through the same API.
 
-1. Send a typed **`joinUserChannelRequest`** or **`leaveCurrentChannelRequest`** with `meta.source.instanceId` set to that app.
-2. Desktop Agent handlers update `instance.currentUserChannel`.
-3. Agent emits **`channelChangedEvent`** toward the app.
-4. WCP routes the event and emits **`channelChanged`** on `appConnection`; the `channels` controller surfaces this via **`onAppChannelChange`**.
+### Membership (join / leave)
 
-This is “on behalf of the app” in **identity** (source instance id), not “bypass FDC3”.
+```typescript
+const channels = getExport<SailFdc3Channels>(SAIL_FDC3_CHANNELS)!
 
-### Get (read) for chrome
+await channels.changeAppChannel(instanceId, "fdc3.channel.1")
+await channels.changeAppChannel(instanceId, null) // leave
 
-| What chrome needs | SailDesktopAgent API | Notes |
-|-------------------|----------------------|--------|
-| List of user channels | `channels.getUserChannels()` | Reads agent state (not per-app DACP). |
-| Current channel for a tile | `channels.getAppChannelId(instanceId)` or `channels.getAppChannel(instanceId)` | No DACP round-trip. |
-| Event-driven mirror | `channels.onAppChannelChange(listener)` | Push model — do not poll `getState()`. |
+const list = channels.getUserChannels()
+const channelId = channels.getAppChannelId(instanceId)
 
-Apps still use **`fdc3.getCurrentChannel()`** inside the iframe over MessagePort — that is the app’s own DACP `getCurrentChannelRequest`.
+channels.onAppChannelChange(({ instanceId, channelId }) => { /* chrome */ })
+```
 
 ### Listen for updates
 
 | Consumer | Listen to |
 |----------|-----------|
-| **Host chrome** | `channels.onAppChannelChange` on the agent handle, or a store fed by it |
-| **App iframe** | `fdc3.addEventListener("userChannelChanged", …)` (FDC3 2.2 and 3.0) |
-
-Both reflect the same agent state change; the host does not need to poke the iframe DOM.
+| **Host chrome / connection-store** | `sail.fdc3.channels.onAppChannelChange` |
+| **App iframe** | `fdc3.addEventListener("userChannelChanged", …)` |
 
 ## Pattern B — App-hosted channel selector URL
 
-**When:** `getChannelSelectorUrl(instanceId)` returns a URL (or the app shows its own picker).
+**When:** `getChannelSelectorUrl(instanceId)` returns a URL.
 
-**Where the UI lives:** URL loaded in app context (iframe/popup) per FDC3 For-the-Web.
-
-**Flow:**
-
-1. App or selector page sends **`joinUserChannelRequest` / `leaveCurrentChannelRequest`** over the app **MessagePort**.
-2. Messages pass **`bridgeAppPort`** validation (`isAppMessage`).
-3. Same agent handlers and **`channelChangedEvent`** as Pattern A.
-
-**Host chrome** may still listen to `channelChanged` for a global indicator, but it does **not** initiate joins.
+Same agent membership handlers; host chrome may still listen to `onAppChannelChange` for indicators but does not initiate joins.
 
 ## What not to do
 
-- **Raw DACP impersonation** (`sendDACPMessageOnBehalfOf`, private `handleMessage`) — bypasses WCP validation; use typed **`channels.changeAppChannel`** on `SailDesktopAgent` instead.
-- **Chrome writing agent state without DACP handlers** — breaks conformance and app event delivery.
-
-## Channel API surface
-
-```typescript
-const { channels } = desktopAgent
-
-await channels.changeAppChannel(instanceId, "fdc3.channel.1")
-await channels.changeAppChannel(instanceId, null) // leave
-
-const channelList = channels.getUserChannels()
-const channelId = channels.getAppChannelId(instanceId)
-
-const unsubscribe = channels.onAppChannelChange(({ instanceId, channelId }) => { ... })
-```
-
-Use **`channels.*`**, not raw `appConnection` delivery or `getAppUserChannelId` alone. Channel state is
-FDC3 state and lives in the agent — `@finos/sail-platform` stores which tab a panel sits in, which is
-a different question from which channel its app has joined.
+- Bypass the channels export with raw DACP impersonation for host chrome.
+- Store a second channel catalog in the config extension — persistence is **only** on `sail.fdc3`.
 
 ## Related work
 
-- Integrator singleton + channel reactivity: [Desktop Agent integrator guide](../packages/browser-agent/integrator-guide.md#one-desktop-agent-per-context)
-- Architecture overview: [Overview](./overview.md) (Sail-controlled UI)
-- Workspaces and layouts: [@finos/sail-platform](../packages/platform/overview)
+- Architecture overview: [Overview](./overview.md)
+- Platform UI points: [`@finos/sail-platform` README](https://github.com/finos/FDC3-Sail/blob/main/packages/sail-platform/README.md)

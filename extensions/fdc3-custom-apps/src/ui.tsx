@@ -24,9 +24,6 @@ function CustomAppsConfig({ storage }: SailExtensionUIProps) {
   async function save(next: CustomAppsSettings) {
     setSettings(next)
     await storage.set(CUSTOM_APPS_SETTINGS_KEY, next)
-    await (
-      globalThis as { __sailFdc3CustomAppsSync?: () => Promise<void> }
-    ).__sailFdc3CustomAppsSync?.()
   }
 
   async function addApp() {
@@ -46,7 +43,7 @@ function CustomAppsConfig({ storage }: SailExtensionUIProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p style={{ margin: 0, opacity: 0.8 }}>
-        Inline app definitions published into sail.fdc3.appDirectory.
+        Inline app definitions published into sail.fdc3.appContribution.
       </p>
       <ul style={{ margin: 0, paddingLeft: 18 }}>
         {settings.apps.map(a => (

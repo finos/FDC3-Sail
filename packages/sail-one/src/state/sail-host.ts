@@ -1,32 +1,38 @@
 import {
-  SailDesktopAgent,
-  createPopupCloseWatcher,
-  createProgrammaticIntentResolver,
-  type AppLauncher,
+  ChannelType,
+  State,
+  type ChannelState,
   type DirectoryApp,
-  type IntentResolutionRequest,
-  type PopupCloseWatcher,
   type WebAppDetails,
-} from "@finos/sail-browser-agent"
-import { isAutoResolve, SAIL_MAX_FDC3_VERSION } from "@finos/sail-env"
-import type { BrowserTypes } from "@finos/fdc3-schema-v3"
+} from "@finos/sail-headless-agent"
+import {
+  createProgrammaticIntentResolver,
+  SAIL_FDC3_CHANNELS,
+  type IntentResolutionRequest,
+  type SailFdc3Channels,
+  type SailFdc3SessionHandle,
+} from "@finos/sail-extension-fdc3"
+import {
+  createBrowserSessionHostHooks,
+  createPopupCloseWatcher,
+  defaultHostWindowRegistry,
+  type PopupCloseWatcher,
+} from "@finos/sail-platform-browser"
+import { isAutoResolve } from "@finos/sail-env"
 import type { AppIdentifier, AppMetadata } from "@finos/fdc3-standard-v3"
 import type { SailClientStateArgs, TabDetail } from "./client-state"
 import { AppHosting } from "./default-app-state"
 import { resolveSailForceNewWindow } from "./force-new-window"
-import { wrapWithExtensions } from "./extensions-runtime"
+import {
+  createFdc3SessionAgent,
+  getExtensionExport,
+  getPlatformCaps,
+  loadExtensionCores,
+} from "./extensions-runtime"
 import { getAppState, getClientState } from "./index"
 
 /**
  * Lifecycle of an app instance as far as the Sail shell is concerned.
- *
- * The Desktop Agent reports `"pending" | "connected"` for instances it knows about
- * and emits a disconnect event when an instance goes away; `Terminated` is derived
- * from that event rather than read from agent state.
- *
- * `NotResponding` (a missed-heartbeat state in the pre-2.2 host API) has no
- * equivalent on the current agent surface — heartbeat health is not exposed to
- * hosts. The corresponding icon is simply never shown.
  */
 export enum AppInstanceState {
   Pending = "pending",
@@ -34,21 +40,12 @@ export enum AppInstanceState {
   Terminated = "terminated",
 }
 
-/**
- * A launch the shell initiated itself, waiting to be paired with the instance id
- * minted by the shell's own {@link AppLauncher}.
- *
- * Shell-initiated opens (app directory) queue an explicit hosting choice. Agent-
- * initiated opens (`fdc3.open` / intents) have no queue entry — hosting then comes
- * from `hostManifests.sail.forceNewWindow`, else {@link AppHosting.Frame}.
- */
 type PendingLaunchIntent = {
   appId: string
   hosting: AppHosting
   instanceTitle: string
 }
 
-/** Read Sail `forceNewWindow` from directory / catalog app metadata (env may override). */
 function sailForceNewWindow(app: Pick<DirectoryApp, "hostManifests">): boolean {
   const sailManifest = app.hostManifests?.sail ?? {}
   if (typeof sailManifest === "string") {
@@ -57,10 +54,6 @@ function sailForceNewWindow(app: Pick<DirectoryApp, "hostManifests">): boolean {
   return resolveSailForceNewWindow(sailManifest.forceNewWindow === true)
 }
 
-/**
- * Hosting for an {@link AppLauncher} launch: queued shell intent wins; otherwise
- * honor `hostManifests.sail.forceNewWindow` (same rule as sail-v2-web / harness).
- */
 function resolveLaunchHosting(
   queued: PendingLaunchIntent | undefined,
   app: DirectoryApp,
@@ -71,11 +64,6 @@ function resolveLaunchHosting(
   return sailForceNewWindow(app) ? AppHosting.Tab : AppHosting.Frame
 }
 
-/**
- * Open a browser tab for `forceNewWindow` / Tab hosting (same idea as sail-v2).
- * Uses the instance id as `window.name` (not `"_blank"`) so WCP can adopt it;
- * omits features so the browser opens a tab rather than a popup.
- */
 function openSailAppTab(
   url: string,
   instanceId: string,
@@ -94,27 +82,17 @@ function openSailAppTab(
 
 export interface ServerState {
   registerDesktopAgent(props: SailClientStateArgs): Promise<void>
-  /**
-   * Record the shell's intent to host `appId` a particular way, then ask the
-   * Desktop Agent to open it. Resolves with the instance id the agent assigned.
-   */
   registerAppLaunch(
     appId: string,
     hosting: AppHosting,
     channel: string | null,
     instanceTitle: string,
   ): Promise<string>
-  /**
-   * Tear down the host container for an instance (frame panel or tab window).
-   * Used by {@link AppLauncher.close} when an app calls `fdc3.close()`.
-   */
   closeAppInstance(instanceId: string): Promise<void>
-  /** Forward to {@link SailDesktopAgent.registerHostWindow}. */
   registerHostWindow(windowRef: Window, instanceId: string): void
   getInstanceIdForHostWindow(windowRef: Window): string | undefined
   findHostWindow(instanceId: string): Window | undefined
   forgetHostWindow(instanceId: string): void
-  /** Open a directory app by id (deep-link / CI). */
   openDirectoryApp(appId: string): Promise<string>
   getKnownApps(): DirectoryApp[]
   getApplications(): Promise<DirectoryApp[]>
@@ -130,15 +108,11 @@ export interface ServerState {
   sendClientState(cs: SailClientStateArgs): Promise<void>
 }
 
-/**
- * Sail tabs are user channels. `displayMetadata.glyph` carries the tab icon and
- * `color` the tab background, which is what the FDC3 standard reserves those
- * fields for (api/spec.md, "User Channels").
- */
-function tabsToChannels(tabs: TabDetail[]): BrowserTypes.Channel[] {
+function tabsToChannelStates(tabs: TabDetail[]): ChannelState[] {
   return tabs.map(c => ({
     id: c.id,
-    type: "user",
+    type: ChannelType.user,
+    context: [],
     displayMetadata: {
       name: c.id,
       glyph: c.icon,
@@ -151,7 +125,6 @@ function activeDirectoryUrls(args: SailClientStateArgs): string[] {
   return args.directories.filter(url => url.startsWith("http://") || url.startsWith("https://"))
 }
 
-/** Identity of the channel *set*, ignoring cosmetic glyph/colour edits. */
 function channelIdKey(tabs: TabDetail[]): string {
   return JSON.stringify(tabs.map(c => c.id))
 }
@@ -161,26 +134,54 @@ function toDirectoryApp(app: AppMetadata): DirectoryApp | undefined {
   return candidate.appId && candidate.details ? (candidate as DirectoryApp) : undefined
 }
 
+async function fetchDirectoryApps(url: string): Promise<DirectoryApp[]> {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}: ${res.status}`)
+  }
+  const data: unknown = await res.json()
+  const apps = Array.isArray(data)
+    ? data
+    : (data as { applications?: DirectoryApp[] }).applications
+  if (!Array.isArray(apps)) {
+    throw new Error(`Invalid AppD at ${url}`)
+  }
+  return apps as DirectoryApp[]
+}
+
+const HOST_APP_SOURCE = "sail-one:host"
+
 export class SailHost implements ServerState {
-  private agent: SailDesktopAgent | null = null
+  private handle: SailFdc3SessionHandle | null = null
   private callbacks: (() => void)[] = []
 
   private pendingLaunches: PendingLaunchIntent[] = []
   private instanceStates = new Map<string, AppInstanceState>()
-  /** Hosting mode chosen at launch — used by {@link closeAppInstance}. */
   private instanceHosting = new Map<string, AppHosting>()
+  private instanceAppIds = new Map<string, string>()
 
+  /** Dynamic apps contributed by this host (custom + fetched directories). */
+  private readonly hostSourceApps = new Map<string, DirectoryApp[]>()
   private loadedDirectoryUrls = new Set<string>()
   private lastChannelKey: string | null = null
   private lastCustomAppsKey: string | null = null
 
   private unsubscribes: (() => void)[] = []
-  /** Detects 2.2 mock `window.close()` so Chrome does not keep a Connected zombie. */
   private popupWatcher: PopupCloseWatcher = createPopupCloseWatcher({
     onPopupClosed: instanceId => {
       void this.handlePopupClosed(instanceId)
     },
   })
+
+  private hostAppsSnapshot(): DirectoryApp[] {
+    const byId = new Map<string, DirectoryApp>()
+    for (const apps of this.hostSourceApps.values()) {
+      for (const app of apps) {
+        byId.set(app.appId, app)
+      }
+    }
+    return [...byId.values()]
+  }
 
   addStateChangeCallback(cb: () => void): void {
     this.callbacks.push(cb)
@@ -197,14 +198,30 @@ export class SailHost implements ServerState {
   }
 
   private async startAgent(props: SailClientStateArgs): Promise<void> {
+    await loadExtensionCores()
     const autoResolve = isAutoResolve(import.meta.env.VITE_AUTO_RESOLVE)
-    const agent = new SailDesktopAgent({
-      appLauncher: this.createAppLauncher(),
-      apps: props.customApps,
-      userChannels: tabsToChannels(props.channels),
-      implementationMetadata: {
-        fdc3Version: SAIL_MAX_FDC3_VERSION,
+    const caps = getPlatformCaps()
+
+    const host = createBrowserSessionHostHooks({
+      mountApp: async (request, instanceId) => {
+        await this.mountApp(request.appId, instanceId, request.url, request.title)
       },
+      unmountApp: async instanceId => {
+        await this.closeAppInstance(instanceId)
+      },
+    })
+
+    const session = caps.sessions.createSession({ host })
+
+    const channelsApi = getExtensionExport<SailFdc3Channels>(SAIL_FDC3_CHANNELS)
+    const tabChannels = tabsToChannelStates(props.channels)
+    if (channelsApi) {
+      await channelsApi.setUserChannels(tabChannels)
+    }
+
+    const handle = await createFdc3SessionAgent(session, {
+      // Escape hatch when channels export is missing; otherwise catalog is already set.
+      ...(channelsApi ? {} : { channels: tabChannels }),
       ...(autoResolve
         ? {
             intentResolver: createProgrammaticIntentResolver({
@@ -217,39 +234,41 @@ export class SailHost implements ServerState {
             }),
           }
         : {}),
-      // Default resolveHostIdentifier uses the agent's host-window registry
-      // (hosts call registerHostWindow / AppState.registerAppWindow on iframe load).
-      onAppConnected: metadata => {
-        this.instanceStates.set(metadata.instanceId, AppInstanceState.Connected)
-        const panel = getClientState()
-          .getPanels()
-          .find(p => p.panelId === metadata.instanceId || p.panelId === metadata.hostIdentifier)
-        if (panel) {
-          void this.setUserChannel(metadata.instanceId, panel.tabId)
-        }
-        this.notify()
-      },
-      onAppDisconnected: instanceId => {
-        this.instanceStates.set(instanceId, AppInstanceState.Terminated)
-        this.notify()
-      },
-      onHandshakeFailed: error => {
-        console.error("WCP handshake failed", error)
-      },
+    })
+    this.handle = handle
+    this.hostSourceApps.clear()
+    handle.appContribution.registerSource(HOST_APP_SOURCE, {
+      returnApps: () => this.hostAppsSnapshot(),
+    })
+    this.unsubscribes.push(() => {
+      handle.appContribution.unregisterSource(HOST_APP_SOURCE)
+      this.hostSourceApps.clear()
     })
 
-    const wrapped = await wrapWithExtensions(agent)
-    wrapped.start()
-    this.agent = wrapped
-
     this.unsubscribes.push(
-      wrapped.channels.onAppChannelChange(() => {
-        this.notify()
+      handle.core.onAppStateChange((instanceId, state) => {
+        if (state === State.Connected) {
+          this.instanceStates.set(instanceId, AppInstanceState.Connected)
+          const panel = getClientState()
+            .getPanels()
+            .find(p => p.panelId === instanceId)
+          if (panel) {
+            void this.setUserChannel(instanceId, panel.tabId)
+          }
+          this.notify()
+        } else if (state === State.Terminated) {
+          this.instanceStates.set(instanceId, AppInstanceState.Terminated)
+          this.notify()
+        } else if (state === State.Pending) {
+          this.instanceStates.set(instanceId, AppInstanceState.Pending)
+          this.notify()
+        }
       }),
     )
+
     if (!autoResolve) {
       this.unsubscribes.push(
-        wrapped.intentResolver.onRequest(request => {
+        handle.intentResolver.onRequest(request => {
           this.presentIntentResolution(request)
         }),
       )
@@ -259,71 +278,72 @@ export class SailHost implements ServerState {
     this.lastCustomAppsKey = JSON.stringify(props.customApps)
     this.loadedDirectoryUrls = new Set()
 
+    // Seed custom apps into the host contributor cache.
+    if (props.customApps.length > 0) {
+      this.hostSourceApps.set("custom", props.customApps)
+    } else {
+      this.hostSourceApps.delete("custom")
+    }
+
     await this.loadDirectories(activeDirectoryUrls(props))
     this.notify()
   }
 
-  /**
-   * The shell's own {@link AppLauncher}, mounting apps as panels or breakout windows.
-   *
-   * Mints the instance id when the agent has not supplied one, so the id the shell
-   * renders with is the id WCP4 later adopts.
-   */
-  private createAppLauncher(): AppLauncher {
-    return {
-      // eslint-disable-next-line @typescript-eslint/require-await -- async so a throw rejects the returned promise
-      launch: async (request, appMetadata) => {
-        const instanceId = request.app.instanceId || crypto.randomUUID()
-        const app = toDirectoryApp(appMetadata)
-        if (!app) {
-          throw new Error(`Cannot launch ${appMetadata.appId}: metadata has no directory details`)
-        }
+  private async mountApp(
+    appId: string,
+    instanceId: string,
+    url?: string,
+    title?: string,
+  ): Promise<void> {
+    const fromDir =
+      this.handle?.appContribution
+        .retrieveAllApps(this.handle.sessionId)
+        .find(a => a.appId === appId) ??
+      ({
+        appId,
+        title: title ?? appId,
+        type: "web",
+        details: { url: url ?? "" },
+      } as DirectoryApp)
 
-        const queuedIdx = this.pendingLaunches.findIndex(p => p.appId === app.appId)
-        const queued = queuedIdx >= 0 ? this.pendingLaunches.splice(queuedIdx, 1)[0] : undefined
+    const app = toDirectoryApp(fromDir as AppMetadata) ?? fromDir
+    const queuedIdx = this.pendingLaunches.findIndex(p => p.appId === app.appId)
+    const queued = queuedIdx >= 0 ? this.pendingLaunches.splice(queuedIdx, 1)[0] : undefined
 
-        const hosting = resolveLaunchHosting(queued, app)
-        const instanceTitle = queued?.instanceTitle ?? getAppState().createTitle(app)
+    const hosting = resolveLaunchHosting(queued, app)
+    const instanceTitle = queued?.instanceTitle ?? getAppState().createTitle(app)
+    const launchUrl = url ?? (app.details as WebAppDetails).url
 
-        this.instanceStates.set(instanceId, AppInstanceState.Pending)
-        this.instanceHosting.set(instanceId, hosting)
-        // Agent registers Pending before launch; shell only mounts the browsing context.
+    this.instanceStates.set(instanceId, AppInstanceState.Pending)
+    this.instanceHosting.set(instanceId, hosting)
+    this.instanceAppIds.set(instanceId, app.appId)
 
-        if (hosting === AppHosting.Tab) {
-          const url = (app.details as WebAppDetails).url
-          try {
-            openSailAppTab(
-              url,
-              instanceId,
-              (win, id) => {
-                this.registerHostWindow(win, id)
-              },
-              win => {
-                this.popupWatcher.registerPopup(instanceId, win)
-              },
-            )
-          } catch (e) {
-            this.popupWatcher.unregisterPopup(instanceId)
-            this.instanceStates.delete(instanceId)
-            this.instanceHosting.delete(instanceId)
-            throw e
-          }
-        } else {
-          getClientState().newPanel(app, instanceId, instanceTitle)
-        }
-
-        this.notify()
-        return { appId: app.appId, instanceId }
-      },
-
-      close: (instanceId: string) => this.closeAppInstance(instanceId),
+    if (hosting === AppHosting.Tab) {
+      try {
+        openSailAppTab(
+          launchUrl,
+          instanceId,
+          (win, id) => {
+            this.registerHostWindow(win, id)
+          },
+          win => {
+            this.popupWatcher.registerPopup(instanceId, win)
+          },
+        )
+      } catch (e) {
+        this.popupWatcher.unregisterPopup(instanceId)
+        this.instanceStates.delete(instanceId)
+        this.instanceHosting.delete(instanceId)
+        this.instanceAppIds.delete(instanceId)
+        throw e
+      }
+    } else {
+      getClientState().newPanel(app, instanceId, instanceTitle)
     }
+
+    this.notify()
   }
 
-  /**
-   * Sail-web equivalent of `DefaultAppState.closeApp`: await container teardown
-   * before the Desktop Agent prunes the WCP connection.
-   */
   async closeAppInstance(instanceId: string): Promise<void> {
     const hosting =
       this.instanceHosting.get(instanceId) ??
@@ -348,62 +368,59 @@ export class SailHost implements ServerState {
 
     this.instanceStates.set(instanceId, AppInstanceState.Terminated)
     this.instanceHosting.delete(instanceId)
+    this.instanceAppIds.delete(instanceId)
     this.notify()
   }
 
-  /**
-   * Popup was closed externally (e.g. 2.2 mock `window.close()`). Drop host
-   * bookkeeping and disconnect the agent instance so the next raiseIntent opens
-   * a fresh window instead of targeting a Chrome zombie.
-   */
   private async handlePopupClosed(instanceId: string): Promise<void> {
     this.forgetHostWindow(instanceId)
     this.instanceStates.set(instanceId, AppInstanceState.Terminated)
     this.instanceHosting.delete(instanceId)
+    this.instanceAppIds.delete(instanceId)
     try {
-      await this.agent?.disconnectInstance(instanceId)
+      await this.handle?.agent.close(instanceId)
     } catch (e) {
-      console.warn(`[SailHost] disconnect after popup close failed for ${instanceId}`, e)
+      console.warn(`[SailHost] close after popup close failed for ${instanceId}`, e)
     }
     this.notify()
   }
 
   registerHostWindow(windowRef: Window, instanceId: string): void {
-    this.agent?.registerHostWindow(windowRef, instanceId)
+    defaultHostWindowRegistry.registerHostWindow(windowRef, instanceId)
   }
 
   getInstanceIdForHostWindow(windowRef: Window): string | undefined {
-    return this.agent?.getInstanceIdForHostWindow(windowRef)
+    return defaultHostWindowRegistry.getInstanceIdForWindow(windowRef)
   }
 
   findHostWindow(instanceId: string): Window | undefined {
-    return this.agent?.findHostWindow(instanceId)
+    return defaultHostWindowRegistry.getWindowForInstanceId(instanceId)
   }
 
   forgetHostWindow(instanceId: string): void {
-    this.agent?.forgetHostWindow(instanceId)
+    defaultHostWindowRegistry.unregisterHostWindow(instanceId)
   }
 
   async openDirectoryApp(appId: string): Promise<string> {
-    if (!this.agent) {
+    if (!this.handle) {
       throw new Error("Desktop Agent not registered")
     }
-    const identifier = await this.agent.apps.open(appId)
-    if (!identifier.instanceId) {
-      throw new Error(`Desktop Agent returned no instance id for ${appId}`)
-    }
-    return identifier.instanceId
+    return this.handle.agent.open(appId)
   }
 
   getKnownApps(): DirectoryApp[] {
-    return this.agent ? this.agent.apps.getAll() : []
+    return this.handle
+      ? this.handle.appContribution.retrieveAllApps(this.handle.sessionId)
+      : []
   }
 
   getApplications(): Promise<DirectoryApp[]> {
-    if (!this.agent) {
+    if (!this.handle) {
       return Promise.reject(new Error("Desktop Agent not registered"))
     }
-    return Promise.resolve(this.agent.apps.getAll())
+    return Promise.resolve(
+      this.handle.appContribution.retrieveAllApps(this.handle.sessionId),
+    )
   }
 
   getAppInstanceState(instanceId: string): AppInstanceState | undefined {
@@ -411,11 +428,13 @@ export class SailHost implements ServerState {
     if (known) {
       return known
     }
-    const instance = this.agent?.apps.getInstance(instanceId)
-    if (!instance) {
+    const details = this.handle?.agent.getInstanceDetails(instanceId)
+    if (!details) {
       return undefined
     }
-    return instance.status === "connected" ? AppInstanceState.Connected : AppInstanceState.Pending
+    return details.state === State.Connected
+      ? AppInstanceState.Connected
+      : AppInstanceState.Pending
   }
 
   async registerAppLaunch(
@@ -424,17 +443,13 @@ export class SailHost implements ServerState {
     _channel: string | null,
     instanceTitle: string,
   ): Promise<string> {
-    if (!this.agent) {
+    if (!this.handle) {
       throw new Error("Desktop Agent not registered")
     }
 
     this.pendingLaunches.push({ appId, hosting, instanceTitle })
     try {
-      const identifier = await this.agent.apps.open(appId)
-      if (!identifier.instanceId) {
-        throw new Error(`Desktop Agent returned no instance id for ${appId}`)
-      }
-      return identifier.instanceId
+      return await this.handle.agent.open(appId)
     } catch (e) {
       const idx = this.pendingLaunches.findIndex(p => p.appId === appId)
       if (idx >= 0) {
@@ -444,16 +459,8 @@ export class SailHost implements ServerState {
     }
   }
 
-  /**
-   * Reconcile agent state with client state after a settings change.
-   *
-   * Additive changes (new directory URL, new custom app) are applied in place.
-   * Structural channel or directory *removals* have no in-place equivalent on the
-   * current agent surface, so they force a restart — see the Phase 2 items for
-   * `channels.ensureUserChannel` and `apps.setDirectories`.
-   */
   async sendClientState(cs: SailClientStateArgs): Promise<void> {
-    if (!this.agent) {
+    if (!this.handle) {
       return
     }
 
@@ -476,12 +483,13 @@ export class SailHost implements ServerState {
   }
 
   private async loadDirectories(urls: string[]): Promise<void> {
-    if (!this.agent) {
+    if (!this.handle) {
       return
     }
     for (const url of urls) {
       try {
-        await this.agent.apps.addDirectory(url)
+        const apps = await fetchDirectoryApps(url)
+        this.hostSourceApps.set(`url:${url}`, apps)
         this.loadedDirectoryUrls.add(url)
       } catch (e) {
         console.error(`Failed to load app directory ${url}`, e)
@@ -489,12 +497,6 @@ export class SailHost implements ServerState {
     }
   }
 
-  /**
-   * Tear down and rebuild the Desktop Agent.
-   *
-   * Connected apps lose their `MessagePort` and must re-handshake, so this is
-   * reserved for changes the agent cannot absorb in place.
-   */
   private async restart(cs: SailClientStateArgs): Promise<void> {
     this.unsubscribes.forEach(unsubscribe => {
       unsubscribe()
@@ -506,47 +508,45 @@ export class SailHost implements ServerState {
         void this.handlePopupClosed(instanceId)
       },
     })
-    this.agent?.stop()
-    this.agent = null
+    this.handle?.dispose()
+    this.handle = null
     this.instanceStates.clear()
     this.instanceHosting.clear()
+    this.instanceAppIds.clear()
     this.pendingLaunches = []
+    defaultHostWindowRegistry.clear()
 
     await this.startAgent(cs)
   }
 
   async setUserChannel(instanceId: string, channelId: string): Promise<void> {
-    if (!this.agent) {
+    if (!this.handle) {
       return
     }
 
-    // `changeAppChannel` resolves on the agent's `channelChanged` push, so an
-    // instance the agent has never seen (a stale panel, an app that never
-    // handshook) would leave the caller hanging until the change timeout.
-    if (!this.agent.apps.getInstance(instanceId)) {
+    if (!this.handle.agent.getInstanceDetails(instanceId)) {
       return
     }
 
     try {
-      await this.agent.channels.changeAppChannel(instanceId, channelId)
+      const channelsApi = getExtensionExport<SailFdc3Channels>(SAIL_FDC3_CHANNELS)
+      if (channelsApi) {
+        await channelsApi.changeAppChannel(instanceId, channelId)
+      } else {
+        await this.handle.core.setUserChannel(instanceId, channelId)
+      }
     } catch (e) {
       console.error(`Failed to move ${instanceId} to channel ${channelId}`, e)
     }
   }
 
-  /**
-   * Translate a Desktop Agent resolution request into the shell's resolver popup.
-   *
-   * The agent only calls this when a choice is genuinely needed, so the
-   * "single app, single intent" short-circuit the old host did itself is gone.
-   */
   private presentIntentResolution(request: IntentResolutionRequest): void {
     const tabs = getClientState().getTabs()
     const channelFor = (instanceId?: string): TabDetail | null => {
-      if (!instanceId) {
+      if (!instanceId || !this.handle) {
         return null
       }
-      const channelId = this.agent?.channels.getAppChannelId(instanceId) ?? null
+      const channelId = this.handle.agent.getCurrentChannel(instanceId)?.id ?? null
       return tabs.find(t => t.id === channelId) ?? null
     }
 
@@ -574,16 +574,16 @@ export class SailHost implements ServerState {
     intent: string | null,
     _channel: string | null,
   ): void {
-    if (!this.agent) {
+    if (!this.handle) {
       return
     }
 
     if (!ai || !intent) {
-      this.agent.intentResolver.cancel(requestId)
+      this.handle.intentResolver.cancel(requestId)
       return
     }
 
-    const pending = this.agent.intentResolver
+    const pending = this.handle.intentResolver
       .getPendingRequests()
       .find(r => r.requestId === requestId)
     if (!pending) {
@@ -599,10 +599,10 @@ export class SailHost implements ServerState {
     )
 
     if (!chosen) {
-      this.agent.intentResolver.cancel(requestId)
+      this.handle.intentResolver.cancel(requestId)
       return
     }
 
-    this.agent.intentResolver.select(requestId, chosen)
+    this.handle.intentResolver.select(requestId, chosen)
   }
 }

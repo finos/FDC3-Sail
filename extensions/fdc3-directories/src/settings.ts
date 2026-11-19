@@ -36,8 +36,8 @@ export function buildSoleDirectorySettings(url: string): DirectoriesSettings {
 }
 
 /**
- * Persist a sole AppD URL into directories extension storage so `activate` syncs
- * it into `sail.fdc3.appDirectory`. Called from activate after
+ * Persist a sole AppD URL into directories extension storage so `activate` can
+ * register it with `sail.fdc3.appContribution`. Called from activate after
  * `@finos/sail-env`'s `resolveBootFdc3DirectoryUrl()`. No-op when `url` is absent.
  */
 export async function seedSoleFdc3Directory(

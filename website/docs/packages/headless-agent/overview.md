@@ -15,7 +15,7 @@ open/close, and heartbeat for wire versions **2.2** and **3.0** behind `FDC3Serv
 - Version-specific handlers under `src/handlers/v2` and `src/handlers/v3`
 - Per-connection `fdc3Version` (`"2.2"` | `"3.0"`); `receive()` routes to the matching handler set
 
-Browser WCP / `MessagePort` hosting lives in [`@finos/sail-browser-agent`](../browser-agent/overview).
+Browser WCP / `MessagePort` hosting lives in the `sail.fdc3` extension (`extensions/fdc3`).
 The older Socket.IO shell [`@finos/fdc3-sail-web`](../sail-v2-web/overview) also consumes this engine
 directly.
 

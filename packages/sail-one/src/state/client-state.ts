@@ -4,7 +4,7 @@ import {
   type LocalUserStorageOptions,
   type SailUserStorage,
 } from "@finos/sail-platform"
-import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
+import type { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import type { IntentResolution } from "../resolver/types"
 
 type ClientStateSyncTarget = {

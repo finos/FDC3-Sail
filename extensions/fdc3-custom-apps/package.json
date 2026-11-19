@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "description": "Define inline apps and contribute them into sail.fdc3.appDirectory",
+  "description": "Define inline apps and contribute them into sail.fdc3.appContribution",
   "license": "Apache-2.0",
   "exports": {
     ".": "./src/activate.ts",
@@ -16,7 +16,8 @@
   "dependencies": {
     "@finos/sail-extension": "*",
     "@finos/sail-extension-fdc3": "*",
-    "@finos/sail-headless-agent": "*"
+    "@finos/sail-headless-agent": "*",
+    "@finos/sail-platform": "*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

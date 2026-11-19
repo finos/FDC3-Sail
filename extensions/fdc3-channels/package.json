@@ -1,0 +1,33 @@
+{
+  "name": "@finos/sail-extension-fdc3-channels",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Edit FDC3 user channels via sail.fdc3.channels; contribute channel selector to sail.ui.app.bar",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./activate": "./src/activate.ts",
+    "./ui": "./src/ui.tsx",
+    "./ui-app-bar": "./src/ui-app-bar.tsx"
+  },
+  "scripts": {
+    "dev": "sail-extension-server --port 9103",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@finos/sail-extension": "*",
+    "@finos/sail-extension-fdc3": "*",
+    "@finos/sail-headless-agent": "*",
+    "@finos/sail-platform": "*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@finos/sail-extension-server": "*",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.x"
+  }
+}

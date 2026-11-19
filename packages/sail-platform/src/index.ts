@@ -8,8 +8,11 @@ export {
   SAIL_PLATFORM_CATALOG,
   SAIL_PLATFORM_SESSION,
   SAIL_PLATFORM_STORAGE,
+  SAIL_UI_APP_BAR,
   SAIL_UI_CONFIG,
   SAIL_UI_HIDDEN,
+  getAppBarProperties,
+  type SailUiAppBarProperties,
 } from "./ids"
 
 // Session (sail.platform.session → SessionService)

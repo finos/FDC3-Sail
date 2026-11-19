@@ -2,10 +2,7 @@
   "extends": "../../tsconfig.root.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "paths": {
-      "@finos/sail-browser-agent": ["../sail-browser-agent/dist/index.d.mts"]
-    }
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

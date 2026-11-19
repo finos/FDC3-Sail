@@ -1,6 +1,6 @@
 /**
  * Host-local enablement record (persisted in package-root `extensions.json`).
- * Not per-user — do not store this in sail.platform.storage / sail.config.
+ * Not per-user — do not store this in sail.platform.storage / sail.ui.config.
  */
 export type StoredExtension = {
   /** URL of `sail.extension.json` (path-absolute or absolute). */
@@ -8,8 +8,8 @@ export type StoredExtension = {
   active: boolean
 }
 
-/** Extension ids inactive in the default seed until hosts drop FDC3 shims. */
-export const DEFAULT_INACTIVE_EXTENSION_IDS: ReadonlySet<string> = new Set(["sail.fdc3"])
+/** Extension ids left inactive in the default seed (empty — sail.fdc3 is on by default). */
+export const DEFAULT_INACTIVE_EXTENSION_IDS: ReadonlySet<string> = new Set()
 
 export const EXTENSIONS_JSON_FILENAME = "extensions.json"
 
@@ -25,15 +25,24 @@ export function isStoredExtensionList(value: unknown): value is StoredExtension[
   return Array.isArray(value) && value.every(isStoredExtension)
 }
 
+function browserOrigin(): string | undefined {
+  if (typeof globalThis === "undefined" || !("location" in globalThis)) {
+    return undefined
+  }
+  const loc = (globalThis as { location?: { origin?: string } }).location
+  return typeof loc?.origin === "string" && loc.origin !== "null" ? loc.origin : undefined
+}
+
 /**
- * Resolve path-absolute URLs against `baseOrigin` (needed for Node `fetch`).
+ * Resolve path-absolute URLs against `baseOrigin`, or `location.origin` in the browser.
  */
 export function resolveExtensionUrl(url: string, baseOrigin?: string): string {
-  if (/^https?:\/\//i.test(url)) {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url)) {
     return url
   }
-  if (url.startsWith("/") && baseOrigin) {
-    return new URL(url, baseOrigin.replace(/\/$/, "") + "/").href
+  const origin = baseOrigin ?? browserOrigin()
+  if (url.startsWith("/") && origin) {
+    return new URL(url, origin.replace(/\/$/, "") + "/").href
   }
   return url
 }

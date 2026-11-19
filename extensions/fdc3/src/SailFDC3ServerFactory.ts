@@ -1,55 +1,96 @@
-import type { ChannelState, Directory, FDC3ServerInstance } from "@finos/sail-headless-agent"
-import type { SailPlatformBus, SailPlatformCatalog, SailUserSession } from "@finos/sail-platform"
-import type { RegisterMiddleware, SailFdc3AppDirectory, SailMiddleware } from "./api"
-import { createSailFdc3AppDirectory } from "./app-directory"
+import type { ChannelState, FDC3ServerInstance } from "@finos/sail-headless-agent"
+import type {
+  SailPlatformBus,
+  SailPlatformCatalog,
+  SailSessionId,
+  SailUserSession,
+} from "@finos/sail-platform"
+import type { RegisterMiddleware, SailFdc3AppContribution, SailMiddleware } from "./api"
+import { createSailFdc3AppContribution, createSessionDirectory } from "./app-contribution"
 import { createRegisterMiddleware } from "./apply-middleware"
+import type { SailFdc3ChannelsInternal } from "./channels"
+import {
+  createHostIntentResolver,
+  createProgrammaticIntentResolver,
+  type HostIntentResolver,
+  type IntentResolver,
+  type IntentResolverUIMethods,
+} from "./intent-resolver"
 import { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 
 export type SailFdc3SessionHandle = {
+  sessionId: SailSessionId
   agent: FDC3ServerInstance
-  appDirectory: SailFdc3AppDirectory
-  /** Session-local middleware registration (in addition to factory-level queue). */
-  registerMiddleware: RegisterMiddleware
+  /** Concrete instance (channel helpers, state listeners). */
+  core: SailFDC3ServerInstance
+  appContribution: SailFdc3AppContribution
+  intentResolver: IntentResolverUIMethods
   dispose(): void
+}
+
+export type CreateInstanceOptions = {
+  /**
+   * Custom DA-facing resolver. When omitted, a host UI resolver is created
+   * (onRequest / select / cancel). Pass {@link createProgrammaticIntentResolver}
+   * for unattended auto-resolve.
+   */
+  intentResolver?: IntentResolver
+  /** Shortcut: use programmatic auto-resolve when no custom resolver is given. */
+  autoResolve?: boolean
+  /** Override factory / channels-export catalog for this session. */
+  channels?: ChannelState[]
 }
 
 export type SailFDC3ServerFactoryOptions = {
   catalog: SailPlatformCatalog
   bus: SailPlatformBus
-  channels: ChannelState[]
+  /** When set, createInstance seeds from this catalog unless options.channels is passed. */
+  channelsApi?: SailFdc3ChannelsInternal
+  /** Legacy seed when channelsApi is omitted. */
+  channels?: ChannelState[]
 }
 
 type QueuedMiddleware = SailMiddleware & { priority: number; id: number }
 
 /**
- * Creates one FDC3 Desktop Agent per user session.
- * Platform bus/catalog are fixed at construction;
- * {@link createInstance} only needs the {@link SailUserSession}.
+ * One Desktop Agent per {@link SailUserSession}.
+ * App I/O goes through {@link SailPlatformBus} (WCP / sockets relay on the bus).
  */
 export class SailFDC3ServerFactory {
   private readonly queued: QueuedMiddleware[] = []
   private nextId = 0
   private readonly sessions = new Map<string, SailFdc3SessionHandle>()
   private sessionSeq = 0
-  private readonly bus: SailPlatformBus
-  private readonly directory: Directory
-  private readonly disposeDirectory: () => void
-  private readonly channels: ChannelState[]
+  private readonly disposeContribution: () => void
+  private readonly channelsApi?: SailFdc3ChannelsInternal
+  private readonly fallbackChannels: ChannelState[]
+  private unbindChannels: (() => void) | null = null
 
-  readonly appDirectory: SailFdc3AppDirectory
+  readonly bus: SailPlatformBus
+  readonly appContribution: SailFdc3AppContribution
 
   constructor(options: SailFDC3ServerFactoryOptions) {
-    const created = createSailFdc3AppDirectory(options.catalog)
-    this.appDirectory = created.appDirectory
-    this.directory = created.directory
-    this.disposeDirectory = created.dispose
+    const created = createSailFdc3AppContribution(options.catalog)
+    this.appContribution = created.appContribution
+    this.disposeContribution = created.dispose
     this.bus = options.bus
-    this.channels = options.channels
+    this.channelsApi = options.channelsApi
+    this.fallbackChannels = options.channels ?? []
+  }
+
+  private resolveChannels(override?: ChannelState[]): ChannelState[] {
+    if (override) {
+      return override
+    }
+    if (this.channelsApi) {
+      return this.channelsApi.getUserChannels()
+    }
+    return this.fallbackChannels
   }
 
   /**
-   * Register middleware applied to each subsequent {@link createInstance}.
-   * Already-running sessions are not retroactively wrapped.
+   * Factory-level middleware applied to each subsequent {@link createInstance}.
+   * Already-running sessions are not updated.
    */
   readonly registerMiddleware: RegisterMiddleware = mw => {
     const entry: QueuedMiddleware = {
@@ -68,43 +109,77 @@ export class SailFDC3ServerFactory {
     }
   }
 
-  createInstance(session: SailUserSession): SailFdc3SessionHandle {
+  createInstance(
+    session: SailUserSession,
+    options: CreateInstanceOptions = {},
+  ): SailFdc3SessionHandle {
+    let hostResolver: HostIntentResolver | undefined
+    let daResolver: IntentResolver
+
+    if (options.intentResolver) {
+      daResolver = options.intentResolver
+    } else if (options.autoResolve) {
+      daResolver = createProgrammaticIntentResolver()
+    } else {
+      hostResolver = createHostIntentResolver()
+      daResolver = hostResolver
+    }
+
+    const uiMethods: IntentResolverUIMethods = hostResolver ?? {
+      onRequest: () => () => {},
+      select: () => {
+        throw new Error("Intent UI not available (auto-resolve / custom resolver)")
+      },
+      cancel: () => {
+        throw new Error("Intent UI not available (auto-resolve / custom resolver)")
+      },
+      getPendingRequests: () => [],
+    }
+
     const core = new SailFDC3ServerInstance({
-      bus: this.bus,
+      bus: this.bus.forSession(session),
       session,
-      directory: this.directory,
-      channels: this.channels,
+      directory: createSessionDirectory(this.appContribution, session.id),
+      channels: this.resolveChannels(options.channels),
+      intentResolver: daResolver,
     })
     const { agent, registerMiddleware } = createRegisterMiddleware(core)
+    core.setReceiveTarget((message, from) => agent.receive(message, from))
 
     for (const mw of [...this.queued].sort((a, b) => b.priority - a.priority)) {
       registerMiddleware(mw)
     }
 
-    const sessionId = `session-${++this.sessionSeq}`
+    this.unbindChannels?.()
+    this.unbindChannels = this.channelsApi?.bindSession(core) ?? null
+
+    const handleId = `session-${++this.sessionSeq}`
     const handle: SailFdc3SessionHandle = {
+      sessionId: session.id,
       agent,
-      appDirectory: this.appDirectory,
-      registerMiddleware,
+      core,
+      appContribution: this.appContribution,
+      intentResolver: uiMethods,
       dispose: () => {
         void core.shutdown()
-        this.sessions.delete(sessionId)
+        this.sessions.delete(handleId)
       },
     }
-    this.sessions.set(sessionId, handle)
+    this.sessions.set(handleId, handle)
     return handle
   }
 
-  /** Active session handles (for hosts that need to enumerate). */
   getSessions(): readonly SailFdc3SessionHandle[] {
     return [...this.sessions.values()]
   }
 
   shutdownAll(): void {
+    this.unbindChannels?.()
+    this.unbindChannels = null
     for (const handle of this.sessions.values()) {
       handle.dispose()
     }
     this.sessions.clear()
-    this.disposeDirectory()
+    this.disposeContribution()
   }
 }

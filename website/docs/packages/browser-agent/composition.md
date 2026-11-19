@@ -106,7 +106,6 @@ packages/sail-browser-agent/src/
 │   └── default-config.ts
 │
 ├── host-contracts/
-│   ├── app-launcher.ts        # AppLauncher — host opens iframes/windows
 │   ├── intent-resolver.ts     # IntentResolver — disambiguation UI contract
 │   └── channel-control.ts     # ChannelControl — picker contract shape
 │
@@ -174,7 +173,7 @@ flowchart LR
 
 | Step | Module |
 |------|--------|
-| Launcher returns id | `host-contracts/app-launcher.ts` |
+| Launcher returns id | `agent/sail-desktop-agent-types.ts` (`AppLauncher`) |
 | Open registers PENDING | `handlers/open/handlers.ts` |
 | WCP4 adopt vs mint | `app-connection/wcp/wcp-identity-validation.ts` |
 | Port map migration | `app-connection/wcp/wcp-connection-management.ts` |

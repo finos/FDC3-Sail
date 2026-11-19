@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Previous Socket.IO-based Sail UI. Still runnable, and still a **conformance host** in the Playwright
 matrix, but the supported product path for new hosts is the browser-resident
-[`@finos/sail-browser-agent`](../browser-agent/overview) shells (`sail-one`, `sail-finance`).
+`sail.fdc3` / `@finos/sail-extension-fdc3` shells (`sail-one`, `sail-finance`).
 
 **Location:** `packages/sail-v2-web/` (npm name `@finos/fdc3-sail-web`)
 

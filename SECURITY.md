@@ -12,7 +12,7 @@ are listed under a "Breaking changes" heading in each [GitHub release](https://g
 
 ## Verifying Releases
 
-Our npm packages (`@finos/sail-browser-agent`, `@finos/sail-headless-agent`, `@finos/sail-platform`) are published from the
+Our npm packages (`@finos/sail-headless-agent`, `@finos/sail-platform`) are published from the
 [Release workflow](.github/workflows/release.yml) with [npm provenance](https://docs.npmjs.com/generating-provenance-statements).
 Each release is signed through [Sigstore](https://www.sigstore.dev/) and linked to the exact commit and
 workflow run that built it. You do not need to fetch any keys yourself: npm gets the public keys from the registry.
@@ -27,7 +27,7 @@ To check a release:
 
    It checks the registry signature and the provenance attestation of each installed package, and reports any that fail.
 
-2. **On npmjs.com.** Open the package page (for example [@finos/sail-browser-agent](https://www.npmjs.com/package/@finos/sail-browser-agent)).
+2. **On npmjs.com.** Open the package page (for example [@finos/sail-platform](https://www.npmjs.com/package/@finos/sail-platform)).
    Under **Provenance**, check that the source commit is in `finos/FDC3-Sail` and that the build ran from `.github/workflows/release.yml`.
 
 Provenance covers releases published after it was turned on. Earlier releases have registry signatures only.

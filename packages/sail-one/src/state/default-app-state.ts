@@ -1,4 +1,4 @@
-import type { DirectoryApp, WebAppDetails } from "@finos/sail-browser-agent"
+import type { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
 import { resolveSailForceNewWindow } from "./force-new-window"
 import { getClientState, getServerState } from "./index"
 
@@ -88,11 +88,12 @@ export class DefaultAppState implements AppState {
       throw new Error("Unsupported app type: " + detail.type)
     }
 
-    const sailManifest = detail.hostManifests?.sail ?? {}
+    const sailManifest = detail.hostManifests?.sail
     const manifestForceNewWindow =
-      (typeof sailManifest === "string" ? {} : sailManifest).forceNewWindow ?? false
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: hostManifests.sail is Record<string, unknown>
-    const forceNewWindow = resolveSailForceNewWindow(manifestForceNewWindow === true)
+      typeof sailManifest === "object" &&
+      sailManifest !== null &&
+      (sailManifest as { forceNewWindow?: unknown }).forceNewWindow === true
+    const forceNewWindow = resolveSailForceNewWindow(manifestForceNewWindow)
     const hosting: AppHosting =
       (forceNewWindow ? AppHosting.Tab : undefined) ?? destination ?? AppHosting.Frame
     const instanceTitle = this.createTitle(detail)

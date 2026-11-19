@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-browser-agent"
+import type { DirectoryApp } from "@finos/sail-headless-agent"
 import { PlatformClientState } from "../client-state"
 import { installLocalStorage } from "./local-storage-mock"
 

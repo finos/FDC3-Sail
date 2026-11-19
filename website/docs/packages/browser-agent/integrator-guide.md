@@ -758,7 +758,7 @@ open-with-context / broadcast / raiseIntent use meta.destination.instanceId
 
 Relevant code today:
 
-- Launcher contract: `src/host-contracts/app-launcher.ts`
+- Legacy launcher type: `src/agent/sail-desktop-agent-types.ts` (`AppLauncher`)
 - Open registers **PENDING**: `src/handlers/open/handlers.ts`
 - WCP4 adopt vs mint: `src/app-connection/wcp/wcp-identity-validation.ts`
 - Port map migration: `src/app-connection/wcp/wcp-connection-management.ts`, `wcp-message-routing.ts`

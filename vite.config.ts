@@ -348,7 +348,7 @@ export default defineConfig({
         },
       },
       {
-        files: ["packages/sail-browser-agent/**/*.ts", "packages/sail-platform/**/*.ts"],
+        files: ["packages/sail-platform/**/*.ts", "extensions/fdc3/**/*.ts"],
         rules: {
           "max-lines": [
             "error",
@@ -362,12 +362,8 @@ export default defineConfig({
       },
       {
         files: [
-          "packages/sail-browser-agent/**/__tests__/**/*.ts",
-          "packages/sail-browser-agent/**/*.test.ts",
-          "packages/sail-browser-agent/test/**/*.ts",
           "packages/sail-platform/**/__tests__/**/*.ts",
           "packages/sail-platform/**/*.test.ts",
-          "packages/sail-browser-agent/src/core/app-directory/app-directory-manager.ts",
           "packages/sail-platform/src/services/validation/dacp-schemas.ts",
         ],
         rules: {
@@ -376,9 +372,7 @@ export default defineConfig({
       },
       {
         // Test fixtures deliberately construct states the types say are impossible, so
-        // no-unnecessary-condition is off for tests everywhere. Deliberately repo-wide: this
-        // replaces five per-package entries, and `test/` (today only sail-browser-agent's
-        // cucumber steps) is generalised on purpose, not scoped to that one package.
+        // no-unnecessary-condition is off for tests everywhere.
         files: ["**/__tests__/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "**/test/**/*.{ts,tsx}"],
         rules: {
           "typescript/no-unnecessary-condition": "off",

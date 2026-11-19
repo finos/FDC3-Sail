@@ -3,8 +3,14 @@
   "extends": "./tsconfig.root.json",
   "files": [],
   "references": [
-    { "path": "./packages/sail-browser-agent" },
+    { "path": "./packages/sail-env" },
+    { "path": "./packages/sail-headless-agent" },
     { "path": "./packages/sail-platform" },
-    { "path": "./packages/sail-finance" }
+    { "path": "./packages/sail-platform-browser" },
+    { "path": "./packages/sail-extension" },
+    { "path": "./extensions/fdc3" },
+    { "path": "./extensions/fdc3-channels" },
+    { "path": "./packages/sail-finance" },
+    { "path": "./packages/sail-one" }
   ]
 }

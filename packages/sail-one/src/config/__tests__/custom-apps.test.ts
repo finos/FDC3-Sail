@@ -1,8 +1,74 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-browser-agent"
+import type { DirectoryApp } from "@finos/sail-headless-agent"
 import { getServerState } from "../../state"
 import { installLocalStorage } from "../../state/__tests__/local-storage-mock"
 import { getAllContextTypes, getAllIntentNames } from "../custom-apps-helpers"
+
+vi.mock("../../state/extensions-runtime", () => {
+  const directoryApps: DirectoryApp[] = []
+  return {
+    loadExtensionCores: vi.fn(async () => ({})),
+    getPlatformCaps: () => ({
+      sessions: {
+        createSession: ({
+          host,
+        }: {
+          host: {
+            onOpenApp?: (
+              request: { appId: string; url?: string; title?: string },
+              instanceId: string,
+            ) => Promise<void>
+            onCloseApp?: (instanceId: string) => Promise<void>
+          }
+        }) => ({
+          id: "sess-test",
+          openApp: async (request: { appId: string; url?: string; title?: string }) => {
+            const instanceId = `inst-${request.appId}`
+            await host.onOpenApp?.(request, instanceId)
+            return instanceId
+          },
+          closeApp: async (instanceId: string) => {
+            await host.onCloseApp?.(instanceId)
+          },
+          getSnapshot: () => ({ containers: [], apps: [] }),
+          subscribe: () => () => {},
+          createContainer: () => ({ id: "c", location: {} }),
+          updateContainer: () => {},
+          destroyContainer: () => {},
+        }),
+      },
+      bus: {},
+      catalog: {},
+      storage: {},
+    }),
+    createFdc3SessionAgent: vi.fn(async () => ({
+      agent: {
+        open: vi.fn(async (appId: string) => appId),
+        close: vi.fn(async () => undefined),
+        getInstanceDetails: vi.fn(() => undefined),
+        getCurrentChannel: vi.fn(() => null),
+      },
+      core: {
+        onAppStateChange: vi.fn(() => () => {}),
+        setUserChannel: vi.fn(async () => undefined),
+      },
+      appDirectory: {
+        retrieveAllApps: () => [...directoryApps],
+        replaceSource: (_id: string, next: DirectoryApp[]) => {
+          directoryApps.length = 0
+          directoryApps.push(...next)
+        },
+      },
+      intentResolver: {
+        onRequest: vi.fn(() => () => {}),
+        select: vi.fn(),
+        cancel: vi.fn(),
+        getPendingRequests: vi.fn(() => []),
+      },
+      dispose: vi.fn(),
+    })),
+  }
+})
 
 describe("getAllIntentNames", () => {
   beforeEach(() => {

@@ -61,13 +61,11 @@ export function isSailExtensionUI(value: unknown): value is SailExtensionUI {
     return false
   }
   const candidate = value as SailExtensionUI
-  const hasConfig = typeof candidate.ConfigScreen === "function"
-  const hasMount = typeof candidate.mount === "function"
   return (
     typeof candidate.id === "string" &&
     typeof candidate.title === "string" &&
     typeof candidate.type === "string" &&
-    (hasConfig || hasMount)
+    typeof candidate.mount === "function"
   )
 }
 

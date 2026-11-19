@@ -2,8 +2,8 @@ import type { IDockviewHeaderActionsProps } from "dockview"
 import { useState, useEffect, useCallback } from "react"
 import { ExternalLink, Maximize2, Minimize2, X } from "lucide-react"
 
-import { ChannelSelector } from "../../../ChannelSelector"
 import { useConnectionStore } from "../../../../contexts"
+import { AppBarSlot } from "../../../extensions/AppBarSlot"
 import { extractFdc3PanelId } from "../../dockview-options"
 import { dockviewPopoutUrl } from "../../../../utils/dockview-popout"
 
@@ -11,7 +11,6 @@ import { Icon } from "./Icon"
 
 import "./controls.css"
 
-// Popout button component with its own state and logic
 const PopoutButton = (props: IDockviewHeaderActionsProps) => {
   const [isPopout, setIsPopout] = useState<boolean>(props.api.location.type === "popout")
 
@@ -46,7 +45,6 @@ const PopoutButton = (props: IDockviewHeaderActionsProps) => {
   )
 }
 
-// Maximize button component with its own state and logic
 const MaximizeButton = (props: IDockviewHeaderActionsProps) => {
   const [isMaximized, setIsMaximized] = useState<boolean>(props.containerApi.hasMaximizedGroup())
 
@@ -77,7 +75,7 @@ const MaximizeButton = (props: IDockviewHeaderActionsProps) => {
   )
 }
 
-const ChannelSelectorButton = ({ activePanelId }: { activePanelId: string }) => {
+const AppBarForPanel = ({ activePanelId }: { activePanelId: string }) => {
   const connection = useConnectionStore(state => {
     const instanceId = state.panelToConnection.get(activePanelId)
     return instanceId ? state.connections.get(instanceId) : undefined
@@ -87,12 +85,11 @@ const ChannelSelectorButton = ({ activePanelId }: { activePanelId: string }) => 
     return <div className="size-3 rounded-full bg-muted animate-pulse" />
   }
 
-  return <ChannelSelector key={connection.instanceId} instanceId={connection.instanceId} />
+  return <AppBarSlot key={connection.instanceId} instanceId={connection.instanceId} />
 }
 
 /**
- * RightControls component renders action buttons for the right side of the panel header
- * Composes individual button components with their own state management
+ * RightControls: host chrome (popout/maximize) plus `sail.ui.app.bar` contributions.
  */
 export const RightControls = (props: IDockviewHeaderActionsProps) => {
   const isPopout = props.api.location.type === "popout"
@@ -118,7 +115,7 @@ export const RightControls = (props: IDockviewHeaderActionsProps) => {
 
   return (
     <div className="group-control">
-      {activePanelId && <ChannelSelectorButton activePanelId={activePanelId} />}
+      {activePanelId && <AppBarForPanel activePanelId={activePanelId} />}
       <PopoutButton {...props} />
       {!isPopout && <MaximizeButton {...props} />}
     </div>

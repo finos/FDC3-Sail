@@ -3,7 +3,7 @@
   "id": "sail.fdc3.customApps",
   "title": "Custom Apps",
   "version": "0.0.1",
-  "description": "Define inline apps and contribute them into sail.fdc3.appDirectory.",
+  "description": "Define inline apps and contribute them into sail.fdc3.appContribution.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/finos/FDC3-Sail",
   "repository": {
@@ -14,7 +14,7 @@
   "activation": {
     "module": "./src/activate.ts"
   },
-  "extensionDependencies": ["sail.fdc3.appDirectory"],
+  "extensionDependencies": ["sail.fdc3.appContribution"],
   "contributes": {
     "sail.ui.config": [
       {

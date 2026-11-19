@@ -3,12 +3,18 @@ import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
 import { resolveDeepLinkAppId } from "@finos/sail-env"
 import { AppHosting, getClientState, getServerState, bindClientStateToHost } from "./state"
+import { HiddenExtensionHost } from "./extensions/HiddenExtensionHost"
 import { loadExtensionCores, loadExtensionUIs } from "./state/extensions-runtime"
 import { useSailState } from "./state/use-sail-state"
 
 function App() {
   useSailState()
-  return <Frame cs={getClientState()} />
+  return (
+    <>
+      <HiddenExtensionHost />
+      <Frame cs={getClientState()} />
+    </>
+  )
 }
 
 function sleep(ms: number): Promise<void> {

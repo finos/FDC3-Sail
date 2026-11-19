@@ -1,3 +1,5 @@
+import type { Context } from "@finos/fdc3-context-v2"
+import type { AppIdentifier, AppIntent } from "@finos/fdc3-standard-v2"
 import {
   AbstractFDC3ServerInstance,
   State,
@@ -16,29 +18,44 @@ import {
   OpenHandlerV2,
   OpenHandlerV3,
 } from "@finos/sail-headless-agent"
-import type { SailPlatformBus, SailUserSession } from "@finos/sail-platform"
+import {
+  SERVER_INSTANCE,
+  type SailSessionBus,
+  type SailUserSession,
+} from "@finos/sail-platform"
+import type { SailFdc3AppChannelChangeEvent } from "./api"
+import type { IntentResolver } from "./intent-resolver"
 
 export type SailFDC3ServerInstanceOptions = {
-  bus: SailPlatformBus
+  bus: SailSessionBus
   session: SailUserSession
   directory: Directory
   channels: ChannelState[]
+  /** When set, multi-handler raiseIntent goes through this resolver. */
+  intentResolver?: IntentResolver
 }
 
 /**
  * Concrete FDC3ServerInstance: protocol state from AbstractFDC3ServerInstance;
- * open/close/post/instance registry via SailUserSession + SailPlatformBus.
+ * open/close via SailUserSession; inbound/outbound DACP via {@link SailSessionBus}.
  */
 export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   static readonly PROVIDER = "Sail"
   static readonly PROVIDER_VERSION = "0.0.0"
   static readonly FDC3_VERSION = "2.2"
 
-  private readonly bus: SailPlatformBus
+  private readonly bus: SailSessionBus
   private readonly session: SailUserSession
   private readonly directory: Directory
+  private readonly intentResolver?: IntentResolver
   private readonly instances = new Map<InstanceID, AppRegistration>()
+  private readonly stateListeners = new Set<(instanceId: string, state: State) => void>()
+  private readonly userChannelListeners = new Set<
+    (event: SailFdc3AppChannelChangeEvent) => void
+  >()
   private unsubReceive?: () => void
+  /** Prefer proxied agent.receive when set (middleware). */
+  private receiveTarget?: (message: { type: string }, from: InstanceID) => Promise<void>
 
   constructor(options: SailFDC3ServerInstanceOptions) {
     const openTimeout = 10_000
@@ -61,11 +78,64 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     this.bus = options.bus
     this.session = options.session
     this.directory = options.directory
+    this.intentResolver = options.intentResolver
 
-    // Host posts inbound app messages on the platform bus; we feed the DA.
-    this.unsubReceive = this.bus.subscribe((message: object, from: string) => {
-      void this.receive(message as { type: string }, from)
+    this.unsubReceive = this.bus.subscribe((message: object, instanceId) => {
+      if (instanceId !== SERVER_INSTANCE) {
+        return
+      }
+      const from = appInstanceIdFromMessage(message)
+      if (!from) {
+        this.bus.log("[sail.fdc3] SERVER_INSTANCE message missing meta.source.instanceId")
+        return
+      }
+      const inbound = message as { type: string }
+      if (this.receiveTarget) {
+        void this.receiveTarget(inbound, from)
+      } else {
+        void this.receive(inbound, from)
+      }
     })
+  }
+
+  setReceiveTarget(
+    handler: (message: { type: string }, from: InstanceID) => Promise<void>,
+  ): void {
+    this.receiveTarget = handler
+  }
+
+  onAppStateChange(listener: (instanceId: string, state: State) => void): () => void {
+    this.stateListeners.add(listener)
+    return () => {
+      this.stateListeners.delete(listener)
+    }
+  }
+
+  /**
+   * Host chrome: fire when current user channel changes (DACP join/leave or setUserChannel).
+   */
+  onUserChannelChange(
+    listener: (event: SailFdc3AppChannelChangeEvent) => void,
+  ): () => void {
+    this.userChannelListeners.add(listener)
+    return () => {
+      this.userChannelListeners.delete(listener)
+    }
+  }
+
+  override setCurrentChannel(instanceId: InstanceID, channel: ChannelState | null): void {
+    super.setCurrentChannel(instanceId, channel)
+    const event: SailFdc3AppChannelChangeEvent = {
+      instanceId,
+      channelId: channel?.id ?? null,
+    }
+    for (const listener of this.userChannelListeners) {
+      try {
+        listener(event)
+      } catch {
+        // ignore
+      }
+    }
   }
 
   getDirectory(): Directory {
@@ -76,12 +146,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     return crypto.randomUUID()
   }
 
-  /**
-   * Outbound DA → app. Delivery is via {@link registerMiddleware} `{ post }`
-   * (sockets/iframes), not the platform bus.
-   */
-  post(_message: object, _instanceId: InstanceID): Promise<void> {
-    return Promise.resolve()
+  post(message: object, instanceId: InstanceID): Promise<void> {
+    return this.bus.post(message, instanceId)
   }
 
   async open(appId: string): Promise<InstanceID> {
@@ -91,7 +157,6 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       throw new Error("AppNotFound")
     }
     const url = (app.details as { url?: string } | undefined)?.url
-    // Placement (`within`) is a UI concern — host session / layout decides.
     const instanceId = await this.session.openApp({
       appId,
       url,
@@ -102,6 +167,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       instanceId,
       state: State.Pending,
     })
+    this.emitAppState(instanceId, State.Pending)
     return instanceId
   }
 
@@ -125,6 +191,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     if (details) {
       this.instances.set(app, { ...details, state: newState })
     }
+    this.emitAppState(app, newState)
   }
 
   async getConnectedApps(): Promise<AppRegistration[]> {
@@ -155,17 +222,137 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
     return SailFDC3ServerInstance.FDC3_VERSION
   }
 
+  /**
+   * Host-initiated user-channel join/leave. Updates DA state and notifies the app.
+   */
+  async setUserChannel(instanceId: string, channelId: string | null): Promise<void> {
+    const channel = channelId === null ? null : this.getChannelById(channelId)
+    if (channelId !== null && !channel) {
+      throw new Error(`Channel "${channelId}" does not exist`)
+    }
+    this.setCurrentChannel(instanceId, channel)
+    await this.post(
+      {
+        type: "channelChangedEvent",
+        payload: { newChannelId: channelId },
+        meta: {
+          eventUuid: this.createUUID(),
+          timestamp: new Date(),
+        },
+      },
+      instanceId,
+    )
+  }
+
   async narrowIntents(
-    ...[_raiser, appIntents, _context]: Parameters<AbstractFDC3ServerInstance["narrowIntents"]>
-  ): ReturnType<AbstractFDC3ServerInstance["narrowIntents"]> {
-    return appIntents
+    _raiser: AppIdentifier,
+    appIntents: AppIntent[],
+    context: Context,
+  ): Promise<AppIntent[]> {
+    if (appIntents.length === 0) {
+      return appIntents
+    }
+
+    if (appIntents.length === 1 && uniqueAppCount(appIntents[0]!) <= 1) {
+      return appIntents
+    }
+
+    if (!this.intentResolver) {
+      return appIntents.length > 0 ? [appIntents[0]!] : []
+    }
+
+    const primary = appIntents[0]!
+    const handlers = appIntents.flatMap(ai =>
+      ai.apps.map(app => ({
+        app,
+        intent: ai.intent,
+        instanceId: app.instanceId,
+        isRunning: Boolean(app.instanceId),
+      })),
+    )
+
+    try {
+      const response = await this.intentResolver.resolve({
+        requestId: this.createUUID(),
+        intent: primary.intent.name,
+        context,
+        handlers,
+        choices: appIntents.flatMap(ai =>
+          ai.apps.map(app => ({
+            intent: ai.intent,
+            handler: {
+              app,
+              intent: ai.intent,
+              instanceId: app.instanceId,
+              isRunning: Boolean(app.instanceId),
+            },
+          })),
+        ),
+      })
+
+      if (!response) {
+        return []
+      }
+
+      const selectedIntentName = response.intent ?? primary.intent.name
+      const matching = appIntents.find(ai => ai.intent.name === selectedIntentName) ?? primary
+      const selectedApp = matching.apps.find(
+        a =>
+          a.appId === response.target.appId &&
+          (response.target.instanceId ? a.instanceId === response.target.instanceId : true),
+      )
+
+      if (!selectedApp) {
+        return [
+          {
+            intent: matching.intent,
+            apps: [
+              {
+                appId: response.target.appId,
+                instanceId: response.target.instanceId,
+              },
+            ],
+          },
+        ]
+      }
+
+      return [{ intent: matching.intent, apps: [selectedApp] }]
+    } catch (error) {
+      this.log(`[sail.fdc3] narrowIntents failed: ${String(error)}`)
+      return []
+    }
   }
 
   override async shutdown(): Promise<void> {
     this.unsubReceive?.()
     this.unsubReceive = undefined
+    this.receiveTarget = undefined
+    this.stateListeners.clear()
     await super.shutdown()
   }
+
+  private emitAppState(instanceId: string, state: State): void {
+    for (const listener of this.stateListeners) {
+      try {
+        listener(instanceId, state)
+      } catch {
+        // ignore
+      }
+    }
+  }
+}
+
+function uniqueAppCount(intent: AppIntent): number {
+  const keys = new Set(
+    intent.apps.map(a => (a.instanceId ? `${a.appId}:${a.instanceId}` : a.appId)),
+  )
+  return keys.size
+}
+
+function appInstanceIdFromMessage(message: object): string | undefined {
+  const meta = (message as { meta?: { source?: { instanceId?: string } } }).meta
+  const id = meta?.source?.instanceId
+  return typeof id === "string" && id.length > 0 ? id : undefined
 }
 
 export type { FDC3ServerInstance }

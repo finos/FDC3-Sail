@@ -1,5 +1,4 @@
 import { SidebarProvider } from "@/components/ui"
-import type { SailDesktopAgent } from "@finos/sail-browser-agent"
 
 import { AppSidebar } from "./components/sidebar/AppSidebar"
 import { ThemeProvider } from "./components/theme/theme-provider"
@@ -8,15 +7,16 @@ import Layout from "./components/layout-grid/Layout"
 import { QuickAccessPanel } from "./components/quick-access-panel"
 import { IntentResolverDialog } from "./components/intent-resolver"
 import { HiddenExtensionHost } from "./components/extensions/HiddenExtensionHost"
-import { SailDesktopAgentProvider } from "./contexts"
+import { SailHostAgentProvider } from "./contexts"
+import type { SailHostAgent } from "./agent/sail-host-agent"
 
 interface AppProps {
-  agent: SailDesktopAgent
+  agent: SailHostAgent
 }
 
 function App({ agent }: AppProps) {
   return (
-    <SailDesktopAgentProvider agent={agent}>
+    <SailHostAgentProvider agent={agent}>
       <ThemeProvider>
         <HiddenExtensionHost />
         <SidebarProvider defaultOpen={false}>
@@ -30,7 +30,7 @@ function App({ agent }: AppProps) {
           <IntentResolverDialog />
         </SidebarProvider>
       </ThemeProvider>
-    </SailDesktopAgentProvider>
+    </SailHostAgentProvider>
   )
 }
 

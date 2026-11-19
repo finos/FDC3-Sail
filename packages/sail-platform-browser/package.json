@@ -15,6 +15,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc",
     "lint": "vp lint .",
     "lint:fix": "vp lint . --fix",

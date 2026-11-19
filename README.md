@@ -31,7 +31,7 @@
  - If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
  - If you want to try FDC3 Sail in your browser, [start here](https://sail.fdc3.finos.org).
 
-FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: `@finos/sail-browser-agent` owns WCP and `MessagePort` connections in the page, and hosts `@finos/sail-headless-agent` for FDC3 2.2 and 3.0 DACP behavior. Shells and `@finos/sail-platform` compose that agent into example workspaces.
+FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: the `sail.fdc3` extension (`@finos/sail-extension-fdc3`) hosts `@finos/sail-headless-agent` for FDC3 2.2 and 3.0 DACP, with WCP / `MessagePort` in the page via `sail.ui.hidden`. Shells and `@finos/sail-platform` compose that into example workspaces.
 
 For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://fdc3-sail.finos.org/docs/architecture/overview); this README does not repeat it.
 
@@ -41,26 +41,24 @@ graph BT
   Env["@finos/sail-env"]
   Theme["@finos/sail-theme"]
   Platform["@finos/sail-platform"]
-  DA["@finos/sail-browser-agent"]
+  Ext["@finos/sail-extension-fdc3"]
   V2["@finos/fdc3-sail-web"]
-  Harness["@finos/sail-conformance-harness"]
   One["@finos/sail-one"]
   Finance["@finos/sail-finance"]
 
-  DA --> Engine
+  Ext --> Engine
+  Ext --> Platform
   V2 --> Engine
   V2 --> Env
-  Harness --> DA
-  Harness --> Env
-  One --> DA
+  One --> Ext
   One --> Platform
   One --> Env
-  Finance --> DA
+  Finance --> Ext
   Finance --> Platform
   Finance --> Theme
   Finance --> Env
 
-  Harness ~~~ One ~~~ Finance ~~~ V2
+  One ~~~ Finance ~~~ V2
 ```
 
 ### Packages and apps
@@ -69,12 +67,12 @@ graph BT
 |---|---|
 | [`packages/sail-env`](packages/sail-env/README.md) | Shared host bootstrap — query params (`appId`, `fdc3Directory`, `noSplash`) and Vite env (`VITE_FDC3_DIRECTORY_URL`, `VITE_AUTO_RESOLVE`). See [README](packages/sail-env/README.md). |
 | [`packages/sail-headless-agent`](packages/sail-headless-agent/) | FDC3 engine (`@finos/sail-headless-agent`) — 2.2 and 3.0 handlers behind `FDC3ServerInstance` |
-| [`packages/sail-browser-agent`](packages/sail-browser-agent/) | Browser host for that engine — WCP, MessagePorts, `AppLauncher` / intent UI contracts |
-| [`packages/sail-platform`](packages/sail-platform/) | Composition layer — host UI seams, pluggable storage, lifecycle |
+| [`extensions/fdc3`](extensions/fdc3/) | `sail.fdc3` extension — per-session factory, channels, WCP edge, app directory |
+| [`packages/sail-platform`](packages/sail-platform/) | Composition layer — session, bus, catalog, storage, UI contribution points |
 | [`packages/sail-theme`](packages/sail-theme/) | Shared brand theme — design tokens and assets |
 | [`packages/sail-finance`](packages/sail-finance/) | Example shell — finance-specific workspace dashboard |
 | [`packages/sail-one`](packages/sail-one/) | Example shell — domain-neutral tab-and-grid canvas |
-| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance against product hosts |
+| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance (pending migration off legacy browser agent) |
 | [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
 
 Full documentation, including per-package guides, lives at **[https://fdc3-sail.finos.org](https://fdc3-sail.finos.org)** (built from [`website/`](website/) via Netlify).

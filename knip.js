@@ -41,16 +41,34 @@ const config = {
     },
   },
   workspaces: {
-    "packages/sail-browser-agent": {
-      ignoreDependencies: ["tsx"],
-      entry: ["test/step-definitions/*.steps.ts", "test/support/*.ts", "test/world/index.ts"],
+    // Cucumber steps are entry points (not imported from src).
+    "packages/sail-headless-agent": {
+      entry: [
+        "test/step-definitions/*.steps.ts",
+        "test/support/*.ts",
+        "test/world/index.ts",
+      ],
     },
+    // Extensions are loaded via extensions.json / Vite, not static imports.
     "packages/sail-finance": {
-      ignoreDependencies: ["@finos/sail-platform"],
+      ignoreDependencies: [
+        "@finos/sail-platform",
+        "@finos/sail-extension-demo",
+        "@finos/sail-extension-fdc3-custom-apps",
+        "@finos/sail-extension-fdc3-channels",
+        "@finos/sail-extension-fdc3-directories",
+      ],
     },
     "packages/sail-one": {
       entry: ["html/**/*.html"],
-      ignoreDependencies: ["@finos/sail-extension-demo"],
+      ignoreDependencies: [
+        "@finos/sail-extension-demo",
+        "@finos/sail-extension-fdc3-custom-apps",
+        "@finos/sail-extension-fdc3-directories",
+      ],
+    },
+    "packages/sail-v2-web": {
+      entry: ["html/**/*.html"],
     },
     "packages/sail-extension": {
       entry: ["src/index.ts", "src/ui.ts"],
@@ -61,6 +79,27 @@ const config = {
     },
     "extensions/demo": {
       entry: ["src/index.ts", "src/ui.tsx"],
+      ignoreDependencies: ["@finos/sail-extension-server"],
+    },
+    "extensions/fdc3": {
+      entry: [
+        "src/index.ts",
+        "src/activate.ts",
+        "src/ui-hidden.ts",
+        "src/ui-app-bar-connection.ts",
+      ],
+      ignoreDependencies: ["@finos/sail-extension-server"],
+    },
+    "extensions/fdc3-directories": {
+      entry: ["src/index.ts", "src/activate.ts", "src/ui.tsx"],
+      ignoreDependencies: ["@finos/sail-extension-server"],
+    },
+    "extensions/fdc3-custom-apps": {
+      entry: ["src/activate.ts", "src/ui.tsx"],
+      ignoreDependencies: ["@finos/sail-extension-server"],
+    },
+    "extensions/fdc3-channels": {
+      entry: ["src/index.ts", "src/activate.ts", "src/ui.tsx", "src/ui-app-bar.tsx"],
       ignoreDependencies: ["@finos/sail-extension-server"],
     },
     website: {

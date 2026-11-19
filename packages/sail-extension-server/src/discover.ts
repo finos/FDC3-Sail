@@ -49,7 +49,7 @@ export type DefaultStoredExtensionsOptions = {
   extensionsDir: string
   /** Public URL prefix for bundled manifests (default `/extensions`). */
   publicBasePath?: string
-  /** Extension ids left inactive in the seed (default includes `sail.fdc3`). */
+  /** Extension ids left inactive in the seed (default: none — sail.fdc3 is active). */
   inactiveIds?: ReadonlySet<string>
 }
 

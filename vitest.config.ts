@@ -23,7 +23,6 @@ export default defineConfig({
     },
     projects: [
       "packages/sail-env/vitest.config.ts",
-      "packages/sail-browser-agent/vitest.config.ts",
       "packages/sail-platform/vitest.config.ts",
       "packages/sail-finance/vitest.config.ts",
       "packages/sail-one/vitest.config.ts",
