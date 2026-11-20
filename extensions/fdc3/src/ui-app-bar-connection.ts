@@ -2,11 +2,11 @@
  * `sail.ui.app.bar` — per-app FDC3 connection indicator.
  */
 
-import { State } from "@finos/sail-headless-agent"
+import { State, type FDC3ServerInstance } from "@finos/sail-headless-agent"
 import { getAppBarProperties, SAIL_UI_APP_BAR } from "@finos/sail-platform"
 import type { SailExtensionUI, SailExtensionUIProps } from "@finos/sail-extension/ui"
-import { SAIL_FDC3_SERVER_FACTORY } from "./ids"
-import type { SailFDC3ServerFactory } from "./SailFDC3ServerFactory"
+import { SAIL_FDC3_INSTANCE } from "./ids"
+import type { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 
 function colorForState(state: State | undefined): string {
   switch (state) {
@@ -43,7 +43,7 @@ export function mount(el: HTMLElement, props: SailExtensionUIProps): () => void 
     }
   }
 
-  const factory = props.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
+  const instance = props.getExport<FDC3ServerInstance>(SAIL_FDC3_INSTANCE)
   const dot = document.createElement("span")
   dot.style.display = "inline-block"
   dot.style.width = "0.75rem"
@@ -54,14 +54,14 @@ export function mount(el: HTMLElement, props: SailExtensionUIProps): () => void 
   el.replaceChildren(dot)
 
   const readState = (): State | undefined => {
-    const sessions = factory?.getSessions() ?? []
-    for (const session of sessions) {
-      const details = session.agent.getInstanceDetails(appBar.instanceId)
-      if (details) {
-        return details.state
-      }
+    if (!instance) {
+      return undefined
     }
-    return undefined
+    try {
+      return instance.getInstanceDetails(appBar.instanceId)?.state
+    } catch {
+      return undefined
+    }
   }
 
   const paint = (state: State | undefined) => {
@@ -74,14 +74,19 @@ export function mount(el: HTMLElement, props: SailExtensionUIProps): () => void 
   paint(readState())
 
   const unsubs: (() => void)[] = []
-  for (const session of factory?.getSessions() ?? []) {
-    unsubs.push(
-      session.core.onAppStateChange((instanceId, state) => {
-        if (instanceId === appBar.instanceId) {
-          paint(state)
-        }
-      }),
-    )
+  const sailInstance = instance as SailFDC3ServerInstance | undefined
+  if (sailInstance && typeof sailInstance.onAppStateChange === "function") {
+    try {
+      unsubs.push(
+        sailInstance.onAppStateChange((instanceId, state) => {
+          if (instanceId === appBar.instanceId) {
+            paint(state)
+          }
+        }),
+      )
+    } catch {
+      // Instance not ready yet — indicator stays at current paint.
+    }
   }
 
   return () => {

@@ -20,14 +20,14 @@ import {
 } from "@finos/sail-headless-agent"
 import {
   SERVER_INSTANCE,
-  type SailSessionBus,
+  type SailPlatformBus,
   type SailUserSession,
 } from "@finos/sail-platform"
 import type { SailFdc3AppChannelChangeEvent } from "./api"
 import type { IntentResolver } from "./intent-resolver"
 
 export type SailFDC3ServerInstanceOptions = {
-  bus: SailSessionBus
+  bus: SailPlatformBus
   session: SailUserSession
   directory: Directory
   channels: ChannelState[]
@@ -37,14 +37,14 @@ export type SailFDC3ServerInstanceOptions = {
 
 /**
  * Concrete FDC3ServerInstance: protocol state from AbstractFDC3ServerInstance;
- * open/close via SailUserSession; inbound/outbound DACP via {@link SailSessionBus}.
+ * open/close via SailUserSession; inbound/outbound DACP via {@link SailPlatformBus}.
  */
 export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   static readonly PROVIDER = "Sail"
   static readonly PROVIDER_VERSION = "0.0.0"
   static readonly FDC3_VERSION = "2.2"
 
-  private readonly bus: SailSessionBus
+  private readonly bus: SailPlatformBus
   private readonly session: SailUserSession
   private readonly directory: Directory
   private readonly intentResolver?: IntentResolver

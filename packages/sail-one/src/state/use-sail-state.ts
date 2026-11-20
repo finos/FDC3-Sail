@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react"
-import { getClientState, getServerState } from "./index"
+import { getClientState } from "./index"
 
-// The client/host stores mutate in place, so React can't detect changes by
+// The client store mutates in place, so React can't detect changes by
 // reference. We bump a version counter on every state-change callback and use
 // that as the snapshot for useSyncExternalStore.
 let version = 0
@@ -18,7 +18,6 @@ function ensureWired(): void {
     listeners.forEach(listener => listener())
   }
   getClientState().addStateChangeCallback(bump)
-  getServerState().addStateChangeCallback(bump)
 }
 
 function subscribe(onStoreChange: () => void): () => void {
@@ -32,7 +31,7 @@ function getSnapshot(): number {
 }
 
 /**
- * Re-render the calling component whenever Sail client or host state changes.
+ * Re-render the calling component whenever Sail client state changes.
  * Returns the current change version (rarely needed directly).
  */
 export function useSailState(): number {

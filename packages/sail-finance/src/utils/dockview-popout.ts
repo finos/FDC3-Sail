@@ -18,17 +18,10 @@ function syncThemeFromOpener(): void {
   document.documentElement.className = openerRoot.className
 }
 
-function isWcpHello(data: unknown): boolean {
-  if (!data || typeof data !== "object") {
-    return false
-  }
-  const type = (data as { type?: unknown }).type
-  return type === "WCP1Hello"
-}
-
 /**
- * Minimal dockview popout page: mirror opener theme and forward WCP1Hello from popout
- * iframes to the main window where BrowserAppConnection listens.
+ * Minimal dockview popout page: mirror opener theme and forward iframe
+ * postMessages (with any transferred ports) to the opener. Protocol-agnostic —
+ * agent extensions own handshake semantics on the main window.
  */
 export function bootstrapDockviewPopoutShell(): void {
   syncThemeFromOpener()
@@ -46,10 +39,6 @@ export function bootstrapDockviewPopoutShell(): void {
     }
 
     if (event.source === window || event.source === opener) {
-      return
-    }
-
-    if (!isWcpHello(event.data)) {
       return
     }
 

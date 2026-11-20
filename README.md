@@ -31,49 +31,80 @@
  - If you are new to FDC3, start with the [FDC3 website](https://fdc3.finos.org).
  - If you want to try FDC3 Sail in your browser, [start here](https://sail.fdc3.finos.org).
 
-FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent**: the `sail.fdc3` extension (`@finos/sail-extension-fdc3`) hosts `@finos/sail-headless-agent` for FDC3 2.2 and 3.0 DACP, with WCP / `MessagePort` in the page via `sail.ui.hidden`. Shells and `@finos/sail-platform` compose that into example workspaces.
+FDC3 Sail is an open source implementation of the [FDC3](https://fdc3.finos.org) interoperability standard. The supported product path is a **browser-resident Desktop Agent** assembled as:
+
+1. **Host shells** — UI and workspace chrome only (`sail-finance`, `sail-one`, and the older `sail-v2-web`). They compose `@finos/sail-platform` and load extensions; they do **not** own FDC3 protocol types, DACP/WCP, or App Directory logic.
+2. **Platform** — session, bus, catalog, storage, and extension contribution points (`@finos/sail-platform`, `@finos/sail-platform-browser`, `@finos/sail-extension`). No FDC3.
+3. **FDC3 as an extension** — `sail.fdc3` (`@finos/sail-extension-fdc3`) wraps `@finos/sail-headless-agent` for FDC3 2.2 / 3.0 DACP; WCP / `MessagePort` attach via `sail.ui.hidden`. Related extensions (`directories`, `custom-apps`, `channels`) contribute apps and channel UI into that FDC3 surface.
 
 For package ownership, entry points, and what's implemented vs. planned, see the [Architecture Overview](https://fdc3-sail.finos.org/docs/architecture/overview); this README does not repeat it.
 
+### Packages
+
+Host shells compose the platform only. They do **not** import the FDC3 engine; FDC3 arrives by loading extensions at runtime.
+
 ```mermaid
-graph BT
-  Engine["@finos/sail-headless-agent"]
-  Env["@finos/sail-env"]
-  Theme["@finos/sail-theme"]
-  Platform["@finos/sail-platform"]
-  Ext["@finos/sail-extension-fdc3"]
-  V2["@finos/fdc3-sail-web"]
-  One["@finos/sail-one"]
-  Finance["@finos/sail-finance"]
+flowchart TB
+  subgraph Hosts["Host shells — no FDC3"]
+    Finance["@finos/sail-finance"]
+    One["@finos/sail-one"]
+    V2["@finos/fdc3-sail-web"]
+  end
 
-  Ext --> Engine
-  Ext --> Platform
-  V2 --> Engine
-  V2 --> Env
-  One --> Ext
-  One --> Platform
-  One --> Env
-  Finance --> Ext
-  Finance --> Platform
-  Finance --> Theme
-  Finance --> Env
+  subgraph Platform["Platform — no FDC3"]
+    Plat["@finos/sail-platform"]
+    Browser["@finos/sail-platform-browser"]
+    ExtRuntime["@finos/sail-extension"]
+    Env["@finos/sail-env"]
+    Theme["@finos/sail-theme"]
+  end
 
-  One ~~~ Finance ~~~ V2
+  Hosts --> Platform
 ```
 
-### Packages and apps
-
-| Package | Description |
+| Package | Role |
 |---|---|
-| [`packages/sail-env`](packages/sail-env/README.md) | Shared host bootstrap — query params (`appId`, `fdc3Directory`, `noSplash`) and Vite env (`VITE_FDC3_DIRECTORY_URL`, `VITE_AUTO_RESOLVE`). See [README](packages/sail-env/README.md). |
-| [`packages/sail-headless-agent`](packages/sail-headless-agent/) | FDC3 engine (`@finos/sail-headless-agent`) — 2.2 and 3.0 handlers behind `FDC3ServerInstance` |
-| [`extensions/fdc3`](extensions/fdc3/) | `sail.fdc3` extension — per-session factory, channels, WCP edge, app directory |
-| [`packages/sail-platform`](packages/sail-platform/) | Composition layer — session, bus, catalog, storage, UI contribution points |
-| [`packages/sail-theme`](packages/sail-theme/) | Shared brand theme — design tokens and assets |
-| [`packages/sail-finance`](packages/sail-finance/) | Example shell — finance-specific workspace dashboard |
-| [`packages/sail-one`](packages/sail-one/) | Example shell — domain-neutral tab-and-grid canvas |
-| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance (pending migration off legacy browser agent) |
-| [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO Sail UI (still runnable; shares `sail-headless-agent`) |
+| [`packages/sail-finance`](packages/sail-finance/) | Example host — finance workspace UI |
+| [`packages/sail-one`](packages/sail-one/) | Example host — domain-neutral tab-and-grid UI |
+| [`packages/sail-v2-web`](packages/sail-v2-web/) | Previous Socket.IO host UI (still runnable) |
+| [`packages/sail-platform`](packages/sail-platform/) | Session, bus, catalog, storage, UI contribution points |
+| [`packages/sail-platform-browser`](packages/sail-platform-browser/) | Browser session host hooks |
+| [`packages/sail-extension`](packages/sail-extension/) | Extension runtime — activate, registry, contributes |
+| [`packages/sail-env`](packages/sail-env/README.md) | Shared host bootstrap — query params and Vite env |
+| [`packages/sail-theme`](packages/sail-theme/) | Shared brand theme |
+| [`packages/sail-headless-agent`](packages/sail-headless-agent/) | FDC3 engine — used by `sail.fdc3`, not by hosts |
+| [`packages/sail-conformance-harness`](packages/sail-conformance-harness/) | Playwright runner for FINOS FDC3 conformance |
+
+### Extensions
+
+FDC3 lives here. Hosts load these via the extension runtime; satellite extensions depend on `sail.fdc3` exports (e.g. `appContribution`, `channels`).
+
+```mermaid
+flowchart TB
+  Fdc3["sail.fdc3<br/>extensions/fdc3"]
+  Dirs["sail.fdc3.directories"]
+  Custom["sail.fdc3.customApps"]
+  ChannelUI["sail.fdc3.channelSettings"]
+  Demo["sail.demo"]
+
+  Engine["@finos/sail-headless-agent"]
+  Plat["sail.platform.*"]
+
+  Fdc3 --> Engine
+  Fdc3 --> Plat
+  Dirs -->|"appContribution"| Fdc3
+  Custom -->|"appContribution"| Fdc3
+  ChannelUI -->|"channels · app.bar"| Fdc3
+  Demo --> Plat
+```
+
+| Extension | Id | Role |
+|---|---|---|
+| [`extensions/fdc3`](extensions/fdc3/) | `sail.fdc3` | Per-session factory, middleware, WCP, channels API, app contribution registry |
+| [`extensions/fdc3-directories`](extensions/fdc3-directories/) | `sail.fdc3.directories` | AppD URLs → `sail.fdc3.appContribution` |
+| [`extensions/fdc3-custom-apps`](extensions/fdc3-custom-apps/) | `sail.fdc3.customApps` | Inline apps → `sail.fdc3.appContribution` |
+| [`extensions/fdc3-channels`](extensions/fdc3-channels/) | `sail.fdc3.channelSettings` | User-channel catalog + app-bar UI on `sail.fdc3.channels` |
+| [`extensions/demo`](extensions/demo/) | `sail.demo` | Sample bus message-log extension |
 
 Full documentation, including per-package guides, lives at **[https://fdc3-sail.finos.org](https://fdc3-sail.finos.org)** (built from [`website/`](website/) via Netlify).
 
@@ -106,7 +137,7 @@ Open http://localhost:3000. FDC3 apps in iframes connect via WCP. Use `npm run d
 npm run dev:v2
 ```
 
-Starts the Socket.IO-based app in `packages/sail-v2-web` against the same `sail-headless-agent` engine.
+Starts the Socket.IO-based host in `packages/sail-v2-web`. FDC3 still comes from `sail.fdc3` / `sail-headless-agent`, not from the shell itself.
 
 ### Conformance harness
 

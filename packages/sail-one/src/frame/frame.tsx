@@ -2,11 +2,10 @@ import { useState } from "react"
 import { Logo, OpenAppButton, Settings } from "../top/top"
 import { Tabs } from "../tabs/tabs"
 import styles from "./styles.module.css"
-import { getServerState, type ClientState } from "../state"
+import type { ClientState } from "../state"
 import { AppDPanel } from "../appd/appd"
 import { Grids } from "../grid/grid"
 import { ConfigPanel } from "../config/config"
-import { ResolverPanel } from "../resolver/resolver"
 
 enum Popup {
   NONE,
@@ -31,7 +30,7 @@ export function Frame({ cs }: FrameProps) {
           <Settings onClick={() => setPopup(Popup.SETTINGS)} />
         </div>
       </div>
-      <div className={styles.left} aria-label="User channels">
+      <div className={styles.left} aria-label="Workspace tabs">
         <Tabs cs={cs} />
       </div>
       <div className={styles.main}>
@@ -42,26 +41,6 @@ export function Frame({ cs }: FrameProps) {
       ) : null}
       {popup == Popup.SETTINGS ? (
         <ConfigPanel key="config" cs={cs} closeAction={() => setPopup(Popup.NONE)} />
-      ) : null}
-      {cs.getIntentResolution() ? (
-        <ResolverPanel
-          key="resolver"
-          appIntents={cs.getIntentResolution()!.appIntents}
-          context={cs.getIntentResolution()!.context}
-          currentChannel={cs.getActiveTab().id}
-          channelDetails={cs.getTabs()}
-          closeAction={() => {
-            cs.setIntentResolution(null)
-          }}
-          chooseAction={(chosenApp, chosenIntent, chosenChannel) => {
-            getServerState().intentChosen(
-              cs.getIntentResolution()!.requestId,
-              chosenApp,
-              chosenIntent,
-              chosenChannel,
-            )
-          }}
-        />
       ) : null}
     </div>
   )

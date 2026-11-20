@@ -19,11 +19,20 @@ async function fetchApps(url: string): Promise<DirectoryApp[]> {
   if (!res.ok) {
     throw new Error(`Failed to fetch AppD ${url}: ${res.status}`)
   }
-  const json = (await res.json()) as { applications?: DirectoryApp[] } | DirectoryApp[]
+  const json = (await res.json()) as
+    | { applications?: DirectoryApp[]; appId?: string }
+    | DirectoryApp[]
   if (Array.isArray(json)) {
     return json
   }
-  return json.applications ?? []
+  if (Array.isArray(json.applications)) {
+    return json.applications
+  }
+  // Single AppD record (e.g. fdc3-workbench.json on fdc3.finos.org).
+  if (typeof json.appId === "string") {
+    return [json as DirectoryApp]
+  }
+  return []
 }
 
 export async function activate(ctx: SailExtensionContext) {

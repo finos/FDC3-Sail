@@ -81,8 +81,8 @@ export async function activate(ctx: SailExtensionContext): Promise<ActivateResul
 2. Fail on duplicate capability ids.
 3. Topo-sort by `extensionDependencies`; activate providers first (`sail.fdc3` then dependents).
 4. `import(activation.module)` → `activate(ctx)` → register returned exports.
-5. Mount `contributes[sail.ui.config]` and `contributes[sail.ui.hidden]`.
-6. `factory.createInstance(session)` (or `applyQueuedMiddleware` for a host-built agent).
+
+UI contributions (`sail.ui.*`) are declared in the manifest; hosts mount them separately when they render settings / hidden hosts / app bars.
 
 ```ts
 import { SailExtensionRegistry, loadActiveExtensionManifestUrls } from "@finos/sail-extension"
@@ -108,7 +108,7 @@ await registry.load(await loadActiveExtensionManifestUrls())
 | Kind | Examples | Typed how |
 |---|---|---|
 | Platform (ambient) | `SAIL_PLATFORM_SESSION`, `.BUS`, `.CATALOG` | `@finos/sail-platform` constants + `getExport<T>` |
-| Extension exports | `SAIL_FDC3_SERVER_FACTORY`, etc. | `@finos/sail-extension-fdc3` constants + `getExport<T>` |
+| Extension exports | `SAIL_FDC3_INSTANCE`, etc. | `@finos/sail-extension-fdc3` constants + `getExport<T>` |
 
 ## UI modules
 

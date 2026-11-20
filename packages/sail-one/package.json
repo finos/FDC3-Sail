@@ -14,7 +14,6 @@
     "dev:apps": "concurrently -k -n sail,apps -c blue,magenta \"npm run dev\" \"npm run apps\"",
     "dev:conformance:2.2": "concurrently -k -n sail,conf -c blue,green \"VITE_FDC3_DIRECTORY_URL=http://localhost:3001/directories/localhost-conformance.json VITE_AUTO_RESOLVE=1 npm run dev\" \"npm run conformance-2.2\"",
     "dev:conformance:3.0": "concurrently -k -n sail,conf -c blue,green \"VITE_FDC3_DIRECTORY_URL=http://localhost:3001/directories/localhost-conformance.json VITE_AUTO_RESOLVE=1 npm run dev\" \"npm run conformance-3.0\"",
-    "dev:fnw": "concurrently -k -n sail,apps -c blue,magenta \"VITE_FORCE_NEW_WINDOW=false npm run dev\" \"npm run apps\"",
     "preview": "vp preview",
     "format": "vp fmt --check .",
     "format:fix": "vp fmt .",
@@ -23,7 +22,8 @@
     "test": "vp test",
     "test:run": "vp test run",
     "typecheck": "tsc",
-    "validate": "npm run typecheck && npm run lint && npm run format"
+    "boundary:fdc3": "! rg -i 'fdc3' src --glob '!**/node_modules/**' || (echo 'FDC3 references remain under packages/sail-one/src — purge them' && exit 1)",
+    "validate": "npm run typecheck && npm run lint && npm run format && npm run boundary:fdc3"
   },
   "files": [
     "dist"
@@ -36,16 +36,8 @@
     "vitest": "5.1.0"
   },
   "dependencies": {
-    "@finos/fdc3-context-v3": "npm:@finos/fdc3-context@3.0.0",
-    "@finos/fdc3-schema-v3": "npm:@finos/fdc3-schema@3.0.0",
-    "@finos/fdc3-standard-v3": "npm:@finos/fdc3-standard@3.0.0",
     "@finos/sail-env": "*",
     "@finos/sail-extension": "*",
-    "@finos/sail-extension-demo": "*",
-    "@finos/sail-extension-fdc3": "*",
-    "@finos/sail-extension-fdc3-custom-apps": "*",
-    "@finos/sail-extension-fdc3-directories": "*",
-    "@finos/sail-headless-agent": "*",
     "@finos/sail-platform": "*",
     "@finos/sail-platform-browser": "*",
     "color": "^5.0.0",

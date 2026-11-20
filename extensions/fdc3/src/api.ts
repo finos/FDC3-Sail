@@ -3,13 +3,13 @@ import type {
   DirectoryApp,
   FDC3ServerInstance,
 } from "@finos/sail-headless-agent"
-import type { SailSessionId } from "@finos/sail-platform"
 
 export {
   SAIL_FDC3_APP_CONTRIBUTION,
   SAIL_FDC3_CHANNELS,
+  SAIL_FDC3_INSTANCE,
+  SAIL_FDC3_INTENT_RESOLVER,
   SAIL_FDC3_REGISTER_MIDDLEWARE,
-  SAIL_FDC3_SERVER_FACTORY,
 } from "./ids.js"
 
 export type SailMiddleware = Partial<{
@@ -22,10 +22,10 @@ export type RegisterMiddleware = (
 ) => { dispose(): void }
 
 /**
- * Dynamic app source. Called whenever the directory/catalog is queried for a session.
+ * Dynamic app source. Called whenever the directory/catalog is queried.
  */
 export interface SailFdc3AppContributor {
-  returnApps(sessionId: SailSessionId): Promise<DirectoryApp[]>
+  returnApps(): Promise<DirectoryApp[]>
 }
 
 /**
@@ -35,7 +35,7 @@ export interface SailFdc3AppContributor {
 export interface SailFdc3AppContribution {
   registerSource(sourceId: string, contributor: SailFdc3AppContributor): void
   unregisterSource(sourceId: string): void
-  retrieveAllApps(sessionId: SailSessionId): Promise<DirectoryApp[]>
+  retrieveAllApps(): Promise<DirectoryApp[]>
 }
 
 export type SailFdc3AppChannelChangeEvent = {

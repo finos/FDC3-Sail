@@ -3,6 +3,8 @@
 Platform capabilities for Sail hosts: **session**, **bus**, **catalog**, and **storage**,
 plus **id constants** for those capabilities and for UI extension points.
 
+Single-user model: one desktop session, one user storage, no session ids.
+
 No FDC3 protocol types and no React. Hosts pre-register ambient capabilities before loading
 extensions, using the constants from `src/ids.ts` (do not hard-code string literals).
 
@@ -13,7 +15,7 @@ extensions, using the constants from `src/ids.ts` (do not hard-code string liter
 | `SAIL_PLATFORM_SESSION` | `sail.platform.session` | capability |
 | `SAIL_PLATFORM_BUS` | `sail.platform.bus` | capability |
 | `SAIL_PLATFORM_CATALOG` | `sail.platform.catalog` | capability |
-| `SAIL_PLATFORM_STORAGE` | `sail.platform.storage` | capability |
+| `SAIL_PLATFORM_STORAGE` | `sail.platform.storage` | capability (`SailUserStorage`) |
 | `SAIL_UI_CONFIG` | `sail.ui.config` | `contributes` (settings panels) |
 | `SAIL_UI_HIDDEN` | `sail.ui.hidden` | `contributes` (top-level host iframe, no chrome) |
 | `SAIL_UI_APP_BAR` | `sail.ui.app.bar` | `contributes` (per-app panel header chrome) |
@@ -24,7 +26,7 @@ extensions, using the constants from `src/ids.ts` (do not hard-code string liter
 |---|---|---|
 | `sail.ui.config` | `SAIL_UI_CONFIG` | _(none)_ |
 | `sail.ui.hidden` | `SAIL_UI_HIDDEN` | _(none)_ |
-| `sail.ui.app.bar` | `SAIL_UI_APP_BAR` | `instanceId: string` (required) — FDC3 app instance for this panel |
+| `sail.ui.app.bar` | `SAIL_UI_APP_BAR` | `instanceId: string` (required) — app instance for this panel |
 
 Use `getAppBarProperties(props.properties)` when mounting or implementing `sail.ui.app.bar` UIs.
 
@@ -37,10 +39,10 @@ so extension `activate` stays isomorphic for Node.
 
 | Capability id | Type | Role |
 |---|---|---|
-| `sail.platform.session` | `SessionService` | `getSession` / `getSessionByApp` / `getSessions` / `onSession` → `SailUserSession` |
-| `sail.platform.bus` | `SailPlatformBus` | `post(msg, sessionId, peer)` / `subscribe`; peer is `AppInstanceId` or `SERVER_INSTANCE` (app → DA). `forSession(session)` → `SailSessionBus`. |
-| `sail.platform.catalog` | `SailPlatformCatalog` | Known apps via providers; `list(sessionId)` |
-| `sail.platform.storage` | `SailStorage` | Resolve `SailSessionId` → `SailUserStorage` |
+| `sail.platform.session` | `SessionService` | `getSession` / `getSessionByApp` / `onSession` → one `SailUserSession` |
+| `sail.platform.bus` | `SailPlatformBus` | `post(msg, peer)` / `subscribe`; peer is `AppInstanceId` or `SERVER_INSTANCE` |
+| `sail.platform.catalog` | `SailPlatformCatalog` | Known apps via providers; `list()` → `SailApp[]` |
+| `sail.platform.storage` | `SailUserStorage` | Direct per-user key/value storage (hosts export one instance) |
 
 
 ## License

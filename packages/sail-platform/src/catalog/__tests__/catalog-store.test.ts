@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createSailPlatformCatalog } from "../store"
-import type { SailCatalogProvider } from "../types"
+import { createSailPlatformCatalog, type SailCatalogProvider } from "../index"
 
 describe("createSailPlatformCatalog", () => {
   it("merges providers and later wins on appId", () => {
@@ -16,7 +15,7 @@ describe("createSailPlatformCatalog", () => {
     }
     catalog.addProvider(a)
     catalog.addProvider(b)
-    const apps = catalog.list("inst-1")
+    const apps = catalog.list()
     expect(apps).toHaveLength(2)
     expect(apps.find(x => x.appId === "chart")?.title).toBe("Chart B")
   })
@@ -27,8 +26,8 @@ describe("createSailPlatformCatalog", () => {
       list: () => [{ appId: "x", title: "X" }],
     }
     catalog.addProvider(provider)
-    expect(catalog.list("inst-1")).toHaveLength(1)
+    expect(catalog.list()).toHaveLength(1)
     catalog.removeProvider(provider)
-    expect(catalog.list("inst-1")).toHaveLength(0)
+    expect(catalog.list()).toHaveLength(0)
   })
 })

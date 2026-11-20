@@ -3,7 +3,7 @@ import type { TabDetail } from "../state"
 import styles from "./styles.module.css"
 
 const Tab = ({ td, active, onClick }: { td: TabDetail; active: boolean; onClick: () => void }) => {
-  const label = `Channel ${td.id}`
+  const label = `Tab ${td.id}`
 
   return (
     <button
@@ -23,8 +23,8 @@ const Tab = ({ td, active, onClick }: { td: TabDetail; active: boolean; onClick:
 
 export const Tabs = ({ cs }: { cs: ClientState }) => {
   return (
-    <nav className={styles.tabs} aria-label="User channels">
-      <span className={styles.railLabel}>Channels</span>
+    <nav className={styles.tabs} aria-label="Workspace tabs">
+      <span className={styles.railLabel}>Tabs</span>
       {cs.getTabs().map(t => (
         <Tab
           key={t.id}

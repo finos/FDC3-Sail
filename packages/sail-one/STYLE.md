@@ -18,13 +18,13 @@ Do **not** reintroduce the old brown (`#694512`) — it is not on-brand.
 ## Surfaces
 
 - **Top bar** — dark navy (`--sail-topbar`) with white wordmark; primary CTA uses logo cyan.
-- **Channel rail** — cool light (`--sail-rail`).
+- **Tab rail** — cool light (`--sail-rail`).
 - **Workspace** — canvas gray; panels on white with a light border.
 - **Drawers / modals** — white surface, cyan primary actions.
 
 ## Typography
 
-DM Sans. Prefer weight 300 for “FDC3”, 600 for “Sail” and primary actions. Body ~0.9–1rem; muted labels use `--sail-text-muted`.
+DM Sans. Prefer weight 300 for “FINOS”, 600 for “Sail” and primary actions. Body ~0.9–1rem; muted labels use `--sail-text-muted`.
 
 ## Icons
 

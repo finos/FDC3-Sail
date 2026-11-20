@@ -15,6 +15,18 @@
               {
                 "group": ["@finos/sail-one", "**/sail-one/**"],
                 "message": "Shells must not import each other. Share via @finos/sail-theme or the platform, never shell-to-shell."
+              },
+              {
+                "group": [
+                  "@finos/fdc3",
+                  "@finos/fdc3/*",
+                  "@finos/sail-headless-agent",
+                  "@finos/sail-headless-agent/*",
+                  "@finos/sail-extension-fdc3",
+                  "@finos/sail-extension-fdc3/*",
+                  "@finos/sail-extension-fdc3-*"
+                ],
+                "message": "sail-finance must not import FDC3 packages. Load sail.fdc3 (and satellites) as runtime extensions only."
               }
             ]
           }

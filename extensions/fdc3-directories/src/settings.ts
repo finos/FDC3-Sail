@@ -18,7 +18,20 @@ export type DirectoriesSettings = {
 }
 
 export const DIRECTORIES_DEFAULT_SETTINGS: DirectoriesSettings = {
-  sources: [],
+  sources: [
+    {
+      id: "fdc3-workbench",
+      label: "FDC3 Workbench",
+      url: "https://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-workbench.json",
+      active: true,
+    },
+    {
+      id: "fdc3-conformance",
+      label: "FDC3 Conformance",
+      url: "https://fdc3.finos.org/toolbox/fdc3-conformance/directories/website-conformance.json",
+      active: true,
+    },
+  ],
 }
 
 /** Settings bag with exactly one active AppD (conformance / `?fdc3Directory=`). */

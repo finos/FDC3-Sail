@@ -119,7 +119,7 @@ flowchart TB
   subgraph PLAT["@finos/sail-platform [implemented]"]
     WS["createWorkspaceStore()<br/>workspaces · tabs · panels"]
     GEO["geometry: renderer state | rects"]
-    ST["SailStorage: localStorage · memory · your own"]
+    ST["SailUserStorage: localStorage · memory · your own"]
   end
 
   HOST -->|"implements"| SEAMS
@@ -220,7 +220,7 @@ geometry lanes:
 The union is deliberate: two sources of truth for the same arrangement is how saved layouts silently
 diverge between hosts, so `setPanelRect` throws on a layout a renderer owns.
 
-Persistence is a four-method `SailStorage` port (`get`/`set`/`remove`/`list`) with `localStorage` and
+Persistence is a `SailUserStorage` port (`get`/`set`/`remove`/`list`/`onChange`) with `localStorage` and
 in-memory adapters supplied. A remote backend is an object satisfying the port, not a package change.
 `list` is what lets a host render a workspace picker without loading every workspace in full.
 

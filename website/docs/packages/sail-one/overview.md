@@ -35,15 +35,15 @@ UI talks to:
 | Module | Role |
 |---|---|
 | `sail-host.ts` | Owns the `SailDesktopAgent` instance and the shell's own `AppLauncher` — the only file that talks to the agent. |
-| `client-state.ts` | Shell state (tabs, panels, directories, custom apps), persisted through a `SailStorage`. |
+| `client-state.ts` | Shell state (tabs, panels, directories, custom apps), persisted through a `SailUserStorage`. |
 | `default-app-state.ts` | Window/iframe bookkeeping and the user's hosting choice for a launch. |
 
 For how the two packages relate, see
 [Architecture Overview — How the packages compose](../../architecture/overview#how-the-packages-compose).
 
-## Persistence: `SailStorage`
+## Persistence: `SailUserStorage`
 
-State is stored through `createLocalStorage({ keyPrefix: "sail_one_" })` (`client-state.ts`) rather
+State is stored through `createLocalUserStorage({ keyPrefix: "sail_one_" })` (`client-state.ts`) rather
 than raw `localStorage`, so the backing store is swappable — including for a remote one — without
 touching the shell. This is the concrete contrast with `sail-finance`, which persists its own way
 through Zustand `persist` over raw `localStorage` — see

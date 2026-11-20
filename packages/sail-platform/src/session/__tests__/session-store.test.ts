@@ -4,10 +4,8 @@ import { createSailUserSession, createSessionService } from "../store"
 describe("createSailUserSession", () => {
   it("creates and updates containers", () => {
     const session = createSailUserSession({
-      sessionId: "sess-1",
       createAppInstanceId: () => "id-1",
     })
-    expect(session.id).toBe("sess-1")
     session.createContainer("root", { kind: "workspace" })
     expect(session.getSnapshot().containers).toHaveLength(1)
     session.updateContainer("root", { kind: "workspace", name: "Main" })
@@ -31,6 +29,21 @@ describe("createSailUserSession", () => {
     expect(onCloseApp).toHaveBeenCalled()
   })
 
+  it("owns host Window associations and clears them on close", async () => {
+    const win = {} as Window
+    const session = createSailUserSession({
+      createAppInstanceId: () => "inst-1",
+    })
+    session.createContainer("c1", {})
+    const id = await session.openApp({ appId: "chart", within: "c1" })
+    session.registerHostWindow(win, id)
+    expect(session.getInstanceIdForHostWindow(win)).toBe("inst-1")
+    expect(session.getHostWindow(id)).toBe(win)
+    await session.closeApp(id)
+    expect(session.getHostWindow(id)).toBeUndefined()
+    expect(session.getInstanceIdForHostWindow(win)).toBeUndefined()
+  })
+
   it("destroyContainer removes nested apps", async () => {
     const session = createSailUserSession({ createAppInstanceId: () => "inst-1" })
     session.createContainer("c1", {})
@@ -42,19 +55,24 @@ describe("createSailUserSession", () => {
 })
 
 describe("createSessionService", () => {
-  it("resolves by SailSessionId and AppInstanceId", async () => {
+  it("resolves the single session and AppInstanceId", async () => {
     const sessions = createSessionService({
-      createSessionId: () => "sess-1",
       createAppInstanceId: () => "inst-1",
     })
     const session = sessions.createSession()
-    expect(sessions.getSession("sess-1")).toBe(session)
+    expect(sessions.getSession()).toBe(session)
     session.createContainer("c1", {})
     const id = await session.openApp({ appId: "chart", within: "c1" })
     expect(sessions.getSessionByApp(id)).toBe(session)
     await session.closeApp(id)
     expect(sessions.getSessionByApp(id)).toBeUndefined()
-    expect(sessions.getSession("sess-1")).toBe(session)
+    expect(sessions.getSession()).toBe(session)
+  })
+
+  it("rejects a second createSession", () => {
+    const sessions = createSessionService()
+    sessions.createSession()
+    expect(() => sessions.createSession()).toThrow(/already has a user session/)
   })
 
   it("clears app mapping when destroyContainer removes apps", async () => {
@@ -66,16 +84,22 @@ describe("createSessionService", () => {
     expect(sessions.getSessionByApp(id)).toBeUndefined()
   })
 
-  it("notifies onSession and lists sessions", () => {
-    const sessions = createSessionService({ createSessionId: () => "sess-1" })
+  it("notifies onSession and replays if already created", () => {
+    const sessions = createSessionService()
     const seen: string[] = []
-    const stop = sessions.onSession(s => {
-      seen.push(s.id)
+    const stop = sessions.onSession(() => {
+      seen.push("created")
     })
-    expect(sessions.getSessions()).toHaveLength(0)
-    const session = sessions.createSession()
-    expect(seen).toEqual(["sess-1"])
-    expect(sessions.getSessions()).toEqual([session])
+    expect(sessions.getSession()).toBeUndefined()
+    sessions.createSession()
+    expect(seen).toEqual(["created"])
+
+    const late: string[] = []
+    sessions.onSession(() => {
+      late.push("created")
+    })
+    expect(late).toEqual(["created"])
     stop()
   })
 })
+

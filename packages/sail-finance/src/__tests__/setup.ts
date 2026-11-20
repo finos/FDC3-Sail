@@ -50,7 +50,7 @@ Object.defineProperty(window, "matchMedia", {
   })),
 })
 
-// Mock iframe contentWindow for FDC3 testing
+// Mock iframe contentWindow for host panel testing
 const mockContentWindow = {
   postMessage: vi.fn(),
   addEventListener: vi.fn(),

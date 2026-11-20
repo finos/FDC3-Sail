@@ -158,7 +158,7 @@ Persistence is a four-method port. The default is browser `localStorage`; supply
 push state to a remote service.
 
 ```typescript
-interface SailStorage {
+interface SailUserStorage {
   get<T>(key: string): Promise<T | null>
   set<T>(key: string, value: T): Promise<void>
   remove(key: string): Promise<void>
@@ -169,16 +169,16 @@ interface SailStorage {
 `list` is what lets a host render a workspace picker without loading every workspace in full.
 
 ```typescript
-import { createLocalStorage, createMemoryStorage, type SailStorage } from "@finos/sail-platform"
+import { createLocalUserStorage, createMemoryUserStorage, type SailUserStorage } from "@finos/sail-platform"
 
 // Default backing store, with a custom key namespace
-createWorkspaceStore({ storage: createLocalStorage({ keyPrefix: "sail_one_" }) })
+createWorkspaceStore({ storage: createLocalUserStorage({ keyPrefix: "sail_one_" }) })
 
 // Tests and non-browser hosts
-createWorkspaceStore({ storage: createMemoryStorage() })
+createWorkspaceStore({ storage: createMemoryUserStorage() })
 
 // Remote — any object satisfying the port
-const remote: SailStorage = {
+const remote: SailUserStorage = {
   get: async key => (await fetch(`/api/state/${key}`)).json(),
   set: async (key, value) => {
     await fetch(`/api/state/${key}`, { method: "PUT", body: JSON.stringify(value) })
@@ -187,6 +187,7 @@ const remote: SailStorage = {
     await fetch(`/api/state/${key}`, { method: "DELETE" })
   },
   list: async prefix => (await fetch(`/api/state?prefix=${prefix ?? ""}`)).json(),
+  onChange: () => () => {},
 }
 
 createWorkspaceStore({ storage: remote })
@@ -200,16 +201,16 @@ Two properties worth knowing:
 - **Reads never throw.** A corrupt or unreadable entry resolves to `null`, so one bad value cannot
   stop a host from booting.
 - **`refresh()` reads every saved workspace** to build its summaries, in parallel. There is no index
-  key to drift out of sync with reality. A remote `SailStorage` that finds this expensive can cache
+  key to drift out of sync with reality. A remote `SailUserStorage` that finds this expensive can cache
   inside its own `list`/`get`.
 
 Storage is usable on its own, without the workspace store — `sail-one` persists its shell state
-through `createLocalStorage` directly.
+through `createLocalUserStorage` directly.
 
 ## Implemented vs planned
 
 **`[implemented]`** — the workspace and layout types; both geometry lanes; the workspace store with
-save/load/list/remove; the `SailStorage` port with `localStorage` and in-memory adapters; injectable
+save/load/list/remove; the `SailUserStorage` port with `localStorage` and in-memory adapters; injectable
 id and clock.
 
 **`[planned]`** — nothing in this package. Auth, entitlements, and backend connectors do not exist
@@ -221,7 +222,7 @@ Two shells in this repo are worked examples, not the reason this package's API e
 is not downgraded because no shell drives it, and a shell using the package a particular way is not
 the package's contract.
 
-- **`sail-one`** (domain-neutral example UI) — persists its shell state through `createLocalStorage`
+- **`sail-one`** (domain-neutral example UI) — persists its shell state through `createLocalUserStorage`
   (`packages/sail-one/src/state/client-state.ts`). See [@finos/sail-one](../sail-one/overview).
 - **`sail-finance`** (finance-specific example UI) — renders tabbed Dockview frames and holds an
   equivalent workspace model in its own Zustand store

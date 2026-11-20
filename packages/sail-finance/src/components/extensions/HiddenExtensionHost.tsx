@@ -27,7 +27,7 @@ function HiddenUiMount({ ui }: { ui: SailExtensionUI }) {
   return <div ref={host} hidden aria-hidden="true" />
 }
 
-/** Top-level host mount for `sail.ui.hidden` contributions (WCP edge, etc.). */
+/** Top-level host mount for `sail.ui.hidden` contributions (agent edges, overlays, etc.). */
 export function HiddenExtensionHost() {
   const [, setEpoch] = useState(0)
   useEffect(() => {

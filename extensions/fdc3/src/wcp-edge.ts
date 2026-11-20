@@ -17,7 +17,7 @@ export type StartWcpBusEdgeOptions = {
 
 /**
  * Minimal browser WCP1–3 edge: MessagePorts ↔ {@link SailPlatformBus}.
- * App → DA: `post(msg, sessionId, SERVER_INSTANCE)` (source on message meta).
+ * App → DA: `post(msg, SERVER_INSTANCE)` (source on message meta).
  * DA → App: subscribe and deliver when `instanceId` matches a port.
  */
 export function startWcpBusEdge(
@@ -67,12 +67,12 @@ export function startWcpBusEdge(
             },
           }
     publishing++
-    void bus.post(withSource, session.id, SERVER_INSTANCE).finally(() => {
+    void bus.post(withSource, SERVER_INSTANCE).finally(() => {
       publishing--
     })
   }
 
-  const unsubBus = bus.subscribe((message, _sessionId, instanceId) => {
+  const unsubBus = bus.subscribe((message, instanceId) => {
     if (publishing > 0 || instanceId === SERVER_INSTANCE) {
       return
     }

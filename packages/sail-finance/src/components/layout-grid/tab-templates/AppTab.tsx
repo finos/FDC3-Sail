@@ -1,24 +1,21 @@
 import { DockviewDefaultTab, type IDockviewPanelHeaderProps } from "dockview-react"
 import { useState } from "react"
 
-import type { FDC3AppPanel } from "../panel-templates/FDC3IframePanel"
+import type { AppPanel } from "../panel-templates/AppIframePanel"
 
 /**
- * Custom tab component for FDC3 panels that displays an icon alongside the title.
- * Renders an icon before the default tab content when available.
+ * Custom tab for app panels that displays an icon alongside the title.
  */
-export const FDC3Tab = (props: IDockviewPanelHeaderProps) => {
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- localStorage-persisted state: props.params is restored from Dockview's persisted layout JSON on reload, whose actual shape can predate the current FDC3AppPanel type
-  const panelData = (props.params as { panel?: FDC3AppPanel })?.panel
+export const AppTab = (props: IDockviewPanelHeaderProps) => {
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- localStorage-persisted state: props.params is restored from Dockview's persisted layout JSON on reload
+  const panelData = (props.params as { panel?: AppPanel })?.panel
   const iconUrl = panelData?.icon
   const [iconError, setIconError] = useState(false)
 
-  // If no icon or icon failed to load, use the default tab
   if (!iconUrl || iconError) {
     return <DockviewDefaultTab {...props} />
   }
 
-  // Render custom tab with icon + default tab behavior
   return (
     <div className="dv-default-tab" style={{ display: "flex", alignItems: "center" }}>
       <img

@@ -32,7 +32,7 @@ function AppBarUiMount({ ui, instanceId }: { ui: SailExtensionUI; instanceId: st
 }
 
 /**
- * Mounts all `sail.ui.app.bar` contributions for one FDC3 app instance.
+ * Mounts all `sail.ui.app.bar` contributions for one app instance.
  */
 export function AppBarSlot({ instanceId }: { instanceId: string }) {
   const [uis, setUis] = useState<SailExtensionUI[]>([])

@@ -5,7 +5,7 @@ export const Logo = ({ tone = "light" }: { tone?: "light" | "dark" }) => {
   return (
     <div className={`${styles.logo} ${tone === "dark" ? styles.logoOnDark : ""}`}>
       <img src="/icons/logo/logo.svg" className={styles.logoImage} alt="" />
-      <p className={styles.logoTextThin}>FDC3</p>
+      <p className={styles.logoTextThin}>FINOS</p>
       <p className={styles.logoTextBold}>Sail</p>
     </div>
   )

@@ -51,13 +51,8 @@ const config = {
     },
     // Extensions are loaded via extensions.json / Vite, not static imports.
     "packages/sail-finance": {
-      ignoreDependencies: [
-        "@finos/sail-platform",
-        "@finos/sail-extension-demo",
-        "@finos/sail-extension-fdc3-custom-apps",
-        "@finos/sail-extension-fdc3-channels",
-        "@finos/sail-extension-fdc3-directories",
-      ],
+      // Extensions are loaded via extensionsDir / extensions.json, not package deps.
+      ignoreDependencies: [],
     },
     "packages/sail-one": {
       entry: ["html/**/*.html"],

@@ -5,13 +5,15 @@ platform `sail.platform.bus` / `session` / `catalog`.
 
 ## Model
 
-`activate` is **isomorphic** (safe on Node for sail-v2-web). It exports:
+`activate` is **isomorphic** (safe on Node for sail-v2-web). It binds a Desktop
+Agent to the single platform user session and exports:
 
 | Constant | Capability | Role |
 |---|---|---|
-| `SAIL_FDC3_SERVER_FACTORY` | `sail.fdc3.serverFactory` | `createInstance` per user session |
-| `SAIL_FDC3_REGISTER_MIDDLEWARE` | `sail.fdc3.registerMiddleware` | Factory-level receive/post hooks |
-| `SAIL_FDC3_APP_CONTRIBUTION` | `sail.fdc3.appContribution` | App contributor registry (`registerSource` / `returnApps(sessionId)`) |
+| `SAIL_FDC3_INSTANCE` | `sail.fdc3.instance` | Middleware-wrapped `FDC3ServerInstance` (ready after session create) |
+| `SAIL_FDC3_INTENT_RESOLVER` | `sail.fdc3.intentResolver` | Host UI methods (`onRequest` / `select` / `cancel`) |
+| `SAIL_FDC3_REGISTER_MIDDLEWARE` | `sail.fdc3.registerMiddleware` | Receive/post hooks |
+| `SAIL_FDC3_APP_CONTRIBUTION` | `sail.fdc3.appContribution` | App contributor registry (`registerSource` / `returnApps()`) |
 | `SAIL_FDC3_CHANNELS` | `sail.fdc3.channels` | Persisted user-channel catalog + membership |
 
 UI contributions: `sail.ui.hidden` (WCP edge), `sail.ui.app.bar` (connection indicator).
@@ -29,29 +31,32 @@ Hosts mount `sail.ui.hidden` with `{ storage, getExport }` (same capability map 
 
 ```ts
 import {
-  SAIL_FDC3_SERVER_FACTORY,
+  SAIL_FDC3_INSTANCE,
+  SAIL_FDC3_INTENT_RESOLVER,
   SAIL_FDC3_REGISTER_MIDDLEWARE,
   SAIL_FDC3_APP_CONTRIBUTION,
-  type SailFDC3ServerFactory,
   type RegisterMiddleware,
   type SailFdc3AppContribution,
+  type IntentResolverUIMethods,
 } from "@finos/sail-extension-fdc3"
+import type { FDC3ServerInstance } from "@finos/sail-headless-agent"
 
-const factory = ctx.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)!
+const instance = ctx.getExport<FDC3ServerInstance>(SAIL_FDC3_INSTANCE)!
+const intentResolver = ctx.getExport<IntentResolverUIMethods>(SAIL_FDC3_INTENT_RESOLVER)!
 const registerMiddleware = ctx.getExport<RegisterMiddleware>(SAIL_FDC3_REGISTER_MIDDLEWARE)!
 const appContribution = ctx.getExport<SailFdc3AppContribution>(SAIL_FDC3_APP_CONTRIBUTION)!
 
 appContribution.registerSource("my-extension", {
-  async returnApps(sessionId) {
-    return loadAppsFor(sessionId)
+  async returnApps() {
+    return loadApps()
   },
 })
 
 registerMiddleware({ receive: ... })
 
-// Preferred host path:
-const { agent, dispose, sessionId } = factory.createInstance(session)
-const apps = await appContribution.retrieveAllApps(sessionId)
+// After the host creates the platform session:
+await instance.open("my-app")
+const apps = await appContribution.retrieveAllApps()
 ```
 
 Hosts supply **only** `sail.platform.*` in `platformExports` — never shim `sail.fdc3.*`.

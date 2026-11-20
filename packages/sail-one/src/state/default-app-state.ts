@@ -1,63 +1,64 @@
-import type { DirectoryApp, WebAppDetails } from "@finos/sail-headless-agent"
-import { resolveSailForceNewWindow } from "./force-new-window"
-import { getClientState, getServerState } from "./index"
+import { NEW_WINDOW, type SailApp, type SailWebApp } from "@finos/sail-platform"
+import { getCatalog, getClientState, getSession } from "./index"
 
 export enum AppHosting {
   Frame,
   Tab,
 }
 
-export interface AppOpenDetails {
+export type AppOpenDetails = {
   instanceId: string
   channel: string | null
   instanceTitle: string
 }
 
-export interface AppState {
+export type PendingHosting = {
+  hosting: AppHosting
+  instanceTitle: string
+}
+
+export type AppState = {
   registerAppWindow(window: Window, instanceId: string): void
   getInstanceIdForWindow(window: Window): string | undefined
   findWindow(instanceId: string): Window | undefined
   forgetWindow(instanceId: string): void
-  createTitle(detail: DirectoryApp): string
-  open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails>
+  createTitle(detail: SailApp): string
+  open(detail: SailApp, destination?: AppHosting): Promise<AppOpenDetails>
+  /** Queued hosting choice consumed by the session mount hook. */
+  takePendingHosting(appId: string): PendingHosting | undefined
 }
 
-export function normalizeIdentityUrl(identityUrl: string): string {
-  return identityUrl.replace(/\/+$/, "")
+type PendingLaunch = { appId: string; hosting: AppHosting; instanceTitle: string }
+
+function isWebApp(app: SailApp): app is SailWebApp {
+  return typeof (app as SailWebApp).url === "string"
+}
+
+function catalogUrl(app: SailApp | undefined): string | undefined {
+  const url = (app as SailWebApp | undefined)?.url
+  return typeof url === "string" && url.length > 0 ? url : undefined
 }
 
 export class DefaultAppState implements AppState {
-  getDirectoryAppForUrl(identityUrl: string): DirectoryApp | undefined {
-    const strippedIdentityUrl = normalizeIdentityUrl(identityUrl)
-    const applications: DirectoryApp[] = getServerState().getKnownApps()
-    return applications.find(x => {
-      const d = x.details as WebAppDetails
-      return (
-        d.url == strippedIdentityUrl ||
-        d.url == identityUrl ||
-        (d.url.startsWith("/") && identityUrl.endsWith(d.url))
-      )
-    })
+  private pending: PendingLaunch[] = []
+
+  registerAppWindow(windowRef: Window, instanceId: string): void {
+    getSession().registerHostWindow(windowRef, instanceId)
   }
 
-  /** Delegates to the Desktop Agent host-window registry. */
-  registerAppWindow(window: Window, instanceId: string): void {
-    getServerState().registerHostWindow(window, instanceId)
-  }
-
-  getInstanceIdForWindow(window: Window): string | undefined {
-    return getServerState().getInstanceIdForHostWindow(window)
+  getInstanceIdForWindow(windowRef: Window): string | undefined {
+    return getSession().getInstanceIdForHostWindow(windowRef)
   }
 
   findWindow(instanceId: string): Window | undefined {
-    return getServerState().findHostWindow(instanceId)
+    return getSession().getHostWindow(instanceId)
   }
 
   forgetWindow(instanceId: string): void {
-    getServerState().forgetHostWindow(instanceId)
+    getSession().unregisterHostWindow(instanceId)
   }
 
-  createTitle(detail: DirectoryApp): string {
+  createTitle(detail: SailApp): string {
     const existingPanels = getClientState().getPanels()
     const usedNumbers = new Set(
       existingPanels
@@ -76,36 +77,49 @@ export class DefaultAppState implements AppState {
     return `${detail.title} ${number.toString()}`
   }
 
-  /**
-   * Ask the Desktop Agent to open `detail`, hosted as the user asked.
-   *
-   * The agent owns instance ids now, so the panel or window is created by the
-   * host's `SailAppLauncher` callback once the id exists — this method only
-   * records the hosting choice and reports the result back to the caller.
-   */
-  async open(detail: DirectoryApp, destination?: AppHosting): Promise<AppOpenDetails> {
-    if (detail.type !== "web") {
-      throw new Error("Unsupported app type: " + detail.type)
+  takePendingHosting(appId: string): PendingHosting | undefined {
+    const idx = this.pending.findIndex(p => p.appId === appId)
+    if (idx < 0) {
+      return undefined
+    }
+    const launch = this.pending.splice(idx, 1)[0]
+    return launch
+      ? { hosting: launch.hosting, instanceTitle: launch.instanceTitle }
+      : undefined
+  }
+
+  async open(detail: SailApp, destination?: AppHosting): Promise<AppOpenDetails> {
+    if (!isWebApp(detail)) {
+      throw new Error(`App ${detail.appId} has no URL`)
     }
 
-    const sailManifest = detail.hostManifests?.sail
-    const manifestForceNewWindow =
-      typeof sailManifest === "object" &&
-      sailManifest !== null &&
-      (sailManifest as { forceNewWindow?: unknown }).forceNewWindow === true
-    const forceNewWindow = resolveSailForceNewWindow(manifestForceNewWindow)
     const hosting: AppHosting =
-      (forceNewWindow ? AppHosting.Tab : undefined) ?? destination ?? AppHosting.Frame
+      destination ??
+      (detail.location === NEW_WINDOW ? AppHosting.Tab : AppHosting.Frame)
     const instanceTitle = this.createTitle(detail)
     const channel = hosting === AppHosting.Tab ? null : getClientState().getActiveTab().id
 
-    const instanceId = await getServerState().registerAppLaunch(
-      detail.appId,
-      hosting,
-      channel,
-      instanceTitle,
-    )
+    const catalogApp = getCatalog().list().find(entry => entry.appId === detail.appId) ?? detail
+    const url = catalogUrl(catalogApp) ?? detail.url
+    if (!url) {
+      throw new Error(`App ${detail.appId} has no URL in the platform catalog`)
+    }
 
-    return { instanceId, channel, instanceTitle }
+    this.pending.push({ appId: detail.appId, hosting, instanceTitle })
+    try {
+      const instanceId = await getSession().openApp({
+        appId: detail.appId,
+        url,
+        title: catalogApp.title ?? detail.appId,
+        icon: catalogApp.icon,
+      })
+      return { instanceId, channel, instanceTitle }
+    } catch (e) {
+      const idx = this.pending.findIndex(p => p.appId === detail.appId)
+      if (idx >= 0) {
+        this.pending.splice(idx, 1)
+      }
+      throw e
+    }
   }
 }

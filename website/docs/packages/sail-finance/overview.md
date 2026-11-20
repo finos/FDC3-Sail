@@ -43,8 +43,8 @@ connection store, and an intent resolver store.
 `getItem`/`setItem` call `localStorage.getItem` / `localStorage.setItem` directly. Its
 `Workspace → Grid → Tab → Panel` shape is the same model `@finos/sail-platform` now describes, held
 locally rather than through `createWorkspaceStore`. This is the concrete contrast with `sail-one`,
-which persists its shell state through a `SailStorage` — see
-[@finos/sail-one — persistence](../sail-one/overview#persistence-sailstorage).
+which persists its shell state through a `SailUserStorage` — see
+[@finos/sail-one — persistence](../sail-one/overview#persistence-sailuserstorage).
 
 ## Channel chrome
 

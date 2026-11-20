@@ -3,40 +3,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui"
 import { ExternalLink } from "lucide-react"
 import type { IDockviewPanelProps } from "dockview-react"
+import type { SailApp, SailWebApp } from "@finos/sail-platform"
 
 import { useAppDirectoryStore } from "../../contexts"
 import { useUIStore } from "../../stores/ui-store"
 import { useWorkspaceStore } from "../../stores/workspace-store"
-import type { DirectoryApp, WebAppDetails } from "../../types/common"
 
 import { ChooseAppIcon } from "./ChooseAppIcon"
-import { FDC3_PANEL_RENDERER } from "../layout-grid/dockview-options"
+import { APP_PANEL_RENDERER } from "../layout-grid/dockview-options"
 
 interface AppCardProps {
-  app: DirectoryApp
-  onAppClick: (app: DirectoryApp) => void
+  app: SailApp
+  onAppClick: (app: SailApp) => void
+}
+
+function catalogUrl(app: SailApp): string | null {
+  const url = (app as SailWebApp).url
+  return typeof url === "string" && url.length > 0 ? url : null
 }
 
 const AppCard = ({ app, onAppClick }: AppCardProps) => {
   const [imageError, setImageError] = useState(false)
-
-  const getAppIconUrl = (app: DirectoryApp): string | null => {
-    if (app.icons && app.icons.length > 0 && app.icons[0]!.src) {
-      return app.icons[0]!.src
-    }
-    return null
-  }
-
-  const iconUrl = getAppIconUrl(app)
+  const iconUrl = app.icon || null
   const showFallback = !iconUrl || imageError
-
-  const getAppUrl = (app: DirectoryApp) => {
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: DirectoryApp.details is typed required, but a directory entry's JSON can still omit it
-    if (app.type === "web" && app.details) {
-      return (app.details as WebAppDetails).url
-    }
-    return null
-  }
+  const url = catalogUrl(app)
 
   return (
     <Card
@@ -59,9 +49,9 @@ const AppCard = ({ app, onAppClick }: AppCardProps) => {
           </div>
           <div className="min-w-0 flex-1">
             <CardTitle className="line-clamp-1 text-sm font-medium">
-              {app.title || app.name || app.appId}
+              {app.title || app.appId}
             </CardTitle>
-            {app.type === "web" && getAppUrl(app) && (
+            {url && (
               <div className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
                 <ExternalLink className="size-3" />
                 <span className="truncate">Web App</span>
@@ -74,9 +64,6 @@ const AppCard = ({ app, onAppClick }: AppCardProps) => {
         <CardDescription className="line-clamp-3 text-xs">
           {app.description || "No description available"}
         </CardDescription>
-        {app.version && (
-          <div className="text-muted-foreground mt-2 text-xs">Version {app.version}</div>
-        )}
       </CardContent>
     </Card>
   )
@@ -117,64 +104,55 @@ export function AppDirectory({ panelProps }: AppDirectoryProps) {
   const activeWorkspace = workspaces.get(activeWorkspaceId)
   const activeTabId = activeWorkspace?.layout.activeTabId || ""
 
-  // Fetch app directory from desktop agent once on mount
   useEffect(() => {
-    loadApps()
+    void loadApps()
   }, [loadApps])
 
-  const handleAppClick = (app: DirectoryApp) => {
+  const handleAppClick = (app: SailApp) => {
     console.log("App clicked:", app)
 
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- FDC3 App Directory JSON: DirectoryApp.details is typed required, but a directory entry's JSON can still omit it
-    if (app.type !== "web" || !app.details) {
-      console.warn("App is not a web app or has no details:", app)
+    const url = catalogUrl(app)
+    if (!url) {
+      console.warn("App has no launch URL in catalogue:", app)
       return
     }
 
-    const webDetails = app.details as WebAppDetails
-
-    // Generate unique panel ID and instance title
     const instanceId = `${app.appId}-${Date.now()}`
-    const instanceTitle = app.title || app.name || app.appId
+    const instanceTitle = app.title || app.appId
 
-    // Add to the workspace store - Layout will sync this to Dockview
     if (activeWorkspaceId && activeTabId) {
       addPanel(activeWorkspaceId, activeTabId, {
         panelId: instanceId,
         appId: app.appId,
         title: instanceTitle,
-        url: webDetails.url,
-        icon: app.icons?.[0]?.src || null,
+        url,
+        icon: app.icon || null,
       })
     }
 
-    // If we have panelProps (opened from within Dockview), also add directly to the same group
-    // and close this directory panel
     if (panelProps) {
-      const fdc3Panel = {
+      const appPanel = {
         title: instanceTitle,
-        url: webDetails.url,
+        url,
         tabId: activeTabId,
         panelId: instanceId,
         appId: app.appId,
-        icon: app.icons?.[0]?.src || null,
+        icon: app.icon || null,
       }
 
-      // Add the new FDC3 panel as a tab in the same group
       const currentGroup = panelProps.api.group
       panelProps.containerApi.addPanel({
         id: instanceId,
-        component: "fdc3",
-        tabComponent: "fdc3Tab",
+        component: "app",
+        tabComponent: "appTab",
         title: instanceTitle,
-        params: { panel: fdc3Panel },
-        renderer: FDC3_PANEL_RENDERER,
+        params: { panel: appPanel },
+        renderer: APP_PANEL_RENDERER,
         position: {
           referenceGroup: currentGroup,
         },
       })
 
-      // Close this directory panel after adding the app
       setTimeout(() => {
         const directoryPanel = panelProps.containerApi.getPanel(panelProps.api.id)
         if (directoryPanel) {
@@ -183,7 +161,6 @@ export function AppDirectory({ panelProps }: AppDirectoryProps) {
       }, 100)
     }
 
-    // Close the quick access panel if it's open
     closeQuickAccessPanel()
   }
 
@@ -221,7 +198,7 @@ export function AppDirectory({ panelProps }: AppDirectoryProps) {
           </CardHeader>
           <CardContent>
             <CardDescription>
-              No applications are currently available in the directory.
+              No applications are currently available in the catalogue.
             </CardDescription>
             <button
               onClick={() => void refreshApps()}
@@ -238,7 +215,7 @@ export function AppDirectory({ panelProps }: AppDirectoryProps) {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight">App Directory</h1>
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight">App Catalogue</h1>
         <p className="text-muted-foreground">
           Browse and launch applications ({apps.length} available)
         </p>

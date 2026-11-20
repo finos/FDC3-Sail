@@ -1,5 +1,5 @@
 // ============================================================================
-// SESSION — containers + running apps
+// SESSION — containers + running apps (single user)
 // ============================================================================
 //
 // SailUserSession tracks opaque UI containers and app instances. Arrangement
@@ -9,10 +9,7 @@
 //
 // ============================================================================
 
-/** Id of a {@link SailUserSession}. */
-export type SailSessionId = string
-
-/** Id of a running app inside a session. */
+/** Id of a running app inside the session. */
 export type AppInstanceId = string
 
 /** Opaque to platform: parentage, kind, geometry, UI-specific fields. */
@@ -104,11 +101,10 @@ export interface SailUserSessionSnapshot {
 }
 
 /**
- * One user session: containers + running apps.
+ * The single user session: containers + running apps.
  * Obtained from {@link SessionService.getSession} / {@link SessionService.getSessionByApp}.
  */
 export interface SailUserSession {
-  readonly id: SailSessionId
   getSnapshot(): SailUserSessionSnapshot
   subscribe(listener: () => void): () => void
 
@@ -118,19 +114,25 @@ export interface SailUserSession {
 
   openApp(request: SailOpenAppRequest): Promise<AppInstanceId>
   closeApp(instanceId: AppInstanceId): Promise<void>
+
+  /** Associate an iframe/popup Window with a running instance (browser hosts). */
+  registerHostWindow(windowRef: Window, instanceId: AppInstanceId): void
+  /** Drop the Window association for an instance. */
+  unregisterHostWindow(instanceId: AppInstanceId): void
+  getInstanceIdForHostWindow(windowRef: Window): AppInstanceId | undefined
+  getHostWindow(instanceId: AppInstanceId): Window | undefined
 }
 
 /**
- * sail.platform.session — resolve sessions by session id or by app instance.
+ * sail.platform.session — single-user session registry.
  */
 export interface SessionService {
-  getSession(sessionId: SailSessionId): SailUserSession | undefined
+  /** The single user session, if created. */
+  getSession(): SailUserSession | undefined
   getSessionByApp(appInstanceId: AppInstanceId): SailUserSession | undefined
-  /** Live sessions created via the host's `createSession`. */
-  getSessions(): readonly SailUserSession[]
   /**
-   * Notify when a session is created. Existing sessions are not replayed —
-   * call {@link getSessions} first if you need them.
+   * Notify when the session is created. If already created, the listener is
+   * invoked immediately.
    */
   onSession(listener: (session: SailUserSession) => void): () => void
 }

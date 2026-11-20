@@ -29,7 +29,6 @@ export default defineConfig({
       // Keep workspace packages out of pre-bundle so changes trigger reload
       "@finos/sail-platform",
       "@finos/sail-extension",
-      "@finos/sail-extension-fdc3",
     ],
   },
   build: {
@@ -46,29 +45,6 @@ export default defineConfig({
     port: 3000,
     // CI / Playwright sets CI=1; avoid stealing focus from the test browser.
     open: !process.env.CI,
-    proxy: {
-      // Hosted FDC3 3.0 toolbox (same path as sail-one / website-conformance.json apps).
-      "/apps": {
-        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/lib": {
-        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/screenshots": {
-        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-      "/finos-icon-256.png": {
-        target: "https://fdc3.finos.org/toolbox/3.0/fdc3-conformance",
-        changeOrigin: true,
-        secure: true,
-      },
-    },
     // Watch workspace packages so changes are picked up without restarting the
     // dev server (negated glob = do not ignore)
     watch: {
@@ -76,7 +52,7 @@ export default defineConfig({
         "**/node_modules/**",
         "**/.git/**",
         "!**/node_modules/@finos/sail-platform/**",
-        "!**/node_modules/@finos/sail-extension-fdc3/**",
+        "!**/node_modules/@finos/sail-extension/**",
       ],
     },
   },

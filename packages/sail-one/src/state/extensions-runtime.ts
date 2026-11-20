@@ -7,14 +7,6 @@ import {
 } from "@finos/sail-extension"
 import type { SailExtensionUI } from "@finos/sail-extension/ui"
 import {
-  SAIL_FDC3_APP_CONTRIBUTION,
-  SAIL_FDC3_SERVER_FACTORY,
-  SailFDC3ServerFactory,
-  type CreateInstanceOptions,
-  type SailFdc3AppContribution,
-  type SailFdc3SessionHandle,
-} from "@finos/sail-extension-fdc3"
-import {
   SAIL_PLATFORM_BUS,
   SAIL_PLATFORM_CATALOG,
   SAIL_PLATFORM_SESSION,
@@ -24,9 +16,8 @@ import {
   createLocalUserStorage,
   createSailPlatformBus,
   createSailPlatformCatalog,
-  createSailStorage,
   createSessionService,
-  type SailUserSession,
+  type SailUserStorage,
 } from "@finos/sail-platform"
 
 import { createSailOneExtensionStorage } from "./extension-storage"
@@ -57,7 +48,7 @@ function ensurePlatformCaps(): {
   sessions: ReturnType<typeof createSessionService>
   bus: ReturnType<typeof createSailPlatformBus>
   catalog: ReturnType<typeof createSailPlatformCatalog>
-  storage: ReturnType<typeof createSailStorage>
+  storage: SailUserStorage
 } {
   if (platformCaps) {
     return platformCaps
@@ -65,10 +56,7 @@ function ensurePlatformCaps(): {
   const sessions = createSessionService()
   const bus = createSailPlatformBus()
   const catalog = createSailPlatformCatalog()
-  const storage = createSailStorage({
-    createUserStorage: sessionId =>
-      createLocalUserStorage({ keyPrefix: `sail_one_${sessionId}_` }),
-  })
+  const storage = createLocalUserStorage({ keyPrefix: "sail_one_" })
   platformCaps = { sessions, bus, catalog, storage }
   return platformCaps
 }
@@ -86,7 +74,7 @@ function platformExportsFromCaps(caps: ReturnType<typeof ensurePlatformCaps>) {
   }
 }
 
-/** Warm platform capability objects and load active extensions (including sail.fdc3). */
+/** Warm platform capability objects and load active extensions. */
 export async function loadExtensionCores(): Promise<SailExtensionRegistry> {
   const caps = ensurePlatformCaps()
   if (!platformRegistry) {
@@ -106,14 +94,6 @@ export function getExtensionRegistry(): SailExtensionRegistry | null {
 /** Capability resolver for UI mounts — same map `activate` sees. */
 export function getExtensionExport<T = unknown>(capabilityId: string): T | undefined {
   return platformRegistry?.getExport<T>(capabilityId)
-}
-
-export function getSailFdc3Factory(): SailFDC3ServerFactory | undefined {
-  return platformRegistry?.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
-}
-
-export function getSailFdc3AppContribution(): SailFdc3AppContribution | undefined {
-  return platformRegistry?.getExport<SailFdc3AppContribution>(SAIL_FDC3_APP_CONTRIBUTION)
 }
 
 export async function loadExtensionUIs(): Promise<LoadedSailExtensionUI[]> {
@@ -147,17 +127,4 @@ export async function loadExtensionUIs(): Promise<LoadedSailExtensionUI[]> {
 export function getLoadedExtensionUIs(type?: string): LoadedSailExtensionUI[] {
   const all = uis ?? []
   return type ? all.filter(ui => ui.type === type) : all
-}
-
-/** Boot a DA for a {@link SailUserSession} via `sail.fdc3` factory. */
-export async function createFdc3SessionAgent(
-  session: SailUserSession,
-  options?: CreateInstanceOptions,
-): Promise<SailFdc3SessionHandle> {
-  const registry = await loadExtensionCores()
-  const factory = registry.getExport<SailFDC3ServerFactory>(SAIL_FDC3_SERVER_FACTORY)
-  if (!factory) {
-    throw new Error("sail.fdc3.serverFactory missing — is sail.fdc3 active in extensions.json?")
-  }
-  return factory.createInstance(session, options)
 }

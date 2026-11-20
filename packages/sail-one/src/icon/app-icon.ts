@@ -1,15 +1,7 @@
-import type { AppMetadata } from "@finos/fdc3-standard-v3"
-import type { DirectoryApp } from "@finos/sail-headless-agent"
+import type { SailApp } from "@finos/sail-platform"
 
 export const DEFAULT_ICON = "/icons/control/choose-app.svg"
 
-export function getIcon(a: DirectoryApp | AppMetadata | undefined): string {
-  if (a) {
-    const icons = a.icons ?? []
-    if (icons.length > 0) {
-      return icons[0]!.src
-    }
-  }
-
-  return DEFAULT_ICON
+export function getIcon(a: SailApp | undefined): string {
+  return a?.icon || DEFAULT_ICON
 }

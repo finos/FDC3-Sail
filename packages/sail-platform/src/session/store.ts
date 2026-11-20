@@ -4,7 +4,6 @@ import type {
   LocationDetails,
   SailAppInstance,
   SailOpenAppRequest,
-  SailSessionId,
   SailUserSession,
   SailUserSessionSnapshot,
   SessionService,
@@ -23,86 +22,95 @@ export type SailUserSessionHostHooks = {
 }
 
 export type CreateSailUserSessionOptions = {
-  /** Session id; default random UUID. */
-  sessionId?: SailSessionId
   /** App instance id factory; default random UUID. */
   createAppInstanceId?: () => AppInstanceId
   host?: SailUserSessionHostHooks
 }
 
 export type CreateSessionServiceOptions = {
-  createSessionId?: () => SailSessionId
   createAppInstanceId?: () => AppInstanceId
 }
 
 /**
- * Process-level session registry. Hosts export this as `sail.platform.session`.
- * Use {@link createSession} for each user session; app ids are tracked from the
- * session snapshot (openApp / closeApp / destroyContainer).
+ * Process-level single-user session registry. Hosts export this as `sail.platform.session`.
+ * Use {@link createSession} once; app ids are tracked from the session snapshot.
  */
 export function createSessionService(
   options?: CreateSessionServiceOptions,
 ): SessionService & {
   createSession(sessionOptions?: CreateSailUserSessionOptions): SailUserSession
 } {
-  const bySessionId = new Map<SailSessionId, SailUserSession>()
+  let session: SailUserSession | undefined
   const byAppId = new Map<AppInstanceId, SailUserSession>()
   const sessionListeners = new Set<(session: SailUserSession) => void>()
-  const createSessionId = options?.createSessionId ?? (() => crypto.randomUUID())
   const createAppInstanceId = options?.createAppInstanceId ?? (() => crypto.randomUUID())
 
   return {
-    getSession(sessionId) {
-      return bySessionId.get(sessionId)
+    getSession() {
+      return session
     },
     getSessionByApp(appInstanceId) {
       return byAppId.get(appInstanceId)
     },
-    getSessions() {
-      return [...bySessionId.values()]
-    },
     onSession(listener) {
       sessionListeners.add(listener)
+      if (session) {
+        listener(session)
+      }
       return () => {
         sessionListeners.delete(listener)
       }
     },
     createSession(sessionOptions) {
-      const session = createSailUserSession({
-        sessionId: sessionOptions?.sessionId ?? createSessionId(),
+      if (session) {
+        throw new Error("sail.platform.session already has a user session")
+      }
+      const created = createSailUserSession({
         createAppInstanceId: sessionOptions?.createAppInstanceId ?? createAppInstanceId,
         host: sessionOptions?.host,
       })
-      bySessionId.set(session.id, session)
+      session = created
       const sync = () => {
-        const live = new Set(session.getSnapshot().apps.map(a => a.instanceId))
+        const live = new Set(created.getSnapshot().apps.map(a => a.instanceId))
         for (const [id, owner] of [...byAppId.entries()]) {
-          if (owner === session && !live.has(id)) {
+          if (owner === created && !live.has(id)) {
             byAppId.delete(id)
           }
         }
-        for (const app of session.getSnapshot().apps) {
-          byAppId.set(app.instanceId, session)
+        for (const app of created.getSnapshot().apps) {
+          byAppId.set(app.instanceId, created)
         }
       }
-      session.subscribe(sync)
+      created.subscribe(sync)
       sync()
       for (const listener of [...sessionListeners]) {
-        listener(session)
+        listener(created)
       }
-      return session
+      return created
     },
   }
 }
 
 export function createSailUserSession(options?: CreateSailUserSessionOptions): SailUserSession {
-  const id = options?.sessionId ?? crypto.randomUUID()
   const createAppInstanceId = options?.createAppInstanceId ?? (() => crypto.randomUUID())
   const host = options?.host
 
   const containers = new Map<string, Container>()
   const apps = new Map<AppInstanceId, SailAppInstance>()
   const listeners = new Set<() => void>()
+
+  /** Window ↔ instance map owned by this session (browser hosts). */
+  const windowsByInstance = new Map<AppInstanceId, WeakRef<Window>>()
+  const instanceByWindow = new WeakMap<Window, AppInstanceId>()
+
+  function forgetWindow(instanceId: AppInstanceId): void {
+    const ref = windowsByInstance.get(instanceId)
+    windowsByInstance.delete(instanceId)
+    const win = ref?.deref()
+    if (win) {
+      instanceByWindow.delete(win)
+    }
+  }
 
   let snapshot: SailUserSessionSnapshot = { containers: [], apps: [] }
 
@@ -116,8 +124,7 @@ export function createSailUserSession(options?: CreateSailUserSessionOptions): S
     }
   }
 
-  const session: SailUserSession = {
-    id,
+  const userSession: SailUserSession = {
     getSnapshot() {
       return snapshot
     },
@@ -154,6 +161,7 @@ export function createSailUserSession(options?: CreateSailUserSessionOptions): S
       for (const [instanceId, app] of [...apps.entries()]) {
         if (app.within === containerId) {
           apps.delete(instanceId)
+          forgetWindow(instanceId)
         }
       }
       containers.delete(containerId)
@@ -199,12 +207,27 @@ export function createSailUserSession(options?: CreateSailUserSessionOptions): S
       }
       await host?.onCloseApp?.(instanceId, app)
       apps.delete(instanceId)
+      forgetWindow(instanceId)
       emit()
+    },
+
+    registerHostWindow(windowRef, instanceId) {
+      windowsByInstance.set(instanceId, new WeakRef(windowRef))
+      instanceByWindow.set(windowRef, instanceId)
+    },
+    unregisterHostWindow(instanceId) {
+      forgetWindow(instanceId)
+    },
+    getInstanceIdForHostWindow(windowRef) {
+      return instanceByWindow.get(windowRef)
+    },
+    getHostWindow(instanceId) {
+      return windowsByInstance.get(instanceId)?.deref()
     },
   }
 
   emit()
-  return session
+  return userSession
 }
 
 /** Helper for hosts that need to mutate location without replacing the API. */

@@ -16,6 +16,7 @@
     "./api": "./src/api.ts",
     "./activate": "./src/activate.ts",
     "./ui-hidden": "./src/ui-hidden.ts",
+    "./ui-intent-resolver": "./src/ui-intent-resolver.ts",
     "./ui-app-bar-connection": "./src/ui-app-bar-connection.ts"
   },
   "scripts": {

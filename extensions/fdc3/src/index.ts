@@ -9,8 +9,9 @@ export type {
 export {
   SAIL_FDC3_APP_CONTRIBUTION,
   SAIL_FDC3_CHANNELS,
+  SAIL_FDC3_INSTANCE,
+  SAIL_FDC3_INTENT_RESOLVER,
   SAIL_FDC3_REGISTER_MIDDLEWARE,
-  SAIL_FDC3_SERVER_FACTORY,
 } from "./ids"
 export {
   createSailFdc3AppContribution,
@@ -22,12 +23,6 @@ export {
   USER_CHANNELS_STORAGE_KEY,
 } from "./default-user-channels"
 export { createSailFdc3Channels } from "./channels"
-export {
-  SailFDC3ServerFactory,
-  type CreateInstanceOptions,
-  type SailFdc3SessionHandle,
-  type SailFDC3ServerFactoryOptions,
-} from "./SailFDC3ServerFactory"
 export {
   SailFDC3ServerInstance,
   type SailFDC3ServerInstanceOptions,

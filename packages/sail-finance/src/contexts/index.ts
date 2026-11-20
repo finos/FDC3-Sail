@@ -1,7 +1,7 @@
-export { SailDesktopAgentProvider } from "./SailDesktopAgentContext"
+export { SailSessionProvider } from "./SailSessionContext"
 export {
-  useSailDesktopAgent,
+  useSailSession,
+  useSailCatalog,
   useAppDirectoryStore,
   useConnectionStore,
-  useIntentResolverStore,
-} from "./use-sail-desktop-agent-hooks"
+} from "./use-sail-session-hooks"

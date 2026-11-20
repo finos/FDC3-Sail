@@ -1,6 +1,6 @@
 # @finos/sail-finance
 
-Browser deployment of FDC3 Sail — React host for the Desktop Agent, workspace UI, and FDC3 apps in iframes.
+Sail host shell — React workspace UI that composes `@finos/sail-platform` and loads agent features (including FDC3) as **extensions** at runtime. The shell itself has no FDC3 package imports, AppD fetching, or channel/intent UI.
 
 ## Documentation
 
@@ -15,4 +15,6 @@ npm run dev -w @finos/sail-finance
 
 Dev server: **http://localhost:3000**
 
-Uses the public FINOS app directory (`https://directory.fdc3.finos.org/v2/apps`). For FDC3 conformance toolbox runs, use `@finos/sail-conformance-harness` instead.
+Extensions under `extensions/` (e.g. `sail.fdc3`, directories, channels) are discovered via `sail-extension-server`'s `extensions.json` Vite plugin — they are not declared as finance dependencies.
+
+App directory seeding and FDC3 conformance toolbox runs live in `@finos/sail-conformance-harness` / the FDC3 directories extension, not in this shell.

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test"
-import type { DirectoryApp } from "@finos/sail-headless-agent"
+import type { SailWebApp } from "@finos/sail-platform"
 import { PlatformClientState } from "../client-state"
 import { installLocalStorage } from "./local-storage-mock"
 
@@ -17,55 +17,31 @@ describe("PlatformClientState", () => {
     installLocalStorage()
   })
 
-  it("loads default tabs and FINOS directory when storage is empty", async () => {
+  it("loads default tabs when storage is empty", async () => {
     const state = await loadedState()
 
     expect(state.getTabs()).toHaveLength(3)
     expect(state.getActiveTab().id).toBe("One")
-    expect(state.getDirectories()).toEqual([
-      {
-        label: "FINOS FDC3 Directory",
-        url: "https://directory.fdc3.finos.org/v2/apps",
-        active: true,
-      },
-    ])
     expect(state.getUserSessionID()).toMatch(/^user-/)
   })
 
-  it("createArgs only includes active directory URLs", async () => {
+  it("newPanel persists a web app panel for the active tab", async () => {
     const state = await loadedState()
-    await state.setDirectories([
-      {
-        label: "Active",
-        url: "https://example.com/v2/apps",
-        active: true,
-      },
-      {
-        label: "Inactive",
-        url: "https://other.example/v2/apps",
-        active: false,
-      },
-    ])
+    const app: SailWebApp = {
+      appId: "demo",
+      title: "Demo",
+      url: "https://app.example/",
+    }
+    const panel = state.newPanel(app, "inst-1", "Demo 1")
 
-    expect(state.createArgs().directories).toEqual(["https://example.com/v2/apps"])
-  })
-
-  it("persists custom apps into createArgs and platform storage", async () => {
-    const customApps: DirectoryApp[] = [
-      {
-        appId: "demo",
-        name: "Demo",
-        title: "Demo",
-        type: "web",
-        details: { url: "https://app.example/" },
-      },
-    ]
-    const state = await loadedState()
-    await state.setCustomApps(customApps)
-
-    expect(state.createArgs().customApps).toEqual(customApps)
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
-    expect(stored.customApps).toEqual(customApps)
+    expect(panel).toMatchObject({
+      panelId: "inst-1",
+      appId: "demo",
+      title: "Demo 1",
+      url: "https://app.example/",
+      tabId: "One",
+    })
+    expect(state.getPanels()).toHaveLength(1)
   })
 
   it("rehydrates from platform storage", async () => {
@@ -82,21 +58,12 @@ describe("PlatformClientState", () => {
         panels: [],
         activeTabId: "Saved",
         userSessionId: "user-fixed",
-        directories: [
-          {
-            label: "Local",
-            url: "https://local.example/v2/apps",
-            active: true,
-          },
-        ],
-        customApps: [],
       }),
     )
 
     const state = await loadedState()
     expect(state.getUserSessionID()).toBe("user-fixed")
     expect(state.getActiveTab().id).toBe("Saved")
-    expect(state.getDirectories()[0]!.url).toBe("https://local.example/v2/apps")
   })
 
   it("getActiveTab does not throw once every tab has been removed", async () => {

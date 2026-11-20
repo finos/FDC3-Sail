@@ -1,5 +1,5 @@
 /**
- * Host-facing intent resolution for {@link SailFdc3SessionHandle}.
+ * Host-facing intent resolution (`sail.fdc3.intentResolver`).
  * Framework-neutral: hosts subscribe via onRequest / select / cancel.
  */
 

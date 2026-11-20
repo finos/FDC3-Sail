@@ -3,7 +3,6 @@ import {
   SAIL_PLATFORM_BUS,
   SAIL_PLATFORM_SESSION,
   type SailPlatformBus,
-  type SailUserSession,
   type SessionService,
 } from "@finos/sail-platform"
 import {
@@ -14,8 +13,7 @@ import {
 } from "./settings"
 
 /**
- * Log each session's bus (settings from extension storage). Does not listen on
- * the platform-wide bus — only {@link SailPlatformBus.forSession}.
+ * Log bus traffic (settings from extension storage).
  */
 export async function activate(ctx: SailExtensionContext) {
   const bus = ctx.getExport<SailPlatformBus>(SAIL_PLATFORM_BUS)
@@ -26,14 +24,18 @@ export async function activate(ctx: SailExtensionContext) {
     )
   }
 
-  const sessionUnsubs = new Map<string, () => void>()
+  let attached = false
+  let unsubscribe: (() => void) | undefined
 
-  const attach = (session: SailUserSession) => {
-    if (sessionUnsubs.has(session.id)) {
+  const attach = () => {
+    if (attached) {
       return
     }
-    const sessionBus = bus.forSession(session)
-    const unsubscribe = sessionBus.subscribe(async (message, instanceId) => {
+    if (!sessions.getSession()) {
+      return
+    }
+    attached = true
+    unsubscribe = bus.subscribe(async (message, instanceId) => {
       const settings =
         (await ctx.storage.get<DemoSettings>(DEMO_SETTINGS_KEY)) ?? DEMO_DEFAULT_SETTINGS
       if (!settings.enabled) {
@@ -48,21 +50,15 @@ export async function activate(ctx: SailExtensionContext) {
       }
       console.info(`[${settings.label}] ${type} peer=${instanceId}`)
     })
-    sessionUnsubs.set(session.id, unsubscribe)
   }
 
-  for (const session of sessions.getSessions()) {
-    attach(session)
-  }
   const stopWatch = sessions.onSession(attach)
 
   ctx.subscriptions.push({
     dispose() {
       stopWatch()
-      for (const unsubscribe of sessionUnsubs.values()) {
-        unsubscribe()
-      }
-      sessionUnsubs.clear()
+      unsubscribe?.()
+      attached = false
     },
   })
   return {}

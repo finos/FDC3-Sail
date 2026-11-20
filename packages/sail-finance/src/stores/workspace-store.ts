@@ -3,7 +3,7 @@ import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
 import { persist } from "zustand/middleware"
 
-// Panel interface - represents an FDC3 app instance
+// Panel interface - represents a hosted app instance
 export interface Panel {
   panelId: string
   appId: string
@@ -94,7 +94,7 @@ const createDefaultWorkspace = (): Workspace => {
           {
             tabId: defaultTabId,
             name: "Main",
-            panels: new Map(), // Start with empty panels - add FDC3 apps from directory
+            panels: new Map(), // Start with empty panels - add apps from the catalogue
           },
         ],
       ]),

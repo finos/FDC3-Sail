@@ -17,7 +17,6 @@ export type {
   Rect,
   SailAppInstance,
   SailOpenAppRequest,
-  SailSessionId,
   SailUserSession,
   SailUserSessionSnapshot,
   SessionService,

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from "vite-plus/test"
 
 import { createLocalUserStorage } from "../local"
 import { createMemoryUserStorage } from "../memory"
-import { createSailStorage } from "../store"
 import type { SailUserStorage } from "../types"
 
 /** Minimal in-process `Storage`, so the local adapter can be tested without a DOM. */
@@ -126,18 +125,5 @@ describe("createLocalUserStorage", () => {
     const storage = createLocalUserStorage({ backing })
 
     await expect(storage.get("config")).resolves.toBeNull()
-  })
-})
-
-describe("createSailStorage", () => {
-  it("resolves SailUserStorage by SailSessionId", () => {
-    const root = createSailStorage({
-      createUserStorage: () => createMemoryUserStorage(),
-    })
-    expect(root.getUserStorage("sess-1")).toBeUndefined()
-    const user = root.ensureUserStorage("sess-1")
-    expect(root.getUserStorage("sess-1")).toBe(user)
-    root.removeUserStorage("sess-1")
-    expect(root.getUserStorage("sess-1")).toBeUndefined()
   })
 })

@@ -23,7 +23,6 @@ export function ConfigScreen({ storage }: SailExtensionUIProps) {
 
   async function save(next: DirectoriesSettings) {
     setSettings(next)
-    // activate() subscribes via storage.onChange and refreshes contributor caches.
     await storage.set(DIRECTORIES_SETTINGS_KEY, next)
   }
 

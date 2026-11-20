@@ -32,7 +32,6 @@ export {
   type AppInstanceId,
   type SailAppInstance,
   type SailOpenAppRequest,
-  type SailSessionId,
   type SailUserSession,
   type SailUserSessionHostHooks,
   type SailUserSessionSnapshot,
@@ -49,26 +48,27 @@ export {
   type BusPeerId,
   type SailBusMessageHandler,
   type SailPlatformBus,
-  type SailSessionBus,
-  type SailSessionBusMessageHandler,
 } from "./bus"
 
 // Catalog (sail.platform.catalog)
 export {
   createSailPlatformCatalog,
-  type SailCatalogApp,
+  NEW_WINDOW,
+  PANEL,
+  SIDEBAR,
+  TRAY,
+  type SailApp,
   type SailCatalogProvider,
   type SailPlatformCatalog,
+  type SailWebApp,
+  type SailWebAppLocation,
 } from "./catalog"
 
-// Storage (sail.platform.storage → SailStorage)
+// Storage — hosts export SailUserStorage as sail.platform.storage
 export {
   createLocalUserStorage,
   createMemoryUserStorage,
-  createSailStorage,
-  type CreateSailStorageOptions,
   type LocalUserStorageOptions,
-  type SailStorage,
   type SailStorageChange,
   type SailStorageChangeListener,
   type SailUserStorage,

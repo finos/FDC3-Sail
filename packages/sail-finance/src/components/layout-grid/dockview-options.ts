@@ -1,10 +1,10 @@
-/** Keep iframe panels mounted when hidden — prevents WCP disconnect on tab switch. */
-export const FDC3_PANEL_RENDERER = "always" as const
+/** Keep iframe panels mounted when hidden — keeps the iframe (and its window) alive on tab switch. */
+export const APP_PANEL_RENDERER = "always" as const
 
-export function isFdc3PanelParams(params: unknown): boolean {
+export function isAppPanelParams(params: unknown): boolean {
   return Boolean((params as { panel?: { panelId: string } } | undefined)?.panel?.panelId)
 }
 
-export function extractFdc3PanelId(params: unknown): string | undefined {
+export function extractAppPanelId(params: unknown): string | undefined {
   return (params as { panel?: { panelId: string } } | undefined)?.panel?.panelId
 }

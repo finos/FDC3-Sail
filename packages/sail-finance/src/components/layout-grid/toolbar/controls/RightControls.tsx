@@ -4,7 +4,7 @@ import { ExternalLink, Maximize2, Minimize2, X } from "lucide-react"
 
 import { useConnectionStore } from "../../../../contexts"
 import { AppBarSlot } from "../../../extensions/AppBarSlot"
-import { extractFdc3PanelId } from "../../dockview-options"
+import { extractAppPanelId } from "../../dockview-options"
 import { dockviewPopoutUrl } from "../../../../utils/dockview-popout"
 
 import { Icon } from "./Icon"
@@ -81,11 +81,12 @@ const AppBarForPanel = ({ activePanelId }: { activePanelId: string }) => {
     return instanceId ? state.connections.get(instanceId) : undefined
   })
 
+  const instanceId = connection?.instanceId ?? activePanelId
   if (!connection) {
     return <div className="size-3 rounded-full bg-muted animate-pulse" />
   }
 
-  return <AppBarSlot key={connection.instanceId} instanceId={connection.instanceId} />
+  return <AppBarSlot key={instanceId} instanceId={instanceId} />
 }
 
 /**
@@ -94,13 +95,13 @@ const AppBarForPanel = ({ activePanelId }: { activePanelId: string }) => {
 export const RightControls = (props: IDockviewHeaderActionsProps) => {
   const isPopout = props.api.location.type === "popout"
   const [activePanelId, setActivePanelId] = useState<string | undefined>(() =>
-    extractFdc3PanelId(props.activePanel?.params),
+    extractAppPanelId(props.activePanel?.params),
   )
 
   const syncActivePanelId = useCallback(() => {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- dockview declares group required on IDockviewHeaderActionsProps; the ?? fallback is load-bearing if it is ever absent
     const panel = props.group?.activePanel ?? props.activePanel
-    setActivePanelId(panel ? extractFdc3PanelId(panel.params) : undefined)
+    setActivePanelId(panel ? extractAppPanelId(panel.params) : undefined)
   }, [props.activePanel, props.group])
 
   useEffect(() => {

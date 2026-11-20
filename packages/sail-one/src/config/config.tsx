@@ -4,7 +4,6 @@ import styles from "./styles.module.css"
 import type { ClientState } from "../state"
 import { Popup } from "../popups/popup"
 import { TabList } from "./tabs"
-import { CustomAppList } from "./custom-apps"
 import { createSailOneExtensionStorage } from "../state/extension-storage"
 import {
   getExtensionExport,
@@ -14,7 +13,7 @@ import {
 } from "../state/extensions-runtime"
 
 /** Built-in panels that are not yet extension-owned. */
-const CONFIG_ITEMS = ["Tabs", "Custom Apps"] as const
+const CONFIG_ITEMS = ["Tabs"] as const
 
 function ExtensionScreen({ ui }: { ui: LoadedSailExtensionUI }) {
   const host = useRef<HTMLDivElement>(null)
@@ -46,13 +45,13 @@ export function ConfigPanel({ closeAction }: AppPanelProps) {
   useEffect(() => subscribeExtensionUIs(() => setUiEpoch(epoch => epoch + 1)), [])
   const extensionUIs = getLoadedExtensionUIs(SAIL_UI_CONFIG)
 
-  // Prefer the directories extension as the default tab when present.
+  // Prefer a directories-titled contribution as the default tab when present.
   useEffect(() => {
     if (item) {
       return
     }
-    const directories = extensionUIs.find(ui => ui.coreId === "sail.fdc3.directories")
-    setItem(directories?.id ?? CONFIG_ITEMS[0])
+    const directories = extensionUIs.find(ui => /director/i.test(ui.title))
+    setItem(directories?.id ?? extensionUIs[0]?.id ?? CONFIG_ITEMS[0])
   }, [extensionUIs, item])
 
   const extension = extensionUIs.find(ui => ui.id === item)
@@ -89,7 +88,6 @@ export function ConfigPanel({ closeAction }: AppPanelProps) {
 
           <div className={styles.configChoice}>
             {item == "Tabs" ? <TabList /> : null}
-            {item == "Custom Apps" ? <CustomAppList /> : null}
             {extension ? <ExtensionScreen ui={extension} /> : null}
           </div>
         </div>

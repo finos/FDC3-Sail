@@ -4,11 +4,10 @@ import { GridStack, type GridItemHTMLElement } from "gridstack"
 import "gridstack/dist/gridstack.css"
 import styles from "./styles.module.css"
 import {
-  AppInstanceState,
   type AppPanel,
   type ClientState,
   getAppState,
-  getServerState,
+  getSession,
 } from "../state"
 import { findEmptyArea } from "./find-empty-area"
 import { setupTabDropTargets } from "./setup-tab-drop-targets"
@@ -51,7 +50,7 @@ export function Grids({ cs, onOpenApp }: GridsProps) {
         <div className={styles.emptyState}>
           <h2 className={styles.emptyTitle}>No apps open</h2>
           <p className={styles.emptyCopy}>
-            Open an app from the directory to start working in this channel.
+            Open an app from the directory to start working in this tab.
           </p>
           <button type="button" className={styles.emptyButton} onClick={onOpenApp}>
             Apps
@@ -132,9 +131,7 @@ function TabGrid({
       }
 
       grid.removeWidget(element, false, false)
-      void cs.updatePanel(updated).then(() => {
-        void getServerState().setUserChannel(updated.panelId, targetTabId)
-      })
+      void cs.updatePanel(updated)
     }
 
     const setResizing = (resizing: boolean) => {
@@ -170,9 +167,15 @@ function TabGrid({
     })
     grid.on("removed", (_event, items) => {
       items.forEach(item => {
-        if (item.id) {
-          void cs.removePanel(item.id)
+        const panelId = item.id
+        if (typeof panelId !== "string") {
+          return
         }
+        void getSession()
+          .closeApp(panelId)
+          .catch(() => {
+            void cs.removePanel(panelId)
+          })
       })
     })
 
@@ -268,10 +271,13 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
           <p className={styles.contentTitleText}>
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
-          <AppStateIcon instanceId={panel.panelId} />
           <CloseIcon
             action={() => {
-              void cs.removePanel(panel.panelId)
+              void getSession()
+                .closeApp(panel.panelId)
+                .catch(() => {
+                  void cs.removePanel(panel.panelId)
+                })
             }}
           />
         </div>
@@ -295,35 +301,6 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
       </div>
     </div>
   )
-}
-
-function AppStateIcon({ instanceId }: { instanceId: string }) {
-  const iconBase = "/icons/app-state/"
-  const state = getServerState().getAppInstanceState(instanceId)
-
-  function symbolForState(state: AppInstanceState | undefined): [string, string] | null {
-    switch (state) {
-      case AppInstanceState.Connected:
-        return [iconBase + "connected.svg", "Connected to FDC3"]
-      case AppInstanceState.Pending:
-        return [iconBase + "pending.svg", "Pending"]
-      case AppInstanceState.Terminated:
-        return [iconBase + "terminated.svg", "Terminated"]
-      default:
-        // Hide Unknown — a "?" looks like help and adds little signal.
-        // "Not Responding" has no equivalent on the current agent surface;
-        // not-responding.svg is retained for when heartbeat health is exposed.
-        return null
-    }
-  }
-
-  const symbol = symbolForState(state)
-  if (!symbol) {
-    return null
-  }
-
-  const [src, title] = symbol
-  return <img src={src} className={styles.contentTitleIcon} title={title} />
 }
 
 function CloseIcon({ action }: { action: () => void }) {
