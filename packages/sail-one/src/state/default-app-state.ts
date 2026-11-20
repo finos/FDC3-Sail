@@ -80,7 +80,8 @@ export class DefaultAppState implements AppState {
     const instanceTitle = this.createTitle(detail)
     const channel = hosting === AppHosting.Tab ? null : getClientState().getActiveTab().id
 
-    const catalogApp = getCatalog().list().find(entry => entry.appId === detail.appId) ?? detail
+    const catalogApp =
+      (await getCatalog().list()).find(entry => entry.appId === detail.appId) ?? detail
     const url = catalogUrl(catalogApp) ?? detail.url
     if (!url) {
       throw new Error(`App ${detail.appId} has no URL in the platform catalog`)

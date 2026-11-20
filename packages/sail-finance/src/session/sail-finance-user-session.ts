@@ -180,7 +180,7 @@ export class SailFinanceUserSession implements SailUserSession {
   }
 
   private async mountApp(request: SailOpenAppRequest, instanceId: AppInstanceId): Promise<void> {
-    const apps = this.catalog.list()
+    const apps = await this.catalog.list()
     const app =
       apps.find(a => a.appId === request.appId) ??
       (request.url

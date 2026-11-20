@@ -44,7 +44,7 @@ async function openCatalogApp(
   catalog: SailPlatformCatalog,
   appId: string,
 ): Promise<string> {
-  const app = catalog.list().find(entry => entry.appId === appId)
+  const app = (await catalog.list()).find(entry => entry.appId === appId)
   const url = catalogAppUrl(app)
   if (!url) {
     throw new Error(`App ${appId} has no URL in the platform catalog`)
@@ -75,11 +75,6 @@ async function bootstrap(): Promise<void> {
   caps.sessions.createSession(session)
   setPlatformSession(session, caps.catalog)
   await loadExtensionUIs()
-
-  // Allow async directory contributors a beat to warm the catalog.
-  if (caps.catalog.list().length === 0) {
-    await new Promise<void>(resolve => setTimeout(resolve, 250))
-  }
 
   const container = document.getElementById("app")
   createRoot(container!).render(<App />)

@@ -33,9 +33,9 @@ img {
 }
 
 /* Resize hit-targets stay active (cursor changes); no visible grip icons. */
-.grid-stack-item > .ui-resizable-ne,
-.grid-stack-item > .ui-resizable-nw,
-.grid-stack-item > .ui-resizable-se,
-.grid-stack-item > .ui-resizable-sw {
+.grid-stack-item>.ui-resizable-ne,
+.grid-stack-item>.ui-resizable-nw,
+.grid-stack-item>.ui-resizable-se,
+.grid-stack-item>.ui-resizable-sw {
   background-image: none !important;
 }

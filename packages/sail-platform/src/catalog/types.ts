@@ -13,6 +13,11 @@ export interface SailApp {
   minInstances?: number
   /** When true, the host should launch this app as the session starts. */
   autoStart?: boolean
+  /**
+   * When true, omit from start-menu / catalogue UI. Still launchable by `appId`
+   * (deep link, FDC3 open, intents). Set via `hostManifests.sail.hidden`.
+   */
+  hidden?: boolean
 }
 
 /** Open the app in a new browser / OS window. */
@@ -41,9 +46,10 @@ export interface SailWebApp extends SailApp {
 
 /**
  * Supplies catalog apps for the single user.
+ * Sync or async — platform `list()` always awaits providers.
  */
 export interface SailCatalogProvider {
-  list(): SailApp[]
+  list(): SailApp[] | Promise<SailApp[]>
 }
 
 /**
@@ -52,5 +58,6 @@ export interface SailCatalogProvider {
 export interface SailPlatformCatalog {
   addProvider(provider: SailCatalogProvider): void
   removeProvider(provider: SailCatalogProvider): void
-  list(): SailApp[]
+  /** Resolves apps from all providers (awaiting any async providers). */
+  list(): Promise<SailApp[]>
 }

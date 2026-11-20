@@ -61,13 +61,7 @@ export const createAppDirectoryStore = (catalog: SailPlatformCatalog) =>
         try {
           setLoading(true)
           setError(null)
-          // Catalog may still be warming from async extension contributors.
-          let apps = catalog.list()
-          if (apps.length === 0) {
-            await new Promise<void>(resolve => setTimeout(resolve, 300))
-            apps = catalog.list()
-          }
-          setApps(apps)
+          setApps((await catalog.list()).filter(app => !app.hidden))
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Failed to load apps"
           setError(errorMessage)

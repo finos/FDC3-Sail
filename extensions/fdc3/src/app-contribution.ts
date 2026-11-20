@@ -14,6 +14,8 @@ type SailHostManifest = {
   maxInstances?: number
   minInstances?: number
   autoStart?: boolean
+  /** Hide from start-menu / catalogue UI; still launchable by appId. */
+  hidden?: boolean
 }
 
 function sailHostManifest(app: DirectoryApp): SailHostManifest {
@@ -37,6 +39,7 @@ function toCatalogApp(app: DirectoryApp): SailApp {
     ...(typeof sail.maxInstances === "number" ? { maxInstances: sail.maxInstances } : {}),
     ...(typeof sail.minInstances === "number" ? { minInstances: sail.minInstances } : {}),
     ...(typeof sail.autoStart === "boolean" ? { autoStart: sail.autoStart } : {}),
+    ...(typeof sail.hidden === "boolean" ? { hidden: sail.hidden } : {}),
   }
 
   const url = details?.url
@@ -110,8 +113,6 @@ export function createSailFdc3AppContribution(catalog: SailPlatformCatalog): {
   dispose(): void
 } {
   const sources = new Map<string, SailFdc3AppContributor>()
-  /** Sync snapshot for platform catalog (updated by retrieveAllApps). */
-  let catalogApps: SailApp[] = []
 
   const appContribution: SailFdc3AppContribution = {
     registerSource(sourceId, contributor) {
@@ -121,15 +122,14 @@ export function createSailFdc3AppContribution(catalog: SailPlatformCatalog): {
       sources.delete(sourceId)
     },
     async retrieveAllApps() {
-      const apps = await mergeApps(sources.values())
-      catalogApps = apps.map(toCatalogApp)
-      return apps
+      return mergeApps(sources.values())
     },
   }
 
   const provider: SailCatalogProvider = {
-    list() {
-      return catalogApps
+    async list() {
+      const apps = await appContribution.retrieveAllApps()
+      return apps.map(toCatalogApp)
     },
   }
   catalog.addProvider(provider)
@@ -139,7 +139,6 @@ export function createSailFdc3AppContribution(catalog: SailPlatformCatalog): {
     dispose() {
       catalog.removeProvider(provider)
       sources.clear()
-      catalogApps = []
     },
   }
 }

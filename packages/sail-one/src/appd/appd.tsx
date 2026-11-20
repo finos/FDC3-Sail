@@ -19,9 +19,26 @@ export function AppDPanel({ closeAction }: AppPanelProps) {
   useSailState()
   const [chosen, setChosen] = useState<SailApp | null>(null)
   const [showJson, setShowJson] = useState(false)
-  const apps = getCatalog().list().filter(isWebApp)
+  const [apps, setApps] = useState<SailWebApp[]>([])
 
   const app = chosen
+
+  useEffect(() => {
+    let cancelled = false
+    void getCatalog()
+      .list()
+      .then(list => {
+        if (!cancelled) {
+          setApps(list.filter((a): a is SailWebApp => isWebApp(a) && !a.hidden))
+        }
+      })
+      .catch((err: unknown) => {
+        console.error("[Sail] Failed to load catalog apps", err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!showJson) {

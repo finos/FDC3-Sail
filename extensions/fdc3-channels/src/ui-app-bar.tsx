@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
+import { createPortal } from "react-dom"
 import { createRoot } from "react-dom/client"
 import type { ChannelState } from "@finos/sail-headless-agent"
 import { getAppBarProperties, SAIL_UI_APP_BAR } from "@finos/sail-platform"
@@ -27,8 +35,141 @@ function ChannelMenu({
   onOpenChange: (open: boolean) => void
   error: string | null
 }) {
+  const triggerRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
+
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) {
+      setPos(null)
+      return
+    }
+    const rect = triggerRef.current.getBoundingClientRect()
+    setPos({
+      top: rect.bottom + 4,
+      right: Math.max(8, window.innerWidth - rect.right),
+    })
+  }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) {
+        return
+      }
+      if (menuRef.current?.contains(target) || triggerRef.current?.contains(target)) {
+        return
+      }
+      onOpenChange(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onOpenChange(false)
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown, true)
+    document.addEventListener("keydown", onKeyDown)
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true)
+      document.removeEventListener("keydown", onKeyDown)
+    }
+  }, [open, onOpenChange])
+
+  const menu =
+    open && pos
+      ? createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{
+              position: "fixed",
+              top: pos.top,
+              right: pos.right,
+              // Above Dockview panel iframes / overlays (tabs sit under the panel surface).
+              zIndex: 10000,
+              minWidth: 160,
+              padding: 8,
+              background: "var(--popover, #fff)",
+              color: "var(--popover-foreground, #111)",
+              border: "1px solid var(--border, #ddd)",
+              borderRadius: 6,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+            }}
+          >
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 4 }}>User Channels</div>
+            {channels.map(channel => {
+              const selected = selectedChannelId === channel.id
+              const color = channel.displayMetadata?.color ?? "#888"
+              const name = channel.displayMetadata?.name ?? channel.id
+              return (
+                <button
+                  key={channel.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => onChannelSelect(selected ? null : channel.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    width: "100%",
+                    padding: "4px 6px",
+                    border: "none",
+                    background: selected ? "rgba(0,0,0,0.06)" : "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    borderRadius: 4,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 9999,
+                      background: color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ flex: 1 }}>{name}</span>
+                  {selected ? "✓" : null}
+                </button>
+              )
+            })}
+            {selectedChannelId && (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => onChannelSelect(null)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginTop: 4,
+                  padding: "4px 6px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  opacity: 0.75,
+                }}
+              >
+                Leave channel
+              </button>
+            )}
+            {channels.length === 0 && (
+              <div style={{ fontSize: 12, opacity: 0.6 }}>No channels available</div>
+            )}
+            {error && (
+              <div style={{ marginTop: 4, fontSize: 11, color: "#b91c1c" }}>{error}</div>
+            )}
+          </div>,
+          document.body,
+        )
+      : null
+
   return (
-    <div style={{ position: "relative", display: "inline-flex" }}>
+    <div ref={triggerRef} style={{ position: "relative", display: "inline-flex" }}>
       <div
         onClick={() => onOpenChange(!open)}
         onKeyDown={e => {
@@ -39,90 +180,12 @@ function ChannelMenu({
         }}
         role="button"
         tabIndex={0}
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
         {trigger}
       </div>
-      {open && (
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: "100%",
-            marginTop: 4,
-            zIndex: 50,
-            minWidth: 160,
-            padding: 8,
-            background: "var(--popover, #fff)",
-            color: "var(--popover-foreground, #111)",
-            border: "1px solid var(--border, #ddd)",
-            borderRadius: 6,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-          }}
-        >
-          <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 4 }}>User Channels</div>
-          {channels.map(channel => {
-            const selected = selectedChannelId === channel.id
-            const color = channel.displayMetadata?.color ?? "#888"
-            const name = channel.displayMetadata?.name ?? channel.id
-            return (
-              <button
-                key={channel.id}
-                type="button"
-                onClick={() => onChannelSelect(selected ? null : channel.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  width: "100%",
-                  padding: "4px 6px",
-                  border: "none",
-                  background: selected ? "rgba(0,0,0,0.06)" : "transparent",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  borderRadius: 4,
-                }}
-              >
-                <span
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 9999,
-                    background: color,
-                    flexShrink: 0,
-                  }}
-                />
-                <span style={{ flex: 1 }}>{name}</span>
-                {selected ? "✓" : null}
-              </button>
-            )
-          })}
-          {selectedChannelId && (
-            <button
-              type="button"
-              onClick={() => onChannelSelect(null)}
-              style={{
-                display: "block",
-                width: "100%",
-                marginTop: 4,
-                padding: "4px 6px",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                textAlign: "left",
-                opacity: 0.75,
-              }}
-            >
-              Leave channel
-            </button>
-          )}
-          {channels.length === 0 && (
-            <div style={{ fontSize: 12, opacity: 0.6 }}>No channels available</div>
-          )}
-          {error && (
-            <div style={{ marginTop: 4, fontSize: 11, color: "#b91c1c" }}>{error}</div>
-          )}
-        </div>
-      )}
+      {menu}
     </div>
   )
 }

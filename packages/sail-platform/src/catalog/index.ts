@@ -26,10 +26,10 @@ export function createSailPlatformCatalog(): SailPlatformCatalog {
     removeProvider(provider) {
       providers.delete(provider)
     },
-    list() {
+    async list() {
       const byId = new Map<string, SailApp>()
       for (const provider of providers) {
-        for (const app of provider.list()) {
+        for (const app of await provider.list()) {
           byId.set(app.appId, app)
         }
       }

@@ -29,7 +29,7 @@ async function openCatalogApp(
   catalog: SailPlatformCatalog,
   appId: string,
 ): Promise<string> {
-  const app = catalog.list().find(entry => entry.appId === appId)
+  const app = (await catalog.list()).find(entry => entry.appId === appId)
   const url = catalogAppUrl(app)
   if (!url) {
     throw new Error(`App ${appId} has no URL in the platform catalog`)
@@ -72,13 +72,8 @@ if (isDockviewPopoutShell()) {
     caps.sessions.createSession(session)
     await loadExtensionUIs()
 
-    // Allow async directory contributors a beat to warm the catalog.
-    if (catalog.list().length === 0) {
-      await new Promise<void>(resolve => setTimeout(resolve, 250))
-    }
-
     console.log("[Sail] Host session ready", {
-      catalogApps: catalog.list().length,
+      catalogApps: (await catalog.list()).length,
       sessionApps: session.getSnapshot().apps.length,
     })
 

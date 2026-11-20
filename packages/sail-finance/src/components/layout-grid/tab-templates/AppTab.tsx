@@ -26,7 +26,8 @@ export const AppTab = (props: IDockviewPanelHeaderProps) => {
 
   const stopTabDrag = (event: PointerEvent) => {
     // Keep channel menu / connection chrome from starting a tab drag.
-    event.preventDefault()
+    // stopPropagation only — preventDefault on pointerdown can suppress click.
+    event.stopPropagation()
   }
 
   const onClose = (event: MouseEvent) => {

@@ -51,6 +51,10 @@ export default defineConfig({
     port: 3000,
     // CI / Playwright sets CI=1; avoid stealing focus from the test browser.
     open: !process.env.CI,
+    fs: {
+      // Extensions import workspace packages via /@fs; allow the monorepo root.
+      allow: [path.resolve(packageRoot, "../..")],
+    },
     // Watch workspace packages so changes are picked up without restarting the
     // dev server (negated glob = do not ignore)
     watch: {
