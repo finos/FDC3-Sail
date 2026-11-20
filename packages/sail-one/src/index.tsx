@@ -2,23 +2,19 @@ import "./styles/global.css"
 import { Frame } from "./frame/frame"
 import { createRoot } from "react-dom/client"
 import {
-  NEW_WINDOW,
   type SailApp,
   type SailPlatformCatalog,
   type SailUserSession,
   type SailWebApp,
 } from "@finos/sail-platform"
-import {
-  createBrowserSessionHostHooks,
-  createPopupCloseWatcher,
-} from "@finos/sail-platform-browser"
+import { createPopupCloseWatcher } from "@finos/sail-platform-browser"
 import { resolveDeepLinkAppId } from "@finos/sail-env"
 import {
-  AppHosting,
-  getAppState,
   getCatalog,
   getClientState,
+  getSailOneSession,
   getSession,
+  SailOneUserSession,
   setPlatformSession,
 } from "./state"
 import { HiddenExtensionHost } from "./extensions/HiddenExtensionHost"
@@ -62,79 +58,21 @@ async function openCatalogApp(
 }
 
 async function bootstrap(): Promise<void> {
-  // Platform storage is async — hydrate shell chrome before first render.
-  await getClientState().load()
   await loadExtensionCores()
   const caps = getPlatformCaps()
 
-  let session: SailUserSession | null = null
-  let forceFrameForNextLaunch = false
-
   const popupWatcher = createPopupCloseWatcher({
     onPopupClosed: instanceId => {
-      session?.unregisterHostWindow(instanceId)
+      getSailOneSession().unregisterHostWindow(instanceId)
     },
   })
 
-  const sessionHost = createBrowserSessionHostHooks({
-    mountApp: async (request, instanceId) => {
-      const apps = caps.catalog.list()
-      const app =
-        apps.find(a => a.appId === request.appId) ??
-        (request.url
-          ? ({
-              appId: request.appId,
-              title: request.title ?? request.appId,
-              icon: request.icon,
-              url: request.url,
-            } satisfies SailWebApp)
-          : ({
-              appId: request.appId,
-              title: request.title ?? request.appId,
-              icon: request.icon,
-            } satisfies SailApp))
-
-      const url = request.url ?? catalogAppUrl(app)
-      if (!url) {
-        throw new Error(`App ${request.appId} has no URL`)
-      }
-
-      const preferFrame = forceFrameForNextLaunch
-      forceFrameForNextLaunch = false
-      const pending = getAppState().takePendingHosting(request.appId)
-      const openAsTab =
-        !preferFrame &&
-        (pending?.hosting === AppHosting.Tab ||
-          (pending == null && isWebApp(app) && app.location === NEW_WINDOW))
-
-      if (openAsTab) {
-        const win = window.open(url, instanceId)
-        if (!win) {
-          throw new Error(`Failed to open window for ${request.appId}`)
-        }
-        session?.registerHostWindow(win, instanceId)
-        popupWatcher.registerPopup(instanceId, win)
-        return
-      }
-
-      const detail: SailWebApp = isWebApp(app) ? app : { ...app, url }
-      const title = pending?.instanceTitle ?? getAppState().createTitle(detail)
-      getClientState().newPanel(detail, instanceId, title)
-    },
-    unmountApp: async instanceId => {
-      if (popupWatcher.hasPopup(instanceId)) {
-        popupWatcher.closePopupForInstance(instanceId)
-        session?.unregisterHostWindow(instanceId)
-        return
-      }
-      await getClientState().removePanel(instanceId)
-      session?.unregisterHostWindow(instanceId)
-    },
+  const session = new SailOneUserSession({
+    catalog: caps.catalog,
+    popupWatcher,
   })
-
-  session = caps.sessions.createSession({
-    host: sessionHost,
-  })
+  await session.load()
+  caps.sessions.createSession(session)
   setPlatformSession(session, caps.catalog)
   await loadExtensionUIs()
 
@@ -148,7 +86,7 @@ async function bootstrap(): Promise<void> {
 
   const deepLinkAppId = resolveDeepLinkAppId(window.location.search)
   if (deepLinkAppId) {
-    forceFrameForNextLaunch = true
+    getSailOneSession().forceNextOpenAsFrame()
     try {
       const opened = await openCatalogApp(getSession(), getCatalog(), deepLinkAppId)
       console.log("[Sail] Deep-linked open %s", deepLinkAppId, opened)

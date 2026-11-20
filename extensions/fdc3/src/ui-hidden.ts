@@ -6,6 +6,8 @@ import {
   type SessionService,
 } from "@finos/sail-platform"
 import type { SailExtensionUI, SailExtensionUIProps } from "@finos/sail-extension/ui"
+import { SAIL_FDC3_INSTANCE } from "./ids"
+import type { SailFDC3ServerInstance } from "./SailFDC3ServerInstance"
 import { startWcpBusEdge } from "./wcp-edge"
 
 let edgeStop: (() => void) | null = null
@@ -14,7 +16,11 @@ let edgeStop: (() => void) | null = null
  * Start the browser WCP edge once (idempotent). Relays MessagePort traffic on
  * `sail.platform.bus`.
  */
-export function startFdc3WcpEdge(bus: SailPlatformBus, sessions: SessionService): () => void {
+export function startFdc3WcpEdge(
+  bus: SailPlatformBus,
+  sessions: SessionService,
+  onNegotiatedVersion?: (instanceId: string, fdc3Version: string) => void,
+): () => void {
   if (edgeStop) {
     return edgeStop
   }
@@ -23,7 +29,7 @@ export function startFdc3WcpEdge(bus: SailPlatformBus, sessions: SessionService)
       /* no-op */
     }
   }
-  const stop = startWcpBusEdge(bus, { sessions })
+  const stop = startWcpBusEdge(bus, { sessions, onNegotiatedVersion })
   edgeStop = () => {
     stop()
     edgeStop = null
@@ -50,7 +56,16 @@ export const fdc3WcpHiddenUi: SailExtensionUI = {
         /* no-op */
       }
     }
-    const stop = startFdc3WcpEdge(bus, sessions)
+    const stop = startFdc3WcpEdge(bus, sessions, (instanceId, fdc3Version) => {
+      try {
+        const agent = props.getExport<SailFDC3ServerInstance>(SAIL_FDC3_INSTANCE)
+        agent?.recordNegotiatedFdc3Version(instanceId, fdc3Version)
+      } catch {
+        // Instance not ready yet — ensureHostOpenedInstance will pick up later
+        // only if we also stash on the agent when it appears; hello usually
+        // arrives after the session/DA is bound.
+      }
+    })
     return () => {
       stop()
     }

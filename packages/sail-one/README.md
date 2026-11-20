@@ -18,23 +18,24 @@ npm run dev:one                    # agent + platform watch builds alongside the
 
 `src/state/` holds the seams the UI talks to:
 
-| Module                  | Role                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| `getSession()`          | `SailUserSession` — open/close apps and host Window associations.               |
-| `getCatalog()`          | `SailPlatformCatalog` — start-menu apps (`list()`).                             |
-| `client-state.ts`       | Shell chrome (tabs, panels), persisted through `SailUserStorage`.               |
-| `default-app-state.ts`  | Window/iframe bookkeeping and the user's hosting choice (`Frame` vs `Tab`).     |
-| `extensions-runtime.ts` | Loads extension cores/UIs; exposes platform session, bus, catalog, and storage. |
+| Module                     | Role                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `SailOneUserSession`       | Shell session: open/close, panel persistence, host Window associations.         |
+| `getSession()`             | The registered `SailUserSession` (a `SailOneUserSession`).                      |
+| `getCatalog()`             | `SailPlatformCatalog` — start-menu apps (`list()`).                             |
+| `client-state.ts`          | Tab/panel chrome API; owned and persisted by `SailOneUserSession`.              |
+| `default-app-state.ts`     | Window helpers and `open()` which queues Frame vs Tab then calls `openApp`.     |
+| `extensions-runtime.ts`    | Loads extension cores/UIs; exposes platform session, bus, catalog, and storage. |
 
 State is stored through `createLocalUserStorage({ keyPrefix: "sail_one_" })` from
-`@finos/sail-platform`. Because that API is async, `ClientState.load()` must be
+`@finos/sail-platform`. Because that API is async, `SailOneUserSession.load()` must be
 awaited before the first render — see `src/index.tsx`.
 
 ## Launch path
 
 1. UI calls `getAppState().open(app, hosting?)`, which queues the hosting choice and
    calls `getSession().openApp(...)` with catalog metadata.
-2. Browser session host hooks mount a panel or popup from the queued choice
-   (defaulting to panel / `NEW_WINDOW` location).
-3. Close goes through `getSession().closeApp(instanceId)`, which unmounts via the
-   same hooks and clears the host Window association.
+2. `SailOneUserSession.openApp` mounts a panel or popup from the queued choice
+   (defaulting to panel / `NEW_WINDOW` location) and persists layout.
+3. Close goes through `getSession().closeApp(instanceId)`, which unmounts, updates
+   storage, and clears the host Window association.

@@ -5,12 +5,10 @@ import { ExternalLink } from "lucide-react"
 import type { IDockviewPanelProps } from "dockview-react"
 import type { SailApp, SailWebApp } from "@finos/sail-platform"
 
-import { useAppDirectoryStore } from "../../contexts"
+import { useAppDirectoryStore, useSailSession } from "../../contexts"
 import { useUIStore } from "../../stores/ui-store"
-import { useWorkspaceStore } from "../../stores/workspace-store"
 
 import { ChooseAppIcon } from "./ChooseAppIcon"
-import { APP_PANEL_RENDERER } from "../layout-grid/dockview-options"
 
 interface AppCardProps {
   app: SailApp
@@ -98,70 +96,44 @@ interface AppDirectoryProps {
 }
 
 export function AppDirectory({ panelProps }: AppDirectoryProps) {
+  const session = useSailSession()
   const { apps, isLoading, error, loadApps, refreshApps } = useAppDirectoryStore()
-  const { addPanel, workspaces, activeWorkspaceId } = useWorkspaceStore()
   const { closeQuickAccessPanel } = useUIStore()
-  const activeWorkspace = workspaces.get(activeWorkspaceId)
-  const activeTabId = activeWorkspace?.layout.activeTabId || ""
 
   useEffect(() => {
     void loadApps()
   }, [loadApps])
 
   const handleAppClick = (app: SailApp) => {
-    console.log("App clicked:", app)
-
     const url = catalogUrl(app)
     if (!url) {
       console.warn("App has no launch URL in catalogue:", app)
       return
     }
 
-    const instanceId = `${app.appId}-${Date.now()}`
-    const instanceTitle = app.title || app.appId
+    closeQuickAccessPanel()
 
-    if (activeWorkspaceId && activeTabId) {
-      addPanel(activeWorkspaceId, activeTabId, {
-        panelId: instanceId,
+    // Session open → host mountApp adds the workspace panel; Layout syncs Dockview.
+    // Bypassing session (homemade instance ids) breaks agent handshake + app-bar state.
+    void session
+      .openApp({
         appId: app.appId,
-        title: instanceTitle,
         url,
-        icon: app.icon || null,
+        title: app.title || app.appId,
+        icon: app.icon,
       })
-    }
-
-    if (panelProps) {
-      const appPanel = {
-        title: instanceTitle,
-        url,
-        tabId: activeTabId,
-        panelId: instanceId,
-        appId: app.appId,
-        icon: app.icon || null,
-      }
-
-      const currentGroup = panelProps.api.group
-      panelProps.containerApi.addPanel({
-        id: instanceId,
-        component: "app",
-        tabComponent: "appTab",
-        title: instanceTitle,
-        params: { panel: appPanel },
-        renderer: APP_PANEL_RENDERER,
-        position: {
-          referenceGroup: currentGroup,
-        },
-      })
-
-      setTimeout(() => {
+      .then(() => {
+        if (!panelProps) {
+          return
+        }
         const directoryPanel = panelProps.containerApi.getPanel(panelProps.api.id)
         if (directoryPanel) {
           panelProps.containerApi.removePanel(directoryPanel)
         }
-      }, 100)
-    }
-
-    closeQuickAccessPanel()
+      })
+      .catch((err: unknown) => {
+        console.error(`[Sail] Failed to open ${app.appId}`, err)
+      })
   }
 
   if (error) {

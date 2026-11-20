@@ -1,8 +1,4 @@
 export {
-  createBrowserSessionHostHooks,
-  type BrowserSessionHostHandlers,
-} from "./session-host"
-export {
   createPopupCloseWatcher,
   type PopupCloseWatcher,
   type PopupCloseWatcherOptions,

@@ -6,6 +6,7 @@ import {
   type AppRegistration,
   type ChannelState,
   type Directory,
+  type Fdc3ApiVersion,
   type FDC3ServerInstance,
   type HandlersByVersion,
   type InstanceID,
@@ -49,6 +50,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   private readonly directory: Directory
   private readonly intentResolver?: IntentResolver
   private readonly instances = new Map<InstanceID, AppRegistration>()
+  /** Wire versions from WCP3Handshake, applied when the registration appears. */
+  private readonly negotiatedVersions = new Map<InstanceID, Fdc3ApiVersion>()
   private readonly stateListeners = new Set<(instanceId: string, state: State) => void>()
   private readonly userChannelListeners = new Set<
     (event: SailFdc3AppChannelChangeEvent) => void
@@ -189,6 +192,21 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
   }
 
   /**
+   * Record the WCP-negotiated API version for an app (drives handler selection and
+   * the connection-indicator tooltip). Safe to call before or after registration.
+   */
+  recordNegotiatedFdc3Version(instanceId: InstanceID, version: string): void {
+    const wire: Fdc3ApiVersion = version.startsWith("3") ? "3.0" : "2.2"
+    this.negotiatedVersions.set(instanceId, wire)
+    const details = this.instances.get(instanceId)
+    if (!details || details.fdc3Version === wire) {
+      return
+    }
+    this.setInstanceDetails(instanceId, { ...details, fdc3Version: wire })
+    this.emitAppState(instanceId, details.state)
+  }
+
+  /**
    * Shell-opened apps never go through {@link open}; register Pending on first DACP
    * so identity handshake and the app-bar indicator work. Non-FDC3 apps never message
    * and stay unregistered (no icon).
@@ -205,6 +223,7 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
       appId: app.appId,
       instanceId: from,
       state: State.Pending,
+      fdc3Version: this.negotiatedVersions.get(from),
     })
     this.emitAppState(from, State.Pending)
   }

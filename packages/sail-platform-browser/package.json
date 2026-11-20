@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "description": "Browser SailUserSession host hooks (mount/tear down browsing contexts). Not FDC3/WCP.",
+  "description": "Browser helpers for Sail shells (popup close watching). Not FDC3/WCP.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/finos/FDC3-Sail",
   "repository": {

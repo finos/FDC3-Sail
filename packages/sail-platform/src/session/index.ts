@@ -1,26 +1,10 @@
-export {
-  createSailUserSession,
-  createSessionService,
-  setContainerLocation,
-  type CreateSailUserSessionOptions,
-  type CreateSessionServiceOptions,
-  type SailUserSessionHostHooks,
-} from "./store"
+export { createSessionService, type CreateSessionServiceOptions } from "./store"
 export type {
   AppInstanceId,
-  Container,
-  Geometry,
-  GeometryMode,
-  LocationDetails,
-  Panel,
   Placement,
-  Rect,
   SailAppInstance,
   SailOpenAppRequest,
   SailUserSession,
   SailUserSessionSnapshot,
   SessionService,
-  Tab,
-  Workspace,
-  WorkspaceSummary,
 } from "./types"

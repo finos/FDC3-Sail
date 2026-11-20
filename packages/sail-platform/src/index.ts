@@ -17,28 +17,15 @@ export {
 
 // Session (sail.platform.session → SessionService)
 export {
-  createSailUserSession,
   createSessionService,
-  setContainerLocation,
-  type Container,
-  type CreateSailUserSessionOptions,
-  type CreateSessionServiceOptions,
-  type Geometry as SessionGeometry,
-  type GeometryMode,
-  type LocationDetails,
-  type Panel as SessionPanel,
-  type Placement,
-  type Rect,
   type AppInstanceId,
+  type CreateSessionServiceOptions,
+  type Placement,
   type SailAppInstance,
   type SailOpenAppRequest,
   type SailUserSession,
-  type SailUserSessionHostHooks,
   type SailUserSessionSnapshot,
   type SessionService,
-  type Tab as SessionTab,
-  type Workspace as SessionWorkspace,
-  type WorkspaceSummary as SessionWorkspaceSummary,
 } from "./session"
 
 // Bus (sail.platform.bus)

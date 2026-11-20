@@ -10,6 +10,7 @@ import {
 
 function AppBarUiMount({ ui, instanceId }: { ui: SailExtensionUI; instanceId: string }) {
   const host = useRef<HTMLDivElement>(null)
+  // Scope storage to the contribution id (finance does not track coreId on loaded UIs).
   const storage = useMemo(() => createSailFinanceExtensionStorage(ui.id), [ui.id])
   const props = useMemo(
     () => ({
@@ -28,14 +29,14 @@ function AppBarUiMount({ ui, instanceId }: { ui: SailExtensionUI; instanceId: st
     return ui.mount(el, props)
   }, [ui, props])
 
-  return <div ref={host} className="inline-flex items-center" />
+  return <div ref={host} className="inline-flex items-center text-inherit" />
 }
 
 /**
  * Mounts all `sail.ui.app.bar` contributions for one app instance.
  */
 export function AppBarSlot({ instanceId }: { instanceId: string }) {
-  const [uis, setUis] = useState<SailExtensionUI[]>([])
+  const [uis, setUis] = useState<SailExtensionUI[]>(() => getLoadedExtensionUIs(SAIL_UI_APP_BAR))
 
   useEffect(() => {
     void loadExtensionUIs().then(() => {

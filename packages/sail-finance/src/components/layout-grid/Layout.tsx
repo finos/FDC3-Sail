@@ -32,7 +32,6 @@ const Layout = (props: DockviewSailProps) => {
     workspaces,
     activeWorkspaceId,
     addPanel,
-    removePanel,
     getPanelsForTab,
     setDockviewLayout,
     getDockviewLayout,
@@ -155,18 +154,11 @@ const Layout = (props: DockviewSailProps) => {
           hadConnection: !!connection,
         })
         try {
+          // Session closeApp removes the workspace-store panel.
           void session.closeApp(instanceId)
           connectionStore.removePanel(panelId)
         } catch (error) {
           console.error(`[Layout] Error closing instance ${instanceId}:`, error)
-        }
-
-        if (activeWorkspaceId && activeTabId) {
-          removePanel(activeWorkspaceId, activeTabId, panelId)
-        } else {
-          console.warn(
-            `[Layout] Cannot remove panel from store: activeWorkspaceId=${activeWorkspaceId}, activeTabId=${activeTabId}`,
-          )
         }
         saveState()
       }),
@@ -180,7 +172,6 @@ const Layout = (props: DockviewSailProps) => {
     mountedPanels,
     activeTabId,
     addPanel,
-    removePanel,
     setDockviewLayout,
     activeWorkspaceId,
     connectionStore,

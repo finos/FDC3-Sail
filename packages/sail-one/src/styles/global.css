@@ -31,3 +31,11 @@ button:focus-visible {
 img {
   max-width: 100%;
 }
+
+/* Resize hit-targets stay active (cursor changes); no visible grip icons. */
+.grid-stack-item > .ui-resizable-ne,
+.grid-stack-item > .ui-resizable-nw,
+.grid-stack-item > .ui-resizable-se,
+.grid-stack-item > .ui-resizable-sw {
+  background-image: none !important;
+}

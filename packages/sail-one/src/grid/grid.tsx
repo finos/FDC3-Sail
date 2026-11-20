@@ -23,6 +23,8 @@ const gridOptions = {
   acceptWidgets: true,
   margin: 4,
   cellHeight: "70px",
+  // Iframe content eats hover, so autohide never reveals handles — keep them on.
+  alwaysShowResizeHandle: true,
   resizable: {
     handles: "e, se, s, sw, w",
   },
@@ -172,11 +174,7 @@ function TabGrid({
         if (typeof panelId !== "string") {
           return
         }
-        void getSession()
-          .closeApp(panelId)
-          .catch(() => {
-            void cs.removePanel(panelId)
-          })
+        void closePanel(panelId)
       })
     })
 
@@ -273,15 +271,7 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
           <AppBarSlot instanceId={panel.panelId} />
-          <CloseIcon
-            action={() => {
-              void getSession()
-                .closeApp(panel.panelId)
-                .catch(() => {
-                  void cs.removePanel(panel.panelId)
-                })
-            }}
-          />
+          <CloseIcon action={() => void closePanel(panel.panelId)} />
         </div>
         <div className={styles.resizeBaffle} />
         <div className={styles.contentBody}>
@@ -303,6 +293,11 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
       </div>
     </div>
   )
+}
+
+/** Tear down session app + panel chrome. */
+async function closePanel(panelId: string): Promise<void> {
+  await getSession().closeApp(panelId)
 }
 
 function CloseIcon({ action }: { action: () => void }) {

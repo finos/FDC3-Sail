@@ -1,5 +1,7 @@
-# @finos/sail-platform-browser
+# `@finos/sail-platform-browser`
 
-Browser implementation of **SailUserSession host hooks**: mount and tear down iframes/popups when the session opens/closes an app.
+Shared browser helpers for Sail shells (popup close watching). Not FDC3/WCP.
 
-This is used to share common code between Sail desktop implementations that live in the browser (sail-one and sail-finance).
+Shell-specific session implementations (`SailOneUserSession`, `SailFinanceUserSession`)
+own open/close mounting and layout persistence; this package only shares the popup
+lifecycle helper used when apps open as browser windows.

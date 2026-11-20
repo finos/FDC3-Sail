@@ -1,23 +1,20 @@
 import type { SailPlatformCatalog, SailUserSession } from "@finos/sail-platform"
 import { type AppState, DefaultAppState } from "./default-app-state"
-import { type ClientState, PlatformClientState } from "./client-state"
+import type { ClientState } from "./client-state"
+import type { SailOneUserSession } from "./sail-one-user-session"
 
-export { AppHosting } from "./default-app-state"
+export { AppHosting } from "./app-hosting"
 export type { AppPanel, ClientState, TabDetail } from "./client-state"
 export type { AppState, AppOpenDetails, PendingHosting } from "./default-app-state"
+export { SailOneUserSession } from "./sail-one-user-session"
+export type { SailOneUserSessionOptions } from "./sail-one-user-session"
 
-let theSession: SailUserSession | null = null
+let theSession: SailOneUserSession | null = null
 let theCatalog: SailPlatformCatalog | null = null
-let theClientState: PlatformClientState | null = null
 let theAppState: DefaultAppState | null = null
 
-function ensureClientAndApp(): void {
-  theAppState = theAppState ?? new DefaultAppState()
-  theClientState = theClientState ?? new PlatformClientState()
-}
-
 export function setPlatformSession(
-  session: SailUserSession,
+  session: SailOneUserSession,
   catalog: SailPlatformCatalog,
 ): void {
   theSession = session
@@ -25,6 +22,13 @@ export function setPlatformSession(
 }
 
 export function getSession(): SailUserSession {
+  if (!theSession) {
+    throw new Error("Sail session not ready — bootstrap the platform session first")
+  }
+  return theSession
+}
+
+export function getSailOneSession(): SailOneUserSession {
   if (!theSession) {
     throw new Error("Sail session not ready — bootstrap the platform session first")
   }
@@ -39,11 +43,13 @@ export function getCatalog(): SailPlatformCatalog {
 }
 
 export function getAppState(): AppState {
-  ensureClientAndApp()
-  return theAppState!
+  theAppState = theAppState ?? new DefaultAppState()
+  return theAppState
 }
 
 export function getClientState(): ClientState {
-  ensureClientAndApp()
-  return theClientState!
+  if (!theSession) {
+    throw new Error("Sail session not ready — bootstrap the platform session first")
+  }
+  return theSession.clientState
 }
