@@ -57,12 +57,22 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
     alias: {
       "@": path.resolve(packageRoot, "./src"),
+      // CJS dist is unusable over /@fs from extension modules; compile the TS source as ESM.
+      "@finos/sail-headless-agent": path.resolve(
+        packageRoot,
+        "../../packages/sail-headless-agent/src/index.ts",
+      ),
     },
   },
   optimizeDeps: {
     // Keep workspace packages out of pre-bundle so changes in sail-desktop-agent /
     // sail-platform trigger a reload.
-    exclude: ["@finos/sail-platform", "@finos/sail-platform-browser", "@finos/sail-extension"],
+    exclude: [
+      "@finos/sail-platform",
+      "@finos/sail-platform-browser",
+      "@finos/sail-extension",
+      "@finos/sail-headless-agent",
+    ],
   },
   server: {
     port: 8090,

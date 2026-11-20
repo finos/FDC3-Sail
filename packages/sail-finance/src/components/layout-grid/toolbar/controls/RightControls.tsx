@@ -1,10 +1,7 @@
 import type { IDockviewHeaderActionsProps } from "dockview"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { ExternalLink, Maximize2, Minimize2, X } from "lucide-react"
 
-import { useConnectionStore } from "../../../../contexts"
-import { AppBarSlot } from "../../../extensions/AppBarSlot"
-import { extractAppPanelId } from "../../dockview-options"
 import { dockviewPopoutUrl } from "../../../../utils/dockview-popout"
 
 import { Icon } from "./Icon"
@@ -75,48 +72,15 @@ const MaximizeButton = (props: IDockviewHeaderActionsProps) => {
   )
 }
 
-const AppBarForPanel = ({ activePanelId }: { activePanelId: string }) => {
-  const connection = useConnectionStore(state => {
-    const instanceId = state.panelToConnection.get(activePanelId)
-    return instanceId ? state.connections.get(instanceId) : undefined
-  })
-
-  const instanceId = connection?.instanceId ?? activePanelId
-  if (!connection) {
-    return <div className="size-3 rounded-full bg-muted animate-pulse" />
-  }
-
-  return <AppBarSlot key={instanceId} instanceId={instanceId} />
-}
-
 /**
- * RightControls: host chrome (popout/maximize) plus `sail.ui.app.bar` contributions.
+ * Group-level chrome only (popout / maximize). Per-app `sail.ui.app.bar`
+ * contributions render on {@link AppTab}.
  */
 export const RightControls = (props: IDockviewHeaderActionsProps) => {
   const isPopout = props.api.location.type === "popout"
-  const [activePanelId, setActivePanelId] = useState<string | undefined>(() =>
-    extractAppPanelId(props.activePanel?.params),
-  )
-
-  const syncActivePanelId = useCallback(() => {
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- dockview declares group required on IDockviewHeaderActionsProps; the ?? fallback is load-bearing if it is ever absent
-    const panel = props.group?.activePanel ?? props.activePanel
-    setActivePanelId(panel ? extractAppPanelId(panel.params) : undefined)
-  }, [props.activePanel, props.group])
-
-  useEffect(() => {
-    syncActivePanelId()
-
-    const disposable = props.api.onDidActivePanelChange(() => {
-      syncActivePanelId()
-    })
-
-    return () => disposable.dispose()
-  }, [props.api, syncActivePanelId])
 
   return (
     <div className="group-control">
-      {activePanelId && <AppBarForPanel activePanelId={activePanelId} />}
       <PopoutButton {...props} />
       {!isPopout && <MaximizeButton {...props} />}
     </div>

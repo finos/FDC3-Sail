@@ -20,6 +20,11 @@ export default defineConfig({
     extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
     alias: {
       "@": path.resolve(packageRoot, "./src"),
+      // CJS dist is unusable over /@fs from extension modules; compile the TS source as ESM.
+      "@finos/sail-headless-agent": path.resolve(
+        packageRoot,
+        "../../packages/sail-headless-agent/src/index.ts",
+      ),
     },
   },
   optimizeDeps: {
@@ -29,6 +34,7 @@ export default defineConfig({
       // Keep workspace packages out of pre-bundle so changes trigger reload
       "@finos/sail-platform",
       "@finos/sail-extension",
+      "@finos/sail-headless-agent",
     ],
   },
   build: {

@@ -42,6 +42,10 @@ export const fdc3WcpHiddenUi: SailExtensionUI = {
     const bus = props.getExport<SailPlatformBus>(SAIL_PLATFORM_BUS)
     const sessions = props.getExport<SessionService>(SAIL_PLATFORM_SESSION)
     if (!bus || !sessions) {
+      console.error("[sail.fdc3.wcp] mount skipped — missing platform exports", {
+        bus: Boolean(bus),
+        sessions: Boolean(sessions),
+      })
       return () => {
         /* no-op */
       }

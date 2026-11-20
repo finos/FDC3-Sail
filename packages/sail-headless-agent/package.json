@@ -22,7 +22,7 @@
     "clean": "rimraf dist cucumber-report.html coverage node_modules test-results.xml generated",
     "directory-openapi": "npx openapi-typescript appd.schema.json --output generated/directory-schema.ts",
     "test": "npm run directory-openapi && tsc && c8 --reporter=lcov --reporter=text --reporter=json cucumber-js --exit",
-    "build": "npm run directory-openapi && tsc --module es2022"
+    "build": "npm run directory-openapi && tsc"
   },
   "dependencies": {
     "@finos/fdc3-context-v2": "npm:@finos/fdc3-context@2.2.3",

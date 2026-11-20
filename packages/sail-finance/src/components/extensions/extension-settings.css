@@ -1,0 +1,172 @@
+/**
+ * Host chrome for extension-mounted config UIs.
+ * Extensions render their own React roots with unstyled form controls;
+ * these descendant rules apply sail-finance tokens without coupling extensions
+ * to the host design system.
+ */
+.sail-extension-ui {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.sail-extension-ui p {
+  color: var(--muted-foreground);
+}
+
+.sail-extension-ui code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.sail-extension-ui ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sail-extension-ui li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.sail-extension-ui label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.sail-extension-ui input[type="text"],
+.sail-extension-ui input[type="url"],
+.sail-extension-ui input[type="search"],
+.sail-extension-ui input:not([type]),
+.sail-extension-ui input[type="password"],
+.sail-extension-ui input[type="email"],
+.sail-extension-ui input[type="number"],
+.sail-extension-ui textarea,
+.sail-extension-ui select {
+  height: 2.25rem;
+  min-width: 0;
+  flex: 1 1 10rem;
+  border: 1px solid var(--input);
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--foreground);
+  padding: 0.25rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 4%, transparent);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sail-extension-ui input[type="text"]::placeholder,
+.sail-extension-ui input[type="url"]::placeholder,
+.sail-extension-ui input:not([type])::placeholder,
+.sail-extension-ui textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.sail-extension-ui input[type="text"]:focus-visible,
+.sail-extension-ui input[type="url"]:focus-visible,
+.sail-extension-ui input:not([type]):focus-visible,
+.sail-extension-ui input[type="password"]:focus-visible,
+.sail-extension-ui input[type="email"]:focus-visible,
+.sail-extension-ui input[type="number"]:focus-visible,
+.sail-extension-ui textarea:focus-visible,
+.sail-extension-ui select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+.sail-extension-ui input[type="color"] {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.15rem;
+  border: 1px solid var(--input);
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  cursor: pointer;
+}
+
+.sail-extension-ui input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.sail-extension-ui button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 4%, transparent);
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.sail-extension-ui button:hover {
+  background: color-mix(in oklab, var(--primary) 90%, var(--foreground));
+}
+
+.sail-extension-ui button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+.sail-extension-ui button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary / destructive-looking actions in extension lists */
+.sail-extension-ui li > button {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.sail-extension-ui li > button:hover {
+  background: color-mix(in oklab, var(--secondary) 80%, var(--foreground));
+}
+
+.sail-extension-ui form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 28rem;
+}
+
+.sail-extension-ui [role="alert"] {
+  color: var(--destructive);
+}

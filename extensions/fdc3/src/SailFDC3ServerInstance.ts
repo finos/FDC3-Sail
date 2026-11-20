@@ -89,6 +89,8 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
         this.bus.log("[sail.fdc3] SERVER_INSTANCE message missing meta.source.instanceId")
         return
       }
+      // Register before middleware/receive so OpenHandler can complete identity.
+      this.ensureHostOpenedInstance(from)
       const inbound = message as { type: string }
       if (this.receiveTarget) {
         void this.receiveTarget(inbound, from)
@@ -184,6 +186,35 @@ export class SailFDC3ServerInstance extends AbstractFDC3ServerInstance {
 
   getInstanceDetails(uuid: InstanceID): AppRegistration | undefined {
     return this.instances.get(uuid)
+  }
+
+  /**
+   * Shell-opened apps never go through {@link open}; register Pending on first DACP
+   * so identity handshake and the app-bar indicator work. Non-FDC3 apps never message
+   * and stay unregistered (no icon).
+   */
+  ensureHostOpenedInstance(from: InstanceID): void {
+    if (this.instances.has(from)) {
+      return
+    }
+    const app = this.session.getSnapshot().apps.find(a => a.instanceId === from)
+    if (!app) {
+      return
+    }
+    this.setInstanceDetails(from, {
+      appId: app.appId,
+      instanceId: from,
+      state: State.Pending,
+    })
+    this.emitAppState(from, State.Pending)
+  }
+
+  override async receive(
+    message: { type: string },
+    from: InstanceID,
+  ): Promise<void> {
+    this.ensureHostOpenedInstance(from)
+    await super.receive(message as never, from)
   }
 
   async setAppState(app: InstanceID, newState: State): Promise<void> {

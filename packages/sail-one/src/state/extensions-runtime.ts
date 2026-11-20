@@ -11,6 +11,7 @@ import {
   SAIL_PLATFORM_CATALOG,
   SAIL_PLATFORM_SESSION,
   SAIL_PLATFORM_STORAGE,
+  SAIL_UI_APP_BAR,
   SAIL_UI_CONFIG,
   SAIL_UI_HIDDEN,
   createLocalUserStorage,
@@ -24,7 +25,7 @@ import { createSailOneExtensionStorage } from "./extension-storage"
 
 export type LoadedSailExtensionUI = SailExtensionUI & { coreId: string }
 
-const UI_CONTRIBUTION_POINTS = [SAIL_UI_CONFIG, SAIL_UI_HIDDEN] as const
+const UI_CONTRIBUTION_POINTS = [SAIL_UI_CONFIG, SAIL_UI_HIDDEN, SAIL_UI_APP_BAR] as const
 
 let platformCaps: ReturnType<typeof ensurePlatformCaps> | null = null
 let platformRegistry: SailExtensionRegistry | null = null

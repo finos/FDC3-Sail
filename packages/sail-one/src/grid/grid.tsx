@@ -9,6 +9,7 @@ import {
   getAppState,
   getSession,
 } from "../state"
+import { AppBarSlot } from "../extensions/AppBarSlot"
 import { findEmptyArea } from "./find-empty-area"
 import { setupTabDropTargets } from "./setup-tab-drop-targets"
 
@@ -271,6 +272,7 @@ function PanelContent({ panel, cs }: { panel: AppPanel; cs: ClientState }) {
           <p className={styles.contentTitleText}>
             <span className={styles.contentTitleTextSpan}>{panel.title}</span>
           </p>
+          <AppBarSlot instanceId={panel.panelId} />
           <CloseIcon
             action={() => {
               void getSession()
